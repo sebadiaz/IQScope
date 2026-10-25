@@ -8,7 +8,7 @@ import urllib.request
 import numpy as np
 
 from iqscope import analyze
-from iqscope_datasets import check_panoradio_shape, export_panoradio_window
+from iqscope_datasets import catalog, check_panoradio_shape, export_panoradio_window
 
 URL = 'https://www.panoradio-sdr.de/wp-content/uploads/dataset_panoradio_hf.npy'
 LIMIT = 65536
@@ -47,6 +47,10 @@ def main():
             raise ValueError('Server returned an unexpected byte range')
         prefix = response.read(LIMIT)
     row, provenance = parse_first_window(prefix)
+    entry = next(item for item in catalog()['entries'] if item['id']=='panoradio_hf')
+    expected = entry.get('reference_first_window_sha256')
+    if expected and provenance['source_window_sha256'] != expected:
+        raise ValueError('Reference source window changed: review the dataset before accepting a new hash')
     if provenance['source_shape'] != [172800,2048]:
         raise ValueError('Source shape differs from the documented corpus; review the adapter')
     path = out/'one-window.npy'

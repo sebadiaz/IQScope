@@ -1,21 +1,160 @@
 {
-  "schema_version":"1.0",
-  "entries":[
-    {"id":"sdrangel","name":"SDRangel IQ examples","kind":"real_recordings","url":"https://www.sdrangel.org/iq-files/","role":"import and selected decoding checks","status":"validated_subset","scope":"ADS-B excerpt CRC validation; RTTY/radar import only","adapter":"wav_sdriq"},
-    {"id":"imec_subghz","name":"imec / UGent sub-GHz","kind":"real_measurements","url":"https://github.com/JaronFontaine/Sub-GHz-IQ-signals-dataset","role":"technology recognition","status":"documentation_only","adapter":null},
-    {"id":"panoradio_hf","name":"Panoradio HF","kind":"synthetic_windows","url":"https://panoradio-sdr.de/radio-signal-classification-dataset/","role":"HF mode recognition","status":"adapter_under_validation","adapter":"panoradio_npy_window","sample_rate_hz":6000,"window_samples":2048,"continuous_across_rows":false},
-    {"id":"torchsig","name":"TorchSig","kind":"synthetic_generator","url":"https://torchsig.com/","role":"annotated signal detection and recognition","status":"documentation_only","adapter":null,"note":"Pin version and generation settings; historical Sig53 configurations differ from current APIs."},
-    {"id":"radiopile","name":"RadioPile v1.0","kind":"aggregate_windows","url":"https://zenodo.org/records/22876704","role":"multi-task RF recognition","status":"documentation_only","adapter":null,"note":"Includes imec and other source datasets: prevent overlap across training and evaluation."},
-    {"id":"upc_lpwan1","name":"UPC-LPWAN-1","kind":"real_measurements","url":"https://doi.org/10.34810/data1496","role":"sub-GHz transmission mode recognition","status":"documentation_only","adapter":null},
-    {"id":"nist_wifi_bluetooth","name":"NIST Wi-Fi / Bluetooth","kind":"real_recordings","url":"https://doi.org/10.18434/mds2-2731","role":"real hardware emissions and recognition","status":"documentation_only","adapter":null},
-    {"id":"nist_lte","name":"NIST LTE capture collections","kind":"real_recording_collection","url":"https://www.nist.gov/ctl/spectrum-technology-and-research-division/applied-systems-metrology-group/iq-data-sets","role":"LTE uplink analysis","status":"documentation_only","adapter":null},
-    {"id":"its_cellular","name":"LTE / 5G NR / Wi-Fi / ITS-G5 / C-V2X","kind":"real_measurements","url":"https://zenodo.org/records/10811147","role":"technology recognition","status":"documentation_only","adapter":null},
-    {"id":"powder","name":"POWDER RF fingerprinting","kind":"real_recordings","url":"https://genesys-lab.org/powder","role":"Wi-Fi/LTE/NR capture-domain and emitter variation","status":"documentation_only","adapter":null},
-    {"id":"wisig","name":"WiSig","kind":"real_measurements","url":"https://cores.ee.ucla.edu/downloads/datasets/wisig/","role":"receiver/channel-robust RF fingerprinting","status":"documentation_only","adapter":null},
-    {"id":"oracle","name":"ORACLE","kind":"real_measurements","url":"https://genesys-lab.org/oracle","role":"RF fingerprinting","status":"documentation_only","adapter":null,"note":"Distinguish raw over-air recordings from transformed or controlled-impairment subsets."},
-    {"id":"drone_kul","name":"Drone RF — KU Leuven","kind":"real_recordings","url":"https://doi.org/10.48804/HZRVNZ","role":"drone RF recognition and unknown rejection","status":"documentation_only","adapter":null},
-    {"id":"radchar","name":"RadChar","kind":"synthetic_windows","url":"https://github.com/abcxyzi/RadChar","role":"radar waveform classification and parameter estimation","status":"documentation_only","adapter":null},
-    {"id":"gnss_reference","name":"GNSS-SDR reference capture","kind":"real_recording","url":"https://gnss-sdr.org/my-first-fix/","role":"acquisition, navigation messages and position reference","status":"documentation_only","adapter":null},
-    {"id":"satellite_recordings","name":"Amateur satellite sample recordings","kind":"real_mono_waveforms","url":"https://github.com/daniestevez/satellite-recordings","role":"satellite decoder regression","status":"documentation_only","adapter":null,"note":"48 kHz mono examples are not stereo IQ and are rejected by the current IQ-only input."}
+  "schema_version": "1.0",
+  "entries": [
+    {
+      "id": "sdrangel",
+      "name": "SDRangel IQ examples",
+      "kind": "real_recordings",
+      "url": "https://www.sdrangel.org/iq-files/",
+      "role": "import and selected decoding checks",
+      "status": "validated_subset",
+      "scope": "ADS-B excerpt CRC validation; RTTY/radar import only",
+      "adapter": "wav_sdriq"
+    },
+    {
+      "id": "imec_subghz",
+      "name": "imec / UGent sub-GHz",
+      "kind": "real_measurements",
+      "url": "https://github.com/JaronFontaine/Sub-GHz-IQ-signals-dataset",
+      "role": "technology recognition",
+      "status": "documentation_only",
+      "adapter": null
+    },
+    {
+      "id": "panoradio_hf",
+      "name": "Panoradio HF",
+      "kind": "synthetic_windows",
+      "url": "https://panoradio-sdr.de/radio-signal-classification-dataset/",
+      "role": "HF mode recognition",
+      "status": "window_import_validated",
+      "adapter": "panoradio_npy_window",
+      "sample_rate_hz": 6000,
+      "window_samples": 2048,
+      "continuous_across_rows": false,
+      "reference_first_window_sha256": "2100801cbf3e299a564d63b1e5c574aad5c714c7f2b13cb9be8cc4e5eb232d3e",
+      "validation_reference": "https://github.com/sebadiaz/IQScope/actions/runs/40217822845",
+      "validation_scope": "First public 2048-sample window import and analysis only; no class prediction or message decoded"
+    },
+    {
+      "id": "torchsig",
+      "name": "TorchSig",
+      "kind": "synthetic_generator",
+      "url": "https://torchsig.com/",
+      "role": "annotated signal detection and recognition",
+      "status": "documentation_only",
+      "adapter": null,
+      "note": "Pin version and generation settings; historical Sig53 configurations differ from current APIs."
+    },
+    {
+      "id": "radiopile",
+      "name": "RadioPile v1.0",
+      "kind": "aggregate_windows",
+      "url": "https://zenodo.org/records/22876704",
+      "role": "multi-task RF recognition",
+      "status": "documentation_only",
+      "adapter": null,
+      "note": "Includes imec and other source datasets: prevent overlap across training and evaluation."
+    },
+    {
+      "id": "upc_lpwan1",
+      "name": "UPC-LPWAN-1",
+      "kind": "real_measurements",
+      "url": "https://doi.org/10.34810/data1496",
+      "role": "sub-GHz transmission mode recognition",
+      "status": "documentation_only",
+      "adapter": null
+    },
+    {
+      "id": "nist_wifi_bluetooth",
+      "name": "NIST Wi-Fi / Bluetooth",
+      "kind": "real_recordings",
+      "url": "https://doi.org/10.18434/mds2-2731",
+      "role": "real hardware emissions and recognition",
+      "status": "documentation_only",
+      "adapter": null
+    },
+    {
+      "id": "nist_lte",
+      "name": "NIST LTE capture collections",
+      "kind": "real_recording_collection",
+      "url": "https://www.nist.gov/ctl/spectrum-technology-and-research-division/applied-systems-metrology-group/iq-data-sets",
+      "role": "LTE uplink analysis",
+      "status": "documentation_only",
+      "adapter": null
+    },
+    {
+      "id": "its_cellular",
+      "name": "LTE / 5G NR / Wi-Fi / ITS-G5 / C-V2X",
+      "kind": "real_measurements",
+      "url": "https://zenodo.org/records/10811147",
+      "role": "technology recognition",
+      "status": "documentation_only",
+      "adapter": null
+    },
+    {
+      "id": "powder",
+      "name": "POWDER RF fingerprinting",
+      "kind": "real_recordings",
+      "url": "https://genesys-lab.org/powder",
+      "role": "Wi-Fi/LTE/NR capture-domain and emitter variation",
+      "status": "documentation_only",
+      "adapter": null
+    },
+    {
+      "id": "wisig",
+      "name": "WiSig",
+      "kind": "real_measurements",
+      "url": "https://cores.ee.ucla.edu/downloads/datasets/wisig/",
+      "role": "receiver/channel-robust RF fingerprinting",
+      "status": "documentation_only",
+      "adapter": null
+    },
+    {
+      "id": "oracle",
+      "name": "ORACLE",
+      "kind": "real_measurements",
+      "url": "https://genesys-lab.org/oracle",
+      "role": "RF fingerprinting",
+      "status": "documentation_only",
+      "adapter": null,
+      "note": "Distinguish raw over-air recordings from transformed or controlled-impairment subsets."
+    },
+    {
+      "id": "drone_kul",
+      "name": "Drone RF — KU Leuven",
+      "kind": "real_recordings",
+      "url": "https://doi.org/10.48804/HZRVNZ",
+      "role": "drone RF recognition and unknown rejection",
+      "status": "documentation_only",
+      "adapter": null
+    },
+    {
+      "id": "radchar",
+      "name": "RadChar",
+      "kind": "synthetic_windows",
+      "url": "https://github.com/abcxyzi/RadChar",
+      "role": "radar waveform classification and parameter estimation",
+      "status": "documentation_only",
+      "adapter": null
+    },
+    {
+      "id": "gnss_reference",
+      "name": "GNSS-SDR reference capture",
+      "kind": "real_recording",
+      "url": "https://gnss-sdr.org/my-first-fix/",
+      "role": "acquisition, navigation messages and position reference",
+      "status": "documentation_only",
+      "adapter": null
+    },
+    {
+      "id": "satellite_recordings",
+      "name": "Amateur satellite sample recordings",
+      "kind": "real_mono_waveforms",
+      "url": "https://github.com/daniestevez/satellite-recordings",
+      "role": "satellite decoder regression",
+      "status": "documentation_only",
+      "adapter": null,
+      "note": "48 kHz mono examples are not stereo IQ and are rejected by the current IQ-only input."
+    }
   ]
 }

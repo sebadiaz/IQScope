@@ -66,3 +66,13 @@ La fenêtre est enregistrée dans un petit NPY local puis passe par l'importateu
 5. Mesurer reconnaissance et décodage séparément ; conserver des familles absentes de l'apprentissage pour évaluer la réponse « inconnu ».
 
 Les 500 échantillons d'une fenêtre de classification RadioPile ou les données mono satellites ne doivent pas être forcés dans un lecteur qui attend au moins 1 024 échantillons IQ. Chaque représentation exige un contrat d'entrée explicite.
+
+## Résultat public vérifié
+
+La [CI 40217822845](https://github.com/sebadiaz/IQScope/actions/runs/40217822845), commit `22848ace4688e23ad6db22daf61a2ae7279c5b22`, a terminé avec succès : 45 tests sur Python 3.10/3.12/3.13, parcours navigateur incluant le catalogue, extraits SDRangel et fenêtre Panoradio.
+
+Le serveur Panoradio a répondu HTTP 206 à la requête bornée : 65 536 octets reçus sur un fichier de 5 662 310 528 octets. Le header observé décrit `(172800, 2048)`, dtype complexe128 little-endian, ordre C. La fenêtre 0 a été exportée en SigMF puis analysée à 6 kS/s, pour une durée de 0,341333 s.
+
+SHA-256 des octets source de cette fenêtre : `2100801cbf3e299a564d63b1e5c574aad5c714c7f2b13cb9be8cc4e5eb232d3e`. Cette référence est conservée dans le registre et contrôlée par le script de validation. Elle ne vérifie pas le fichier complet.
+
+Aucune classe n'a été prédite ou importée depuis les étiquettes, aucun message n'a été décodé et aucune autre fenêtre n'est revendiquée comme testée. Le statut `window_import_validated` porte uniquement sur cet import et cette analyse.
