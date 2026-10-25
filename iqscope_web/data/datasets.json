@@ -89,7 +89,14 @@
       "url": "https://zenodo.org/records/10811147",
       "role": "technology recognition",
       "status": "documentation_only",
-      "adapter": null
+      "adapter": null,
+      "alternate_urls": [
+        "https://data.europa.eu/data/datasets/oai-zenodo-org-10811147?locale=en"
+      ],
+      "doi": "10.5281/zenodo.10811147",
+      "archive_member_as_previewed": "dataset_multirat/dataset_noise_added.mat",
+      "input_format_note": "MATLAB .mat; serialization version and variables not inspected; no validated import.",
+      "noise_class_documented": true
     },
     {
       "id": "powder",

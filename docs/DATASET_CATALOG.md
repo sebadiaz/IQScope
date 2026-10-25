@@ -79,3 +79,5 @@ SHA-256 des octets source de cette fenêtre : `2100801cbf3e299a564d63b1e5c574aad
 Aucune classe n'a été prédite ou importée depuis les étiquettes, aucun message n'a été décodé et aucune autre fenêtre n'est revendiquée comme testée. Le statut `window_import_validated` porte uniquement sur cet import et cette analyse.
 
 Le jeu FPV est détaillé dans [les notes spécifiques](DATASET_FPV_ANALOG.md). Il porte le catalogue à 17 sources. Son annotation « TX inactif » ne constitue pas une classe de bruit pur.
+
+Le [portail européen](https://data.europa.eu/data/datasets/oai-zenodo-org-10811147?locale=en) référence le même jeu Zenodo `10811147`, déjà enregistré sous `its_cellular`. Cet accès alternatif est conservé sans ajouter de source distincte ; [fiche du corpus](DATASET_MULTI_RAT.md).
