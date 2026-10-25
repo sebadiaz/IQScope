@@ -2,6 +2,10 @@
 
 Version : 0.1 — 25 octobre 2026. Statut : architecture cible proposée, exigences et critères de validation. Ce document ne décrit pas des fonctionnalités déjà réalisées sauf dans la section 2.
 
+
+
+Complément de périmètre : [Protocoles propriétaires, documentation partielle et rétro-ingénierie](PROTOCOLES_NON_DOCUMENTES.md). Une documentation officielle publique n'est pas requise : le catalogue inclut aussi les formats reconstitués par la communauté et les protocoles inconnus étudiés à partir de captures. Les preuves et la provenance sont conservées par règle et par champ.
+
 ## Sommaire
 
 1. Vision et périmètre
