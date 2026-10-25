@@ -143,6 +143,18 @@ function showReport(report, jobId) {
       frameList.append(card);
     }
   }
+  for(const trial of report.wideband_trials || []) {
+    if(trial.decoder!=='cw_morse')continue;
+    if(trial.channels_examined)frameList.append(element('p',`Recherche Morse : ${trial.channels_examined.length} tonalités examinées · ${trial.deferred_peak_count} pics différés.`,'hint'));
+    if(trial.duration_limited)frameList.append(element('p',`Analyse Morse limitée aux ${trial.analyzed_seconds.toFixed(1)} premières secondes.`,'hint'));
+    for(const candidate of trial.candidates || []){
+      const card=element('div',undefined,'frame');
+      card.append(element('h3','CW / Morse · texte candidat, sans CRC'));
+      card.append(element('p',`${candidate.parameters.words_per_minute.toFixed(1)} mots/min · ${(candidate.channel.frequency_hz/1e6).toFixed(6)} MHz · ${candidate.evidence.characters} caractères`));
+      card.append(element('pre',candidate.text,'cw-text'));
+      frameList.append(card);
+    }
+  }
   for(const frame of frames) {
     const card=element('div',undefined,'frame');card.append(element('code',frame.hex));
     const f=frame.fields;

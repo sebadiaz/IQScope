@@ -131,6 +131,7 @@ not been tested in this development environment.
 |---|---|---|
 | FM | Mono WAV candidate, 75 microsecond de-emphasis | Heuristic selection; no broadcast identification, stereo, RDS or speech validation |
 | AM | Envelope-demodulated WAV candidate | Carrier-present AM only; OOK/fading can also produce candidates |
+| CW / Morse | Automatic carrier, speed and A–Z / 0–9 text candidates | Stationary on-off keying, 5–50 WPM, standard spacing; timing only, no checksum |
 | RTTY / ITA2 | Text candidates, raw character codes, automatic common baud rates/tones/polarity | Direct IQ at 1–12 kS/s or bounded stationary-channel search up to 2.4 MS/s, 5-bit LSB-first with at least 1.5 stop bits; framing only, no checksum |
 | Mode S / ADS-B | 112-bit DF17/DF18 frames, CRC-24, address/type code, selected barometric altitude | Clean captures at >= 2 MS/s; no general Mode S parity overlays, position reconstruction, collision recovery or bit-error correction; pulse timing uses an 8 MS/s energy grid |
 
@@ -290,3 +291,22 @@ character codes, shifts, rates and inversion. A two-channel synthetic fixture
 includes a stronger unrelated carrier. The real SDRangel excerpt is also
 resampled and frequency-translated in CI to exercise the wideband chain; this
 is a transformed recording, not an independent wideband RF capture.
+
+
+## CW / Morse text candidates
+
+IQScope searches up to six stationary carrier peaks, filters each channel and
+fits dot/dash and spacing durations automatically (5–50 words/minute). Supported
+characters are A–Z and 0–9 with standard 1/3/7-unit spacing. Both narrowband IQ
+and bounded wideband input up to 2.4 MS/s are supported. The report records the
+frequency, estimated speed, raw Morse groups and timing error; the UI displays
+candidate text and `cw-candidate.txt` exports the top result.
+
+This is timing evidence, not a checksum or authenticated content. Noise and
+continuous carriers are tested for abstention. Short or truncated messages,
+manual timing, Farnsworth spacing, fading, overlapping signals, hopping and
+punctuation/prosigns may fail. At most the first 20 seconds are searched; source
+imports or live snapshots can be shorter. Search budgets are included in JSON.
+Validation currently uses independently specified synthetic Morse references
+at several speeds and a wideband interferer fixture. No real over-air CW
+recording has been validated yet.

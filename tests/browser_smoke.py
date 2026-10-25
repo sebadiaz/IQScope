@@ -72,6 +72,18 @@ def main():
                     page.get_by_role('button',name='Analyser automatiquement').click()
                     expect(page.locator('.rtty-text').first).to_have_text(TEXT,timeout=30000)
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                with tempfile.TemporaryDirectory() as directory:
+                    from test_cw import fixture as cw_fixture, TEXT as CW_TEXT
+                    x,fs = cw_fixture()
+                    raw = Path(directory)/'cw.sigmf-data'
+                    meta = Path(directory)/'cw.sigmf-meta'
+                    x.astype('<c8').tofile(raw)
+                    meta.write_text(json.dumps({'global':{'core:datatype':'cf32_le','core:sample_rate':fs}}))
+                    page.locator('#iq-file').set_input_files(str(raw))
+                    page.locator('#meta-file').set_input_files(str(meta))
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('.cw-text').first).to_have_text(CW_TEXT,timeout=30000)
+                expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
                 page.get_by_role('tab',name='SDR en direct').click()
                 assert page.locator('#live-panel').is_visible()
                 assert page.locator('#live-frequency').input_value() == '100'

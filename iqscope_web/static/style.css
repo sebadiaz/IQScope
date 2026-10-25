@@ -3,3 +3,5 @@
 dialog{max-height:85vh;overflow:auto}#dataset-dialog{max-width:680px;width:92vw}#dataset-dialog a{color:var(--accent)}#dataset-dialog code{display:block;white-space:normal;overflow-wrap:anywhere;font-size:10px;color:var(--muted)}
 
 .rtty-text{white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.6 ui-monospace,monospace;color:var(--accent)}
+
+.cw-text{white-space:pre-wrap;overflow-wrap:anywhere;font-family:monospace;color:var(--accent)}

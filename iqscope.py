@@ -9,6 +9,7 @@ from scipy import ndimage, signal
 from iqscope_decoders import analog_trials, capabilities, decode_adsb
 from iqscope_formats import read_wave_iq, read_sdriq
 from iqscope_rtty import search_rtty
+from iqscope_cw import search_cw
 
 
 def read_iq(path, sample_rate=None, limit_seconds=10):
@@ -136,6 +137,7 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
         results.append(item)
     digital = decode_adsb(x, fs)
     rtty = search_rtty(x, fs, center)
+    cw = search_cw(x, fs, center)
     size = min(512, len(x))
     starts = np.unique(np.linspace(0, len(x)-size, min(96, max(1, len(x)//size)), dtype=int))
     window = np.hanning(size)
@@ -145,14 +147,16 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
               'center_frequency_hz': center, 'analyzed_seconds': len(x) / fs,
               'noise_floor_db_per_hz': noise, 'capabilities': capabilities(),
               'limitations': ['Stationary spectral detector; overlapping, hopping and weak bursts may be missed.',
-                             'AM/FM audio are unvalidated candidates. ADS-B packets have CRC checks; RTTY text candidates have framing evidence only.',
+                             'AM/FM audio are unvalidated candidates. ADS-B packets have CRC checks; RTTY/CW text candidates have timing or framing evidence only.',
                              'At most 12 spectral bands receive audio trials; other detections remain visible.'],
-              'signals': results, 'wideband_trials': [digital, rtty],
+              'signals': results, 'wideband_trials': [digital, rtty, cw],
               'spectrum': {'frequency_hz': frequencies.tolist(), 'power_db': spectrum.tolist()},
               'waterfall': {'power_db': waterfall.tolist(), 'time_seconds': (starts/fs).tolist(),
                             'sampled_windows': True}}
     if rtty.get('candidates'):
         (out / 'rtty-candidate.txt').write_text(rtty['candidates'][0]['text'], encoding='utf-8')
+    if cw.get('candidates'):
+        (out / 'cw-candidate.txt').write_text(cw['candidates'][0]['text'], encoding='utf-8')
     (out / 'report.json').write_text(json.dumps(report, indent=2))
     np.savetxt(out / 'spectrum.csv', np.column_stack((frequencies + center, spectrum)),
                delimiter=',', header='frequency_hz,power_db_per_hz', comments='')
