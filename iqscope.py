@@ -190,6 +190,9 @@ def main():
     convert.add_argument('--out', required=True, help='Output prefix, without extension')
     convert.add_argument('--seconds', type=float, default=3)
     convert.add_argument('--sample-rate', type=float)
+    annotations = sub.add_parser('dataset-annotations', help='Read sweep-level source annotations, not IQ')
+    annotations.add_argument('dataset', choices=['fpv_analog'])
+    annotations.add_argument('file')
     sub.add_parser('datasets', help='List dataset sources and actual integration status')
     dataset = sub.add_parser('dataset-import', help='Export one independent dataset window as SigMF')
     dataset.add_argument('dataset', choices=['panoradio_hf'])
@@ -203,6 +206,10 @@ def main():
     make.add_argument('--out', default='demo')
     args = parser.parse_args()
     try:
+        if args.command == 'dataset-annotations':
+            from iqscope_datasets import fpv_annotations
+            print(json.dumps(fpv_annotations(args.file), indent=2))
+            return
         if args.command == 'datasets':
             from iqscope_datasets import catalog
             print(json.dumps(catalog(), indent=2))

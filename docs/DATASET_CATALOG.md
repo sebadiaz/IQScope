@@ -20,6 +20,7 @@
 | [ORACLE](https://genesys-lab.org/oracle) | Empreintes RF | Documentation seulement ; distinguer les sous-ensembles et représentations |
 | [Drone RF — KU Leuven](https://doi.org/10.48804/HZRVNZ) | Captures IQ de drones et télécommandes | Documentation seulement |
 | [RadChar](https://github.com/abcxyzi/RadChar) | Fenêtres radar synthétiques annotées | Documentation seulement |
+| [FPV analogique](https://zenodo.org/records/19870020) | Balayages HackRF avec essais TX actif/inactif | Lecteur des annotations ; IQ et vidéo non validés |
 | [GNSS-SDR](https://gnss-sdr.org/my-first-fix/) | Capture et traitement GNSS de référence | Documentation seulement |
 | [Satellite recordings](https://github.com/daniestevez/satellite-recordings) | Courtes références pour décodeurs satellites | Signaux mono ; pas des IQ stéréo pour le lecteur actuel |
 
@@ -76,3 +77,5 @@ Le serveur Panoradio a répondu HTTP 206 à la requête bornée : 65 536 octets 
 SHA-256 des octets source de cette fenêtre : `2100801cbf3e299a564d63b1e5c574aad5c714c7f2b13cb9be8cc4e5eb232d3e`. Cette référence est conservée dans le registre et contrôlée par le script de validation. Elle ne vérifie pas le fichier complet.
 
 Aucune classe n'a été prédite ou importée depuis les étiquettes, aucun message n'a été décodé et aucune autre fenêtre n'est revendiquée comme testée. Le statut `window_import_validated` porte uniquement sur cet import et cette analyse.
+
+Le jeu FPV est détaillé dans [les notes spécifiques](DATASET_FPV_ANALOG.md). Il porte le catalogue à 17 sources. Son annotation « TX inactif » ne constitue pas une classe de bruit pur.

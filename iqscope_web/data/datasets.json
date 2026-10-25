@@ -155,6 +155,17 @@
       "status": "documentation_only",
       "adapter": null,
       "note": "48 kHz mono examples are not stereo IQ and are rejected by the current IQ-only input."
+    },
+    {
+      "id": "fpv_analog",
+      "name": "FPV Analogue Video IQ Dataset",
+      "kind": "real_recordings",
+      "url": "https://zenodo.org/records/19870020",
+      "role": "FPV presence detection and future analog-video reconstruction",
+      "status": "adapter_under_validation",
+      "adapter": null,
+      "annotation_parser": "fpv_sweep_csv",
+      "note": "Sweep-level TX on/off labels; IQ layout and units must be checked per recording. No FPV video decoder is implemented."
     }
   ]
 }

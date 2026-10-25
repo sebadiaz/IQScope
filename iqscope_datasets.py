@@ -94,3 +94,63 @@ def export_panoradio_window(path, out, record=0):
     return {'dataset_id':'panoradio_hf','record_index':record,
             'sample_count':len(x),'seconds':len(x)/6000,
             **{kind:str(target) for kind,target in paths.items()}}
+
+
+def fpv_annotations(path):
+    """Read source sweep annotations, never interpret their ambiguous rate units."""
+    import csv
+    import math
+    import re
+
+    path = Path(path)
+    if path.stat().st_size > 1024*1024:
+        raise ValueError('Sweep annotation CSV exceeds 1 MiB')
+    with path.open(newline='',encoding='utf-8-sig') as handle:
+        reader = csv.DictReader(handle)
+        original_headers = reader.fieldnames
+        if not original_headers:
+            raise ValueError('Missing CSV header')
+        names = [re.sub(r'\s+','',name.rstrip('\\').lower()) for name in original_headers]
+        names = ['obstacles' if name == 'obtacles' else name for name in names]
+        if len(set(names)) != len(names):
+            raise ValueError('Ambiguous duplicate normalized CSV columns')
+        required = {'id','drone_freq','vtx_power_mw','iq_folder','sample_rate','samples_per_freq'}
+        if not required.issubset(names):
+            raise ValueError('Missing required FPV sweep annotation columns')
+        recordings, ids, folders = [], set(), set()
+        for source in reader:
+            if None in source or any(value is None for value in source.values()):
+                raise ValueError('CSV row has a different number of fields than its header')
+            row = {name:source[old].strip() for old,name in zip(original_headers,names)}
+            number = int(row['id'])
+            power = float(row['vtx_power_mw'])
+            frequency = row['drone_freq']
+            no_tx = frequency.lower() == 'none'
+            if number <= 0 or number in ids or row['iq_folder'] in folders or not row['iq_folder']:
+                raise ValueError('Invalid or duplicate sweep identifier/folder')
+            if not math.isfinite(power) or power < 0 or (no_tx and power != 0) or (not no_tx and power <= 0):
+                raise ValueError('Inconsistent transmitter state and power annotation')
+            if not no_tx and (not math.isfinite(float(frequency)) or float(frequency) <= 0):
+                raise ValueError('Invalid transmitter frequency annotation')
+            ids.add(number)
+            folders.add(row['iq_folder'])
+            recordings.append({'sweep_id':number,'iq_folder':row['iq_folder'],
+                               'target_transmitter_active':not no_tx,
+                               'label_scope':'sweep_experiment_not_each_IQ_window',
+                               'transmitter_frequency_raw':frequency,
+                               'transmitter_frequency_unit':None,
+                               'sample_rate_raw':row['sample_rate'],'sample_rate_unit':None,
+                               'samples_per_frequency_raw':row['samples_per_freq'],
+                               'samples_per_frequency_unit':None,
+                               'distance_raw':row.get('distance_m'),
+                               'source_row':row})
+    if not recordings:
+        raise ValueError('No annotated sweeps')
+    return {'dataset_id':'fpv_analog','schema_version':'1.0',
+            'source_headers':original_headers,'recordings':recordings,
+            'summary':{'sweeps':len(recordings),
+                       'tx_active':sum(r['target_transmitter_active'] for r in recordings),
+                       'tx_inactive':sum(not r['target_transmitter_active'] for r in recordings)},
+            'limitations':['An inactive target transmitter is not a guarantee of noise-only RF.',
+                           'Sample rate and frequency units are not inferred from bare numeric CSV values.',
+                           'This is annotation import, not IQ import or video reconstruction.']}

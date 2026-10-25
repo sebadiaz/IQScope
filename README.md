@@ -212,7 +212,7 @@ validated decoder dataset. The authors report CC BY-NC-SA 4.0 licensing.
 
 ## Dataset catalog and Panoradio HF windows
 
-The interface now includes **Explorer les jeux de données**, a catalog of 16
+The interface now includes **Explorer les jeux de données**, a catalog of 17
 sources with explicit integration status. It opens source documentation; it does
 not download all datasets or imply that their protocols are supported.
 
@@ -244,3 +244,19 @@ file. The exported pair can be opened through the ordinary SigMF UI.
 See [dataset catalog and integration scope](docs/DATASET_CATALOG.md). TorchSig,
 NIST, GNSS and the other catalog entries still require their own adapters or
 validation; they are not silently treated as supported decoder inputs.
+
+## Analog FPV video dataset
+
+[Zenodo 19870020](https://zenodo.org/records/19870020) is now cataloged separately
+from drone fingerprinting datasets. It contains analog-video IQ sweeps and
+experiment-level TX on/off annotations. The annotation reader preserves unknown
+rate/frequency units and does not treat TX-off experiments as pure noise.
+
+```bash
+iqscope dataset-annotations fpv_analog iq_recording_meta.csv
+python scripts/fpv_metadata_probe.py
+```
+
+The network probe reads the CSV and an internal ZIP metadata member using bounded
+HTTP ranges; it does not extract IQ or reconstruct video. See the
+[FPV dataset integration notes](docs/DATASET_FPV_ANALOG.md).

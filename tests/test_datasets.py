@@ -65,7 +65,7 @@ class DatasetTests(unittest.TestCase):
         entries = catalog()['entries']
         ids = [entry['id'] for entry in entries]
         self.assertEqual(len(ids),len(set(ids)))
-        self.assertEqual(len(ids),16)
+        self.assertEqual(len(ids),17)
         self.assertIsNone(next(e for e in entries if e['id']=='imec_subghz')['adapter'])
         self.assertEqual(next(e for e in entries if e['id']=='satellite_recordings')['kind'],'real_mono_waveforms')
 
