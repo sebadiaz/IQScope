@@ -5,7 +5,7 @@ let currentSpectrum = null, waterfallRows = [], selectedSignal = null, signals =
 let center = 0, sampleRate = 0, lastSnapshot = 0, lastLiveSample = -1, reportJob = null;
 const api = async (url, body, method = 'POST') => {
   const response = await fetch(url, {
-    method, headers: {'X-IQScope':'local', ...(body instanceof Blob ? {} : {'Content-Type':'application/json'})},
+    method, headers: {'X-IQScope':'local', ...(body instanceof Blob ? {'X-IQScope-Filename':encodeURIComponent(body.name || 'recording.cf32')} : {'Content-Type':'application/json'})},
     ...(method === 'GET' ? {} : {body: body instanceof Blob ? body : JSON.stringify(body ?? {})})
   });
   const data = await response.json();
@@ -171,7 +171,14 @@ async function switchTab(live) {
   $('file-panel').hidden=live;$('live-panel').hidden=!live;
 }
 $('tab-file').onclick=()=>switchTab(false);$('tab-live').onclick=()=>switchTab(true);
-$('iq-file').onchange=()=>{$('filename').textContent=$('iq-file').files[0]?.name || '.sigmf-data ou .cf32 · 128 Mio max.';};
+$('iq-file').onchange=()=>{
+  const file=$('iq-file').files[0];
+  $('filename').textContent=file?.name || 'SigMF · WAV IQ · .sdriq · .cf32';
+  const embedded=/\.(wav|sdriq)$/i.test(file?.name || '');
+  if(embedded) $('meta-file').value='';
+  $('meta-file').disabled=embedded;
+  $('file-rate').disabled=embedded;
+};
 $('analyze').onclick=()=>runFile(false);$('demo').onclick=()=>runFile(true);
 $('connect').onclick=async()=>{
   try {

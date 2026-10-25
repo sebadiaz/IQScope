@@ -7,6 +7,7 @@ from pathlib import Path
 import tempfile
 import threading
 import uuid
+from urllib.parse import unquote
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
@@ -119,7 +120,11 @@ def create_app(root=None):
         if len(service.upload_sizes) >= 8 or sum(service.upload_sizes.values()) >= 256*1024*1024:
             raise HTTPException(409, 'Temporary upload quota reached; restart the server to clear it')
         identifier = uuid.uuid4().hex
-        path = service.root / f'{identifier}.sigmf-data'
+        original_name = unquote(request.headers.get('x-iqscope-filename', 'recording.sigmf-data'))
+        suffix = Path(original_name).suffix.lower()
+        if suffix not in ('.wav', '.sdriq', '.sigmf-data', '.cf32', '.iq', '.bin'):
+            raise HTTPException(400, 'Supported inputs: WAV IQ, .sdriq, SigMF or raw cf32')
+        path = service.root / f'{identifier}{suffix}'
         count = 0
         service.upload_sizes[identifier] = 0
         try:
@@ -151,7 +156,10 @@ def create_app(root=None):
         source = service.uploads.get(body.upload_id)
         if source is None:
             raise HTTPException(404, 'Upload not found')
-        if body.metadata is None and (body.sample_rate is None or not math.isfinite(body.sample_rate) or not 1000 <= body.sample_rate <= 20_000_000):
+        self_describing = source.suffix in ('.wav', '.sdriq')
+        if self_describing and body.metadata is not None:
+            raise HTTPException(400, 'WAV and .sdriq already contain metadata; omit the SigMF sidecar')
+        if not self_describing and body.metadata is None and (body.sample_rate is None or not math.isfinite(body.sample_rate) or not 1000 <= body.sample_rate <= 20_000_000):
             raise HTTPException(400, 'Raw cf32 requires a sample rate between 1 kS/s and 20 MS/s')
         metadata = body.metadata
         if metadata is not None:
@@ -164,7 +172,7 @@ def create_app(root=None):
 
         def process(out):
             # Per-job metadata avoids races if the same upload is analyzed twice.
-            local = out / 'input.sigmf-data'
+            local = out / ('input'+source.suffix)
             import os
             os.link(source, local)
             if metadata is not None:

@@ -18,13 +18,14 @@ jobs:
       - run: iqscope demo --out demo-ci
   browser:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - run: python -m pip install '.[test]' playwright
-      - run: playwright install --with-deps chromium
+      - run: playwright install chromium
       - run: python tests/browser_smoke.py
         env:
           NO_PROXY: 127.0.0.1,localhost
@@ -33,4 +34,23 @@ jobs:
         with:
           name: browser-checks
           path: browser-artifacts/
+          if-no-files-found: ignore
+  real-iq:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install .
+      - name: Download bounded real IQ excerpts and validate
+        run: python scripts/sdrangel_corpus.py --name adsb --name rtty --name radar
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: real-iq-reports
+          path: |
+            corpus-cache/**/provenance.json
+            corpus-cache/**/results/report.json
           if-no-files-found: ignore

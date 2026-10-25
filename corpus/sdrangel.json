@@ -1,0 +1,22 @@
+{
+  "source_page": "https://www.sdrangel.org/iq-files/",
+  "catalog_checked_utc": "2026-10-25",
+  "redistribution_license": "not established; download from source, do not commit recordings",
+  "entries": [
+    {"id":"adsb","file":"adsb.zip","format":"wav_iq","sample_rate":2400000,"bits":16,"family":"ADS-B","test":"require at least one CRC-valid DF17/18 in the downloaded excerpt"},
+    {"id":"airband","file":"airband.zip","format":"wav_iq","sample_rate":3000000,"bits":16,"family":"AM aviation"},
+    {"id":"ais","file":"ais.zip","format":"sdriq","sample_rate":250000,"bits":24,"family":"AIS","offsets_hz":[-25000,25000]},
+    {"id":"apt","file":"apt.zip","format":"wav_iq","sample_rate":62500,"bits":16,"family":"NOAA APT"},
+    {"id":"bfm","file":"bfm.zip","format":"wav_iq","sample_rate":4000000,"bits":16,"family":"Broadcast FM"},
+    {"id":"clock","file":"clock.zip","format":"sdriq","sample_rate":192000,"bits":24,"family":"MSF/DCF77/TDF","offsets_hz":[-50000,-32500,52000]},
+    {"id":"dab","file":"dab.zip","format":"wav_iq","sample_rate":2048000,"bits":16,"family":"DAB"},
+    {"id":"dsd","file":"dsd.zip","format":"wav_iq","sample_rate":75000,"bits":16,"family":"YSF digital voice"},
+    {"id":"no84","file":"no84.zip","format":"wav_iq","sample_rate":24000,"bits":16,"family":"AX.25 / NO-84"},
+    {"id":"radar","file":"radar.zip","format":"sdriq","sample_rate":6000,"bits":24,"family":"GRAVES return"},
+    {"id":"vor","file":"vor.zip","format":"sdriq","sample_rate":384000,"bits":24,"family":"VOR"},
+    {"id":"sstv","file":"sstv.zip","format":"wav_iq","sample_rate":250000,"bits":16,"family":"SSTV PD120"},
+    {"id":"navtex","file":"navtex.zip","format":"wav_iq","sample_rate":1935,"bits":16,"family":"Navtex"},
+    {"id":"rtty","file":"rtty.zip","format":"wav_iq","sample_rate":2000,"bits":16,"family":"RTTY","baud":50,"shift_hz":450},
+    {"id":"radiosonde","file":"radiosonde.zip","format":"wav_iq","sample_rate":31250,"bits":16,"family":"RS41","offsets_hz":[10300]}
+  ]
+}

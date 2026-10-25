@@ -2,7 +2,7 @@
 
 Local radio explorer with a French web interface, offline IQ analysis and an
 initial live RTL-SDR adapter. DSP settings are selected automatically for the
-implemented decoder trials. This is version 0.2, an early implementation of the
+implemented decoder trials. This is version 0.3, an early implementation of the
 [broader technical plan](docs/SPECIFICATIONS_TECHNIQUES.md).
 
 ## Start the interface
@@ -23,7 +23,7 @@ choose another local port. The server deliberately listens on loopback only.
 
 The interface includes:
 
-- IQ data import, plus an optional matching SigMF metadata file;
+- SigMF/raw IQ, stereo WAV IQ and SDRangel `.sdriq` import;
 - spectrum and waterfall (sampled time windows for files);
 - automatically detected spectral bands and expandable audio candidates;
 - validated ADS-B packet bytes and a small set of parsed fields;
@@ -50,6 +50,47 @@ into memory within that bound; this is not yet a full streaming file pipeline.
 The last 32 analysis jobs are retained, then older completed jobs are removed.
 Uploaded sources and derived files are temporary and removed on normal server
 shutdown. Download results before closing the server; there is no durable catalog.
+
+### SDRangel example recordings
+
+[SDRangel's IQ examples](https://www.sdrangel.org/iq-files/) provide real captures
+across 15 signal families/cases. Their WAV IQ files and `.sdriq` files can now be
+opened directly: the sample rate is read from the header. WAV must contain two
+channels, I followed by Q; a mono audio WAV is rejected. WAV `auxi` center-frequency
+metadata is used when present, otherwise frequencies remain relative.
+
+Supported WAV layouts: little-endian RIFF/RF64, PCM 8/16/24/32 and IEEE float
+32/64. WAVE_FORMAT_EXTENSIBLE and RIFX are not supported. SDRangel `.sdriq`
+requires the 32-byte CRC-checked header and 16-bit or 24-bit samples; its 24-bit
+samples are stored in 32-bit signed containers, not packed in three bytes.
+
+Extract ZIPs before using ordinary import. For recordings larger than the web
+upload limit, use the CLI to create a complete, bounded SigMF excerpt:
+
+```bash
+iqscope convert recording.wav --seconds 3 --out excerpt
+```
+
+Upload the resulting `excerpt.sigmf-data` and `excerpt.sigmf-meta`. The converter
+also accepts `.sdriq` and existing supported IQ inputs, and refuses to overwrite
+an existing output pair.
+
+The [source manifest](corpus/sdrangel.json) records the 15 examples and their
+published parameters. This catalog does not mean all 15 protocols are decoded.
+A network-dependent smoke test downloads bounded prefixes of the first IQ ZIP
+member, rather than fetching hundreds of megabytes per recording:
+
+```bash
+python scripts/sdrangel_corpus.py --name adsb --name rtty --name radar
+```
+
+The script exports complete local SigMF excerpts and records URLs, member names,
+excerpt hashes and measurements under `corpus-cache/`. Normal imports still
+reject truncated WAV files; only this explicit excerpt pipeline allows a partial
+source WAV. A partial ZIP does not provide whole-archive integrity validation.
+No original IQ is committed or uploaded as a CI artifact; redistribution rights
+have not been established. External availability and file changes can affect
+this separate real-data CI job.
 
 ## Live RTL-SDR
 
@@ -123,7 +164,9 @@ The demo IQ is generated locally; it is not an Internet recording. ADS-B tests
 use a widely published example frame `8D40621D58C382D690C8AC2863A7`, independently
 encoded as a test waveform. It decodes to address `40621D` and altitude 38,000 ft.
 That validates the implemented test conditions, not arbitrary off-air reception.
-Real-recording regression coverage remains to be added.
+A separate SDRangel real-data CI job now checks real imports and requires at least
+one CRC-valid ADS-B packet. This is a smoke test, not yet a frozen, fully annotated
+regression corpus. RTTY/radar currently test import and analysis, not content decoding.
 
 ## Tests and CI
 

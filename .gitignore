@@ -218,3 +218,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+corpus-cache/
+
+browser-artifacts/
+
+demo-release/
+
+demo-release-report.json

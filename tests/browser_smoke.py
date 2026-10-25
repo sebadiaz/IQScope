@@ -3,11 +3,12 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import re
 import time
 import urllib.error
 import urllib.request
 
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, expect
 
 
 def main():
@@ -33,7 +34,7 @@ def main():
             try:
                 page.goto(f'http://127.0.0.1:{port}')
                 page.get_by_role('button', name='Essayer la démo synthétique').click()
-                page.wait_for_function("document.getElementById('status-text').textContent.startsWith('Analyse terminée')", timeout=30000)
+                expect(page.locator("#status-text")).to_have_text(re.compile("^Analyse terminée"), timeout=30000)
                 assert page.locator('#metric-signals').inner_text() == '2'
                 assert page.locator('#metric-frames').inner_text() == '0'
                 page.locator('.signal summary').last.click()
@@ -48,7 +49,7 @@ def main():
                     page.locator('#iq-file').set_input_files(str(meta.with_suffix('.sigmf-data')))
                     page.locator('#meta-file').set_input_files(str(meta))
                     page.get_by_role('button',name='Analyser automatiquement').click()
-                    page.wait_for_function("document.getElementById('status-text').textContent.startsWith('Analyse terminée')", timeout=30000)
+                    expect(page.locator("#status-text")).to_have_text(re.compile("^Analyse terminée"), timeout=30000)
                     assert page.locator('#metric-signals').inner_text() == '2'
                 Path('browser-artifacts').mkdir(exist_ok=True)
                 page.screenshot(path='browser-artifacts/desktop.png', full_page=True)
@@ -56,7 +57,7 @@ def main():
                 assert page.locator('#live-panel').is_visible()
                 assert page.locator('#live-frequency').input_value() == '100'
                 page.set_viewport_size({'width':390,'height':844})
-                assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+                assert page.evaluate('() => document.documentElement.scrollWidth <= innerWidth')
                 page.screenshot(path='browser-artifacts/mobile.png', full_page=True)
                 assert not errors, errors
             except BaseException:

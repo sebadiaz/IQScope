@@ -7,10 +7,15 @@ from pathlib import Path
 import numpy as np
 from scipy import ndimage, signal
 from iqscope_decoders import analog_trials, capabilities, decode_adsb
+from iqscope_formats import read_wave_iq, read_sdriq
 
 
 def read_iq(path, sample_rate=None, limit_seconds=10):
     path = Path(path)
+    if path.suffix.lower() == '.wav':
+        return read_wave_iq(path, limit_seconds)
+    if path.suffix.lower() == '.sdriq':
+        return read_sdriq(path, limit_seconds)
     meta_path = path if path.suffix == '.sigmf-meta' else path.with_suffix('.sigmf-meta')
     center = 0.0
     dtype = '<c8'
@@ -180,6 +185,11 @@ def main():
     scan.add_argument('--sample-rate', type=float)
     scan.add_argument('--seconds', type=float, default=10)
     scan.add_argument('--threshold-db', type=float, default=9)
+    convert = sub.add_parser('convert', help='Export a bounded IQ excerpt as SigMF')
+    convert.add_argument('file')
+    convert.add_argument('--out', required=True, help='Output prefix, without extension')
+    convert.add_argument('--seconds', type=float, default=3)
+    convert.add_argument('--sample-rate', type=float)
     sub.add_parser('decoders')
     serve = sub.add_parser('serve')
     serve.add_argument('--port', type=int, default=8765)
@@ -187,6 +197,18 @@ def main():
     make.add_argument('--out', default='demo')
     args = parser.parse_args()
     try:
+        if args.command == 'convert':
+            x, fs, center = read_iq(args.file, args.sample_rate, args.seconds)
+            prefix = Path(args.out)
+            prefix.parent.mkdir(parents=True, exist_ok=True)
+            data_path = Path(str(prefix)+'.sigmf-data')
+            meta_path = Path(str(prefix)+'.sigmf-meta')
+            if data_path.exists() or meta_path.exists():
+                raise ValueError('Output already exists; choose another prefix')
+            x.astype('<c8').tofile(data_path)
+            meta_path.write_text(json.dumps({'global': {'core:datatype': 'cf32_le', 'core:sample_rate': fs, 'core:version': '1.2.0'}, 'captures': [{'core:sample_start': 0, 'core:frequency': center}], 'annotations': []}, indent=2))
+            print(json.dumps({'metadata': str(meta_path), 'samples': len(x), 'seconds': len(x)/fs}))
+            return
         if args.command == 'serve':
             from iqscope_web.server import serve
             serve(args.port)

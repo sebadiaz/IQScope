@@ -117,6 +117,29 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result['result']['source_sample_start'], 20000-8192)
         self.assertIn('snapshot', result['result']['continuity_note'])
 
+    async def test_wave_and_sdriq_uploads_use_embedded_metadata(self):
+        import io
+        import struct
+        import wave
+        import zlib
+        raw = np.tile(np.array([16384,-8192],dtype='<i2'),4096).tobytes()
+        buffer = io.BytesIO()
+        with wave.open(buffer,'wb') as handle:
+            handle.setnchannels(2)
+            handle.setsampwidth(2)
+            handle.setframerate(24000)
+            handle.writeframes(raw)
+        header = struct.pack('<IQQII',24000,100000000,0,16,0)
+        header += struct.pack('<I',zlib.crc32(header))
+        for name,payload in [('recording.wav',buffer.getvalue()),('recording.sdriq',header+raw)]:
+            uploaded = await self.client.post('/api/uploads',content=payload,headers={**HEADERS,'X-IQScope-Filename':name})
+            self.assertEqual(uploaded.status_code,200)
+            response = await self.client.post('/api/analyses',json={'upload_id':uploaded.json()['upload_id']},headers=HEADERS)
+            self.assertEqual(response.status_code,202,response.text)
+            job = await self.wait_job(response.json()['id'])
+            self.assertEqual(job['status'],'completed',job.get('error'))
+            self.assertEqual(job['result']['sample_rate'],24000)
+
 
 if __name__ == '__main__':
     unittest.main()
