@@ -120,6 +120,9 @@ def run(entry, out, output_limit=16*1024*1024):
         if not widths:
             raise ValueError('Invalid SDRangel header')
         prefix = prefix[:32+((len(prefix)-32)//widths[0])*widths[0]]
+    expected = entry.get('expected_excerpt_sha256_16m') if output_limit == 16*1024*1024 else None
+    if expected and hashlib.sha256(prefix).hexdigest() != expected:
+        raise ValueError('Source excerpt changed: review provenance and manifest before accepting new data')
     path.write_bytes(prefix)
     if suffix == '.wav':
         x, fs, center = read_wave_iq(path, seconds=10, allow_prefix=True)

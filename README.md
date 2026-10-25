@@ -164,6 +164,8 @@ The demo IQ is generated locally; it is not an Internet recording. ADS-B tests
 use a widely published example frame `8D40621D58C382D690C8AC2863A7`, independently
 encoded as a test waveform. It decodes to address `40621D` and altitude 38,000 ft.
 That validates the implemented test conditions, not arbitrary off-air reception.
+The first real SDRangel check recovered four CRC-valid packets; see the
+[dated validation report](docs/VALIDATION_SDRANGEL.md) for scope and search-budget limits.
 A separate SDRangel real-data CI job now checks real imports and requires at least
 one CRC-valid ADS-B packet. This is a smoke test, not yet a frozen, fully annotated
 regression corpus. RTTY/radar currently test import and analysis, not content decoding.
