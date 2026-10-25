@@ -97,7 +97,8 @@ def main():
                     expect(page.locator('.fsk-bits').first).to_be_visible(timeout=30000)
                     assert page.locator('.fsk-bits').first.inner_text() in expected
                     binary_link = page.get_by_role('link',name='Télécharger le binaire compacté')
-                    response = page.request.get(binary_link.get_attribute('href'))
+                    from urllib.parse import urljoin
+                    response = page.request.get(urljoin(page.url,binary_link.get_attribute('href')))
                     assert response.ok and len(response.body())>0
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
                 page.get_by_role('tab',name='SDR en direct').click()
