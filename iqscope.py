@@ -2,12 +2,11 @@
 import argparse
 import json
 import math
-from fractions import Fraction
 from pathlib import Path
 
 import numpy as np
 from scipy import ndimage, signal
-from scipy.io import wavfile
+from iqscope_decoders import analog_trials, capabilities, decode_adsb
 
 
 def read_iq(path, sample_rate=None, limit_seconds=10):
@@ -36,7 +35,14 @@ def read_iq(path, sample_rate=None, limit_seconds=10):
         path = meta_path.with_suffix('.sigmf-data')
     if sample_rate is None or not math.isfinite(sample_rate) or sample_rate <= 0:
         raise ValueError('Raw cf32 IQ requires a positive --sample-rate; use SigMF for automatic metadata')
-    count = int(sample_rate * limit_seconds)
+    if not math.isfinite(limit_seconds) or limit_seconds <= 0:
+        raise ValueError('Analysis duration must be positive and finite')
+    if not math.isfinite(center):
+        raise ValueError('Center frequency must be finite')
+    bytes_per_sample = np.dtype(dtype).itemsize * (1 if np.dtype(dtype).kind == 'c' else 2)
+    if path.stat().st_size % bytes_per_sample:
+        raise ValueError('File ends with an incomplete IQ sample')
+    count = min(8_000_000, int(sample_rate * limit_seconds))
     if np.dtype(dtype).kind != 'c':
         raw = np.fromfile(path, dtype=dtype, count=2 * count)
         if len(raw) % 2:
@@ -97,47 +103,56 @@ def analyze_channel(x, fs, item, out, index):
     deviation = float(np.percentile(np.abs(discriminator - np.median(discriminator)), 90))
     item['measurements'] = {'envelope_variation': cv, 'frequency_deviation_p90_hz': deviation,
                             'channel_sample_rate': rate}
-    # This intentionally reports a hypothesis, never a validated protocol classification.
-    fm_candidate = cv < .45 and deviation > 300 and item['bandwidth_hz'] > 5000
-    item['hypotheses'] = ([{'family': 'FM or another angle-modulated signal', 'confidence': 'heuristic'}]
-                          if fm_candidate else [{'family': 'unknown', 'confidence': 'unresolved'}])
+    trials = analog_trials(y, rate, item['measurements'], item['bandwidth_hz'], out, index)
+    item['hypotheses'] = ([{'family': trial['family'], 'confidence': 'heuristic'} for trial in trials]
+                          or [{'family': 'unknown', 'confidence': 'unresolved'}])
     item['status'] = 'unresolved'
     item['validated_content'] = None
-    item['decoder_trials'] = []
-    if fm_candidate and len(discriminator) > 100:
-        audio = discriminator - np.mean(discriminator)
-        cutoff = min(15000, rate * .4)
-        audio = signal.sosfilt(signal.butter(5, cutoff, fs=rate, output='sos'), audio)
-        # 75 microsecond FM de-emphasis; output is a listening aid, not protocol evidence.
-        alpha = math.exp(-1 / (rate * 75e-6))
-        audio = signal.lfilter([1-alpha], [1, -alpha], audio)
-        ratio = Fraction(48000 / rate).limit_denominator(4096)
-        audio = signal.resample_poly(audio, ratio.numerator, ratio.denominator)
-        peak = max(float(np.max(np.abs(audio))), 1e-12)
-        filename = f'signal-{index:03d}-fm-candidate.wav'
-        wavfile.write(out / filename, 48000, (audio / peak * 30000).astype(np.int16))
-        item['decoder_trials'].append({'decoder': 'analog_fm', 'status': 'unvalidated_candidate', 'audio': filename})
+    item['decoder_trials'] = trials
     return item
 
 
-def analyze(path, out, sample_rate=None, seconds=10, threshold_db=9):
-    x, fs, center = read_iq(path, sample_rate, seconds)
+def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signals=12):
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
     detections, frequencies, spectrum, noise = discover(x, fs, threshold_db)
+    # Bound the expensive decoder trials; report every detection, including deferred ones.
+    priority = sorted(range(len(detections)), key=lambda i: detections[i]['spectral_snr_db'], reverse=True)
+    active = set(priority[:max_signals])
     results = []
-    for i, item in enumerate(detections, 1):
+    for j, item in enumerate(detections):
+        i = j + 1
         item.update(id=i, frequency_hz=center + item['offset_hz'])
-        results.append(analyze_channel(x, fs, item, out, i))
-    report = {'source': str(path), 'sample_rate': fs, 'center_frequency_hz': center,
-              'analyzed_seconds': len(x) / fs, 'noise_floor_db_per_hz': noise,
-              'limitations': ['Stationary spectral detector; overlapping, hopping and weak burst signals may be missed.',
-                             'FM hypotheses and audio are unvalidated; digital protocol decoders are not implemented.'],
-              'signals': results}
+        if j in active:
+            item = analyze_channel(x, fs, item, out, i)
+        else:
+            item.update(status='budget_deferred', hypotheses=[], decoder_trials=[], validated_content=None)
+        results.append(item)
+    digital = decode_adsb(x, fs)
+    size = min(512, len(x))
+    starts = np.unique(np.linspace(0, len(x)-size, min(96, max(1, len(x)//size)), dtype=int))
+    window = np.hanning(size)
+    slices = np.array([x[start:start+size] * window for start in starts])
+    waterfall = 10*np.log10(np.maximum(np.abs(np.fft.fftshift(np.fft.fft(slices, axis=1), axes=1))**2 / (fs*np.sum(window**2)), 1e-30))
+    report = {'schema_version': '0.2', 'source': str(source), 'sample_rate': fs,
+              'center_frequency_hz': center, 'analyzed_seconds': len(x) / fs,
+              'noise_floor_db_per_hz': noise, 'capabilities': capabilities(),
+              'limitations': ['Stationary spectral detector; overlapping, hopping and weak bursts may be missed.',
+                             'AM/FM audio are unvalidated candidates. Digital support is limited to clean ADS-B DF17/18.',
+                             'At most 12 spectral bands receive audio trials; other detections remain visible.'],
+              'signals': results, 'wideband_trials': [digital],
+              'spectrum': {'frequency_hz': frequencies.tolist(), 'power_db': spectrum.tolist()},
+              'waterfall': {'power_db': waterfall.tolist(), 'time_seconds': (starts/fs).tolist(),
+                            'sampled_windows': True}}
     (out / 'report.json').write_text(json.dumps(report, indent=2))
     np.savetxt(out / 'spectrum.csv', np.column_stack((frequencies + center, spectrum)),
                delimiter=',', header='frequency_hz,power_db_per_hz', comments='')
     return report
+
+
+def analyze(path, out, sample_rate=None, seconds=10, threshold_db=9):
+    x, fs, center = read_iq(path, sample_rate, seconds)
+    return analyze_samples(x, fs, center, out, source=path, threshold_db=threshold_db)
 
 
 def demo(out):
@@ -165,10 +180,20 @@ def main():
     scan.add_argument('--sample-rate', type=float)
     scan.add_argument('--seconds', type=float, default=10)
     scan.add_argument('--threshold-db', type=float, default=9)
+    sub.add_parser('decoders')
+    serve = sub.add_parser('serve')
+    serve.add_argument('--port', type=int, default=8765)
     make = sub.add_parser('demo')
     make.add_argument('--out', default='demo')
     args = parser.parse_args()
     try:
+        if args.command == 'serve':
+            from iqscope_web.server import serve
+            serve(args.port)
+            return
+        if args.command == 'decoders':
+            print(json.dumps(capabilities(), indent=2))
+            return
         if args.command == 'demo':
             path = demo(args.out)
             report = analyze(path, Path(args.out) / 'results')
