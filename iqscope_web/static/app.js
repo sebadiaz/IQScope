@@ -155,6 +155,24 @@ function showReport(report, jobId) {
       frameList.append(card);
     }
   }
+  for(const trial of report.wideband_trials || []) {
+    if(trial.decoder!=='fsk2_generic')continue;
+    for(const candidate of trial.candidates || []){
+      const card=element('div',undefined,'frame');
+      card.append(element('h3','2-FSK · bits candidats, protocole inconnu'));
+      card.append(element('p',`${candidate.parameters.baud.toFixed(2)} bauds · écart ${candidate.parameters.shift_hz.toFixed(1)} Hz · ${candidate.bit_count} bits`));
+      card.append(element('p','Tonalité haute = 1 par convention. Polarité inverse possible ; aucun alignement de trame ni CRC validé.','hint'));
+      if(trial.duration_limited || candidate.bit_budget_reached)card.append(element('p','Export partiel : limite de durée ou de bits atteinte.','hint'));
+      card.append(element('pre',candidate.bits.slice(0,512),'fsk-bits'));
+      for(const [label,name] of Object.entries(candidate.artifacts || {})){
+        const link=element('a',label==='bits'?'Télécharger les bits':'Télécharger le binaire compacté');
+        link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(name)}`;
+        link.download=name;card.append(link,document.createTextNode(' '));
+      }
+      card.append(element('p',`Binaire : premier bit récupéré placé en tête d’octet, ${candidate.packed_padding_bits} bit(s) de remplissage nul à la fin.`,'hint'));
+      frameList.append(card);
+    }
+  }
   for(const frame of frames) {
     const card=element('div',undefined,'frame');card.append(element('code',frame.hex));
     const f=frame.fields;

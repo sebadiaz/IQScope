@@ -5,3 +5,5 @@ dialog{max-height:85vh;overflow:auto}#dataset-dialog{max-width:680px;width:92vw}
 .rtty-text{white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.6 ui-monospace,monospace;color:var(--accent)}
 
 .cw-text{white-space:pre-wrap;overflow-wrap:anywhere;font-family:monospace;color:var(--accent)}
+
+.fsk-bits{white-space:pre-wrap;overflow-wrap:anywhere;font-family:monospace}

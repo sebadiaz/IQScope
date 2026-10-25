@@ -195,7 +195,7 @@ def create_app(root=None):
 
     @app.get('/api/jobs/{job_id}/artifacts/{name}')
     def artifact(job_id: str, name: str):
-        if job_id not in service.jobs or Path(name).name != name or not name.endswith(('.wav', '.json', '.csv', '.txt')):
+        if job_id not in service.jobs or Path(name).name != name or not name.endswith(('.wav', '.json', '.csv', '.txt', '.bin')):
             raise HTTPException(404, 'Artifact not found')
         path = service.root / job_id / name
         if not path.is_file():

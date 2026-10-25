@@ -310,3 +310,27 @@ imports or live snapshots can be shorter. Search budgets are included in JSON.
 Validation currently uses independently specified synthetic Morse references
 at several speeds and a wideband interferer fixture. No real over-air CW
 recording has been validated yet.
+
+
+## Generic 2-FSK candidate bits
+
+A first generic binary-FSK receiver estimates two frequency levels and symbol
+rate without a supplied baud rate. It supports a **single stationary complex IQ
+channel at 1–96 kS/s**, 20 baud to sample_rate/8 (capped at 9600). This version
+does not search arbitrary wideband captures for generic FSK channels. RTTY's
+separate wideband search remains available.
+
+The report contains candidate bits, tone frequencies, clock residual and the
+first recovered symbol's timestamp. `fsk-bits.txt` exports ASCII 0/1;
+`fsk-packed.bin` packs the same bits MSB-first, with zero padding in the final
+byte. The report records the exact bit count and padding. Byte alignment is
+arbitrary and **high tone = 1 is only a convention**; inverse polarity is equally
+possible. No framing, CRC, protocol or payload interpretation is inferred.
+
+Analysis is limited to 12 seconds and 100000 output bits. Clock fitting uses at
+most the first 512 inter-transition intervals, followed by a whole-window timing
+check. Integer rate aliases remain possible for repetitive data. GFSK, MSK,
+GMSK, M-FSK, bursts, collisions and clock drift are outside this first scope.
+Synthetic references check bit-exact recovery at 50/137/300/1200 baud, fractional
+sample alignment, both polarities and abstention on noise/carrier/4-FSK. A real
+recorded generic-FSK corpus has not yet been validated.

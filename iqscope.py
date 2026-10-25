@@ -10,6 +10,7 @@ from iqscope_decoders import analog_trials, capabilities, decode_adsb
 from iqscope_formats import read_wave_iq, read_sdriq
 from iqscope_rtty import search_rtty
 from iqscope_cw import search_cw
+from iqscope_fsk import decode_fsk
 
 
 def read_iq(path, sample_rate=None, limit_seconds=10):
@@ -138,6 +139,7 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
     digital = decode_adsb(x, fs)
     rtty = search_rtty(x, fs, center)
     cw = search_cw(x, fs, center)
+    fsk = decode_fsk(x, fs)
     size = min(512, len(x))
     starts = np.unique(np.linspace(0, len(x)-size, min(96, max(1, len(x)//size)), dtype=int))
     window = np.hanning(size)
@@ -149,7 +151,7 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
               'limitations': ['Stationary spectral detector; overlapping, hopping and weak bursts may be missed.',
                              'AM/FM audio are unvalidated candidates. ADS-B packets have CRC checks; RTTY/CW text candidates have timing or framing evidence only.',
                              'At most 12 spectral bands receive audio trials; other detections remain visible.'],
-              'signals': results, 'wideband_trials': [digital, rtty, cw],
+              'signals': results, 'wideband_trials': [digital, rtty, cw, fsk],
               'spectrum': {'frequency_hz': frequencies.tolist(), 'power_db': spectrum.tolist()},
               'waterfall': {'power_db': waterfall.tolist(), 'time_seconds': (starts/fs).tolist(),
                             'sampled_windows': True}}
@@ -157,6 +159,12 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
         (out / 'rtty-candidate.txt').write_text(rtty['candidates'][0]['text'], encoding='utf-8')
     if cw.get('candidates'):
         (out / 'cw-candidate.txt').write_text(cw['candidates'][0]['text'], encoding='utf-8')
+    if fsk.get('candidates'):
+        candidate = fsk['candidates'][0]
+        (out / 'fsk-bits.txt').write_text(candidate['bits'], encoding='ascii')
+        bits = np.fromiter((int(bit) for bit in candidate['bits']),dtype=np.uint8)
+        (out / 'fsk-packed.bin').write_bytes(np.packbits(bits,bitorder='big').tobytes())
+        candidate['artifacts'] = {'bits':'fsk-bits.txt','packed':'fsk-packed.bin'}
     (out / 'report.json').write_text(json.dumps(report, indent=2))
     np.savetxt(out / 'spectrum.csv', np.column_stack((frequencies + center, spectrum)),
                delimiter=',', header='frequency_hz,power_db_per_hz', comments='')
