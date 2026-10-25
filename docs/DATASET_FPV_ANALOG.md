@@ -46,4 +46,20 @@ Des segments de balayage à des fréquences différentes ne sont pas concaténé
 
 ## Limite actuelle
 
-Le travail livré est le catalogue, le lecteur d'annotations et l'inspection de métadonnées. Aucun import IQ ni décodage vidéo FPV n'est revendiqué. La licence effective doit être enregistrée depuis la notice du jeu de données ; elle n'est pas déduite de la licence d'un logiciel associé.
+Le travail livré est le catalogue, le lecteur d'annotations et l'inspection de métadonnées. Aucun import IQ ni décodage vidéo FPV n'est revendiqué. L'API Zenodo confirme la licence CC BY 4.0 pour le jeu de données ; elle est enregistrée indépendamment de la licence d'un logiciel associé.
+
+## Résultat de l'inspection publique
+
+La [CI 40218880680](https://github.com/sebadiaz/IQScope/actions/runs/40218880680), commit `2fb31e3c04d521516d3d939e9713fed4067b9387`, a validé les annotations et l'inspection distante. Les 51 tests sur Python 3.10/3.12/3.13, le navigateur et les autres contrôles de corpus passent également.
+
+Pour `chunk10.zip`, 32 019 octets ont suffi aux lectures de structure ZIP et de métadonnées internes. Trois fichiers `iq.bin` de 1 546 649 600 octets chacun sont répertoriés. Le fichier interne étudié est `chunk10/sweep_20260422_153008/metadata.csv`, avec 2 950 lignes de blocs et les colonnes :
+
+```text
+timestamp,center_freq,offset_bytes,num_samples
+```
+
+Les premières lignes indiquent des blocs de 65 536 échantillons et des offsets espacés de 524 288 octets. Cette observation est compatible avec un stockage de huit octets par échantillon déclaré ; elle ne suffit pas à choisir entre des types numériques possibles. Aucun dtype n'est donc imposé au lecteur IQ à partir de ce seul rapport.
+
+Le CSV global porte le SHA-256 `b4e0c3747fce3a3bd8733d2538ec6743bf48728d1d1a05101cd5a09686d08e06`. Son checksum publié par Zenodo est contrôlé par le script. L'API renvoie `cc-by-4.0` pour la licence.
+
+Le statut livré est `annotations_validated`. Il ne signifie ni lecture des données de `iq.bin`, ni identification automatique de vidéo, ni reconstruction PAL/NTSC, ni vérification d'intégrité des archives complètes.

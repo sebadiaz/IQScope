@@ -162,10 +162,13 @@
       "kind": "real_recordings",
       "url": "https://zenodo.org/records/19870020",
       "role": "FPV presence detection and future analog-video reconstruction",
-      "status": "adapter_under_validation",
+      "status": "annotations_validated",
       "adapter": null,
       "annotation_parser": "fpv_sweep_csv",
-      "note": "Sweep-level TX on/off labels; IQ layout and units must be checked per recording. No FPV video decoder is implemented."
+      "note": "Sweep-level TX on/off labels; IQ layout and units must be checked per recording. No FPV video decoder is implemented.",
+      "license": "CC-BY-4.0",
+      "validation_reference": "https://github.com/sebadiaz/IQScope/actions/runs/40218880680",
+      "validation_scope": "48 source experiment annotations and one internal sweep metadata member; no IQ import or video decoding"
     }
   ]
 }

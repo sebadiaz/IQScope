@@ -1,0 +1,31 @@
+{
+  "id": "fpv_analog",
+  "record_url": "https://zenodo.org/records/19870020",
+  "doi": "10.5281/zenodo.19870020",
+  "title": "FPV Analogue Video IQ Dataset",
+  "creator": "Yelyzaveta Mashchenko",
+  "license_as_reported_by_api": "CC-BY-4.0",
+  "checked_utc": "2026-10-25",
+  "status": "annotations_validated",
+  "sweeps": {
+    "total": 48,
+    "target_tx_active": 38,
+    "target_tx_inactive": 10
+  },
+  "labels_scope": "sweep_experiment_not_each_IQ_window",
+  "annotation_csv_sha256": "b4e0c3747fce3a3bd8733d2538ec6743bf48728d1d1a05101cd5a09686d08e06",
+  "archive_inspected": "chunk10.zip",
+  "member_inspected": "chunk10/sweep_20260422_153008/metadata.csv",
+  "internal_metadata_rows": 2950,
+  "internal_metadata_columns": [
+    "timestamp",
+    "center_freq",
+    "offset_bytes",
+    "num_samples"
+  ],
+  "sample_dtype": null,
+  "sample_rate_hz": null,
+  "iq_import_validated": false,
+  "video_decoder_implemented": false,
+  "validation_reference": "https://github.com/sebadiaz/IQScope/actions/runs/40218880680"
+}
