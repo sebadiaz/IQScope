@@ -8,7 +8,7 @@
       "url": "https://www.sdrangel.org/iq-files/",
       "role": "import and selected decoding checks",
       "status": "validated_subset",
-      "scope": "ADS-B excerpt CRC validation; RTTY/radar import only",
+      "scope": "ADS-B excerpt CRC validation; RTTY framing-consistent text candidate; radar import only",
       "adapter": "wav_sdriq"
     },
     {
