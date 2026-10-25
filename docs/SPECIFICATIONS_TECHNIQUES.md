@@ -13,7 +13,7 @@ Version : 0.1 — 25 octobre 2026. Statut : architecture cible proposée, exigen
 7. Classification et recherche automatique
 8. Synchronisation et démodulation
 9. Protocoles et validation
-10. LoRa et LoRaWAN
+10. Exemple de chaîne spécialisée : LoRa et LoRaWAN
 11. Catalogue de décodeurs
 12. Analyse des signaux inconnus
 13. Interface
@@ -327,11 +327,11 @@ Un champ interprété porte : octets source, offset, taille, signedness, endiann
 
 Ne pas transformer arbitrairement un payload inconnu en température ou en coordonnées. Afficher ses octets et permettre un parseur utilisateur explicite.
 
-## 10. Lot prioritaire LoRa et LoRaWAN
+## 10. Exemple de chaîne spécialisée : LoRa et LoRaWAN
 
 ### 10.1 Périmètre proposé
 
-Premier objectif numérique : détecter et décoder automatiquement des captures LoRa documentées, en commençant par les cas PHY conventionnels de décodeurs existants. L'intégration doit valider exactement les variantes prises en charge.
+Objectif de cette famille parmi les autres : détecter et décoder automatiquement des captures LoRa documentées, en commençant par les cas PHY conventionnels de décodeurs existants. L'intégration doit valider exactement les variantes prises en charge.
 
 LoRa conventionnel et LR-FHSS sont des formes d'onde différentes : le support du premier n'implique pas celui du second. De même, LoRa PHY et LoRaWAN ne sont pas interchangeables.
 
@@ -614,17 +614,17 @@ Livrables : manifests, captures redistribuables ou téléchargements par hash, a
 
 Terminé si : rapport précision/rappel publié sur corpus figé, baseline du prototype comparée et cas de régression conservés. La famille LoRa doit déjà être présente dans le corpus.
 
-### Lot C — LoRa automatique
+### Lot C — Moteur multistandard et premières intégrations
 
-Livrables : étude d'intégration, worker, recherche BW/SF/CFO, trames, CRC, résultats bruts et parseur LoRaWAN sans clés.
+Livrables : registre de capacités, workers de décodeurs et première couverture parallèle de familles indépendantes : analogique, télégraphie, OOK/FSK, paquets amateurs, aviation/maritime et CSS/LoRa. Réutiliser les moteurs existants lorsque leur licence et leur validation le permettent. Le support LoRa ne conditionne pas les autres intégrations.
 
-Terminé si : octets exacts sur références indépendantes de chaque mode revendiqué, mauvais paramètres rejetés, LoRaWAN chiffré affiché correctement et coûts de recherche bornés.
+Terminé si : plusieurs familles indépendantes sont sélectionnées automatiquement sur un corpus mixte ; les sorties numériques sont vérifiées par références indépendantes ; les mauvaises hypothèses sont rejetées ; les contenus chiffrés sont identifiés ; les recherches sont bornées. Publier les capacités exactes de chaque adaptateur, sans attendre un support complet de toutes les familles.
 
 ### Lot D — Interface locale
 
 Livrables : import, waterfall, liste de signaux, progression, sélection, trames, audio et exports. L'API permet déjà l'usage sans interface.
 
-Terminé si : un utilisateur ouvre une capture LoRa du corpus et obtient les paquets sans choisir de paramètres DSP.
+Terminé si : un utilisateur ouvre une capture mixte du corpus et obtient les résultats des familles supportées sans choisir de paramètres DSP.
 
 ### Lot E — Analogique et deuxième protocole numérique
 
@@ -644,7 +644,7 @@ Livrables : nouveaux protocoles, cyclostationnarité, signaux inconnus, analyse 
 
 Chaque protocole suit le même processus : référence → corpus → décodeur → preuve → performance → documentation → annonce de support.
 
-Ne pas donner de calendrier ferme avant l'étude LoRa et les mesures du lot B. Les durées dépendent du matériel disponible, du corpus et des dépendances. Évaluer l'effort par lot après un court prototype technique.
+Ne pas donner de calendrier ferme avant les études des premiers adaptateurs et les mesures du lot B. Les durées dépendent du matériel disponible, du corpus et des dépendances. Évaluer l'effort par lot après un court prototype technique.
 
 ## 20. Backlog actionnable
 
@@ -696,9 +696,9 @@ Il doit conserver les octets et preuves, fonctionner par blocs ou expliquer ses 
 | Métadonnées manquantes | Fréquences ou temps faux | Import explicite et incertitudes |
 | Dépendance externe abandonnée | Maintenance bloquée | Adaptateurs et corpus pérennes |
 
-Décisions à prendre avant les lots concernés : premier SDR et OS cible ; ressources de la machine de référence ; provenance du premier corpus réel ; modes LoRa exacts ; conservation des IQ par défaut ; choix du frontend ; déploiement local ou accès distant ; besoin de clés LoRaWAN ; deuxième protocole après LoRa.
+Décisions à prendre avant les lots concernés : premier SDR et OS cible ; ressources de la machine de référence ; provenance du premier corpus réel ; modes exacts de chaque première famille ; conservation des IQ par défaut ; choix du frontend ; déploiement local ou accès distant ; besoin de clés LoRaWAN ; ordre des intégrations selon couverture, maturité et corpus disponible.
 
-Choix de départ proposés pour avancer : Linux, analyse locale, fichiers SigMF, CPU seul, LoRa explicite SF7–SF12/BW 125–500 kHz à confirmer, aucune clé requise et aucun service cloud obligatoire.
+Choix de départ proposés pour avancer : Linux, analyse locale, fichiers SigMF, CPU seul, première couverture multistandard par adaptateurs éprouvés, aucune clé requise et aucun service cloud obligatoire.
 
 ## 22. Parcours d'acceptation et glossaire
 
@@ -740,3 +740,143 @@ L'utilisateur ouvre un signal absent du catalogue. L'application montre sa zone 
 - IQEngine : https://www.iqengine.org/
 
 Ces liens orientent l'étude. Ils ne remplacent pas la sélection d'une version, l'examen des licences ni une validation indépendante des résultats.
+
+
+## 23. Stratégie de couverture maximale : plateforme multistandard
+
+Cette section précise la priorité produit : couvrir un maximum de familles indépendantes, anciennes et modernes, en intégrant plusieurs solutions spécialisées. LoRa n'est ni le centre de l'architecture ni un prérequis aux autres décodeurs. La section LoRa sert d'exemple de profondeur attendue pour chaque famille.
+
+L'objectif est une bibliothèque de capacités réutilisables et une orchestration automatique commune. On ne réimplémente pas tous les standards avant de rendre le système utile. On évalue et encapsule les solutions existantes, puis on développe les briques manquantes.
+
+### 23.1 Quatre niveaux de support à publier par mode
+
+- D : détection et mesures seulement.
+- R : reconnaissance étayée de la famille ou du protocole.
+- T : démodulation et récupération de trames ou symboles.
+- C : contenu interprété lorsque accessible : texte, valeurs, audio, image ou vidéo.
+
+Ces niveaux sont complétés par la validation et l'accès au contenu définis en section 9. Un standard complexe peut être au niveau C pour ses messages diffusés et au niveau R pour une autre voie. « Support 5G » ou « support militaire » sans sous-mode et sans niveau est une description interdite dans le catalogue produit.
+
+### 23.2 Inventaire des modulations et techniques physiques
+
+| Groupe | Techniques à couvrir progressivement | Points à estimer automatiquement |
+|---|---|---|
+| Télégraphie | CW, OOK, keying lent ou rapide | Durée des éléments, vitesse, fréquence et espacement |
+| Analogique amplitude | AM double bande, porteuse réduite/supprimée, SSB USB/LSB, ISB | Porteuse, bande latérale, accord et largeur audio |
+| Analogique angle | NFM, WFM, PM et variantes documentées | Déviation, largeur, désaccentuation et sous-porteuses |
+| ASK | 2-ASK, M-ASK, OOK, modulation de charge si matériel adapté | Niveaux, timing, codage ligne |
+| FSK | 2/4/M-FSK, AFSK, CPFSK, GFSK, MSK, GMSK | Espacement, débit, indice, filtre et timing |
+| PSK | BPSK, QPSK, OQPSK, pi/4-DQPSK, DPSK et M-PSK | Débit, mapping, ambiguïtés et mise en forme |
+| QAM | Ordres courants, QAM différentielle et variantes documentées | Ordre, égalisation, mapping et phase |
+| Multicarrier | OFDM, DMT, OFDMA et variantes spécifiées | FFT, préfixe cyclique, espacement, pilotes et trame |
+| Chirps | CSS/LoRa et chirps linéaires ou non linéaires | Pente, largeur, durée, direction et périodicité |
+| Étalement | DSSS, séquences connues, CDMA selon standard | Chip rate, codes candidats et synchronisation |
+| Saut de fréquence | FHSS, hopping documenté, LR-FHSS distinct | Bursts, trajectoires, canaux et contraintes d'observation |
+| Ultra-large bande | UWB impulsionnel ou autres PHY documentées | Exige matériel et taux adaptés ; hors capacité SDR étroite |
+| Multiplexage | TDM, FDM, TDMA, FDMA, sous-porteuses | Frontières de slots, canaux et relations temporelles |
+| Multiantenne | Diversité, MIMO selon PHY | Voies cohérentes, calibration et estimation de canal |
+
+Une modulation générique ne fournit pas le protocole. Les paramètres d'accès, séquences et codecs doivent être intégrés séparément. La reconnaissance de MIMO ou d'UWB ne garantit pas leur acquisition avec le matériel disponible.
+
+### 23.3 Catalogue étendu de familles et solutions candidates
+
+Le tableau décrit des cibles et des candidats à auditer, pas des intégrations déjà fonctionnelles. Les compatibilités, licences, versions et performances doivent être vérifiées avant adoption.
+
+| Domaine | Modes et protocoles candidats | Sorties attendues | Solutions ou références à évaluer |
+|---|---|---|---|
+| Radio analogique | AM, NFM, WFM, USB, LSB, CW | Audio, mesures, identification candidate | GNU Radio, liquid-dsp, csdr, moteurs SDR documentés |
+| FM broadcast | Mono, stéréo, RDS/RBDS | Audio, PI/PS, texte et champs disponibles | GNU Radio, gr-rds, redsea |
+| Radio numérique broadcast | DAB/DAB+, DRM et variantes documentées | Services, texte, audio si codecs disponibles | welle.io, gr-dab, Dream, bibliothèques DRM à vérifier |
+| Télégraphie | Morse international, variantes documentées | Texte avec scores et éléments temporels | Décodeurs CW existants, DSP interne validé |
+| Télétypes HF | RTTY/Baudot, ASCII, SITOR, AMTOR, NAVTEX | Texte et trames selon mode | fldigi, décodeurs spécialisés documentés |
+| Modes amateurs texte | PSK31/63/125, Olivia, Contestia, MFSK, THOR, DominoEX, MT63 | Texte et statut de synchronisation | fldigi et bibliothèques associées, interfaces à vérifier |
+| Modes faibles signaux | FT8, FT4, JT65, JT9, WSPR, MSK144, Q65 selon versions | Messages structurés et mesures | WSJT-X, JTDX ou composants documentés, licences à auditer |
+| Paquets amateurs | AX.25, APRS, AFSK1200, FSK9600, KISS en sortie | Trames, positions ou champs si présents | Dire Wolf, multimon-ng, gr-ax25 et alternatives |
+| Images radioamateur | SSTV, fax radio/HF, modes météo fax | Images, synchronisation et métadonnées | QSSTV, fldigi, moteurs fax documentés |
+| IoT simple et capteurs | OOK/ASK/FSK de capteurs documentés, télécommandes et compteurs | Identifiants, valeurs, unités selon protocole | rtl_433, URH pour recherche, décodeurs spécifiques |
+| IoT LPWAN | LoRa PHY, LoRaWAN, LR-FHSS comme lot séparé | Trames, champs MAC, données claires si clés et parseur | gr-lora_sdr, spécifications LoRa Alliance, solutions LR-FHSS à étudier |
+| Comptage et automatisme | Wireless M-Bus, protocoles ISM documentés | Trames, compteurs et valeurs si accessibles | wmbusmeters avec frontal compatible, rtl_433 selon modes |
+| IEEE 802.15.4 | PHY 2,4 GHz et sous-GHz sélectionnées, Zigbee/Thread au-dessus | Trames MAC et couches accessibles | gr-ieee802-15-4, outils Wireshark et dissectors |
+| Autres réseaux IoT | Z-Wave, ANT/ANT+, BLE, DECT ULE selon modes | Paquets et champs accessibles | Projets spécialisés et spécifications à auditer |
+| Aviation | ADS-B 1090ES, Mode S ; UAT 978 séparé | Messages, positions selon contexte, statut de validation | readsb, dump1090, dump978 et décodeurs associés |
+| Données aéronautiques | ACARS VHF, VDL Mode 2, HFDL | Messages et trames | acarsdec, dumpvdl2, dumphfdl |
+| Maritime | AIS, DSC, NAVTEX | Messages, identifiants, positions et texte disponibles | AIS-catcher, gr-ais, décodeurs DSC, fldigi selon mode |
+| Paging | POCSAG, FLEX, autres modes documentés | Trames et texte accessible | multimon-ng et moteurs spécifiques |
+| Radio mobile numérique | DMR, P25 Phase 1/2, NXDN, dPMR, D-STAR, System Fusion | Signalisation, trames, voix claire si codecs et contexte | OP25, DSD-FME, mbelib, Codec2 pour les modes correspondants |
+| Réseaux professionnels | TETRA et TETRAPOL selon ressources ouvertes | D'abord synchronisation et signalisation accessible | osmo-tetra et projets spécialisés à auditer |
+| Téléphonie sans fil | DECT, modes analogiques historiques documentés | Trames et audio accessible selon contexte | gr-dect2 et ressources Osmocom à vérifier |
+| Wi-Fi | 802.11a/g/p puis autres PHY explicitement sélectionnées | Trames et champs accessibles | gr-ieee802-11 ; contraintes de taux importantes |
+| Bluetooth | Classic BR/EDR et BLE par PHY précise | Détection, paquets et champs accessibles | gr-bluetooth, outils dédiés ; hopping et couverture à traiter |
+| Cellulaire historique | GSM/GPRS/EDGE, UMTS et autres standards documentés | Synchronisation et informations système en premier | gr-gsm, Osmocom et références 3GPP |
+| Cellulaire moderne | LTE, LTE-M, NB-IoT, 5G NR selon bande/numérologie | Synchronisation, canaux diffusés, métriques ; contenu selon contexte | srsRAN 4G/Project, OpenAirInterface, outils passifs spécialisés |
+| Satellites amateurs | AX.25, BPSK/FSK/GMSK, CCSDS selon mission | Télémétrie et valeurs documentées | gr-satellites, SatNOGS et décodeurs mission |
+| Satellites météo | APT et systèmes LRPT/HRPT/LRIT/HRIT selon disponibilité actuelle | Images, télémétrie et produits | SatDump et outils spécialisés ; vérifier satellites actifs |
+| Satellites autres | Liaisons documentées scientifiques ou commerciales | Trames et données accessibles | SatDump, gr-satellites, outils mission selon droits et modes |
+| Navigation GNSS | GPS, Galileo, GLONASS, BeiDou selon signaux | Acquisition, suivi, messages navigation et observables | GNSS-SDR ; matériel, horloge et SNR adaptés |
+| Temps et fréquence | DCF77, MSF, WWVB, WWV et signaux documentés | Heure, bits et qualité de synchronisation | DSP et décodeurs spécialisés par émetteur |
+| Vidéo analogique | PAL, NTSC, SECAM et variantes RF sélectionnées | Image, synchronisation, audio associé | GNU Radio et projets vidéo analogique à évaluer |
+| Télévision numérique | DVB-T/T2, DVB-S/S2 et autres normes sélectionnées | Transport stream, services, médias non chiffrés | gr-dtv, leandvb et outils DVB ; débit et codecs à vérifier |
+| Télémétrie industrielle | FSK/PSK/QAM et protocoles publics choisis | Trames, valeurs et unités documentées | Adaptateurs spécialisés et primitives du socle |
+| RFID/NFC | Modes LF/HF/UHF documentés | Détection et échanges accessibles | Matériel et frontaux adaptés ; aucun support universel par SDR standard |
+| Radar et impulsions | FMCW, pulsé et formes documentées | Caractéristiques de forme d'onde, périodicités et spectres | DSP interne ; distance/vitesse uniquement avec contexte et référence adaptés |
+| Signaux propriétaires ou militaires | Formes connues et documentées, bursts, hopping, étalement | Caractérisation et décodage seulement si informations suffisantes | Recherche ouverte par famille, sans promesse de déchiffrement ni support global |
+
+Les logiciels listés peuvent être des applications complètes, des bibliothèques ou des outils de recherche. Leur présence dans ce tableau ne signifie pas qu'ils possèdent une API embarquable, un mode passif complet ou la capacité de traiter directement les IQ de notre pipeline.
+
+### 23.4 Réutilisation : quatre stratégies d'intégration
+
+1. Bibliothèque : appel direct si API stable, licence compatible et dépendances maîtrisées.
+2. Processus worker : échanges de blocs IQ/audio et résultats structurés, supervision, budgets et arrêt.
+3. Flowgraph GNU Radio : génération de paramètres et supervision automatique ; le produit cache les réglages ordinaires à l'utilisateur.
+4. Conversion intermédiaire : IQ vers audio, trames ou transport stream si la solution existante attend cette entrée. La conversion conserve les horodatages et preuves.
+
+Éviter les intégrations fondées sur le seul parsing d'un affichage console fragile. Si nécessaire temporairement, épingler la version, capturer des fixtures et signaler cette limitation. Évaluer tout moteur uniquement récepteur pour l'exécuter sans fonction d'émission activée.
+
+### 23.5 Chaînes qui partagent des briques
+
+Le même frontal NFM peut alimenter audio, AFSK/APRS, paging ou d'autres moteurs compatibles. Une même chaîne FSK ne doit pas imposer le même framing à des protocoles différents. Plusieurs parseurs peuvent être essayés après récupération d'une trame candidate.
+
+Les banques de préambules, désembrouilleurs, CRC et FEC sont des primitives déclaratives réutilisables, avec paramètres exacts et vecteurs de tests. Ne pas traiter tous les CRC-16 ou tous les Reed-Solomon comme identiques.
+
+### 23.6 Ordre de livraison orienté couverture
+
+Vague 1 : socle multistandard, analogique AM/FM/SSB, CW, rtl_433 pour les modes effectivement validés, AX.25/APRS, ADS-B, AIS et LoRa. Ces intégrations sont indépendantes ; chacune passe par son audit et ses références. Cette vague est un périmètre de travail, pas une garantie de livraison simultanée.
+
+Vague 2 : RDS, paging, ACARS/VDL2/HFDL, modes texte HF, SSTV/fax, satellites documentés et IEEE 802.15.4. Prioriser les adaptateurs offrant une grande couverture réelle avec des preuves fiables.
+
+Vague 3 : radio numérique et voix, DAB/DRM, Wi-Fi/Bluetooth, DVB et GNSS, chacun avec un profil matériel et un périmètre précis.
+
+Vague 4 : standards cellulaires plus complets, séparation de collisions, multiantenne, hopping/étalement avancés, protocoles propriétaires et formes expérimentales documentées.
+
+Les numéros de vague reflètent le coût et les dépendances probables, pas une interdiction de contribuer plus tôt à un adaptateur autonome.
+
+### 23.7 Fiche obligatoire par solution
+
+Chaque intégration possède une fiche : identifiant, famille, modes exacts, niveaux D/R/T/C, fréquences et bandes typiques non exclusives, taux IQ requis, paramètres automatiques, paramètres de contexte indispensables, clés éventuelles, formats de sortie, preuves, coût CPU/RAM, plateformes, licence, version, corpus, limitations et commandes de reproduction.
+
+La fréquence d'émission est un indice de classement, jamais la seule preuve de protocole. Un signal rejoué ou transposé peut se trouver hors de sa bande habituelle.
+
+### 23.8 Critères d'acceptation de la couverture
+
+Créer un tableau public généré à partir du registre des plugins. Compter les modes réellement validés, pas les noms de projets intégrés ni les simples reconnaissances.
+
+Le corpus multistandard doit inclure des captures à plusieurs émissions, des familles non supportées, du bruit, de mauvaises métadonnées et des cas où deux décodeurs donnent des sorties candidates. Mesurer le taux de mauvais choix du moteur, le rappel par famille et les faux contenus validés.
+
+Le produit doit pouvoir montrer simultanément une sortie audio analogique, une trame LoRa, un message AIS ou ADS-B et un capteur FSK, dans les limites de la bande réellement enregistrée. Ces émissions peuvent nécessiter plusieurs sources RF : ne pas promettre de capter des bandes éloignées simultanément avec un unique tuner étroit.
+
+### 23.9 Backlog complémentaire de couverture
+
+| ID | Action | Résultat vérifiable |
+|---|---|---|
+| MULTI-01 | Construire un registre de capacités par mode | Catalogue généré, statuts D/R/T/C et versions |
+| MULTI-02 | Évaluer les moteurs de la vague 1 | Audit installation, licence, entrées, sorties et corpus |
+| MULTI-03 | Ajouter l'adaptateur analogique commun | AM/FM/SSB testées séparément |
+| MULTI-04 | Ajouter capteurs ISM via moteur existant | Protocoles réellement testés et valeurs documentées |
+| MULTI-05 | Ajouter paquet amateur et CW | AX.25 valide et texte CW avec incertitudes |
+| MULTI-06 | Ajouter aviation et maritime | Références ADS-B/AIS et checks spécifiques |
+| MULTI-07 | Ajouter CSS/LoRa | Paramètres automatiques et payloads de référence |
+| MULTI-08 | Faire concourir les adaptateurs | Sélection automatique sur corpus hétérogène |
+| MULTI-09 | Normaliser preuves et médias | Sorties comparables sans faux niveau de validation |
+| MULTI-10 | Publier matrice et benchmarks | Couverture exacte visible, limites et régressions |
+
+La mesure principale du programme devient : nombre de modes indépendants validés automatiquement, qualité par mode et coût pour les découvrir. La profondeur LoRa reste utile, mais elle ne définit plus la portée globale du projet.
