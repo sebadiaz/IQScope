@@ -129,6 +129,17 @@ function showReport(report, jobId) {
   for(const trial of report.wideband_trials || []) {
     if(trial.budget_exhausted) frameList.append(element('p',`Recherche partielle : budget atteint après ${trial.candidates_examined} candidats. Tous les paquets de la fenêtre n’ont pas été examinés.`,'hint'));
   }
+  for(const trial of report.wideband_trials || []) {
+    if(trial.decoder!=='rtty_ita2' || !trial.candidates?.length) continue;
+    frameList.append(element('h3','RTTY / ITA2 · texte candidat, sans CRC','frames-title'));
+    if(trial.duration_limited)frameList.append(element('p',`Analyse RTTY limitée aux ${trial.analyzed_seconds.toFixed(1)} premières secondes.`,'hint'));
+    for(const candidate of trial.candidates){
+      const card=element('div',undefined,'frame');
+      card.append(element('p',`${candidate.parameters.baud} bauds · écart ${candidate.parameters.shift_hz.toFixed(1)} Hz · ${candidate.evidence.framed_characters} caractères tramés`));
+      card.append(element('pre',candidate.text,'rtty-text'));
+      frameList.append(card);
+    }
+  }
   for(const frame of frames) {
     const card=element('div',undefined,'frame');card.append(element('code',frame.hex));
     const f=frame.fields;

@@ -49,7 +49,7 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('SDR en direct',page.text)
         self.assertIn("default-src 'self'",page.headers['content-security-policy'])
         data = (await self.client.get('/api/capabilities')).json()
-        self.assertEqual(len(data['decoders']),3)
+        self.assertEqual(len(data['decoders']),4)
 
     async def test_demo_job_and_audio_artifact(self):
         response=(await self.client.post('/api/analyses',json={'demo':True},headers=HEADERS))
@@ -146,6 +146,20 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(response.json()['entries']),17)
         page = await self.client.get('/')
         self.assertIn('Explorer les jeux de données',page.text)
+
+    async def test_rtty_candidate_report_and_text_export(self):
+        from test_rtty import fixture, TEXT
+        x,fs = fixture()
+        uploaded = await self.client.post('/api/uploads',content=x.astype('<c8').tobytes(),headers=HEADERS)
+        response = await self.client.post('/api/analyses',json={'upload_id':uploaded.json()['upload_id'],'sample_rate':fs},headers=HEADERS)
+        job = await self.wait_job(response.json()['id'])
+        self.assertEqual(job['status'],'completed',job.get('error'))
+        rtty = next(t for t in job['result']['wideband_trials'] if t['decoder']=='rtty_ita2')
+        self.assertEqual(rtty['status'],'framing_consistent_candidate')
+        self.assertEqual(rtty['candidates'][0]['text'],TEXT)
+        artifact = await self.client.get(f"/api/jobs/{job['id']}/artifacts/rtty-candidate.txt")
+        self.assertEqual(artifact.status_code,200)
+        self.assertEqual(artifact.text,TEXT)
 
 
 if __name__ == '__main__':

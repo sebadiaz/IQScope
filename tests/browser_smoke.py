@@ -57,6 +57,21 @@ def main():
                     assert page.locator('#metric-signals').inner_text() == '2'
                 Path('browser-artifacts').mkdir(exist_ok=True)
                 page.screenshot(path='browser-artifacts/desktop.png', full_page=True)
+                # Exercise actual candidate text display through the same import UI.
+                with tempfile.TemporaryDirectory() as directory:
+                    from test_rtty import fixture, TEXT
+                    import numpy as np
+                    import json
+                    x,fs = fixture()
+                    raw = Path(directory)/'rtty.sigmf-data'
+                    meta = Path(directory)/'rtty.sigmf-meta'
+                    x.astype('<c8').tofile(raw)
+                    meta.write_text(json.dumps({'global':{'core:datatype':'cf32_le','core:sample_rate':fs}}))
+                    page.locator('#iq-file').set_input_files(str(raw))
+                    page.locator('#meta-file').set_input_files(str(meta))
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('.rtty-text').first).to_have_text(TEXT,timeout=30000)
+                expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
                 page.get_by_role('tab',name='SDR en direct').click()
                 assert page.locator('#live-panel').is_visible()
                 assert page.locator('#live-frequency').input_value() == '100'

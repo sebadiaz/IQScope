@@ -142,13 +142,21 @@ def run(entry, out, output_limit=16*1024*1024):
                 'whole_archive_verified':False, 'sample_rate':fs,
                 'center_frequency_hz':center, 'samples':len(x), 'seconds':len(x)/fs,
                 'validated_adsb_frames':frame_count,
-                'decoder_attempts':[{k:v for k,v in t.items() if k != 'frames'} for t in report['wideband_trials']],
+                'decoder_attempts':[{k:v for k,v in t.items() if k not in ('frames','candidates')} for t in report['wideband_trials']],
                 'validation':'import only' if entry['id'] != 'adsb' else 'CRC-24 packet smoke test',
                 'limitations':'A bounded prefix, not a complete ZIP integrity check or golden protocol corpus.'}
+    rtty = next((trial for trial in report['wideband_trials'] if trial['decoder']=='rtty_ita2'),{})
+    if rtty.get('candidates'):
+        top = rtty['candidates'][0]
+        evidence['rtty_candidate'] = {'text':top['text'],'parameters':top['parameters'],'evidence':top['evidence']}
+    if entry['id']=='rtty':
+        evidence['validation'] = 'RTTY framing and candidate text; no checksum or independently known payload'
     (out/'provenance.json').write_text(json.dumps(evidence,indent=2))
     print(json.dumps(evidence),flush=True)
     if entry['id'] == 'adsb' and frame_count == 0:
         raise ValueError('No CRC-valid ADS-B packet recovered from this real excerpt')
+    if entry['id'] == 'rtty' and not rtty.get('candidates'):
+        raise ValueError('No framing-consistent RTTY text candidate recovered from the real excerpt')
     return evidence
 
 

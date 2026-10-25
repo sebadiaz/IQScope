@@ -2,7 +2,7 @@
 
 Local radio explorer with a French web interface, offline IQ analysis and an
 initial live RTL-SDR adapter. DSP settings are selected automatically for the
-implemented decoder trials. This is version 0.4, an early implementation of the
+implemented decoder trials. This is version 0.5, an early implementation of the
 [broader technical plan](docs/SPECIFICATIONS_TECHNIQUES.md).
 
 ## Start the interface
@@ -27,6 +27,7 @@ The interface includes:
 - spectrum and waterfall (sampled time windows for files);
 - automatically detected spectral bands and expandable audio candidates;
 - validated ADS-B packet bytes and a small set of parsed fields;
+- automatic RTTY text candidates, parameters and framing evidence;
 - live spectrum updates from a local `rtl_tcp` server;
 - JSON report download and a built-in synthetic FM/carrier demonstration.
 
@@ -130,6 +131,7 @@ not been tested in this development environment.
 |---|---|---|
 | FM | Mono WAV candidate, 75 microsecond de-emphasis | Heuristic selection; no broadcast identification, stereo, RDS or speech validation |
 | AM | Envelope-demodulated WAV candidate | Carrier-present AM only; OOK/fading can also produce candidates |
+| RTTY / ITA2 | Text candidates, raw character codes, automatic common baud rates/tones/polarity | Single IQ source at 1–12 kS/s, 5-bit LSB-first with at least 1.5 stop bits; framing only, no checksum |
 | Mode S / ADS-B | 112-bit DF17/DF18 frames, CRC-24, address/type code, selected barometric altitude | Clean captures at >= 2 MS/s; no general Mode S parity overlays, position reconstruction, collision recovery or bit-error correction; pulse timing uses an 8 MS/s energy grid |
 
 The capability registry distinguishes analog interpretations from validated
@@ -142,7 +144,7 @@ not appear as an isolated stationary band. Decoder effort is bounded by at most
 12 audio-band trials, 2,000 ADS-B candidates and 100 recovered packets per window.
 Deferred bands and exhausted packet-search budgets are exposed in the report.
 
-LoRa, Morse, military protocols and the other families in the specifications are
+LoRa, Morse, military protocols and the other remaining families in the specifications are
 **planned, not implemented**. The current registry is a small explicit list;
 a general third-party plugin loader and search engine remain future work.
 
@@ -168,7 +170,7 @@ The first real SDRangel check recovered four CRC-valid packets; see the
 [dated validation report](docs/VALIDATION_SDRANGEL.md) for scope and search-budget limits.
 A separate SDRangel real-data CI job now checks real imports and requires at least
 one CRC-valid ADS-B packet. This is a smoke test, not yet a frozen, fully annotated
-regression corpus. RTTY/radar currently test import and analysis, not content decoding.
+regression corpus. RTTY now also requires a framing-consistent text candidate. Radar tests import and analysis only.
 
 ## Tests and CI
 
@@ -260,3 +262,24 @@ python scripts/fpv_metadata_probe.py
 The network probe reads the CSV and an internal ZIP metadata member using bounded
 HTTP ranges; it does not extract IQ or reconstruct video. See the
 [FPV dataset integration notes](docs/DATASET_FPV_ANALOG.md).
+
+## RTTY text candidates
+
+The receiver searches 45.45, 50, 75 and 100 baud, tone pairs near common shifts,
+and both frequency polarities on a single low-bandwidth complex IQ source.
+There is no manual filter, baud-rate or mark/space setting for these trials.
+It checks asynchronous start/data/stop timing, recovers 5-bit codes and applies
+international ITA2 letters/figures shifts. The initial shift state is assumed
+letters until a shift code is observed.
+
+Results appear as **texte candidat, sans CRC** in the UI and as a wideband trial
+in the JSON report. The top text is exported as `rtty-candidate.txt`; alternatives
+and their timing/framing evidence are kept in JSON. It is not counted as a
+CRC-valid packet or authenticated content. Noise and malformed signals should
+lead to abstention, but framing alone cannot eliminate all false interpretations.
+
+This initial integration does not search RTTY channels throughout a wideband SDR
+stream, handle every national alphabet, or guarantee recovery in fading/collisions.
+The bounded analysis covers at most 12 seconds. Existing recorded RTTY at 2 kS/s
+is part of the real-data CI test; known text fixtures independently exercise the
+character codes, shifts, rates and inversion.
