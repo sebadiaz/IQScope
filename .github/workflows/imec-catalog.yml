@@ -1,0 +1,24 @@
+name: imec public catalog probe
+on:
+  push:
+    paths:
+      - corpus/imec-subghz.json
+      - scripts/imec_catalog_probe.py
+      - .github/workflows/imec-catalog.yml
+permissions:
+  contents: read
+jobs:
+  metadata:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Observe public share accessibility without downloading IQ
+        run: python scripts/imec_catalog_probe.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: imec-catalog-observation
+          path: corpus-cache/imec/catalog.json

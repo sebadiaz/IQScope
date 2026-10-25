@@ -1,0 +1,50 @@
+{
+  "id": "imec-subghz-fontaine-2020",
+  "name": "Sub-GHz IQ signals dataset",
+  "shared_url": "https://cloud.ilabt.imec.be/index.php/s/bqXtdp9QsfXLbb3",
+  "authors_repository": "https://github.com/JaronFontaine/Sub-GHz-IQ-signals-dataset",
+  "readme_blob_sha": "f8656c57ca8284f5082447ff797872f4eba73981",
+  "publication": {
+    "title": "Multi-band sub-GHz technology recognition on NVIDIA’s Jetson Nano",
+    "year": 2020,
+    "doi": "10.1109/VTC2020-Fall49728.2020.9348566",
+    "primary_record": "https://biblio.ugent.be/publication/8683397"
+  },
+  "license_as_reported_by_authors": "CC-BY-NC-SA-4.0",
+  "license_url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "catalog_checked_utc": "2026-10-25",
+  "status": "documentation_verified_files_not_inspected",
+  "purpose": ["technology recognition", "signal/noise discrimination", "future decoder evaluation if continuous IQ exists"],
+  "acquisition_as_reported": {
+    "receiver": "RTL-SDR",
+    "connection": "coaxial cables",
+    "sample_rate_hz": 2048000,
+    "receiver_center_frequencies_hz": [864000000, 867400000]
+  },
+  "families": [
+    {"id":"lora","settings":{"spreading_factors":[7,12],"bandwidth_hz":125000,"transmitter_frequency_hz":868100000}},
+    {"id":"sigfox","settings":{"transmitter_frequency_hz":868200000,"nominal_channel_bandwidth_hz":100}},
+    {"id":"ieee802154_sun_fsk"},
+    {"id":"ieee802154_sun_ofdm"},
+    {"id":"ieee80211ah"},
+    {"id":"noise"}
+  ],
+  "serialization": {
+    "paper_reports": "MATLAB-compatible capture files and derived IQ/FFT classification inputs",
+    "actual_file_format": null,
+    "actual_variable_names": null,
+    "class_id_mapping": null,
+    "sample_order_and_continuity_verified": false,
+    "classification_window_as_reported": {"complex_samples":500,"iq_components":2}
+  },
+  "files": [],
+  "validated_imports": [],
+  "validated_protocol_decoders": [],
+  "notes": [
+    "The authors repository explicitly links to the user-provided share.",
+    "Receiver tuning frequencies are distinct from the transmit frequencies of individual signals.",
+    "No shape, dtype, MATLAB version or label index is inferred from the publication alone.",
+    "Do not concatenate independent classification windows as a continuous IQ recording.",
+    "No raw data or trained model is redistributed by this catalog."
+  ]
+}

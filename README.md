@@ -201,3 +201,11 @@ must be distinguished from the in-process tests in release reports.
 
 See [technical specifications](docs/SPECIFICATIONS_TECHNIQUES.md) and
 [community-reversed and unusual protocols](docs/PROTOCOLES_NON_DOCUMENTES.md).
+
+## Additional research corpus
+
+The [imec/UGent sub-GHz corpus](docs/DATASET_IMEC_SUBGHZ.md) is now cataloged
+for future technology-recognition evaluation (LoRa, Sigfox, SUN-FSK/SUN-OFDM,
+IEEE 802.11ah and noise). Its identity and authors documentation are verified;
+its shared files have not yet been inspected or imported. This is not another
+validated decoder dataset. The authors report CC BY-NC-SA 4.0 licensing.
