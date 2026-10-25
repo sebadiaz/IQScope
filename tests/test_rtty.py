@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from iqscope_rtty import decode_rtty
+from iqscope_rtty import decode_rtty, search_rtty
 
 # Independent literal ITA2 reference: LTRS RYRY CQ CQ DE TEST FIGS 12345 LTRS CR LF.
 CODES = [31,10,21,10,21,4,14,23,4,14,23,4,9,1,4,16,1,5,16,4,27,23,19,1,10,16,31,8,2]
@@ -65,6 +65,30 @@ class RttyTests(unittest.TestCase):
         rng = np.random.default_rng(6)
         for x in (rng.normal(size=16000)+1j*rng.normal(size=16000),np.exp(2j*np.pi*400*np.arange(16000)/4000)):
             self.assertEqual(decode_rtty(x,4000)['candidates'],[])
+
+    def test_wideband_two_channels_with_strong_unrelated_carrier(self):
+        x,fs = fixture(fs=48000)
+        y,_ = fixture(fs=48000,inverted=True)
+        time = np.arange(len(x))/fs
+        wide = x*np.exp(2j*np.pi*9000*time)+.8*y*np.exp(-2j*np.pi*11000*time)
+        wide += 3*np.exp(2j*np.pi*18000*time)
+        result = search_rtty(wide,fs,7_000_000)
+        matches = [c for c in result['candidates'] if c['text']==TEXT]
+        self.assertGreaterEqual(len(matches),2,result)
+        frequencies = [c['channel']['frequency_hz'] for c in matches]
+        for expected in (7_009_130,6_989_130):
+            self.assertTrue(any(abs(f-expected)<30 for f in frequencies),frequencies)
+        self.assertTrue(all(c['evidence']['checksum']=='not_present' for c in matches))
+
+    def test_wideband_noise_and_budget(self):
+        rng = np.random.default_rng(55)
+        x = rng.normal(size=48000)+1j*rng.normal(size=48000)
+        self.assertEqual(search_rtty(x,48000)['candidates'],[])
+        x,fs = fixture(fs=48000)
+        result = search_rtty(x,fs,max_channels=0,max_seconds=2)
+        self.assertTrue(result['duration_limited'])
+        self.assertEqual(result['channels_examined'],[])
+        self.assertGreater(result['deferred_channel_count'],0)
 
     def test_short_and_wideband_sources_not_claimed(self):
         x,fs = fixture()

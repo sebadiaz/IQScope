@@ -20,7 +20,7 @@ class Capability:
 CAPABILITIES = (
     Capability('analog_fm', 'FM', 'mono audio candidate, 75 us de-emphasis', 'unvalidated'),
     Capability('analog_am', 'AM', 'envelope audio candidate, carrier-present AM only', 'unvalidated'),
-    Capability('rtty_ita2', 'RTTY / ITA2', '45.45/50/75/100 baud, blind tones and polarity; low-bandwidth IQ', 'framing only; no checksum'),
+    Capability('rtty_ita2', 'RTTY / ITA2', '45.45/50/75/100 baud, blind tones and polarity; bounded stationary wideband channel search', 'framing only; no checksum'),
     Capability('adsb_1090es', 'Mode S / ADS-B', 'DF17/18, 112-bit, direct CRC; >= 2 MS/s', 'CRC-24'),
 )
 

@@ -158,3 +158,64 @@ def decode_rtty(x,fs,max_seconds=12,max_pairs=4):
             'validation_scope':'timing and framing consistency only; no checksum or content authenticity',
             'limitations':['Single low-bandwidth IQ source; wideband RTTY channel search is not implemented.',
                            'National ITA2 variants, fading, collisions and clock drift may alter text.']}
+
+
+def search_rtty(x, fs, center_hz=0, max_channels=8, max_seconds=12):
+    """Bounded spectral-pair search followed by filtered narrowband trials.
+
+    Frequency estimates refer to the original IQ center. This searches stationary
+    FSK tone pairs, not arbitrary bursts or frequency-hopping transmissions.
+    """
+    if fs <= 12000:
+        return decode_rtty(x, fs, max_seconds=max_seconds)
+    if fs > 2_400_000 or len(x) < fs*.8:
+        return {'decoder':'rtty_ita2','status':'not_applicable','candidates':[]}
+    original_count = len(x)
+    x = np.asarray(x[:int(fs*max_seconds)])
+    size = min(262144, len(x), max(4096, int(fs/8)))
+    f,p = signal.welch(x,fs,nperseg=size,return_onesided=False)
+    f,p = np.fft.fftshift(f),np.fft.fftshift(p)
+    peaks,_ = signal.find_peaks(p,distance=max(1,int(35/(fs/size))))
+    floor = max(float(np.median(p)),1e-30)
+    peaks = sorted((int(i) for i in peaks if p[i]>floor*10),key=lambda i:p[i],reverse=True)[:96]
+    pairs = []
+    for a,i in enumerate(peaks):
+        for j in peaks[a+1:]:
+            shift = abs(float(f[i]-f[j]))
+            if min(abs(shift-v)/v for v in (170,425,450,850)) <= .12:
+                offset = float((f[i]+f[j])/2)
+                if abs(offset)+1500 < fs/2:
+                    pairs.append((math.sqrt(float(p[i]*p[j])),offset))
+    pairs.sort(reverse=True)
+    offsets = []
+    for _,offset in pairs:
+        if not any(abs(offset-v)<1000 for v in offsets):
+            offsets.append(offset)
+    selected = offsets[:max_channels]
+    candidates,channels = [],[]
+    decimation = max(1,int(fs/4000))
+    rate = fs/decimation
+    time = np.arange(len(x))/fs
+    for offset in selected:
+        mixed = x*np.exp(-2j*np.pi*offset*time)
+        narrow = signal.resample_poly(mixed,1,decimation)
+        trial = decode_rtty(narrow,rate,max_seconds=max_seconds)
+        channels.append({'offset_hz':offset,'frequency_hz':center_hz+offset,
+                         'sample_rate':rate,'status':trial['status'],
+                         'candidate_count':len(trial['candidates'])})
+        for candidate in trial['candidates']:
+            candidate['channel'] = {'offset_hz':offset,'frequency_hz':center_hz+offset,'sample_rate':rate}
+            for name in ('low_tone_hz','high_tone_hz'):
+                candidate['parameters'][name] += offset
+            candidates.append(candidate)
+    candidates.sort(key=lambda v:v['score'],reverse=True)
+    return {'decoder':'rtty_ita2','family':'RTTY / ITA2',
+            'status':'framing_consistent_candidate' if candidates else 'no_consistent_candidate',
+            'candidates':candidates,'search_mode':'wideband_spectral_pairs',
+            'channels_examined':channels,'channel_budget':max_channels,
+            'deferred_channel_count':max(0,len(offsets)-len(selected)),
+            'spectral_peak_budget':96,'spectral_peak_budget_reached':len(peaks)==96,
+            'analyzed_seconds':len(x)/fs,'duration_limited':len(x)<original_count,
+            'validation_scope':'framing consistency only; no checksum or content authenticity',
+            'limitations':['Stationary separated tone pairs only; weak, overlapping or hopping signals may be missed.',
+                           'Peak, channel and duration budgets bound the search; this is not an exhaustive detector.']}

@@ -131,7 +131,7 @@ not been tested in this development environment.
 |---|---|---|
 | FM | Mono WAV candidate, 75 microsecond de-emphasis | Heuristic selection; no broadcast identification, stereo, RDS or speech validation |
 | AM | Envelope-demodulated WAV candidate | Carrier-present AM only; OOK/fading can also produce candidates |
-| RTTY / ITA2 | Text candidates, raw character codes, automatic common baud rates/tones/polarity | Single IQ source at 1–12 kS/s, 5-bit LSB-first with at least 1.5 stop bits; framing only, no checksum |
+| RTTY / ITA2 | Text candidates, raw character codes, automatic common baud rates/tones/polarity | Direct IQ at 1–12 kS/s or bounded stationary-channel search up to 2.4 MS/s, 5-bit LSB-first with at least 1.5 stop bits; framing only, no checksum |
 | Mode S / ADS-B | 112-bit DF17/DF18 frames, CRC-24, address/type code, selected barometric altitude | Clean captures at >= 2 MS/s; no general Mode S parity overlays, position reconstruction, collision recovery or bit-error correction; pulse timing uses an 8 MS/s energy grid |
 
 The capability registry distinguishes analog interpretations from validated
@@ -266,7 +266,9 @@ HTTP ranges; it does not extract IQ or reconstruct video. See the
 ## RTTY text candidates
 
 The receiver searches 45.45, 50, 75 and 100 baud, tone pairs near common shifts,
-and both frequency polarities on a single low-bandwidth complex IQ source.
+and both frequency polarities. Low-bandwidth IQ is decoded directly; wider IQ
+(up to 2.4 MS/s) is searched for stationary tone pairs, mixed and filtered
+automatically to narrowband channels.
 There is no manual filter, baud-rate or mark/space setting for these trials.
 It checks asynchronous start/data/stop timing, recovers 5-bit codes and applies
 international ITA2 letters/figures shifts. The initial shift state is assumed
@@ -278,8 +280,13 @@ and their timing/framing evidence are kept in JSON. It is not counted as a
 CRC-valid packet or authenticated content. Noise and malformed signals should
 lead to abstention, but framing alone cannot eliminate all false interpretations.
 
-This initial integration does not search RTTY channels throughout a wideband SDR
-stream, handle every national alphabet, or guarantee recovery in fading/collisions.
+The wideband search examines at most 96 strong spectral peaks and eight separated
+channel centers. The report records examined channels and deferred centers; this
+is not an exhaustive search. Overlapping channels, bursts, hopping, national
+alphabets and fading/collisions remain limitations.
 The bounded analysis covers at most 12 seconds. Existing recorded RTTY at 2 kS/s
 is part of the real-data CI test; known text fixtures independently exercise the
-character codes, shifts, rates and inversion.
+character codes, shifts, rates and inversion. A two-channel synthetic fixture
+includes a stronger unrelated carrier. The real SDRangel excerpt is also
+resampled and frequency-translated in CI to exercise the wideband chain; this
+is a transformed recording, not an independent wideband RF capture.

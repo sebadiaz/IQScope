@@ -151,6 +151,18 @@ def run(entry, out, output_limit=16*1024*1024):
         evidence['rtty_candidate'] = {'text':top['text'],'parameters':top['parameters'],'evidence':top['evidence']}
     if entry['id']=='rtty':
         evidence['validation'] = 'RTTY framing and candidate text; no checksum or independently known payload'
+    if entry['id']=='rtty' and rtty.get('candidates'):
+        from scipy import signal
+        from iqscope_rtty import search_rtty
+        wide = signal.resample_poly(x,24,1)
+        wide *= np.exp(2j*np.pi*9000*np.arange(len(wide))/48000)
+        transformed = search_rtty(wide,48000,center)
+        recovered = any(c['text']==rtty['candidates'][0]['text'] for c in transformed['candidates'])
+        evidence['wideband_transformation_check'] = {'sample_rate':48000,'translation_hz':9000,
+            'same_candidate_text_recovered':recovered,
+            'scope':'resampled and shifted recording, not an independent wideband RF capture'}
+        if not recovered:
+            raise ValueError('Transformed real RTTY excerpt did not recover the narrowband candidate')
     (out/'provenance.json').write_text(json.dumps(evidence,indent=2))
     print(json.dumps(evidence),flush=True)
     if entry['id'] == 'adsb' and frame_count == 0:

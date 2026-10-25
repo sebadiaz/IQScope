@@ -8,7 +8,7 @@ import numpy as np
 from scipy import ndimage, signal
 from iqscope_decoders import analog_trials, capabilities, decode_adsb
 from iqscope_formats import read_wave_iq, read_sdriq
-from iqscope_rtty import decode_rtty
+from iqscope_rtty import search_rtty
 
 
 def read_iq(path, sample_rate=None, limit_seconds=10):
@@ -135,7 +135,7 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
             item.update(status='budget_deferred', hypotheses=[], decoder_trials=[], validated_content=None)
         results.append(item)
     digital = decode_adsb(x, fs)
-    rtty = decode_rtty(x, fs)
+    rtty = search_rtty(x, fs, center)
     size = min(512, len(x))
     starts = np.unique(np.linspace(0, len(x)-size, min(96, max(1, len(x)//size)), dtype=int))
     window = np.hanning(size)
