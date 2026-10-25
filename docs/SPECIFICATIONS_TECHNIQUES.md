@@ -880,3 +880,167 @@ Le produit doit pouvoir montrer simultanément une sortie audio analogique, une 
 | MULTI-10 | Publier matrice et benchmarks | Couverture exacte visible, limites et régressions |
 
 La mesure principale du programme devient : nombre de modes indépendants validés automatiquement, qualité par mode et coût pour les découvrir. La profondeur LoRa reste utile, mais elle ne définit plus la portée globale du projet.
+
+## 24. Complément de couverture : familles omises et granularité des modes
+
+### 24.1 Règle de couverture
+
+Aucune liste finie ne contient tous les signaux existants : variantes nationales, extensions privées, générations de matériel et formes expérimentales s'ajoutent continuellement. Le catalogue est donc un registre extensible et versionné. Cette limite ne justifie pas un catalogue étroit : chaque domaine ci-dessous doit être inventorié et faire l'objet d'une décision explicite.
+
+Une entrée doit distinguer forme d'onde, synchronisation, codage canal, framing, protocole, codec et application. Par exemple, un démodulateur OFDM n'est ni un décodeur Wi-Fi universel ni un décodeur DVB. Un parseur NMEA n'est pas un récepteur GNSS. Un codec audio n'est pas un récepteur radio.
+
+Dans cette section, « cible » signifie à étudier, pas support disponible. Les désignations militaires renvoient uniquement aux modes documentés et aux paramètres accessibles ; aucune capacité de déchiffrement ni connaissance de variantes non publiques n'est présumée.
+
+### 24.2 HF, modems historiques et formes d'onde normalisées
+
+| Sous-domaine | Entrées à inventorier séparément | Sorties et limites |
+|---|---|---|
+| Modems HF normalisés | MIL-STD-188-110 selon révision et mode ; STANAG 4285, 4415, 4529, 4539 | Symboles, trames et données selon définition disponible ; une désignation ne couvre pas toutes ses annexes |
+| Établissement automatique HF | ALE 2G MIL-STD-188-141 ; ALE 3G STANAG 4538 ; extensions documentées | Adresses, messages de liaison et paramètres accessibles ; distinguer signalisation et canal de trafic |
+| Liaison HF de données | STANAG 5066 et services documentés au-dessus du modem | Réassemblage seulement après décodage du modem et acquisition du contexte |
+| Télégraphie multivoie historique | FSK télétype, F7B, systèmes à diversité, Piccolo et variantes publiques | Identification puis décodage par variante avec corpus |
+| Télex et ARQ | ITA2/ITA5, CCIR 476, SITOR-A/B, AMTOR, TOR documentés | Texte, répétitions, contrôle d'erreurs et états ARQ |
+| Modems amateurs HF | PACTOR I ; générations suivantes selon documentation et disponibilité ; PACKET HF | Ne pas étendre le support d'une génération aux autres ; contraintes propriétaires possibles |
+| Modems contemporains | VARA HF/FM, ARDOP, WINMOR et interfaces documentées | Évaluer la disponibilité d'un décodage passif : une application de modem peut nécessiter une session active |
+| Transmission d'images/données | EasyPal, HamDRM et modes OFDM documentés | Objets et images après chaîne complète et vérification |
+| Signaux HF de référence | CHU, RWM, BPM, JJY et autres émissions documentées | Temps, identifiants ou mesures suivant émission et disponibilité actuelle |
+| Recherche HF | Familles propriétaires connues par signatures publiques | Mesures et hypothèses lorsque protocole ou code non disponible |
+
+Les liaisons tactiques publiques dans la littérature, telles que Link 11, Link 16 ou Link 22, doivent avoir des fiches d'étude distinctes : bande et acquisition, forme d'onde documentée, contexte et accès au contenu. Leur présence au registre ne constitue pas un engagement de décodage ni une promesse qu'un SDR ordinaire puisse les observer intégralement.
+
+### 24.3 Broadcast et télévision : détailler les standards
+
+| Domaine | Modes à distinguer | Résultats cibles |
+|---|---|---|
+| FM auxiliaire | RDS/RBDS, RadioText, groupes spécifiques ; SCA et sous-porteuses documentées | Champs structurés et audio auxiliaire selon mode |
+| Radio numérique | DAB, DAB+, DMB, DRM30, DRM+, HD Radio/IBOC selon accès technique et licences | Multiplex, services et médias accessibles |
+| TV terrestre | DVB-T, DVB-T2, ATSC 1.0, ATSC 3.0, ISDB-T, DTMB | Synchronisation, services et flux accessibles ; profils et codecs distincts |
+| TV satellite | DVB-S, DVB-S2, DVB-S2X, ISDB-S et variantes documentées | Trames de base, flux et services accessibles |
+| TV câble | DVB-C/C2, ITU-T J.83 selon annexe | Analyse d'une capture issue d'un frontal câble adapté |
+| TV analogique | PAL/NTSC/SECAM : modulation RF, polarité, son et variantes de canal | Image et son ; standard couleur et transmission RF sont deux couches |
+| Services historiques | Télétexte, sous-titrage ligne 21, VPS/PDC et données VBI | Texte et métadonnées si les lignes sont présentes dans la capture |
+| Contribution professionnelle | Modes DVB et liaisons de contribution documentées | Pas d'assimilation automatique aux émissions grand public |
+
+Le chiffrement et le contrôle d'accès des services numériques restent des états de contenu. Le décodage du multiplex ne fournit pas automatiquement les médias protégés.
+
+### 24.4 Aviation, maritime et réseaux terrestres spécialisés
+
+- Aviation supplémentaire : ADS-B UAT 978 distinct du 1090ES ; VDL modes 1/3/4 selon documentation et pertinence actuelle ; SELCAL ; signalisation et voix AM aéronautique.
+- Navigation aéronautique : VOR, ILS localizer/glideslope, marqueurs et DME documentés. Décoder une modulation ne constitue pas un instrument de navigation certifié ; les observables exigent calibration et géométrie adaptées.
+- Surveillance : signaux d'interrogation/réponse SSR et modes publics documentés ; séparer réception des réponses, association à des interrogations et estimation de position.
+- Maritime supplémentaire : ATIS, VDES et sous-composants VDE-TER/VDE-SAT/ASM suivant standards et corpus ; Inmarsat-C/EGC et autres services documentés selon accès et disponibilité.
+- Services mobiles analogiques : CTCSS, DCS, tonalités 2/5 tons, DTMF, MDC-1200, FleetSync et autres signalements documentés.
+- Trunking : MPT1327, LTR, EDACS et systèmes documentés ; séparer canal de contrôle, suivi des allocations, canal voix et codec. Les variantes propriétaires nécessitent leurs propres preuves.
+- Rail et infrastructures : GSM-R, TETRA ferroviaire et autres systèmes publics documentés ; protocoles industriels radio spécifiques, sans supposer le contenu à partir de la seule bande.
+- Alertes : SAME/EAS et autres alertes documentées transportées en audio ; messages et validation selon format.
+
+### 24.5 Satellites, espace et télémétrie
+
+| Domaine | Modes et couches à ajouter | Conditions |
+|---|---|---|
+| Standards spatiaux | CCSDS : TM, TC, AOS, transfert de paquets, synchronisation et codages selon profil | La mission choisit ses options ; identifier son profil exact |
+| Modulations spatiales | PCM/PSK/PM, BPSK/QPSK/OQPSK, FSK/GMSK et autres modes mission | Traitement Doppler et horloges ; aucune famille unique « satellite » |
+| Codages spatiaux | Reed-Solomon, convolutionnel, turbo, LDPC, randomisation et marqueurs selon standard | Conserver configurations et preuves propres au profil |
+| Météo et observation | APT, LRPT, HRPT, LRIT/HRIT, variantes de missions et produits | Vérifier état opérationnel, fréquence et droits du corpus |
+| Radiosondes | Familles RS41/RS92, DFM, M10/M20, iMet et autres modèles documentés | Télémétrie et unités selon modèle ; changements de firmware possibles |
+| Balises | Cospas-Sarsat 406 MHz et variantes documentées | Identifier messages et validation, sans émission de test sur le réseau réel |
+| Réseaux satellitaires | Iridium, Orbcomm, Argos, services Inmarsat et autres formes documentées | Détection et champs accessibles ; restrictions de documentation, chiffrement et licences à expliciter |
+| Amateur spatial | Protocoles mission, AX.25, FX.25, IL2P et autres usages documentés | Réassemblage et télémétrie définis par mission |
+| Télémétrie d'essais | IRIG 106, PCM/FM, SOQPSK-TG, ARTM CPM selon profil accessible | Modulation, structure PCM et schéma de mesure distincts |
+| GNSS élargi | SBAS et signaux d'augmentation, QZSS, NavIC ; bandes et composantes par constellation | Un récepteur L1 seul ne donne pas le support de toutes les bandes |
+
+Une capture de télémétrie sans dictionnaire de paramètres permet parfois de récupérer des trames mais pas d'attribuer des noms et unités aux mesures. Conserver alors les mots bruts et offsets.
+
+### 24.6 IoT, domotique, industriel et courte portée
+
+- IEEE 802.15.4 : distinguer PHY O-QPSK, BPSK et autres variantes ; 802.15.4g/SUN FSK, OFDM et O-QPSK ; Wi-SUN au-dessus des couches concernées.
+- LPWAN : Sigfox montant/descendant suivant références accessibles, Weightless et autres systèmes documentés ; NB-IoT et LTE-M restent des profils cellulaires avec leurs dépendances.
+- Bluetooth : BR, EDR et BLE 1M/2M/Coded séparés ; advertising, connexions, hopping et couches applicatives sont des sous-périmètres différents.
+- Automatisme : EnOcean, KNX RF, Z-Wave par région/génération, IO-Link Wireless et protocoles documentés ; ne pas supposer un décodeur commun.
+- Comptage : Wireless M-Bus par mode S/T/C/N et variantes ; OMS comme profil au-dessus ; autres réseaux de compteurs uniquement lorsque formats et droits sont identifiés.
+- Télémétrie d'objets : TPMS, stations météo, alarmes, télécommandes, capteurs énergétiques et trackers ; chaque format reconnu possède sa fiche et ses vecteurs.
+- Aéromodélisme et drones : liaisons de télémétrie documentées, Remote ID sur transports concernés, protocoles de commande ou vidéo documentés ; matériel et bande souvent différents.
+- Audiovisuel courte portée : microphones sans fil analogiques et numériques, intercoms et retours audio selon systèmes documentés ; certaines solutions sont propriétaires ou chiffrées.
+- RFID : LF 125/134 kHz, ISO 14443 A/B, ISO 15693/NFC, UHF EPC Gen2/ISO 18000-63 et variantes ; couplage, bande et frontaux dédiés à prévoir.
+
+Les payloads de capteurs ne sont interprétés en valeurs qu'avec un protocole ou dictionnaire documenté. Un identifiant de fabricant n'est pas une preuve suffisante de format applicatif.
+
+### 24.7 Cellulaire, accès large bande et liaisons de données
+
+Distinguer au minimum GSM, GPRS, EDGE ; UMTS/WCDMA, HSPA ; CDMA2000 et variantes documentées ; LTE FDD/TDD, LTE-M, NB-IoT ; 5G NR FR1/FR2 et profils pertinents ; LTE/NR sidelink ; WiMAX/IEEE 802.16 selon disponibilité ; accès fixes propriétaires documentés.
+
+Pour chaque système, définir des étapes séparées : détection de cellules, synchronisation, informations système diffusées, identification des ressources, décodage de canaux accessibles et reconstitution de session quand le contexte est disponible. Les bibliothèques de stations de base et terminaux ne sont pas nécessairement des décodeurs passifs prêts à l'emploi.
+
+Le support 6G demeure un espace d'extensions expérimentales ou de futurs standards nommés et versionnés. Les termes OTFS, FBMC, UFMC, GFDM ou autres formes étudiées peuvent figurer au registre de recherche sans être présentés comme un standard 6G établi.
+
+### 24.8 Physiques additionnelles et signaux non communicationnels
+
+Compléter le registre avec APSK et ordres DVB ; FQPSK/SOQPSK ; CPM et paramètres de mémoire ; OOK impulsionnel ; PPM/PAM ; modulation d'indice ; formes chirp autres que LoRa ; séquences d'étalement et pilotes documentés. Les combinaisons modulation/codage créent des modes distincts à tester.
+
+Pour radar, sondeurs ionosphériques, balises, interférences et bruits : viser d'abord détection et caractérisation. Une mesure de distance nécessite généralement timing, référence et géométrie ; une capture arbitraire de radar ne suffit pas. Le brouillage présumé reste une hypothèse de nature du signal, pas une attribution d'intention ou d'émetteur.
+
+### 24.9 Codecs et couches de contenu : inventaire indépendant
+
+Audio : PCM, G.711, ADPCM et profils ; codecs de voix radio tels que Codec2, AMBE/IMBE selon disponibilité, droits et intégration ; AAC/HE-AAC, MPEG audio, Opus et autres codecs des services réellement pris en charge.
+
+Vidéo et images : MPEG-2, H.264/AVC, H.265/HEVC, AV1 et autres codecs selon multiplex ; JPEG/JPEG2000, formats scientifiques et produits satellites selon mission. Posséder FFmpeg ou un décodeur de codec n'implique pas la capacité de récupérer le flux RF correspondant.
+
+Données : Ethernet/IP, UDP/TCP et dissectors, ASN.1, formats binaires mission, messages NMEA lorsque transportés et formats capteurs. Ces parseurs interviennent après reconstruction et identification des couches porteuses. Les compressions, fichiers fragmentés et dictionnaires propriétaires exigent leurs propres contrats.
+
+Ajouter contrôles de bornes, décompression limitée et traitement de médias non fiables. Conserver l'original binaire même si un parseur ou lecteur échoue.
+
+### 24.10 Solutions supplémentaires à auditer
+
+| Usage | Candidats | Réserve |
+|---|---|---|
+| Reconnaissance/recherche | URH, Inspectrum, SigDigger, outils cyclostationnaires | Excellents outils d'analyse, pas nécessairement moteurs automatiques |
+| Analyse professionnelle | Sigmira, Sorcerer, CODE300-32, solutions Wavecom/Krypto500 selon disponibilité | Examiner licence commerciale, API, modes réels et droits ; aucun accès présumé |
+| HF et modems | fldigi, WSJT-X, ARDOP, gr-ale et projets de modems HF documentés | Maturité et possibilité de décodage passif à vérifier individuellement |
+| Satellites | SatDump, gr-satellites, SatNOGS, gr-iridium pour sous-périmètres documentés | Couverture exacte et redistribution par composant |
+| Radiosondes | radiosonde_auto_rx, rs1729/RS et projets apparentés à identifier précisément | Certains noms recouvrent le même écosystème ; ne pas les compter comme capacités indépendantes |
+| FSK et divers | multimon-ng, rtl_433, minimodem, liquid-dsp | Distinguer moteur DSP, protocole et outil audio |
+| Réseau/protocoles | Wireshark/tshark, libosmocore et bibliothèques spécifiques | Un dissector attend généralement des trames déjà récupérées |
+| DVB et médias | GNU Radio gr-dtv, leandvb, bibliothèques DVB, FFmpeg | Chaînes RF et codecs ont des contraintes séparées |
+| GNSS | GNSS-SDR et outils de traitement d'observables | Évaluer signaux et profils réellement implémentés |
+
+Vérifier le projet canonique, sa licence et son activité avant d'ajouter une dépendance : un nom cité dans la littérature peut correspondre à un logiciel abandonné, indisponible ou non redistribuable. Aucun binaire opaque n'est téléchargé et exécuté automatiquement sans provenance vérifiée.
+
+### 24.11 Fichier machine du registre cible
+
+Créer un registre YAML/JSON validé par schéma, avec une entrée par mode et des références aux briques partagées. Champs minimaux :
+
+```yaml
+id: example.protocol.phy-mode
+status: planned
+family: example
+layers:
+  waveform: example-waveform
+  framing: example-framing
+  protocol: example-protocol
+  content: []
+capabilities:
+  detection: false
+  recognition: false
+  frames: false
+  interpreted_content: false
+requirements:
+  sample_rates_hz: []
+  minimum_bandwidth_hz: null
+  channels: 1
+  coherent_channels: false
+  required_context: []
+  optional_keys: []
+implementations: []
+references: []
+corpus: []
+validation_metrics: {}
+limitations: []
+```
+
+`planned` n'est jamais comptabilisé comme fonction disponible. Les modes inconnus d'une dépendance ne sont pas importés en bloc dans le catalogue validé. Le catalogue annoncé au public doit être généré à partir des capacités testées de la version distribuée.
+
+### 24.12 Suivi des omissions
+
+Ajouter un type de ticket « famille manquante » demandant nom ou exemple, source documentaire et résultat souhaité. Le triage détermine : nouvelle forme d'onde, nouveau framing, nouveau parseur, codec, variante d'un mode existant ou simple adaptation d'entrée.
+
+Tenir une matrice domaine × couche × implémentation × corpus. Une famille sans documentation exploitable reste dans la recherche ; une famille documentée sans capture devient une tâche de corpus ; une solution mature sans adaptateur devient une tâche d'intégration. Cette séparation permet d'élargir réellement la couverture sans annoncer des centaines de faux supports.
