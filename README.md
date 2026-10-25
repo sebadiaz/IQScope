@@ -2,7 +2,7 @@
 
 Local radio explorer with a French web interface, offline IQ analysis and an
 initial live RTL-SDR adapter. DSP settings are selected automatically for the
-implemented decoder trials. This is version 0.3, an early implementation of the
+implemented decoder trials. This is version 0.4, an early implementation of the
 [broader technical plan](docs/SPECIFICATIONS_TECHNIQUES.md).
 
 ## Start the interface
@@ -209,3 +209,38 @@ for future technology-recognition evaluation (LoRa, Sigfox, SUN-FSK/SUN-OFDM,
 IEEE 802.11ah and noise). Its identity and authors documentation are verified;
 its shared files have not yet been inspected or imported. This is not another
 validated decoder dataset. The authors report CC BY-NC-SA 4.0 licensing.
+
+## Dataset catalog and Panoradio HF windows
+
+The interface now includes **Explorer les jeux de données**, a catalog of 16
+sources with explicit integration status. It opens source documentation; it does
+not download all datasets or imply that their protocols are supported.
+
+```bash
+iqscope datasets
+iqscope dataset-import panoradio_hf dataset_panoradio_hf.npy --record 0 --out hf-window
+iqscope analyze hf-window.sigmf-meta --out hf-results
+```
+
+Panoradio uses independent 2,048-sample complex windows at 6 kS/s. The importer
+reads the selected row through a memory map, exports one SigMF pair and a
+`.provenance.json` file, and refuses to overwrite existing output. It never
+concatenates rows or infers the class label from row order. Complex128 source
+values are converted to complex64; the original dtype and output hash are kept.
+Object arrays, pickle, real-valued feature arrays and incompatible shapes are
+rejected. Choosing the dataset preset does not prove a local file's origin.
+
+To test the public first window without downloading the 5+ GB array:
+
+```bash
+python scripts/panoradio_smoke.py
+```
+
+This bounded network check reads at most 64 KiB from the start, checks the NPY
+header, exports one complete independent window and runs analysis. It does not
+validate a class prediction, a decoded message, the tags CSV or the full source
+file. The exported pair can be opened through the ordinary SigMF UI.
+
+See [dataset catalog and integration scope](docs/DATASET_CATALOG.md). TorchSig,
+NIST, GNSS and the other catalog entries still require their own adapters or
+validation; they are not silently treated as supported decoder inputs.

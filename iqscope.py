@@ -190,6 +190,12 @@ def main():
     convert.add_argument('--out', required=True, help='Output prefix, without extension')
     convert.add_argument('--seconds', type=float, default=3)
     convert.add_argument('--sample-rate', type=float)
+    sub.add_parser('datasets', help='List dataset sources and actual integration status')
+    dataset = sub.add_parser('dataset-import', help='Export one independent dataset window as SigMF')
+    dataset.add_argument('dataset', choices=['panoradio_hf'])
+    dataset.add_argument('file')
+    dataset.add_argument('--record', type=int, default=0)
+    dataset.add_argument('--out', required=True)
     sub.add_parser('decoders')
     serve = sub.add_parser('serve')
     serve.add_argument('--port', type=int, default=8765)
@@ -197,6 +203,14 @@ def main():
     make.add_argument('--out', default='demo')
     args = parser.parse_args()
     try:
+        if args.command == 'datasets':
+            from iqscope_datasets import catalog
+            print(json.dumps(catalog(), indent=2))
+            return
+        if args.command == 'dataset-import':
+            from iqscope_datasets import export_panoradio_window
+            print(json.dumps(export_panoradio_window(args.file, args.out, args.record), indent=2))
+            return
         if args.command == 'convert':
             x, fs, center = read_iq(args.file, args.sample_rate, args.seconds)
             prefix = Path(args.out)

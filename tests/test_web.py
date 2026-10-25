@@ -140,6 +140,13 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(job['status'],'completed',job.get('error'))
             self.assertEqual(job['result']['sample_rate'],24000)
 
+    async def test_dataset_catalog_available_to_ui(self):
+        response = await self.client.get('/api/datasets')
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(len(response.json()['entries']),16)
+        page = await self.client.get('/')
+        self.assertIn('Explorer les jeux de données',page.text)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -43,6 +43,10 @@ def main():
                 page.get_by_role('button',name='Voir les capacités').click()
                 expect(page.get_by_role('dialog')).to_be_visible()
                 page.get_by_role('button',name='Fermer').click()
+                page.get_by_role('button',name='Explorer les jeux de données').click()
+                expect(page.locator('#dataset-dialog')).to_be_visible()
+                expect(page.locator('#dataset-list .capability')).to_have_count(16)
+                page.get_by_role('button',name='Fermer le catalogue').click()
                 with tempfile.TemporaryDirectory() as directory:
                     from iqscope import demo
                     meta = demo(directory)

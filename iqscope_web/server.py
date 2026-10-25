@@ -110,6 +110,11 @@ def create_app(root=None):
         response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'"
         return response
 
+    @app.get('/api/datasets')
+    def get_datasets():
+        from iqscope_datasets import catalog
+        return catalog()
+
     @app.get('/api/capabilities')
     def get_capabilities():
         return {'decoders': capabilities(), 'max_upload_bytes': MAX_UPLOAD,
