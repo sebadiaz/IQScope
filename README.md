@@ -130,7 +130,7 @@ not been tested in this development environment.
 |---|---|---|
 | FM | Mono WAV candidate, 75 microsecond de-emphasis | Heuristic selection; no broadcast identification, stereo, RDS or speech validation |
 | AM | Envelope-demodulated WAV candidate | Carrier-present AM only; OOK/fading can also produce candidates |
-| Mode S / ADS-B | 112-bit DF17/DF18 frames, CRC-24, address/type code, selected barometric altitude | Clean captures at >= 2 MS/s; no general Mode S parity overlays, position reconstruction, collision recovery or fractional phase search |
+| Mode S / ADS-B | 112-bit DF17/DF18 frames, CRC-24, address/type code, selected barometric altitude | Clean captures at >= 2 MS/s; no general Mode S parity overlays, position reconstruction, collision recovery or bit-error correction; pulse timing uses an 8 MS/s energy grid |
 
 The capability registry distinguishes analog interpretations from validated
 packet integrity. A CRC does **not** authenticate a transmitter. For DF18, the

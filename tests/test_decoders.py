@@ -45,6 +45,16 @@ class DecoderTests(unittest.TestCase):
         self.assertEqual(frame['hex'], REFERENCE.hex().upper())
         self.assertAlmostEqual(frame['time_seconds'], .0005, places=5)
 
+    def test_fractional_pulse_timing(self):
+        # Construct rectangular pulses on a finer independent time grid, then
+        # acquire them at 2.4 MS/s with several fractional source-sample phases.
+        base = np.repeat(reference_iq(count=4000, start=1000), 10)
+        for phase in (0, 2, 4, 6, 8):
+            x = signal.resample_poly(np.roll(base, phase), 3, 25)
+            frames = decode_adsb(x, 2_400_000)['frames']
+            self.assertEqual(len(frames), 1, f'phase={phase}')
+            self.assertEqual(frames[0]['hex'], REFERENCE.hex().upper())
+
     def test_corrupted_payload_rejected(self):
         frame = bytearray(REFERENCE)
         frame[8] ^= 4

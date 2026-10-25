@@ -139,6 +139,7 @@ def run(entry, out, output_limit=16*1024*1024):
                 'whole_archive_verified':False, 'sample_rate':fs,
                 'center_frequency_hz':center, 'samples':len(x), 'seconds':len(x)/fs,
                 'validated_adsb_frames':frame_count,
+                'decoder_attempts':[{k:v for k,v in t.items() if k != 'frames'} for t in report['wideband_trials']],
                 'validation':'import only' if entry['id'] != 'adsb' else 'CRC-24 packet smoke test',
                 'limitations':'A bounded prefix, not a complete ZIP integrity check or golden protocol corpus.'}
     (out/'provenance.json').write_text(json.dumps(evidence,indent=2))

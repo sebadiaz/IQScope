@@ -79,8 +79,8 @@ def mode_s_remainder(frame):
 def decode_adsb(x, fs, max_candidates=2000, max_frames=100):
     """Envelope PPM receiver for clean DF17/18 captures. No general Mode S claim.
 
-    This first implementation has no fractional sample-phase search or collision
-    recovery. CRC validates a recovered packet, not transmitter authenticity.
+    Pulse energy is resampled to an 8 MS/s timing grid and integrated over
+    half-symbols. There is no collision recovery or bit-error correction. CRC validates a recovered packet, not transmitter authenticity.
     """
     if fs < 2_000_000 or len(x) < fs * .00012:
         return {'decoder': 'adsb_1090es', 'status': 'not_applicable', 'frames': []}
@@ -90,35 +90,39 @@ def decode_adsb(x, fs, max_candidates=2000, max_frames=100):
     budget_exhausted = False
     chunk_size = 262144
     overlap = int(math.ceil(fs * .00015))
-    ratio = Fraction(2_000_000 / fs).limit_denominator(4096)
+    timing_rate = 8_000_000
+    ratio = Fraction(timing_rate / fs).limit_denominator(4096)
     for start in range(0, len(x), chunk_size):
         block = x[max(0, start-overlap):min(len(x), start+chunk_size+overlap)]
         offset = max(0, start-overlap)
-        y = signal.resample_poly(block, ratio.numerator, ratio.denominator) if fs != 2_000_000 else block
-        power = np.abs(y).astype(np.float64) ** 2
-        if len(power) < 240:
+        envelope_power = np.abs(block).astype(np.float64) ** 2
+        power = signal.resample_poly(envelope_power, ratio.numerator, ratio.denominator)
+        power = np.maximum(power, 0)
+        if len(power) < 960:
             continue
-        high = np.array([0, 2, 7, 9])
-        low = np.array([1, 3, 4, 5, 6, 8, 10, 11, 12, 13, 14, 15])
-        valid_length = len(power) - 239
-        highs = sum(power[k:k+valid_length] for k in high) / 4
-        lows = sum(power[k:k+valid_length] for k in low) / 12
-        floor = max(float(np.median(power)), 1e-12)
-        positions = np.flatnonzero((highs > 5 * np.maximum(lows, floor)) & (highs > 8 * floor))
+        # Four 0.5 us preamble pulses, followed by 112 1 us PPM symbols.
+        energy = np.convolve(power, np.ones(4)/4, mode='valid')
+        high = np.array([0, 8, 28, 36])
+        low = np.array([4,12,16,20,24,32,40,44,48,52,56,60])
+        valid_length = len(energy)-956
+        highs = sum(energy[k:k+valid_length] for k in high)/4
+        lows = sum(energy[k:k+valid_length] for k in low)/12
+        floor = max(float(np.median(energy)), 1e-12)
+        positions = np.flatnonzero((highs > 3*np.maximum(lows, floor)) & (highs > 6*floor))
         for pos in positions:
             if candidates_examined >= max_candidates or len(frames) >= max_frames:
                 budget_exhausted = True
                 break
             candidates_examined += 1
-            if np.min(power[pos+high]) < highs[pos] * .35:
+            if np.min(energy[pos+high]) < highs[pos] * .35:
                 continue
-            chips = power[pos+16:pos+240].reshape(112, 2)
-            bits = chips[:, 0] > chips[:, 1]
+            starts = pos+64+8*np.arange(112)
+            bits = energy[starts] > energy[starts+4]
             frame = np.packbits(bits).tobytes()
             df = frame[0] >> 3
             if df not in (17, 18) or mode_s_remainder(frame) != 0:
                 continue
-            sample = offset + int(round(pos * fs / 2_000_000))
+            sample = offset + int(round(pos * fs / timing_rate))
             # Same bytes may legitimately recur; deduplicate only overlap copies.
             key = (frame, int(round(sample / max(1, fs * .00001))))
             if key in seen:
@@ -146,4 +150,4 @@ def decode_adsb(x, fs, max_candidates=2000, max_frames=100):
     return {'decoder': 'adsb_1090es', 'family': 'Mode S / ADS-B',
             'status': 'validated_frames' if frames else 'no_valid_frame',
             'frames': frames, 'candidates_examined': candidates_examined,
-            'budget_exhausted': budget_exhausted}
+            'budget_exhausted': budget_exhausted, 'timing_grid_hz': timing_rate}

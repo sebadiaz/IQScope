@@ -41,7 +41,7 @@ def main():
                 assert page.locator('audio').count() >= 1
                 assert page.locator('#download').is_visible()
                 page.get_by_role('button',name='Voir les capacités').click()
-                assert page.get_by_role('dialog').is_visible()
+                expect(page.get_by_role('dialog')).to_be_visible()
                 page.get_by_role('button',name='Fermer').click()
                 with tempfile.TemporaryDirectory() as directory:
                     from iqscope import demo
