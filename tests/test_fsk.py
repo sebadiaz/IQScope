@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 import numpy as np
-from iqscope_fsk import decode_fsk
+from iqscope_fsk import decode_fsk, search_fsk
 
 
 def fixture(baud=300,fs=12000,shift=1500,inverted=False):
@@ -55,6 +55,41 @@ class FskTests(unittest.TestCase):
             recovered = ''.join(map(str,np.unpackbits(packed).tolist()))
             self.assertEqual(recovered[:candidate['bit_count']],bits)
             self.assertEqual(recovered[candidate['bit_count']:],'0'*candidate['packed_padding_bits'])
+
+    def test_wideband_two_channels_and_individual_exports(self):
+        from iqscope import analyze_samples
+        x,fs,expected = fixture(fs=192000)
+        y,_,inverse = fixture(fs=192000,inverted=True)
+        time = np.arange(len(x))/fs
+        wide = x*np.exp(-2j*np.pi*35000*time)+.8*y*np.exp(2j*np.pi*40000*time)
+        wide += 2*np.exp(2j*np.pi*75000*time)
+        with tempfile.TemporaryDirectory() as directory:
+            report = analyze_samples(wide,fs,7_000_000,directory)
+            result = next(t for t in report['wideband_trials'] if t['decoder']=='fsk2_generic')
+            self.assertEqual(len(result['candidates']),2,result)
+            for candidate in result['candidates']:
+                frequency = candidate['channel']['frequency_hz']
+                reference = expected if frequency<7_000_000 else inverse
+                self.assertIn(candidate['bits'],reference)
+                self.assertGreater(candidate['bit_count'],600)
+                self.assertEqual((Path(directory)/candidate['artifacts']['bits']).read_text(),candidate['bits'])
+            frequencies = [c['channel']['frequency_hz'] for c in result['candidates']]
+            for expected_frequency in (6_965_310,7_040_310):
+                self.assertTrue(any(abs(f-expected_frequency)<20 for f in frequencies),frequencies)
+            self.assertEqual(len({c['artifacts']['packed'] for c in result['candidates']}),2)
+
+    def test_wideband_noise_and_channel_budget(self):
+        from iqscope import discover
+        rng = np.random.default_rng(60)
+        noise = rng.normal(size=192000)+1j*rng.normal(size=192000)
+        bands,*_ = discover(noise,192000)
+        self.assertEqual(search_fsk(noise,192000,bands)['candidates'],[])
+        x,fs,_ = fixture(fs=192000)
+        bands,*_ = discover(x,fs)
+        result = search_fsk(x,fs,bands,max_channels=0,max_seconds=1)
+        self.assertTrue(result['duration_limited'])
+        self.assertEqual(result['channels_examined'],[])
+        self.assertGreater(result['deferred_channel_count'],0)
 
     def test_limits(self):
         x,fs,_ = fixture()

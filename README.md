@@ -316,9 +316,11 @@ recording has been validated yet.
 
 A first generic binary-FSK receiver estimates two frequency levels and symbol
 rate without a supplied baud rate. It supports a **single stationary complex IQ
-channel at 1–96 kS/s**, 20 baud to sample_rate/8 (capped at 9600). This version
-does not search arbitrary wideband captures for generic FSK channels. RTTY's
-separate wideband search remains available.
+channel at 1–96 kS/s**, 20 baud to sample_rate/8 (capped at 9600). IQScope
+also searches wider IQ up to 2.4 MS/s using the shared stationary spectral
+detector. At most eight detected bands of width <=24 kHz are mixed, filtered and
+resampled automatically. Per-channel sample rate limits the baud range. Weak,
+merged, overlapping or hopping signals can be missed; the search is not exhaustive.
 
 The report contains candidate bits, tone frequencies, clock residual and the
 first recovered symbol's timestamp. `fsk-bits.txt` exports ASCII 0/1;
@@ -332,5 +334,14 @@ most the first 512 inter-transition intervals, followed by a whole-window timing
 check. Integer rate aliases remain possible for repetitive data. GFSK, MSK,
 GMSK, M-FSK, bursts, collisions and clock drift are outside this first scope.
 Synthetic references check bit-exact recovery at 50/137/300/1200 baud, fractional
-sample alignment, both polarities and abstention on noise/carrier/4-FSK. A real
+sample alignment, both polarities and abstention on noise/carrier/4-FSK. A two-channel wideband reference includes a stronger unmodulated interferer,
+checks bit-exact recovery, absolute frequencies and separate exports. A real
 recorded generic-FSK corpus has not yet been validated.
+
+
+When several generic-FSK candidates are recovered, each has its own `channel`
+and `artifacts` entries. The first export keeps `fsk-bits.txt` / `fsk-packed.bin`;
+subsequent candidates use `fsk-2-bits.txt`, `fsk-2-packed.bin`, etc. Tone frequencies
+are offsets from the original IQ center, and symbol timestamps include channel
+filter trimming. The UI displays frequency and separate downloads for each
+candidate, plus examined/deferred/excluded channel counts for band searches.

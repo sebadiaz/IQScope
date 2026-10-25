@@ -81,3 +81,68 @@ def decode_fsk(x,fs,max_seconds=12,max_bits=100000):
                  'byte_alignment':'arbitrary first recovered bit; MSB-first packing with zero padding',
                  'packed_padding_bits':(-count_out)%8}
     return dict(base,status='timing_consistent_candidate',candidates=[candidate])
+
+
+def search_fsk(x,fs,bands,center_hz=0,max_channels=8,max_seconds=12,max_bits=100000):
+    """Try the full narrowband input, otherwise isolate detected spectral bands.
+
+    Bands come from the shared stationary-spectrum detector. This does not infer
+    a protocol and cannot guarantee that all FSK emitters have been found.
+    """
+    from scipy import signal
+    direct = decode_fsk(x,fs,max_seconds=max_seconds,max_bits=max_bits)
+    if direct['candidates']:
+        direct['search_mode'] = 'direct_single_channel'
+        for candidate in direct['candidates']:
+            p = candidate['parameters']
+            offset = (p['low_tone_hz']+p['high_tone_hz'])/2
+            candidate['channel'] = {'offset_hz':offset,'frequency_hz':center_hz+offset,'sample_rate':fs}
+        return direct
+    if not 1000<=fs<=2_400_000 or len(x)<fs*.1:
+        return direct
+    original = len(x)
+    x = np.asarray(x[:int(fs*max_seconds)])
+    eligible = sorted((b for b in bands if b['bandwidth_hz']<=24000),
+                      key=lambda b:b['spectral_snr_db'],reverse=True)
+    selected = eligible[:max_channels]
+    time = np.arange(len(x))/fs
+    channels,candidates = [],[]
+    for band in selected:
+        offset = band['offset_hz']
+        target = min(fs,96000,max(12000,4*band['bandwidth_hz']))
+        decimation = max(1,int(fs/target))
+        rate = fs/decimation
+        if rate>96000:
+            decimation += 1
+            rate = fs/decimation
+        mixed = x*np.exp(-2j*np.pi*offset*time)
+        narrow = signal.resample_poly(mixed,1,decimation)
+        # Explicit channel filter also isolates bands when no decimation is used.
+        cutoff = min(rate*.4,max(1500,band['bandwidth_hz']))
+        taps = signal.firwin(129,cutoff,fs=rate)
+        narrow = signal.convolve(narrow,taps,mode='same')
+        # Exclude filter boundary transients from timing evidence.
+        trim = min(int(rate*.02),len(narrow)//10)
+        trial = decode_fsk(narrow[trim:len(narrow)-trim],rate,max_seconds=max_seconds,max_bits=max_bits)
+        channels.append({'offset_hz':offset,'frequency_hz':center_hz+offset,
+                         'sample_rate':rate,'status':trial['status'],
+                         'bandwidth_hz':band['bandwidth_hz']})
+        for candidate in trial['candidates']:
+            p = candidate['parameters']
+            p['first_symbol_center_seconds'] += trim/rate
+            for name in ('low_tone_hz','high_tone_hz'):
+                p[name] += offset
+            tone_center = (p['low_tone_hz']+p['high_tone_hz'])/2
+            candidate['channel'] = {'offset_hz':tone_center,'frequency_hz':center_hz+tone_center,
+                                    'sample_rate':rate,'detected_band_offset_hz':offset}
+            candidates.append(candidate)
+    return {'decoder':'fsk2_generic','family':'2-FSK','search_mode':'detected_spectral_bands',
+            'status':'timing_consistent_candidate' if candidates else 'no_consistent_candidate',
+            'candidates':candidates,'channels_examined':channels,'channel_budget':max_channels,
+            'deferred_channel_count':max(0,len(eligible)-len(selected)),
+            'excluded_wide_band_count':sum(b['bandwidth_hz']>24000 for b in bands),
+            'analyzed_seconds':len(x)/fs,'duration_limited':len(x)<original,
+            'validation_scope':direct.get('validation_scope','timing only; no protocol or checksum validation'),
+            'limitations':['Shared stationary spectral detector; weak, overlapping, hopping and short burst signals can be missed.',
+                           'At most eight bands <=24 kHz; output rate limits supported baud to channel_rate/8 (max 9600).',
+                           'Polarity, byte alignment and protocol are unknown. Integer baud aliases remain possible.']}

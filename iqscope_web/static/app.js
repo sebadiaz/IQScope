@@ -157,9 +157,11 @@ function showReport(report, jobId) {
   }
   for(const trial of report.wideband_trials || []) {
     if(trial.decoder!=='fsk2_generic')continue;
+    if(trial.channels_examined)frameList.append(element('p',`Recherche 2-FSK : ${trial.channels_examined.length} canaux examinés · ${trial.deferred_channel_count} différés · ${trial.excluded_wide_band_count} bandes trop larges. Recherche non exhaustive.`,'hint'));
     for(const candidate of trial.candidates || []){
       const card=element('div',undefined,'frame');
       card.append(element('h3','2-FSK · bits candidats, protocole inconnu'));
+      if(candidate.channel)card.append(element('p',`Canal ${(candidate.channel.frequency_hz/1e6).toFixed(6)} MHz`,'fsk-frequency'));
       card.append(element('p',`${candidate.parameters.baud.toFixed(2)} bauds · écart ${candidate.parameters.shift_hz.toFixed(1)} Hz · ${candidate.bit_count} bits`));
       card.append(element('p','Tonalité haute = 1 par convention. Polarité inverse possible ; aucun alignement de trame ni CRC validé.','hint'));
       if(trial.duration_limited || candidate.bit_budget_reached)card.append(element('p','Export partiel : limite de durée ou de bits atteinte.','hint'));

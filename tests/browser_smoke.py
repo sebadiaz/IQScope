@@ -86,7 +86,8 @@ def main():
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
                 with tempfile.TemporaryDirectory() as directory:
                     from test_fsk import fixture as fsk_fixture
-                    x,fs,expected = fsk_fixture()
+                    x,fs,expected = fsk_fixture(fs=192000)
+                    x *= np.exp(2j*np.pi*35000*np.arange(len(x))/fs)
                     raw = Path(directory)/'fsk.sigmf-data'
                     meta = Path(directory)/'fsk.sigmf-meta'
                     x.astype('<c8').tofile(raw)
@@ -96,6 +97,7 @@ def main():
                     page.get_by_role('button',name='Analyser automatiquement').click()
                     expect(page.locator('.fsk-bits').first).to_be_visible(timeout=30000)
                     assert page.locator('.fsk-bits').first.inner_text() in expected
+                    expect(page.locator('.fsk-frequency').first).to_have_text(re.compile('0.0353[0-9]+ MHz'))
                     binary_link = page.get_by_role('link',name='Télécharger le binaire compacté')
                     from urllib.parse import urljoin
                     response = page.request.get(urljoin(page.url,binary_link.get_attribute('href')))
