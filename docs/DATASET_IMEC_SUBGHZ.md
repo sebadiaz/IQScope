@@ -51,3 +51,9 @@ python scripts/imec_catalog_probe.py --out corpus-cache/imec/catalog.json
 ```
 
 Les diagnostics d'accessibilité ne sont pas un test de validité de signal. Tant que les fichiers n'ont pas été inspectés, le statut reste `documentation_verified_files_not_inspected`.
+
+### Observation d'accès effectuée
+
+Le [diagnostic CI du 25 octobre](https://github.com/sebadiaz/IQScope/actions/runs/40216821860) confirme une réponse HTTP 200 pour la page publique, intitulée « Dataset - IDLab cloud ». La tentative normale de liste WebDAV publique retourne HTTP 401. Aucun fichier IQ n'a été téléchargé, aucune liste de fichiers n'a été obtenue et aucun mot de passe n'a été essayé.
+
+Le lien n'est donc pas déclaré mort. Le refus de cet endpoint ne prouve pas que l'interface web normale exige une authentification ; sa méthode d'accès aux fichiers reste à examiner. Le diagnostic réussi dans la CI signifie que l'observation a été enregistrée, pas que le dataset a passé un test d'import.
