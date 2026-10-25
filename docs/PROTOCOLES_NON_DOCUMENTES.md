@@ -220,3 +220,84 @@ Un décodeur expérimental peut afficher des champs bruts et hypothèses. Sa sor
 | REV-10 | Benchmark de protocoles absents de l'apprentissage | Mesures de généralisation et bonne abstention |
 
 La priorité est la couverture réelle apportée par les travaux communautaires, suivie d'une inférence reproductible sur les cas absents. Ajouter des noms au catalogue sans sources ni corpus ne constitue pas une nouvelle capacité.
+
+## 10. Formes exotiques, réseaux fermés et signaux réputés secrets
+
+### 10.1 Ce que signifie « secret » dans le catalogue
+
+Distinguer une spécification non publiée, une implémentation propriétaire, un usage inconnu, une forme d'onde observable mais mal comprise et une charge chiffrée. Ces situations appellent des travaux différents. Une émission associée par des observateurs à un service étatique n'est pas, à elle seule, une identification technique ou une preuve de contenu secret.
+
+Le catalogue accepte ces signaux même sans nom de protocole. Il leur attribue une identité technique provisoire fondée sur les captures, et conserve séparément les appellations communautaires et les attributions rapportées. Aucune documentation classifiée ni accès à une spécification secrète ne sont présumés.
+
+### 10.2 Inventaire exploratoire
+
+Les entrées suivantes sont des pistes d'observation et de recherche, non des identifications vérifiées dans cette étude. Leur disponibilité actuelle, les sources, les paramètres et les captures restent à établir par fiche.
+
+| Domaine | Exemples de cibles | Travail utile et limites |
+|---|---|---|
+| Stations de nombres | Groupes vocaux, Morse, transmissions numériques associées par les observateurs | Segmenter, transcrire avec incertitudes, mesurer horaires et structures ; la transcription des groupes ne déchiffre pas leur sens |
+| Émissions à marqueur | Signaux couramment désignés UVB-76/The Buzzer, The Pip, The Squeaky Wheel | Caractériser marqueur, interruptions et passages vocaux ; ces noms désignent des émissions observées, pas des standards de protocole |
+| Liaisons HF à bursts | Paquets très courts, transmissions rapides, préambules récurrents | Détection temporelle fine, mémoire avant déclenchement, regroupement et récupération candidate de symboles |
+| Familles HF aux surnoms communautaires | Appellations telles que CIS-12, CIS-36-50, FSK « diplomatique » et autres désignations de catalogues | Vérifier chaque appellation et sa définition ; ne pas conclure pays, organisme ou usage à partir du surnom |
+| Modems HF propriétaires | Anciennes liaisons gouvernementales, commerciales ou industrielles, multiplex télétype | Bibliothèque de signatures, étude des voies et framing si données suffisantes |
+| Liaisons tactiques | Modes documentés de Link 11/16/22 et autres formes étudiées publiquement | Séparer documentation accessible, acquisition possible et contenu protégé ; hopping, bande et synchronisation peuvent empêcher l'acquisition complète |
+| Voix protégée ou brouillée | Inversion spectrale, brouillage analogique documenté, vocodeurs et voix numérique chiffrée | Distinguer transformation analogique, codage de voix et chiffrement ; aucune promesse de récupération universelle |
+| Étalement et faible probabilité d'interception | DSSS, FHSS, hybrides et formes adaptatives | Recherche de structure et détection statistique lorsque observables ; une capture trop étroite peut rendre la reconstruction impossible |
+| Communications à propagation particulière | Meteor scatter, troposcatter, NVIS et liaisons ionosphériques | Ces termes désignent la propagation, pas un protocole ; identifier séparément forme d'onde et canal |
+| Très basses fréquences | VLF/LF, MSK/FSK étroite, transmissions longues et services documentés | Récepteur/antenne adaptés, horloge stable, observation longue ; le contenu peut rester protégé |
+| Systèmes satellitaires fermés | Liaisons de service, télémétrie et canaux propriétaires observables | Doppler, framing et métadonnées accessibles ; ne pas assimiler toute liaison propriétaire à une liaison secrète |
+| Radar au-delà de l'horizon | Familles FMCW, chirps et trains d'impulsions ; surnoms de catalogues à vérifier | Caractérisation temps-fréquence ; un radar n'a pas nécessairement un payload à décoder |
+| Sondeurs et balises inhabituels | Chirps ionosphériques, balayages, signaux de calibration | Reconnaissance d'une fonction probable avec preuves ; pas d'attribution certaine par seule similarité visuelle |
+| Formes expérimentales | OTFS, FBMC, GFDM, modulations chaotiques et autres propositions publiées | Générateurs de référence, hypothèses et tests propres à chaque publication ; « exotique » ne signifie pas « secret » |
+| Émissions non identifiées | Bursts, motifs périodiques, multiporteuses et balayages sans correspondance | Identifiant provisoire, caractéristiques et corpus ; résultat inconnu conservé sans nom inventé |
+
+### 10.3 Échelle de résultat spécifique
+
+Pour chaque cas, afficher séparément :
+
+1. **Observation** : temps, fréquence, bande, durée, qualité et couverture de la capture.
+2. **Caractéristiques** : chirps, débits candidats, espacement des voies, périodicités et transitions.
+3. **Correspondance de signature** : ressemblances avec des références, contre-exemples et incertitudes.
+4. **Récupération physique** : symboles ou bits sous hypothèses explicites.
+5. **Structure** : préambules, blocs, répétitions, FEC et intégrité lorsqu'établis.
+6. **Contenu** : clair, transcrit, non interprété ou protégé selon les preuves.
+7. **Attribution** : inconnue ou rapportée par une source distincte ; jamais déduite automatiquement d'un surnom.
+
+Une émission peut atteindre l'étape 5 sans livrer de texte intelligible. Une station de nombres peut livrer des groupes parfaitement transcrits sans révéler leur signification. Dans un système correctement chiffré, des IQ de meilleure qualité ne remplacent pas les clés.
+
+### 10.4 Acquisition et conservation pour cas difficiles
+
+Privilégier les captures originales, la fréquence d'échantillonnage réelle, la précision d'horloge et une durée suffisante avant/après émission. Conserver les références temporelles et discontinuités. Les bursts exigent des fenêtres courtes en complément de FFT longues ; les émissions très étroites exigent l'approche inverse.
+
+Pour le hopping, documenter la fraction de bande et de temps effectivement observée. Plusieurs canaux ou SDR peuvent nécessiter une synchronisation cohérente ; réunir des fichiers sans horloges communes ne crée pas une acquisition cohérente. L'absence d'un burst dans la capture ne prouve pas son absence sur l'air.
+
+### 10.5 Méthodes de recherche
+
+Combiner autocorrélation, corrélations entre bursts, cyclostationnarité, cumulants lorsque pertinents, estimation de débits, recherche de motifs, analyse de complexité et clustering. Évaluer les méthodes sur des références connues masquées au moteur avant de les appliquer à des inconnus.
+
+Une signature doit résister à des changements de fréquence, gain, SNR, récepteur et canal ; sinon elle peut reconnaître une configuration de capture plutôt qu'une forme d'onde. Les défauts matériels peuvent aider à comparer des observations, mais ne permettent pas de promettre une identification physique certaine d'émetteur.
+
+La recherche de structure et les tests de codage restent bornés et journalisés. Toute hypothèse construite à partir d'une capture doit être confrontée à une session indépendante. La sortie d'un modèle génératif ne constitue pas une preuve de décodage ou d'attribution.
+
+### 10.6 Sources ouvertes à examiner
+
+Catalogues de signaux tels que Signal Identification Wiki ; observations de Priyom et ENIGMA 2000 pour leurs domaines ; suivis publics IARU ; articles scientifiques ; brevets ; notices réglementaires ; archives de captures dont la licence est établie ; sources de décodeurs et travaux universitaires.
+
+Ces ressources sont des pistes, pas une autorité unique. Aucun contenu de ces catalogues n'a été vérifié dans cette section. Pour chaque fiche, retrouver la référence primaire quand elle existe, citer la date, séparer observation et attribution, et vérifier les droits de redistribution des IQ.
+
+Points d'entrée : https://www.sigidwiki.com/ et https://priyom.org/ . Leur présence ici ne prouve ni l'identité d'une émission ni la disponibilité d'un décodeur.
+
+### 10.7 Backlog des signaux exotiques
+
+| ID | Travail | Acceptation |
+|---|---|---|
+| EXO-01 | Catalogue de signatures avec alias | Alias et attribution séparés de l'identifiant technique |
+| EXO-02 | Corpus d'émissions inhabituelles partageables | Provenance, droits, métadonnées et annotations |
+| EXO-03 | Détection multirésolution des bursts | Rappel et fausses alarmes mesurés par durée |
+| EXO-04 | Analyse des signaux étalés et des voies multiples | Mesures et limites de couverture explicites |
+| EXO-05 | Reconnaissance ouverte avec rejet | Signaux absents du catalogue classés inconnus |
+| EXO-06 | Dossier de recherche exportable | IQ, signatures, hypothèses et preuves versionnées |
+| EXO-07 | Parcours station de nombres ou marqueur | Segmentation et transcription vérifiables, sans sens inventé |
+| EXO-08 | Comparaison indépendante de signatures | Robustesse entre captures, sessions et récepteurs |
+
+Le résultat attendu est un outil qui découvre et documente aussi ce qu'il ne sait pas encore décoder. Les cas « secrets » ne doivent être ni exclus du registre d'étude ni utilisés pour promettre une capacité techniquement non démontrée.
