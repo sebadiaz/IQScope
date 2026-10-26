@@ -81,3 +81,11 @@ Aucune classe n'a été prédite ou importée depuis les étiquettes, aucun mess
 Le jeu FPV est détaillé dans [les notes spécifiques](DATASET_FPV_ANALOG.md). Il porte le catalogue à 17 sources. Son annotation « TX inactif » ne constitue pas une classe de bruit pur.
 
 Le [portail européen](https://data.europa.eu/data/datasets/oai-zenodo-org-10811147?locale=en) référence le même jeu Zenodo `10811147`, déjà enregistré sous `its_cellular`. Cet accès alternatif est conservé sans ajouter de source distincte ; [fiche du corpus](DATASET_MULTI_RAT.md).
+
+
+## UDXF Utility Collection 4
+
+Source ajoutée : [UDXF UC4](https://www.udxf.nl/uc4.html).
+Les références MP3 sélectionnées sont de l'audio de récepteur, pas des IQ RF.
+Le catalogue conserve le statut `audio_reference_only` et aucun adaptateur IQ.
+Voir [les notes et la sonde audio bornée](DATASET_UDXF_UC4.md).

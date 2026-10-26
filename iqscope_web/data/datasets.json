@@ -176,6 +176,17 @@
       "license": "CC-BY-4.0",
       "validation_reference": "https://github.com/sebadiaz/IQScope/actions/runs/40218880680",
       "validation_scope": "48 source experiment annotations and one internal sweep metadata member; no IQ import or video decoding"
+    },
+    {
+      "id": "udxf_uc4",
+      "name": "UDXF Utility Collection 4",
+      "kind": "receiver_audio_collection",
+      "url": "https://www.udxf.nl/uc4.html",
+      "role": "historical receiver-audio references and experimental CW evaluation",
+      "status": "audio_reference_only",
+      "adapter": null,
+      "scope": "Selected MP3 receiver audio, not original RF IQ; station and mode labels unverified",
+      "note": "Audio MP3 : import IQ indisponible. Sonde audio expérimentale fournie ; aucun support Link-11, Akula ou MIL-STD-110A ajouté."
     }
   ]
 }

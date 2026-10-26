@@ -401,3 +401,21 @@ The AX.25 synthetic IQ checks exercise direct 1200-baud NRZI and a translated
 wider than the 24-kHz generic-FSK eligibility limit, including for some low-baud
 signals; those bands are reported as excluded. This remains a coverage limit,
 not evidence that AX.25 is absent.
+
+
+## UDXF receiver-audio references
+
+[UDXF Collection 4](https://www.udxf.nl/uc4.html) is cataloged separately as
+**receiver audio**, not RF IQ. Selected MP3 links and unverified source labels
+are in `corpus/udxf_uc4.json`; see [the inspection notes](docs/DATASET_UDXF_UC4.md).
+The optional probe needs `ffmpeg` on PATH:
+
+```bash
+python scripts/udxf_audio_probe.py
+```
+
+It downloads bounded prefixes and decodes at most 20 seconds per entry, then
+tries the existing CW receiver on analytic audio. It stores provenance and any
+unverified text candidates, never claims the analytic audio is original IQ, and
+does not add MP3 upload support to the main IQ interface. CI uploads reports
+only. No new military protocol decoder is implied by this catalog addition.

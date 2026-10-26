@@ -1,0 +1,14 @@
+{
+  "source_page": "https://www.udxf.nl/uc4.html",
+  "inspected_date": "2026-10-26",
+  "scope": "Selected public compressed audio references; not original RF IQ, not independently verified labels",
+  "redistribution_license": "not established; do not commit or upload recordings",
+  "entries": [
+    {"id":"fdc_cw","url":"https://www.udxf.nl/FDC%20FAF%20Metz.mp3","source_label":"FDC FAF Metz","source_mode_hint":"CW marker","probe_default":true},
+    {"id":"vtk_cw","url":"https://www.udxf.nl/VTK-Indian-Navy-2013-03-25-2027utc.mp3","source_label":"Indian Navy VTK","source_mode_hint":"CW","probe_default":true,"note":"The page description and filename disagree on recording date/time; neither is treated as verified capture metadata."},
+    {"id":"link11","url":"https://www.udxf.nl/Link-11.mp3","source_label":"Link-11","source_mode_hint":"Link-11","probe_default":true},
+    {"id":"rnzaf","url":"https://www.udxf.nl/Royal-New-Zealand-Air-Force.mp3","source_label":"New Zealand Navy","source_mode_hint":"voice and MIL-STD-110A as written on the page","probe_default":false,"note":"The source row and filename use different service labels; attribution is unverified."},
+    {"id":"akula","url":"https://www.udxf.nl/Akula%20-Russian-Navy.mp3","source_label":"Russian Navy","source_mode_hint":"Akula","probe_default":false},
+    {"id":"singapore","url":"https://www.udxf.nl/Singapore-Navy-voice-fsk-and-psk-2014-10-20.mp3","source_label":"Singapore Navy","source_mode_hint":"voice, FSK and PSK","probe_default":false}
+  ]
+}

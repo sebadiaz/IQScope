@@ -65,8 +65,11 @@ class DatasetTests(unittest.TestCase):
         entries = catalog()['entries']
         ids = [entry['id'] for entry in entries]
         self.assertEqual(len(ids),len(set(ids)))
-        self.assertEqual(len(ids),17)
+        self.assertEqual(len(ids),18)
         self.assertIsNone(next(e for e in entries if e['id']=='imec_subghz')['adapter'])
+        udxf = next(e for e in entries if e['id']=='udxf_uc4')
+        self.assertIsNone(udxf['adapter'])
+        self.assertEqual(udxf['status'],'audio_reference_only')
         self.assertEqual(next(e for e in entries if e['id']=='satellite_recordings')['kind'],'real_mono_waveforms')
 
     def test_bounded_npy_prefix_does_not_flatten_rows(self):
