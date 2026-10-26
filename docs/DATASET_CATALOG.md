@@ -107,3 +107,12 @@ correspond au [corpus des auteurs](https://github.com/JaronFontaine/Technology-R
 distinct du sub-GHz. Reconnaissance de technologies sur plusieurs lieux,
 licence annoncée CC BY-NC-SA 4.0 ; format `.bin` encore à vérifier et recouvrement
 potentiel avec RadioPile. Voir [les notes et limites](DATASET_IMEC_LTE_WIFI_DVBT.md).
+
+
+## Iraq RF Spectrum : caractéristiques dérivées
+
+[Mendeley v2zmysy94r v1](https://data.mendeley.com/datasets/v2zmysy94r/1)
+publie des tableaux de caractéristiques issus d'IQ, pas les IQ bruts dans ces
+fichiers. Licence CC BY 4.0, rôle futur de détection/classification par
+caractéristiques ; aucun adaptateur de formes d'onde n'est déclaré. Voir
+[les données annoncées et limites](DATASET_IRAQ_RF_FEATURES.md).

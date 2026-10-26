@@ -65,8 +65,11 @@ class DatasetTests(unittest.TestCase):
         entries = catalog()['entries']
         ids = [entry['id'] for entry in entries]
         self.assertEqual(len(ids),len(set(ids)))
-        self.assertEqual(len(ids),20)
+        self.assertEqual(len(ids),21)
         self.assertIsNone(next(e for e in entries if e['id']=='imec_subghz')['adapter'])
+        features = next(e for e in entries if e['id']=='iraq_rf_features')
+        self.assertEqual(features['kind'],'derived_features')
+        self.assertIsNone(features['adapter'])
         cellular = next(e for e in entries if e['id']=='imec_lte_wifi_dvbt')
         self.assertEqual(cellular['adapter'],'imec_int16_endian_hypotheses')
         self.assertEqual(cellular['status'],'candidate_conversion_available')

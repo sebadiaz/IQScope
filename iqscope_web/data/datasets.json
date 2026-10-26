@@ -215,6 +215,18 @@
       "note": "Préfixe réel de 256 Kio lu ; deux conversions SigMF int16 I/Q vérifiées octet par octet. Endian et en-tête non résolus : aucune interprétation choisie, aucun décodage validé.",
       "metadata_status": "public_listing_verified",
       "validation_reference": "https://github.com/sebadiaz/IQScope/actions/runs/40389256077"
+    },
+    {
+      "id": "iraq_rf_features",
+      "name": "Iraq RF Spectrum · caractéristiques RTL-SDR",
+      "kind": "derived_features",
+      "url": "https://data.mendeley.com/datasets/v2zmysy94r/1",
+      "doi": "10.17632/v2zmysy94r.1",
+      "role": "feature-based spectrum sensing and classification evaluation",
+      "status": "documentation_only",
+      "adapter": null,
+      "license_as_reported": "CC-BY-4.0",
+      "note": "Tableaux de caractéristiques dérivées, pas des IQ : 24,8 M de lignes, 84 colonnes et 297 captures sources annoncées. Deux CSV gzip volumineux ; aucun import ou décodage validé."
     }
   ]
 }

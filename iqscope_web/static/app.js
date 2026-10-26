@@ -381,7 +381,7 @@ $('datasets').onclick=async()=>{
     const vksdr=await api('/api/recordings/vksdr',undefined,'GET');
     $('dataset-list').replaceChildren();
     const labels={candidate_conversion_available:'Conversion candidate · format non certifié',audio_import_available:'Import audio disponible · texte candidat',audio_reference_only:'Référence audio · import IQ indisponible',annotations_validated:'Annotations vérifiées · IQ non importés',validated_subset:'Sous-ensemble validé',documentation_only:'Documentation seulement',adapter_under_validation:'Importateur en validation',window_import_validated:'Import de fenêtre validé'};
-    const kinds={receiver_audio_collection:'Collection audio de récepteur',real_recordings:'Captures réelles',real_measurements:'Mesures réelles',synthetic_windows:'Fenêtres synthétiques',synthetic_generator:'Générateur synthétique',aggregate_windows:'Agrégat de fenêtres',real_recording_collection:'Collection de captures',real_recording:'Capture réelle',real_mono_waveforms:'Signaux réels mono'};
+    const kinds={derived_features:'Caractéristiques dérivées · pas des IQ',receiver_audio_collection:'Collection audio de récepteur',real_recordings:'Captures réelles',real_measurements:'Mesures réelles',synthetic_windows:'Fenêtres synthétiques',synthetic_generator:'Générateur synthétique',aggregate_windows:'Agrégat de fenêtres',real_recording_collection:'Collection de captures',real_recording:'Capture réelle',real_mono_waveforms:'Signaux réels mono'};
     for(const entry of data.entries){
       const card=element('div',undefined,'capability');
       const link=element('a',entry.name);link.href=entry.url;link.target='_blank';link.rel='noopener noreferrer';

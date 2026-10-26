@@ -1,5 +1,8 @@
-"""Bounded public Mendeley/DataCite metadata inspection, never dataset downloads."""
+"""Bounded public Mendeley/DataCite inspection; no bulk feature-table or IQ downloads."""
 import argparse
+import csv
+import io
+import re
 from datetime import datetime,timezone
 import hashlib
 from html.parser import HTMLParser
@@ -70,14 +73,57 @@ def normalize_mendeley(document):
     if isinstance(files,dict):
         files = files.get('items',[])
     return {'keys':list(data),'id':data.get('id'),'version':data.get('version'),
-            'name':data.get('name'),'title':data.get('title'),'doi':data.get('doi'),
+            'name':data.get('name'),'title':data.get('title'),'doi':data.get('doi',{}).get('id') if isinstance(data.get('doi'),dict) else data.get('doi'),
             'description_excerpt':str(data.get('description',''))[:1600],
             'licence':data.get('data_licence',data.get('licence',data.get('license'))),
             'related_links':data.get('related_links',[]),
-            'description_zenodo_urls':__import__('re').findall(r'https?://(?:www\.)?zenodo\.org/[^\s<>\"\)]+',str(data.get('description',''))),
+            'description_zenodo_urls':re.findall(r'https?://(?:www\.)?zenodo\.org/[^\s<>\"\)]+',str(data.get('description',''))),
             'file_count':len(files) if isinstance(files,list) else None,
             'files':[ {k:f.get(k) for k in ('id','filename','name','size','size_bytes','content_type') if k in f}
                      for f in files[:40] if isinstance(f,dict)] if isinstance(files,list) else []}
+
+
+class FileRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self,req,fp,code,msg,headers,newurl):
+        parsed = urllib.parse.urlsplit(newurl)
+        host = parsed.hostname or ''
+        if parsed.scheme!='https' or not (host=='data.mendeley.com' or host.endswith('.s3.eu-west-1.amazonaws.com')):
+            raise ValueError('Unexpected supporting-file download host')
+        return super().redirect_request(req,fp,code,msg,headers,newurl)
+
+
+def supporting_files(document):
+    if document.get('id')!=DATASET or document.get('version')!=VERSION:
+        raise ValueError('Public API identity/version differs from the requested source')
+    results = []
+    for file in document.get('files',[]):
+        name = file.get('filename')
+        if name not in ('README.txt','metadata.csv','feature_description.csv'):
+            continue
+        item = {'name':name,'declared_bytes':file.get('size')}
+        try:
+            size = int(file['size'])
+            if not 0<size<=65536 or not re.fullmatch(r'[a-fA-F0-9-]{36}',file['id']):
+                raise ValueError('Supporting file exceeds the small metadata contract')
+            url = f"https://data.mendeley.com/public-files/datasets/{DATASET}/files/{file['id']}/file_downloaded"
+            with urllib.request.build_opener(FileRedirect()).open(urllib.request.Request(url),timeout=20) as response:
+                body = response.read(65537)
+            if len(body)!=size or len(body)>65536:
+                raise ValueError('Supporting file size differs or exceeds the 64 KiB bound')
+            text = body.decode('utf-8-sig')
+            item.update(bytes_read=len(body),sha256=hashlib.sha256(body).hexdigest(),source_endpoint=url)
+            if name.endswith('.csv'):
+                reader = csv.DictReader(io.StringIO(text))
+                rows = list(reader)
+                item['columns'] = reader.fieldnames
+                item['rows'] = len(rows)
+            else:
+                item['zenodo_urls'] = re.findall(r'https?://(?:www\.)?zenodo\.org/[^\s<>\"\)]+',text)
+                item['relevant_lines'] = [line.strip()[:300] for line in text.splitlines() if re.search(r'IQ|raw|Zenodo|licen|record|column',line,re.I)][:15]
+        except Exception as exc:
+            item['error'] = str(exc)
+        results.append(item)
+    return results
 
 
 def probe():
@@ -88,7 +134,7 @@ def probe():
         ('mendeley_dataset',f'https://data.mendeley.com/public-api/datasets/{DATASET}'),
         ('page',f'https://data.mendeley.com/datasets/{DATASET}/{VERSION}')]
     result = {'dataset_id':DATASET,'version':VERSION,'checked_utc':datetime.now(timezone.utc).isoformat(),
-              'scope':'public metadata only, no dataset files downloaded','observations':[]}
+              'scope':'public metadata and small supporting documents only; no bulk feature tables or IQ downloaded','observations':[]}
     for kind,url in endpoints:
         item = {'kind':kind,'url':url}
         try:
@@ -106,6 +152,8 @@ def probe():
             if 'json' in content_type:
                 document = json.loads(body)
                 item['metadata'] = normalize_datacite(document) if kind=='datacite' else normalize_mendeley(document)
+                if kind=='mendeley_dataset':
+                    item['supporting_files'] = supporting_files(document)
             else:
                 page = PageData()
                 page.feed(body.decode('utf-8',errors='replace'))

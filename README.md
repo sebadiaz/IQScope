@@ -588,3 +588,14 @@ They do not increment the CRC packet counter. Synthetic tests exercise several
 length/guard pairs, arbitrary acquisition offset, CFO, noise and multipath, plus
 abstention on noise, colored noise, a carrier and binary FSK. The imec prefix
 probe records the candidates separately for each endian without selecting one.
+
+
+## Iraq RF handcrafted feature tables
+
+[Mendeley v2zmysy94r v1](https://data.mendeley.com/datasets/v2zmysy94r/1) is cataloged
+as **derived feature tables**, not raw IQ. Its published metadata describes
+24.8 million feature-window rows, 84 columns and 297 source recordings; the
+large compressed feature tables are not downloaded by the probe. The dataset
+license is CC BY 4.0. See [the source notes](docs/DATASET_IRAQ_RF_FEATURES.md)
+for the small supporting files and related raw-IQ lineage. No waveform importer,
+radio decoder or prediction model is added for these CSV features.
