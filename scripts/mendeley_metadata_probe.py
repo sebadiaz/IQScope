@@ -72,7 +72,9 @@ def normalize_mendeley(document):
     return {'keys':list(data),'id':data.get('id'),'version':data.get('version'),
             'name':data.get('name'),'title':data.get('title'),'doi':data.get('doi'),
             'description_excerpt':str(data.get('description',''))[:1600],
-            'licence':data.get('licence',data.get('license')),
+            'licence':data.get('data_licence',data.get('licence',data.get('license'))),
+            'related_links':data.get('related_links',[]),
+            'description_zenodo_urls':__import__('re').findall(r'https?://(?:www\.)?zenodo\.org/[^\s<>\"\)]+',str(data.get('description',''))),
             'file_count':len(files) if isinstance(files,list) else None,
             'files':[ {k:f.get(k) for k in ('id','filename','name','size','size_bytes','content_type') if k in f}
                      for f in files[:40] if isinstance(f,dict)] if isinstance(files,list) else []}
@@ -112,7 +114,7 @@ def probe():
                 for schema in page.schemas[:3]:
                     value = json.loads(schema)
                     if isinstance(value,dict):
-                        item['jsonld'].append({k:value.get(k) for k in ('@type','name','description','license','keywords') if k in value})
+                        item['jsonld'].append({k:value.get(k) for k in ('@type','name','license','keywords') if k in value})
         except urllib.error.HTTPError as exc:
             item.update(http_status=exc.code,error=str(exc))
         except Exception as exc:
