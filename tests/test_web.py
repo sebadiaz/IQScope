@@ -98,6 +98,20 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(job['status'],'failed')
         self.assertIn('source timeout',job['error'])
 
+    async def test_upload_deletion_releases_quota_and_protects_active_jobs(self):
+        identifier = (await self.client.post('/api/uploads',content=b'x'*2048,headers=HEADERS)).json()['upload_id']
+        path = self.app.state.service.uploads[identifier]
+        self.app.state.service.jobs['busy'] = {'status':'running'}
+        blocked = await self.client.delete(f'/api/uploads/{identifier}',headers=HEADERS)
+        self.assertEqual(blocked.status_code,409)
+        self.assertTrue(path.exists())
+        del self.app.state.service.jobs['busy']
+        removed = await self.client.delete(f'/api/uploads/{identifier}',headers=HEADERS)
+        self.assertEqual(removed.status_code,200)
+        self.assertFalse(path.exists())
+        self.assertNotIn(identifier,self.app.state.service.upload_sizes)
+        self.assertEqual((await self.client.delete(f'/api/uploads/{identifier}',headers=HEADERS)).status_code,404)
+
     async def test_demo_job_and_audio_artifact(self):
         response=(await self.client.post('/api/analyses',json={'demo':True},headers=HEADERS))
         self.assertEqual(response.status_code,202)

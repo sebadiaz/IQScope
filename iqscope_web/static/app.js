@@ -265,6 +265,7 @@ async function followJob(job) {
 }
 async function runFile(isDemo) {
   if(busy) return;
+  let uploadedId=null;
   setBusy(true);status(isDemo ? 'Génération et analyse de la démo…' : 'Import de la capture…','busy');
   try {
     let body={demo:isDemo};
@@ -275,7 +276,7 @@ async function runFile(isDemo) {
       const audioInput=$('input-kind').value==='audio';
       const meta=audioInput?null:$('meta-file').files[0];
       if(meta) {if(meta.size>1024*1024) throw new Error('Métadonnées trop volumineuses.');metadata=JSON.parse(await meta.text());}
-      const uploaded=await api('/api/uploads',file);
+      const uploaded=await api('/api/uploads',file);uploadedId=uploaded.upload_id;
       body={upload_id:uploaded.upload_id,input_kind:audioInput?'audio':'iq',metadata,sample_rate:Number($('file-rate').value),seconds:Number($('seconds').value)};
     }
     status('Détection des émissions et essais de décodage…','busy');
@@ -283,7 +284,10 @@ async function runFile(isDemo) {
     $('source-badge').textContent=isDemo?'Démo synthétique':audioPlot?'Audio · fréquences audio':'Fichier IQ';
     status(audioPlot?'Analyse terminée. Audio et résultats Morse/RTTY/AX.25 disponibles.':'Analyse terminée. Sélectionnez une émission pour écouter les candidats audio.','success');
   } catch(error) {status(error.message,'error');}
-  finally {setBusy(false);}
+  finally {
+    if(uploadedId){try{await api(`/api/uploads/${encodeURIComponent(uploadedId)}`,undefined,'DELETE');}catch{/* A still-running job keeps its source until it finishes. */}}
+    setBusy(false);
+  }
 }
 async function switchTab(live) {
   if(busy) return;

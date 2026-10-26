@@ -511,3 +511,12 @@ noise, unkeyed tone and phase deduplication. WAV and a 24-kHz/64-kbit/s MP3 fixt
 exercise import, UI and export. Aggressively compressed MP3 can destroy valid
 packets; WAV is preferable for protocol validation. No real over-air AFSK1200
 capture has yet been validated.
+
+
+The browser releases its temporary upload after a completed or failed analysis;
+job results and exported artifacts remain available. API clients can use
+`DELETE /api/uploads/{id}` when no analysis is active. The eight-upload quota
+remains in force for retained source uploads; sequential browser analyses no
+longer accumulate those sources. SDRangel corpus downloads explicitly request
+the ZIP beginning and identity encoding, and retry a failed prefix parse once.
+Each attempt keeps the original byte/parser limits and pinned excerpt hashes.

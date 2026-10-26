@@ -168,6 +168,18 @@ def create_app(root=None):
         service.upload_sizes[identifier] = count
         return {'upload_id': identifier, 'bytes': count}
 
+    @app.delete('/api/uploads/{identifier}')
+    def delete_upload(identifier: str):
+        with service.lock:
+            if any(job['status'] in ('queued','running') for job in service.jobs.values()):
+                raise HTTPException(409,'Wait for the active analysis before removing uploads')
+            path = service.uploads.pop(identifier,None)
+            if path is None:
+                raise HTTPException(404,'Upload not found')
+            path.unlink(missing_ok=True)
+            service.upload_sizes.pop(identifier,None)
+        return {'deleted':True}
+
     @app.post('/api/analyses', status_code=202)
     def start_analysis(body: AnalyzeRequest):
         if not math.isfinite(body.seconds):

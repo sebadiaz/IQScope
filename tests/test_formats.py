@@ -5,6 +5,7 @@ from pathlib import Path
 import struct
 import tempfile
 import unittest
+from unittest.mock import patch
 import wave
 import zipfile
 import zlib
@@ -123,6 +124,29 @@ class FormatTests(unittest.TestCase):
             x,fs,_ = read_wave_iq(self.write('prefix.wav',prefix),allow_prefix=True)
             self.assertEqual(fs,24000)
             self.assertGreater(len(x),1024)
+
+    def test_zip_download_retries_once_without_accepting_invalid_prefix(self):
+        spec = importlib.util.spec_from_file_location('corpus_retry_script',Path(__file__).parents[1]/'scripts/sdrangel_corpus.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        payload = make_wave(np.tile(np.array([123,-456],dtype='<i2'),50000).tobytes())
+        archive = io.BytesIO()
+        with zipfile.ZipFile(archive,'w',compression=zipfile.ZIP_DEFLATED) as handle:
+            handle.writestr('capture.wav',payload)
+        invalid = io.BytesIO(b'not a ZIP file'*20)
+        valid = io.BytesIO(archive.getvalue())
+        for response in (invalid,valid):
+            response.status = 200
+            response.headers = {}
+        with patch.object(module.urllib.request,'urlopen',side_effect=[invalid,valid]) as fetch:
+            _,prefix,_ = module.download_prefix('https://example.org/test.zip',8192)
+            self.assertEqual(prefix,payload[:8192])
+            self.assertEqual(fetch.call_count,2)
+            self.assertEqual(fetch.call_args.args[0].get_header('Range'),'bytes=0-')
+        with patch.object(module.urllib.request,'urlopen',side_effect=ValueError('bad ZIP')) as fetch:
+            with self.assertRaises(ValueError):
+                module.download_prefix('https://example.org/test.zip',8192)
+            self.assertEqual(fetch.call_count,2)
 
 
 if __name__ == '__main__':

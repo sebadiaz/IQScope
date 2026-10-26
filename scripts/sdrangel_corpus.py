@@ -10,6 +10,8 @@ from pathlib import Path
 import struct
 import sys
 import urllib.request
+import urllib.error
+import re
 import zlib
 
 from iqscope import analyze_samples, read_iq
@@ -99,13 +101,28 @@ def first_iq_prefix(stream, output_limit=16*1024*1024):
     raise ValueError('No IQ member found in the first 32 ZIP entries')
 
 
+def download_prefix(url,output_limit):
+    # Some upstream cache responses have not started at the ZIP header.
+    # Retry once; every attempt retains the same byte and parser budgets.
+    for attempt in range(2):
+        request = urllib.request.Request(url,headers={'User-Agent':'IQScope-corpus/0.13',
+            'Range':'bytes=0-','Accept-Encoding':'identity','Cache-Control':'no-cache'})
+        try:
+            with urllib.request.urlopen(request,timeout=30) as response:
+                content_range = response.headers.get('Content-Range')
+                if response.status==206 and not re.match(r'^bytes 0-\d+/\d+$',content_range or ''):
+                    raise ValueError('ZIP response did not begin at byte zero')
+                return first_iq_prefix(response,output_limit)
+        except (ValueError,urllib.error.URLError,TimeoutError):
+            if attempt:
+                raise
+
+
 def run(entry, out, output_limit=16*1024*1024):
     url = 'https://www.sdrangel.org/iq/'+entry['file']
     out = Path(out)/entry['id']
     out.mkdir(parents=True, exist_ok=True)
-    request = urllib.request.Request(url, headers={'User-Agent':'IQScope-corpus/0.3'})
-    with urllib.request.urlopen(request, timeout=30) as response:
-        name, prefix, downloaded = first_iq_prefix(response, output_limit)
+    name, prefix, downloaded = download_prefix(url,output_limit)
     suffix = Path(name).suffix.lower()
     path = out / ('source-prefix'+suffix)
     if suffix == '.sdriq':
