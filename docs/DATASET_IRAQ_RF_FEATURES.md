@@ -34,3 +34,31 @@ chacun). Elle ne télécharge ni les gros CSV gzip ni les IQ. Les URL de
 téléchargement signées ne sont pas conservées dans le rapport. Le
 [manifeste](../corpus/mendeley-v2zmysy94r.json) sépare les chiffres annoncés des
 contrôles effectivement réalisés.
+
+
+## Observations vérifiées
+
+Le [contrôle 40401653123](https://github.com/sebadiaz/IQScope/actions/runs/40401653123)
+a obtenu les métadonnées DataCite et l'API publique du dataset. Le DOI, la version
+1, le titre, la licence et les noms/tailles des cinq fichiers concordent.
+Le [résumé conservé](../corpus/mendeley-v2zmysy94r-observation.json) distingue ces
+vérifications des déclarations de volume contenues dans la description.
+
+Les téléchargements de `README.txt`, `metadata.csv` et `feature_description.csv`
+ont tous renvoyé HTTP 403 dans cet environnement. Aucune ligne de ces fichiers
+n'a donc été inspectée ; les nombres de lignes et colonnes restent des chiffres
+annoncés. Le succès du job de sonde signifie que les observations ont été
+produites, pas que les fichiers sont importables.
+
+### Sources IQ déclarées, encore à inspecter
+
+- [Zenodo 22019720](https://zenodo.org/records/22019720)
+- [Zenodo 22036530](https://zenodo.org/records/22036530)
+- [Zenodo 22046487](https://zenodo.org/records/22046487)
+- [Zenodo 22052172](https://zenodo.org/records/22052172)
+- [Zenodo 22071547](https://zenodo.org/records/22071547)
+
+Ces liens viennent de l'API Mendeley. Leur contenu, leurs formats et leurs
+licences propres n'ont pas été vérifiés ici ; la licence du tableau dérivé ne
+leur est pas automatiquement appliquée. Ils sont conservés comme liens de
+provenance, sans créer cinq entrées de captures prétendument validées.

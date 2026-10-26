@@ -1,0 +1,82 @@
+{
+  "checked_utc": "2026-10-26T21:07:30.295025+00:00",
+  "run_url": "https://github.com/sebadiaz/IQScope/actions/runs/40401653123",
+  "dataset_id": "v2zmysy94r",
+  "version": 1,
+  "doi": "10.17632/v2zmysy94r.1",
+  "title": "Iraq RF Spectrum Dataset: Handcrafted Features Extracted from RTL-SDR IQ Recordings",
+  "datacite_doi": "10.17632/v2zmysy94r.1",
+  "license": "CC BY 4.0",
+  "file_inventory": [
+    {
+      "id": "8b06ac04-4555-4e2a-bce7-62827aa12372",
+      "filename": "feature_description.csv",
+      "size": 7822
+    },
+    {
+      "id": "e25c8039-7b53-41a2-9837-eaceab822a11",
+      "filename": "iraq_rf_handcrafted_features_part01.csv.gz",
+      "size": 5235114774
+    },
+    {
+      "id": "4ead7eb9-f29d-4c08-bfce-674f1b33bf65",
+      "filename": "iraq_rf_handcrafted_features_part02.csv.gz",
+      "size": 5337482028
+    },
+    {
+      "id": "0a0b5ae9-afd5-4545-aa0f-63101f3aa676",
+      "filename": "metadata.csv",
+      "size": 51368
+    },
+    {
+      "id": "e49f764e-e81f-4fcd-a070-678f124d5b6f",
+      "filename": "README.txt",
+      "size": 6860
+    }
+  ],
+  "declared_related_sources": [
+    {
+      "type": "dataset",
+      "rel": "related_to",
+      "href": "https://zenodo.org/records/22019720"
+    },
+    {
+      "type": "dataset",
+      "rel": "related_to",
+      "href": "https://zenodo.org/records/22036530"
+    },
+    {
+      "type": "dataset",
+      "rel": "related_to",
+      "href": "https://zenodo.org/records/22046487"
+    },
+    {
+      "type": "dataset",
+      "rel": "related_to",
+      "href": "https://zenodo.org/records/22052172"
+    },
+    {
+      "type": "dataset",
+      "rel": "related_to",
+      "href": "https://zenodo.org/records/22071547"
+    }
+  ],
+  "supporting_file_observations": [
+    {
+      "name": "feature_description.csv",
+      "declared_bytes": 7822,
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "name": "metadata.csv",
+      "declared_bytes": 51368,
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "name": "README.txt",
+      "declared_bytes": 6860,
+      "error": "HTTP Error 403: Forbidden"
+    }
+  ],
+  "scope": "Public identity, license and file inventory inspected. Small supporting documents returned HTTP 403; no feature table or IQ imported."
+}

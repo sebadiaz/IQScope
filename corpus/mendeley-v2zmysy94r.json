@@ -1,38 +1,91 @@
 {
-  "id":"iraq_rf_features",
-  "dataset_id":"v2zmysy94r",
-  "version":1,
-  "doi":"10.17632/v2zmysy94r.1",
-  "url":"https://data.mendeley.com/datasets/v2zmysy94r/1",
-  "title":"Iraq RF Spectrum Dataset: Handcrafted Features Extracted from RTL-SDR IQ Recordings",
-  "kind":"derived_feature_table",
-  "license":"CC-BY-4.0",
-  "authors":["Mays Jalal Jasim","Ali Hassan Taresh"],
-  "publication_year":2026,
-  "claims_from_publisher":{
-    "feature_records":24844740,
-    "columns":84,
-    "source_recordings":297,
-    "measurement_days":20,
-    "receiver":"RTL-SDR V3",
-    "source_sample_rate_hz":2048000,
-    "feature_window_complex_samples":8192,
-    "frequency_range_mhz":[95,1090],
-    "categories":["FM","VHF","UHF","ISM","LoRa/ISM","GSM-related","ADS-B"]
-  },
-  "file_inventory_from_api":[
-    {"name":"feature_description.csv","bytes":7822},
-    {"name":"iraq_rf_handcrafted_features_part01.csv.gz","bytes":5235114774},
-    {"name":"iraq_rf_handcrafted_features_part02.csv.gz","bytes":5337482028},
-    {"name":"metadata.csv","bytes":51368},
-    {"name":"README.txt","bytes":6860}
+  "id": "iraq_rf_features",
+  "dataset_id": "v2zmysy94r",
+  "version": 1,
+  "doi": "10.17632/v2zmysy94r.1",
+  "url": "https://data.mendeley.com/datasets/v2zmysy94r/1",
+  "title": "Iraq RF Spectrum Dataset: Handcrafted Features Extracted from RTL-SDR IQ Recordings",
+  "kind": "derived_feature_table",
+  "license": "CC-BY-4.0",
+  "authors": [
+    "Mays Jalal Jasim",
+    "Ali Hassan Taresh"
   ],
-  "integration_status":"metadata_verified_no_feature_rows_or_iq_imported",
-  "role":"future feature-based sensing/classification evaluation, not IQ demodulation",
-  "raw_iq_availability":"Publisher points to separate related Zenodo records; links under inspection",
-  "limitations":[
+  "publication_year": 2026,
+  "claims_from_publisher": {
+    "feature_records": 24844740,
+    "columns": 84,
+    "source_recordings": 297,
+    "measurement_days": 20,
+    "receiver": "RTL-SDR V3",
+    "source_sample_rate_hz": 2048000,
+    "feature_window_complex_samples": 8192,
+    "frequency_range_mhz": [
+      95,
+      1090
+    ],
+    "categories": [
+      "FM",
+      "VHF",
+      "UHF",
+      "ISM",
+      "LoRa/ISM",
+      "GSM-related",
+      "ADS-B"
+    ]
+  },
+  "file_inventory_from_api": [
+    {
+      "name": "feature_description.csv",
+      "bytes": 7822
+    },
+    {
+      "name": "iraq_rf_handcrafted_features_part01.csv.gz",
+      "bytes": 5235114774
+    },
+    {
+      "name": "iraq_rf_handcrafted_features_part02.csv.gz",
+      "bytes": 5337482028
+    },
+    {
+      "name": "metadata.csv",
+      "bytes": 51368
+    },
+    {
+      "name": "README.txt",
+      "bytes": 6860
+    }
+  ],
+  "integration_status": "metadata_verified_no_feature_rows_or_iq_imported",
+  "role": "future feature-based sensing/classification evaluation, not IQ demodulation",
+  "raw_iq_availability": "Five related Zenodo records declared by the publisher; not independently inspected",
+  "limitations": [
     "The published feature tables must not be treated as raw IQ waveforms.",
     "Source category labels do not establish protocol decoding or CRC validation.",
     "Split evaluation by recording/day and track overlap with the source IQ records; window-level random splits can leak near-duplicate context."
-  ]
+  ],
+  "declared_raw_iq_sources": [
+    {
+      "url": "https://zenodo.org/records/22019720",
+      "independently_inspected": false
+    },
+    {
+      "url": "https://zenodo.org/records/22036530",
+      "independently_inspected": false
+    },
+    {
+      "url": "https://zenodo.org/records/22046487",
+      "independently_inspected": false
+    },
+    {
+      "url": "https://zenodo.org/records/22052172",
+      "independently_inspected": false
+    },
+    {
+      "url": "https://zenodo.org/records/22071547",
+      "independently_inspected": false
+    }
+  ],
+  "supporting_file_access_status": "HTTP 403 on README.txt, metadata.csv and feature_description.csv in this probe",
+  "metadata_validation_reference": "https://github.com/sebadiaz/IQScope/actions/runs/40401653123"
 }
