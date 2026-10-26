@@ -26,10 +26,10 @@ jobs:
           python-version: '3.12'
       - run: python -m pip install '.[test]' playwright
       - run: playwright install chromium
-      - name: Install audio import dependency
+      - name: Install pinned CI audio dependency
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends ffmpeg
+          python -m pip install imageio-ffmpeg==0.6.0
+          python scripts/setup_ci_ffmpeg.py
       - run: python tests/browser_smoke.py
         env:
           NO_PROXY: 127.0.0.1,localhost
@@ -70,10 +70,10 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install .
-      - name: Install audio probe dependency
+      - name: Install pinned CI audio dependency
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends ffmpeg
+          python -m pip install imageio-ffmpeg==0.6.0
+          python scripts/setup_ci_ffmpeg.py
       - run: ffmpeg -version
       - name: Inspect bounded UDXF receiver audio prefixes
         run: |
