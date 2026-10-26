@@ -98,9 +98,11 @@ function showReport(report, jobId) {
     $('waterfall-label').textContent='Capture · fenêtres échantillonnées du début vers la fin';
   }
   updateAxes();drawSpectrum();drawWaterfall();
-  const frames=(report.wideband_trials || []).flatMap(t=>t.frames || []);
+  const frames=(report.wideband_trials || []).filter(t=>t.decoder==='adsb_1090es').flatMap(t=>t.frames || []);
+  const ax25Trials=(report.wideband_trials || []).filter(t=>t.decoder==='ax25_ui');
+  const ax25Frames=ax25Trials.flatMap(t=>t.frames || []);
   $('metric-signals').textContent=signals.length;
-  $('metric-frames').textContent=frames.length;
+  $('metric-frames').textContent=frames.length+ax25Frames.length;
   $('metric-duration').textContent=`${report.analyzed_seconds.toFixed(2)} s`;
   $('download').href=`/api/jobs/${jobId}/artifacts/report.json`; $('download').hidden=false;
   const list=$('signal-list');list.replaceChildren();
@@ -127,7 +129,7 @@ function showReport(report, jobId) {
   if(sampleRate<2e6) frameList.append(element('p','Recherche ADS-B non applicable : il faut au moins 2 Méch/s.','hint'));
   else if(!frames.length) frameList.append(element('p','Aucun paquet DF17/18 validé dans cette fenêtre. Cela ne prouve pas l’absence d’autres protocoles.','hint'));
   for(const trial of report.wideband_trials || []) {
-    if(trial.budget_exhausted) frameList.append(element('p',`Recherche partielle : budget atteint après ${trial.candidates_examined} candidats. Tous les paquets de la fenêtre n’ont pas été examinés.`,'hint'));
+    if(trial.decoder==='adsb_1090es' && trial.budget_exhausted) frameList.append(element('p',`Recherche partielle : budget atteint après ${trial.candidates_examined} candidats. Tous les paquets de la fenêtre n’ont pas été examinés.`,'hint'));
   }
   for(const trial of report.wideband_trials || []) {
     if(trial.decoder!=='rtty_ita2') continue;
@@ -195,6 +197,22 @@ function showReport(report, jobId) {
       card.append(element('p',`Binaire : premier symbole récupéré en tête d’octet, ${candidate.packed_padding_bits} bit(s) de remplissage nul à la fin.`,'hint'));
       frameList.append(card);
     }
+  }
+  if(ax25Frames.length)frameList.append(element('h3',`AX.25 UI · ${ax25Frames.length} trame(s) CRC valide(s)`,'frames-title'));
+  for(const trial of ax25Trials){
+    if(trial.budget_exhausted)frameList.append(element('p',`Recherche AX.25 partielle : limite de trames ou de ${trial.flag_pair_budget} paires de fanions atteinte.`,'hint'));
+  }
+  for(const frame of ax25Frames){
+    const card=element('div',undefined,'frame');
+    const f=frame.fields;
+    const address=a=>`${a.callsign}${a.ssid?'-'+a.ssid:''}`;
+    card.append(element('p',`${address(f.source)} → ${address(f.destination)} · ${frame.line_coding} · CRC-16/X-25 valide`,'ax25-addresses'));
+    if(f.via.length)card.append(element('p',`Via : ${f.via.map(address).join(', ')}`));
+    card.append(element('p',`t=${frame.time_seconds.toFixed(6)} s · PID 0x${f.pid.toString(16).padStart(2,'0')}${frame.channel?' · '+formatFrequency(frame.channel.frequency_hz):''}`));
+    if(f.text!==undefined)card.append(element('pre',f.text,'ax25-text'));
+    else card.append(element('code',f.payload_hex));
+    card.append(element('p','CRC et structure UI vérifiés ; identité de l’émetteur et interprétation APRS non établies.','hint'));
+    frameList.append(card);
   }
   for(const frame of frames) {
     const card=element('div',undefined,'frame');card.append(element('code',frame.hex));

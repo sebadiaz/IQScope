@@ -370,3 +370,34 @@ a subsequent whole-window timing check. Each wideband candidate retains its
 frequency, timing origin and separate exports. Validation uses independent
 synthetic symbol sequences at 50/137/300/1200 baud, two simultaneous wideband
 channels and a stronger carrier. Real recorded 4-FSK has not yet been validated.
+
+
+## AX.25 UI frames from recovered 2-FSK bits
+
+A bounded HDLC receiver now tries NRZI (independent of tone polarity), direct
+NRZ and inverted NRZ on each generic 2-FSK candidate. It locates flags, removes
+bit stuffing, checks the CRC-16/X-25 FCS (little-endian on air), and validates
+AX.25 UI address/control fields. Only accepted frames enter the CRC packet
+counter. The UI and JSON expose source/destination callsigns and SSIDs, path,
+PID, payload hex, line coding, channel and timestamp. PID 0xf0 also gets a safe
+UTF-8 text interpretation; it does not imply valid APRS content.
+
+Scope: UI frames only, two to ten address fields, up to 256 information octets.
+Search budgets are 128 accepted frames and 2000 flag pairs across all candidate
+streams. FCS failures are rejected without bit correction. A valid FCS and
+address structure do not authenticate a sender. Truncated frames, upstream
+clock/rate errors and inter-window gaps can cause missed packets.
+
+**This does not yet implement AFSK1200 over an FM discriminator, G3RUH
+scrambling/descrambling, connected-mode AX.25, KISS output or APRS field parsing.**
+The initial end-to-end tests use synthetic continuous direct-2-FSK recordings,
+NRZI with both polarities, independent FCS generation, stuffed payloads,
+corrupted FCS, truncation, random bits and bounded search. No over-air AX.25
+recording has yet been validated. Existing real-IQ CI remains a regression check
+for the previously supported recordings.
+
+The AX.25 synthetic IQ checks exercise direct 1200-baud NRZI and a translated
+300-baud wideband channel. The shared detector can merge sidelobes into bands
+wider than the 24-kHz generic-FSK eligibility limit, including for some low-baud
+signals; those bands are reported as excluded. This remains a coverage limit,
+not evidence that AX.25 is absent.

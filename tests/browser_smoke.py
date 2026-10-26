@@ -120,6 +120,20 @@ def main():
                     response = page.request.get(urljoin(page.url,symbol_link.get_attribute('href')))
                     assert response.ok and response.body().decode('ascii') in expected
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                with tempfile.TemporaryDirectory() as directory:
+                    from test_ax25 import fixture as ax25_fixture, TEXT as AX25_TEXT
+                    x,fs = ax25_fixture()
+                    raw = Path(directory)/'ax25.sigmf-data'
+                    meta = Path(directory)/'ax25.sigmf-meta'
+                    x.astype('<c8').tofile(raw)
+                    meta.write_text(json.dumps({'global':{'core:datatype':'cf32_le','core:sample_rate':fs}}))
+                    page.locator('#iq-file').set_input_files(str(raw))
+                    page.locator('#meta-file').set_input_files(str(meta))
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('.ax25-text').first).to_have_text(AX25_TEXT,timeout=30000)
+                    expect(page.locator('.ax25-addresses').first).to_contain_text('N0CALL-1 → APRS')
+                    assert int(page.locator('#metric-frames').inner_text())>=3
+                expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
                 page.get_by_role('tab',name='SDR en direct').click()
                 assert page.locator('#live-panel').is_visible()
                 assert page.locator('#live-frequency').input_value() == '100'

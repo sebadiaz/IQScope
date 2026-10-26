@@ -12,6 +12,7 @@ from iqscope_rtty import search_rtty
 from iqscope_cw import search_cw
 from iqscope_fsk import search_fsk
 from iqscope_fsk4 import search_fsk4
+from iqscope_ax25 import decode_ax25
 
 
 def read_iq(path, sample_rate=None, limit_seconds=10):
@@ -142,6 +143,7 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
     cw = search_cw(x, fs, center)
     fsk = search_fsk(x, fs, detections, center)
     fsk4 = search_fsk4(x, fs, detections, center)
+    ax25 = decode_ax25(fsk.get('candidates',[]))
     size = min(512, len(x))
     starts = np.unique(np.linspace(0, len(x)-size, min(96, max(1, len(x)//size)), dtype=int))
     window = np.hanning(size)
@@ -151,9 +153,9 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
               'center_frequency_hz': center, 'analyzed_seconds': len(x) / fs,
               'noise_floor_db_per_hz': noise, 'capabilities': capabilities(),
               'limitations': ['Stationary spectral detector; overlapping, hopping and weak bursts may be missed.',
-                             'AM/FM audio are unvalidated candidates. ADS-B packets have CRC checks; RTTY/CW text candidates have timing or framing evidence only.',
+                             'AM/FM audio are unvalidated candidates. ADS-B and AX.25 UI frames have CRC checks; RTTY/CW text candidates have timing or framing evidence only.',
                              'At most 12 spectral bands receive audio trials; other detections remain visible.'],
-              'signals': results, 'wideband_trials': [digital, rtty, cw, fsk, fsk4],
+              'signals': results, 'wideband_trials': [digital, rtty, cw, fsk, fsk4, ax25],
               'spectrum': {'frequency_hz': frequencies.tolist(), 'power_db': spectrum.tolist()},
               'waterfall': {'power_db': waterfall.tolist(), 'time_seconds': (starts/fs).tolist(),
                             'sampled_windows': True}}

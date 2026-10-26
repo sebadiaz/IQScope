@@ -49,7 +49,7 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('SDR en direct',page.text)
         self.assertIn("default-src 'self'",page.headers['content-security-policy'])
         data = (await self.client.get('/api/capabilities')).json()
-        self.assertEqual(len(data['decoders']),7)
+        self.assertEqual(len(data['decoders']),8)
 
     async def test_demo_job_and_audio_artifact(self):
         response=(await self.client.post('/api/analyses',json={'demo':True},headers=HEADERS))

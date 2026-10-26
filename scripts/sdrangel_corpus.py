@@ -135,7 +135,7 @@ def run(entry, out, output_limit=16*1024*1024):
     x.astype('<c8').tofile(out/'excerpt.sigmf-data')
     (out/'excerpt.sigmf-meta').write_text(json.dumps({'global':{'core:datatype':'cf32_le','core:sample_rate':fs,'core:version':'1.2.0'},'captures':[{'core:sample_start':0,'core:frequency':center}],'annotations':[]},indent=2))
     report = analyze_samples(x, fs, center, out/'results', source=url)
-    frame_count = sum(len(t.get('frames',[])) for t in report['wideband_trials'])
+    frame_count = sum(len(t.get('frames',[])) for t in report['wideband_trials'] if t['decoder']=='adsb_1090es')
     evidence = {'source_page':'https://www.sdrangel.org/iq-files/', 'archive_url':url,
                 'archive_member':name, 'compressed_bytes_received':downloaded,
                 'excerpt_bytes':len(prefix), 'excerpt_sha256':hashlib.sha256(prefix).hexdigest(),
