@@ -76,10 +76,15 @@ jobs:
           sudo apt-get install -y --no-install-recommends ffmpeg
       - run: ffmpeg -version
       - name: Inspect bounded UDXF receiver audio prefixes
-        run: python scripts/udxf_audio_probe.py
+        run: |
+          python scripts/udxf_audio_probe.py
+          python scripts/rtty_audio_smoke.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: udxf-audio-reports
-          path: corpus-cache/udxf-audio/**/provenance.json
+          path: |
+            corpus-cache/udxf-audio/**/provenance.json
+            corpus-cache/rtty-audio/provenance.json
+            corpus-cache/rtty-audio/audio-results/report.json
           if-no-files-found: ignore

@@ -145,7 +145,7 @@ not appear as an isolated stationary band. Decoder effort is bounded by at most
 12 audio-band trials, 2,000 ADS-B candidates and 100 recovered packets per window.
 Deferred bands and exhausted packet-search budgets are exposed in the report.
 
-LoRa, Morse, military protocols and the other remaining families in the specifications are
+LoRa, military protocols and the other remaining families in the specifications are
 **planned, not implemented**. The current registry is a small explicit list;
 a general third-party plugin loader and search engine remain future work.
 
@@ -308,8 +308,8 @@ manual timing, Farnsworth spacing, fading, overlapping signals, hopping and
 punctuation/prosigns may fail. At most the first 20 seconds are searched; source
 imports or live snapshots can be shorter. Search budgets are included in JSON.
 Validation currently uses independently specified synthetic Morse references
-at several speeds and a wideband interferer fixture. No real over-air CW
-recording has been validated yet.
+at several speeds and a wideband interferer fixture. The UDXF FDC receiver-audio
+excerpt also yields unverified CW candidates; see the audio validation notes.
 
 
 ## Generic 2-FSK candidate bits
@@ -432,15 +432,29 @@ or independent transcript, not validated military protocol decoding.
 
 Install `ffmpeg` on PATH, run `iqscope serve`, and select **Audio de récepteur**
 in the File panel. Choose MP3 or WAV and 1–20 seconds. The server mixes to mono,
-resamples to 8 kHz, and runs **CW timing trials only**. Results include audio
-playback, an audio-frequency spectrum/waterfall, candidate Morse text and JSON.
+resamples to 8 kHz, and runs **CW timing and RTTY/ITA2 framing trials**. Results include audio
+playback, an audio-frequency spectrum/waterfall, candidate Morse/RTTY text and JSON.
 There is no RF center frequency, RF-band discovery, speech recognition or new
 military-protocol support in this mode. IQ mode still rejects MP3 and mono WAV.
 
 API: submit an upload with `input_kind: "audio"` and no SigMF sidecar. Reports
 use `source_kind: "receiver_audio"`, `frequency_reference: "audio_hz"`, null
-`center_frequency_hz` and CW `audio_frequency_hz` fields. The first requested
+`center_frequency_hz` and `audio_frequency_hz` fields for candidate channels. The first requested
 seconds are bounded; the total source duration is not measured. Missing ffmpeg
 returns an actionable error. Browser CI covers MP3 upload, CW text, audio
 playback artifact and audio/RF labeling; the real UDXF probe exercises the same
 importer separately from original-RF-IQ validation.
+
+
+RTTY audio trials automatically search common shifts, 45.45/50/75/100 baud and
+both polarities. They inspect at most the first 12 seconds even when 20 seconds
+of audio are imported; the report/UI expose this shorter decoder budget. ITA2
+letters/figures and raw codes remain available, and `rtty-candidate.txt` exports
+the top text without converting CR/LF. Frequencies refer to the audio, not RF;
+tone polarity can be reversed by receiver sideband settings. There is no CRC,
+independently verified transcript or automatic protocol identity guarantee.
+
+Tests cover receiver-audio WAV in both polarities, letters/figures, MP3 browser
+upload, text download and the per-decoder duration limit. CI also attempts a
+frequency-translated, real-valued audio version of the SDRangel RTTY IQ excerpt;
+that is a transformed recording, not a separate off-air audio acquisition.

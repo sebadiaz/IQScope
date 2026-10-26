@@ -155,6 +155,23 @@ def main():
                     assert response.ok and response.body()[:4]==b'RIFF'
                     assert page.locator('#metric-frames').inner_text()=='0'
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                with tempfile.TemporaryDirectory() as directory:
+                    from test_rtty import fixture as rtty_audio_fixture, TEXT as RTTY_AUDIO_TEXT
+                    x,fs = rtty_audio_fixture(inverted=True)
+                    audio = np.real(x*np.exp(2j*np.pi*1000*np.arange(len(x))/fs)).astype(np.float32)
+                    wave = Path(directory)/'rtty-audio.wav'
+                    mp3 = Path(directory)/'rtty-audio.mp3'
+                    wavfile.write(wave,fs,audio)
+                    subprocess.run(['ffmpeg','-nostdin','-v','error','-i',str(wave),str(mp3)],check=True,timeout=20)
+                    page.locator('#iq-file').set_input_files(str(mp3))
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('.rtty-text').first).to_have_text(RTTY_AUDIO_TEXT,timeout=30000)
+                    expect(page.locator('#center-label')).to_contain_text('aucune fréquence RF')
+                    link = page.get_by_role('link',name='Télécharger le texte RTTY candidat')
+                    response = page.request.get(urljoin(page.url,link.get_attribute('href')))
+                    assert response.ok and response.body()==RTTY_AUDIO_TEXT.encode()
+                    assert page.locator('#metric-frames').inner_text()=='0'
+                expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
                 page.get_by_role('tab',name='SDR en direct').click()
                 assert page.locator('#live-panel').is_visible()
                 assert page.locator('#live-frequency').input_value() == '100'

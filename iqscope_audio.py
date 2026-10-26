@@ -8,6 +8,7 @@ import numpy as np
 from scipy import signal
 from scipy.io import wavfile
 from iqscope_cw import search_cw
+from iqscope_rtty import decode_rtty
 
 
 def decode_audio(path,seconds=20):
@@ -36,7 +37,13 @@ def analyze_audio(path,out,seconds=20):
     audio,fs = decode_audio(path,seconds)
     out = Path(out)
     out.mkdir(parents=True,exist_ok=True)
-    cw = search_cw(signal.hilbert(audio),fs)
+    analytic = signal.hilbert(audio)
+    cw = search_cw(analytic,fs)
+    rtty = decode_rtty(analytic,fs)
+    rtty['frequency_reference'] = 'audio_hz'
+    for candidate in rtty['candidates']:
+        p = candidate['parameters']
+        candidate['channel'] = {'audio_frequency_hz':(p['low_tone_hz']+p['high_tone_hz'])/2}
     for candidate in cw['candidates']:
         candidate['channel'] = {'audio_frequency_hz':candidate['channel']['frequency_hz']}
     for channel in cw.get('channels_examined',[]):
@@ -54,15 +61,21 @@ def analyze_audio(path,out,seconds=20):
               'sample_rate':fs,'center_frequency_hz':None,'frequency_reference':'audio_hz',
               'analyzed_seconds':len(audio)/fs,'requested_seconds':seconds,
               'duration_scope':'At most the requested first audio seconds; source duration is not measured.',
-              'audio_artifact':'audio-preview.wav','signals':[],'wideband_trials':[cw],
+              'audio_artifact':'audio-preview.wav','signals':[],'wideband_trials':[cw,rtty],
               'spectrum':{'frequency_hz':frequency.tolist(),'power_db':power_db.tolist()},
               'waterfall':{'power_db':waterfall.tolist(),'time_seconds':(starts/fs).tolist(),'sampled_windows':True},
-              'capabilities':[{'id':'cw_morse','family':'CW / Morse','validation':'timing candidates only; no checksum'}],
+              'capabilities':[{'id':'cw_morse','family':'CW / Morse','validation':'timing candidates only; no checksum'},
+                              {'id':'rtty_ita2','family':'RTTY / ITA2','validation':'framing candidates only; no checksum'}],
               'limitations':['Receiver audio, not original RF IQ; no RF center, phase or original bandwidth can be recovered.',
                              'Mono mixdown at 8 kHz; stereo cancellation and lossy compression may affect results.',
-                             'Only CW text trials are enabled for audio; no voice transcription or military protocol decoding.',
-                             'First 1–20 seconds only; CW text remains a timing candidate, not a verified transcript.']}
+                             'Only CW/RTTY text trials are enabled for audio; no voice transcription or military protocol decoding.',
+                             'First 1–20 seconds only; text remains candidate content, not a verified transcript.',
+                             'RTTY tests at most the first 12 seconds.']}
     if cw['candidates']:
+        cw['candidates'][0]['text_artifact'] = 'cw-candidate.txt'
         (out/'cw-candidate.txt').write_text(cw['candidates'][0]['text'],encoding='utf-8')
+    if rtty['candidates']:
+        rtty['candidates'][0]['text_artifact'] = 'rtty-candidate.txt'
+        (out/'rtty-candidate.txt').write_text(rtty['candidates'][0]['text'],encoding='utf-8')
     (out/'report.json').write_text(json.dumps(report,indent=2))
     return report

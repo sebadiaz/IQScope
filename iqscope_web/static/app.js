@@ -113,7 +113,7 @@ function showReport(report, jobId) {
   $('metric-duration').textContent=`${report.analyzed_seconds.toFixed(2)} s`;
   $('download').href=`/api/jobs/${jobId}/artifacts/report.json`; $('download').hidden=false;
   const list=$('signal-list');list.replaceChildren();
-  if(!signals.length) list.append(element('div',audioPlot?'Audio importé : lecture et essai Morse ci-dessous. Les émissions RF ne sont pas recherchées dans ce mode.':'Aucune bande stationnaire détectée. Les paquets sont recherchés séparément.','empty-results'));
+  if(!signals.length) list.append(element('div',audioPlot?'Audio importé : lecture et essais Morse/RTTY ci-dessous. Les émissions RF ne sont pas recherchées dans ce mode.':'Aucune bande stationnaire détectée. Les paquets sont recherchés séparément.','empty-results'));
   for(const sig of signals) {
     const details=element('details',undefined,'signal'), summary=element('summary');
     summary.append(element('strong',formatFrequency(sig.frequency_hz)));
@@ -133,14 +133,14 @@ function showReport(report, jobId) {
   }
   const frameList=$('frame-list');frameList.replaceChildren();
   if(audioPlot){
-    frameList.append(element('h3','Audio de récepteur · essai Morse'));
+    frameList.append(element('h3','Audio de récepteur · essais Morse et RTTY'));
     frameList.append(element('p','Fréquences audio uniquement. Le texte est candidat, sans CRC ni transcription indépendante.','hint'));
     frameList.append(element('p',`Début de l’enregistrement : ${report.analyzed_seconds.toFixed(2)} s analysées (maximum demandé ${report.requested_seconds} s).`,'hint'));
     if(report.audio_artifact){
       const player=element('audio');player.id='audio-preview';player.controls=true;player.preload='none';
       player.src=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(report.audio_artifact)}`;frameList.append(player);
     }
-    if(!(report.wideband_trials || []).some(t=>t.candidates?.length))frameList.append(element('p','Aucun texte Morse cohérent dans cet extrait.','hint'));
+    if(!(report.wideband_trials || []).some(t=>t.candidates?.length))frameList.append(element('p','Aucun texte Morse ou RTTY cohérent dans cet extrait.','hint'));
   }
   if(!audioPlot)frameList.append(element('h3',`Mode S / ADS-B · ${frames.length} paquet(s) CRC valide(s)`,'frames-title'));
   if(!audioPlot && sampleRate<2e6) frameList.append(element('p','Recherche ADS-B non applicable : il faut au moins 2 Méch/s.','hint'));
@@ -157,8 +157,9 @@ function showReport(report, jobId) {
     for(const candidate of trial.candidates){
       const card=element('div',undefined,'frame');
       card.append(element('p',`${candidate.parameters.baud} bauds · écart ${candidate.parameters.shift_hz.toFixed(1)} Hz · ${candidate.evidence.framed_characters} caractères tramés`));
-      if(candidate.channel)card.append(element('p',`Canal ${(candidate.channel.frequency_hz/1e6).toFixed(6)} MHz`));
+      if(candidate.channel)card.append(element('p',candidate.channel.audio_frequency_hz!==undefined?`Tonalités audio autour de ${formatFrequency(candidate.channel.audio_frequency_hz)}`:`Canal ${(candidate.channel.frequency_hz/1e6).toFixed(6)} MHz`));
       card.append(element('pre',candidate.text,'rtty-text'));
+      if(candidate.text_artifact){const link=element('a','Télécharger le texte RTTY candidat');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(candidate.text_artifact)}`;link.download=candidate.text_artifact;card.append(link);}
       frameList.append(card);
     }
   }
@@ -171,6 +172,7 @@ function showReport(report, jobId) {
       card.append(element('h3','CW / Morse · texte candidat, sans CRC'));
       card.append(element('p',`${candidate.parameters.words_per_minute.toFixed(1)} mots/min · ${candidate.channel.audio_frequency_hz!==undefined?formatFrequency(candidate.channel.audio_frequency_hz)+' audio':(candidate.channel.frequency_hz/1e6).toFixed(6)+' MHz'} · ${candidate.evidence.characters} caractères`));
       card.append(element('pre',candidate.text,'cw-text'));
+      if(candidate.text_artifact){const link=element('a','Télécharger le texte Morse candidat');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(candidate.text_artifact)}`;link.download=candidate.text_artifact;card.append(link);}
       frameList.append(card);
     }
   }
@@ -265,7 +267,7 @@ async function runFile(isDemo) {
     status('Détection des émissions et essais de décodage…','busy');
     const job=await api('/api/analyses',body);await followJob(job);
     $('source-badge').textContent=isDemo?'Démo synthétique':audioPlot?'Audio · fréquences audio':'Fichier IQ';
-    status(audioPlot?'Analyse terminée. Audio et résultats Morse disponibles.':'Analyse terminée. Sélectionnez une émission pour écouter les candidats audio.','success');
+    status(audioPlot?'Analyse terminée. Audio et résultats Morse/RTTY disponibles.':'Analyse terminée. Sélectionnez une émission pour écouter les candidats audio.','success');
   } catch(error) {status(error.message,'error');}
   finally {setBusy(false);}
 }

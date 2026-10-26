@@ -65,7 +65,8 @@ def probe(entry,out,limit=1024*1024):
               'ui_audio_import_check':{'source_kind':ui_report['source_kind'],
                   'frequency_reference':ui_report['frequency_reference'],
                   'rf_center_is_null':ui_report['center_frequency_hz'] is None,
-                  'cw_status':ui_report['wideband_trials'][0]['status']},
+                  'cw_status':ui_report['wideband_trials'][0]['status'],
+                  'rtty_status':next(t for t in ui_report['wideband_trials'] if t['decoder']=='rtty_ita2')['status']},
               **inspect_audio(audio,fs)}
     out = Path(out)/entry['id']
     out.mkdir(parents=True,exist_ok=True)

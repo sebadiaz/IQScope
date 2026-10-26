@@ -123,7 +123,7 @@ def create_app(root=None):
     def get_capabilities():
         return {'decoders': capabilities(), 'max_upload_bytes': MAX_UPLOAD,
                 'live': 'rtl_tcp on 127.0.0.1', 'max_analysis_samples': 8_000_000,
-                'audio':{'available':bool(shutil.which('ffmpeg')),'formats':['mp3','wav'],'max_seconds':20,'decoders':['cw_morse']}}
+                'audio':{'available':bool(shutil.which('ffmpeg')),'formats':['mp3','wav'],'max_seconds':20,'decoders':['cw_morse','rtty_ita2']}}
 
     @app.post('/api/uploads')
     async def upload(request: Request):

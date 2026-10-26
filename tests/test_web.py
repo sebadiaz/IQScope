@@ -98,6 +98,25 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(preview.status_code,200)
         self.assertEqual(preview.content[:4],b'RIFF')
 
+    @unittest.skipUnless(shutil.which('ffmpeg'),'ffmpeg is an optional audio dependency')
+    async def test_audio_rtty_text_download_preserves_ita2(self):
+        from test_rtty import fixture,TEXT
+        from scipy.io import wavfile
+        x,fs = fixture(inverted=True)
+        audio = np.real(x*np.exp(2j*np.pi*1000*np.arange(len(x))/fs)).astype(np.float32)
+        stream = io.BytesIO()
+        wavfile.write(stream,fs,audio)
+        identifier = (await self.client.post('/api/uploads',content=stream.getvalue(),headers={**HEADERS,'X-IQScope-Filename':'rtty.wav'})).json()['upload_id']
+        response = await self.client.post('/api/analyses',json={'upload_id':identifier,'input_kind':'audio'},headers=HEADERS)
+        job = await self.wait_job(response.json()['id'])
+        self.assertEqual(job['status'],'completed',job.get('error'))
+        trial = next(t for t in job['result']['wideband_trials'] if t['decoder']=='rtty_ita2')
+        self.assertEqual(trial['candidates'][0]['text'],TEXT)
+        self.assertIn('audio_frequency_hz',trial['candidates'][0]['channel'])
+        artifact = await self.client.get(f"/api/jobs/{job['id']}/artifacts/rtty-candidate.txt")
+        self.assertEqual(artifact.status_code,200)
+        self.assertEqual(artifact.content,TEXT.encode())
+
     async def test_audio_mode_validation_and_missing_dependency(self):
         headers = {**HEADERS,'X-IQScope-Filename':'audio.mp3'}
         identifier = (await self.client.post('/api/uploads',content=b'x'*2048,headers=headers)).json()['upload_id']
