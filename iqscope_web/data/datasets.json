@@ -212,7 +212,9 @@
       "status": "documentation_only",
       "adapter": null,
       "license_as_reported": "CC-BY-NC-SA-4.0",
-      "note": "Captures réelles de trois technologies sur six lieux. .bin : dtype, ordre I/Q et endian à confirmer ; aucun import ou décodage validé. Recouvrement possible avec RadioPile."
+      "note": "Listing public vérifié. Exemple MATLAB : int16 entrelacé I puis Q ; endian non déclaré et IQ réels non inspectés. Aucun import/décodage validé ; recouvrement potentiel avec RadioPile.",
+      "metadata_status": "public_listing_verified",
+      "validation_reference": "https://github.com/sebadiaz/IQScope/actions/runs/40387035954"
     }
   ]
 }

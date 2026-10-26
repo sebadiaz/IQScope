@@ -532,8 +532,9 @@ instead of downloading the same ZIP again in the independent UDXF job.
 The share `qrJCWgzQaGPfHPr` is identified by its authors' repository as a distinct
 real over-air technology-recognition corpus, separate from the existing sub-GHz
 share. Its documented default rate is 1 MS/s unless filenames state otherwise.
-Scalar dtype, endian and IQ layout of the `.bin` files remain unverified; no
-adapter or content decoder is claimed. See [the source and metadata-probe notes](docs/DATASET_IMEC_LTE_WIFI_DVBT.md).
+The public MATLAB example reads interleaved signed int16, I then Q, but leaves
+endianness implicit. Actual IQ bytes remain uninspected; no adapter or content
+decoder is claimed. See [the source and metadata-probe notes](docs/DATASET_IMEC_LTE_WIFI_DVBT.md).
 The catalog keeps the declared CC BY-NC-SA 4.0 license and potential RadioPile
 overlap explicit. The public-share probe now accepts a validated share token and
 supports the modern public DAV endpoint/header as well as the legacy route.

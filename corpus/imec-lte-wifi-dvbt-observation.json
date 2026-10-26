@@ -1,0 +1,106 @@
+{
+  "source": "https://cloud.ilabt.imec.be/index.php/s/qrJCWgzQaGPfHPr",
+  "checked_utc": "2026-10-26T19:28:30.056986+00:00",
+  "run_url": "https://github.com/sebadiaz/IQScope/actions/runs/40387035954",
+  "status": "public_metadata_listed",
+  "files": [
+    {
+      "href": "/public.php/dav/files/qrJCWgzQaGPfHPr/",
+      "name": "Technology Recognition (LTE, Wi-Fi and DVB-T)",
+      "bytes": null,
+      "content_type": null,
+      "directory": true
+    },
+    {
+      "href": "/public.php/dav/files/qrJCWgzQaGPfHPr/merelbeke/",
+      "name": "merelbeke",
+      "bytes": null,
+      "content_type": null,
+      "directory": true
+    },
+    {
+      "href": "/public.php/dav/files/qrJCWgzQaGPfHPr/rabot/",
+      "name": "rabot",
+      "bytes": null,
+      "content_type": null,
+      "directory": true
+    },
+    {
+      "href": "/public.php/dav/files/qrJCWgzQaGPfHPr/readme.docx",
+      "name": "readme.docx",
+      "bytes": "6796",
+      "content_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "directory": false
+    },
+    {
+      "href": "/public.php/dav/files/qrJCWgzQaGPfHPr/script_for_accessing_bin_files.m",
+      "name": "script_for_accessing_bin_files.m",
+      "bytes": "1455",
+      "content_type": "application/octet-stream",
+      "directory": false
+    },
+    {
+      "href": "/public.php/dav/files/qrJCWgzQaGPfHPr/uz/",
+      "name": "uz",
+      "bytes": null,
+      "content_type": null,
+      "directory": true
+    },
+    {
+      "href": "/public.php/dav/files/qrJCWgzQaGPfHPr/reep/",
+      "name": "reep",
+      "bytes": null,
+      "content_type": null,
+      "directory": true
+    },
+    {
+      "href": "/public.php/dav/files/qrJCWgzQaGPfHPr/Processing%20.bin%20files%20and%20add%20SNR/",
+      "name": "Processing .bin files and add SNR",
+      "bytes": null,
+      "content_type": null,
+      "directory": true
+    },
+    {
+      "href": "/public.php/dav/files/qrJCWgzQaGPfHPr/gentbrugge/",
+      "name": "gentbrugge",
+      "bytes": null,
+      "content_type": null,
+      "directory": true
+    },
+    {
+      "href": "/public.php/dav/files/qrJCWgzQaGPfHPr/igent/",
+      "name": "igent",
+      "bytes": null,
+      "content_type": null,
+      "directory": true
+    }
+  ],
+  "observations": [
+    {
+      "method": "GET",
+      "status": 200,
+      "page_title": "Technology Recognition (LTE, Wi-Fi and DVB-T) - IDLab cloud",
+      "file_hints": {},
+      "truncated": false
+    },
+    {
+      "method": "PROPFIND",
+      "endpoint": "https://cloud.ilabt.imec.be/public.php/dav/files/qrJCWgzQaGPfHPr/",
+      "status": 207,
+      "truncated": false
+    }
+  ],
+  "matlab_document": {
+    "source_url": "https://cloud.ilabt.imec.be/public.php/dav/files/qrJCWgzQaGPfHPr/script_for_accessing_bin_files.m",
+    "bytes": 1455,
+    "sha256": "d42050749e4fcedd81856f032d40ee5c215de7211528561239df15da1b7ceb9c",
+    "executed": false,
+    "findings": {
+      "scalar_precision": "MATLAB short / signed 16-bit",
+      "iq_pair_order": "I then Q",
+      "endianness": "not explicitly specified; native MATLAB default",
+      "actual_iq_file_bytes_inspected": false
+    }
+  },
+  "scope": "Public listing and small MATLAB documentation only; no IQ download or import validation"
+}

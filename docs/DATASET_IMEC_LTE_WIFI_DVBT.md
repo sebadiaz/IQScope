@@ -23,8 +23,10 @@ recouvrantes lors des séparations entraînement/test.
 
 L'extension `.bin` et la convention de noms ne définissent pas le dtype,
 l'endian, l'ordre I/Q, les voies ou un éventuel en-tête. Le README mentionne un
-exemple MATLAB, mais le répertoire racine inspecté ne contient que le README et
-une image ; le script n'y a pas été retrouvé. Aucun importateur n'est donc déclaré.
+exemple MATLAB, absent de la racine GitHub inspectée, mais trouvé ensuite dans le
+partage public. Cet exemple lit des entiers 16 bits signés et reconstruit I puis
+Q. Il ne précise pas l’endian ; aucun octet IQ réel n’a été inspecté et aucun
+importateur n’est donc déclaré.
 Ce corpus reste distinct du partage sub-GHz `bqXtdp9QsfXLbb3`.
 
 ## Inspection des métadonnées publiques
@@ -43,4 +45,25 @@ de format ou de disponibilité des données.
 La route publique moderne et l'en-tête requis sont décrits dans la
 [documentation Nextcloud](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/WebDAV/basic.html#public-shares).
 Une erreur 401 reste une erreur d'accès ; elle n'est pas assimilée à un dataset
-vide. Les résultats observés seront ajoutés après inspection du job de catalogue.
+vide. Les observations vérifiées figurent ci-dessous.
+
+
+## Résultats de l'inspection
+
+Le [job 40387035954](https://github.com/sebadiaz/IQScope/actions/runs/40387035954)
+a obtenu le listing public moderne en HTTP 207. Il montre les six dossiers de
+lieux, un dossier de traitement, `readme.docx` et le petit script MATLAB.
+L'[observation conservée](../corpus/imec-lte-wifi-dvbt-observation.json) contient les
+noms, tailles, statuts et la provenance, sans les échantillons IQ.
+
+Le script de 1 455 octets a été lu comme documentation, jamais exécuté.
+Son empreinte est `d42050749e4fcedd81856f032d40ee5c215de7211528561239df15da1b7ceb9c`.
+La lecture MATLAB utilise la précision `short`, puis une matrice à deux lignes :
+I vient de la première ligne et Q de la seconde. Il faut donc distinguer cet
+exemple int16 de l'import brut cf32 d'IQScope. La précision des fichiers réels,
+leur endian et tout éventuel en-tête restent à valider sur un extrait.
+
+Les commentaires d'unité et de durée du script sont incohérents avec certaines
+constantes : vingt millions de valeurs scalaires représenteraient dix secondes
+à un million d'échantillons complexes par seconde, pas une seconde. La durée
+d'une capture ne doit donc pas être déduite de cette tranche de démonstration.
