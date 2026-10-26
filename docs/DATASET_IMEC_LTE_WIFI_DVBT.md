@@ -588,3 +588,12 @@ They do not increment the CRC packet counter. Synthetic tests exercise several
 length/guard pairs, arbitrary acquisition offset, CFO, noise and multipath, plus
 abstention on noise, colored noise, a carrier and binary FSK. The imec prefix
 probe records the candidates separately for each endian without selecting one.
+
+
+Le [contrôle OFDM 40391375055](https://github.com/sebadiaz/IQScope/actions/runs/40391375055)
+n'a trouvé aucun candidat cohérent dans ce préfixe, sous les deux interprétations
+int16. L'[observation conservée](../corpus/imec-ofdm-observation.json) inclut la
+source, l'empreinte, la durée nominale et ce résultat négatif. Les tests
+synthétiques du détecteur passent sur plusieurs tailles et gardes avec bruit,
+trajets multiples et décalage de fréquence ; cette réussite ne transforme pas
+le résultat réel négatif en reconnaissance de protocole.

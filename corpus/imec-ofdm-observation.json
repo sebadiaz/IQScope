@@ -1,0 +1,25 @@
+{
+  "checked_date": "2026-10-26",
+  "run_url": "https://github.com/sebadiaz/IQScope/actions/runs/40391375055",
+  "source_url": "https://cloud.ilabt.imec.be/public.php/dav/files/qrJCWgzQaGPfHPr/rabot/wf10Msps_g30_rabot_f5240MHz_r1.bin",
+  "prefix_sha256": "e1ae5c4499bc21162b15403c20e622194a1f268019d3bea67829fc3689bcb777",
+  "prefix_bytes": 262144,
+  "sample_count": 65536,
+  "sample_rate_hz": 10000000,
+  "sample_rate_source": "filename",
+  "results": [
+    {
+      "byte_order_hypothesis": "le",
+      "analyzed_seconds": 0.0065536,
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "byte_order_hypothesis": "be",
+      "analyzed_seconds": 0.0065536,
+      "status": "no_consistent_candidate",
+      "candidates": []
+    }
+  ],
+  "scope": "No consistent candidate in this short prefix under either unverified int16 interpretation. This does not establish absence of OFDM, identify a protocol, or resolve physical layout."
+}
