@@ -113,6 +113,19 @@ function showReport(report, jobId) {
   $('metric-duration').textContent=`${report.analyzed_seconds.toFixed(2)} s`;
   $('download').href=`/api/jobs/${jobId}/artifacts/report.json`; $('download').hidden=false;
   const list=$('signal-list');list.replaceChildren();
+  if(report.recording_provenance){
+    const provenance=report.recording_provenance;
+    const note=element('div',undefined,'recording-provenance');
+    note.append(element('p',`VKSDR · ${provenance.source_label} · ${(provenance.prefix_bytes/1048576).toFixed(2)} Mio reçus · ${report.analyzed_seconds.toFixed(3)} s analysées`));
+    note.append(element('p',provenance.header_center_frequency_hz===null?'Centre RF absent de l’en-tête : fréquences relatives à la capture. Les indications du nom de fichier ne sont pas appliquées.':'Centre RF lu dans l’en-tête.','hint'));
+    note.append(element('p','Import d’un préfixe seulement ; le mode annoncé et le contenu ne sont pas validés.','hint'));
+    const labels={data:'Télécharger les IQ SigMF',metadata:'Télécharger les métadonnées SigMF',provenance:'Télécharger la provenance'};
+    for(const [kind,name] of Object.entries(report.recording_artifacts || {})){
+      const link=element('a',labels[kind]);link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(name)}`;link.download=name;
+      note.append(link,document.createTextNode(' '));
+    }
+    list.append(note);
+  }
   if(!signals.length) list.append(element('div',audioPlot?'Audio importé : lecture et essais Morse/RTTY ci-dessous. Les émissions RF ne sont pas recherchées dans ce mode.':'Aucune bande stationnaire détectée. Les paquets sont recherchés séparément.','empty-results'));
   for(const sig of signals) {
     const details=element('details',undefined,'signal'), summary=element('summary');
@@ -344,6 +357,7 @@ drawSpectrum();drawWaterfall();
 $('datasets').onclick=async()=>{
   try {
     const data=await api('/api/datasets',undefined,'GET');
+    const vksdr=await api('/api/recordings/vksdr',undefined,'GET');
     $('dataset-list').replaceChildren();
     const labels={audio_import_available:'Import audio disponible · texte candidat',audio_reference_only:'Référence audio · import IQ indisponible',annotations_validated:'Annotations vérifiées · IQ non importés',validated_subset:'Sous-ensemble validé',documentation_only:'Documentation seulement',adapter_under_validation:'Importateur en validation',window_import_validated:'Import de fenêtre validé'};
     const kinds={receiver_audio_collection:'Collection audio de récepteur',real_recordings:'Captures réelles',real_measurements:'Mesures réelles',synthetic_windows:'Fenêtres synthétiques',synthetic_generator:'Générateur synthétique',aggregate_windows:'Agrégat de fenêtres',real_recording_collection:'Collection de captures',real_recording:'Capture réelle',real_mono_waveforms:'Signaux réels mono'};
@@ -353,9 +367,34 @@ $('datasets').onclick=async()=>{
       card.append(link,element('p',`${kinds[entry.kind] || entry.kind} · ${labels[entry.status] || entry.status}`));
       if(entry.note)card.append(element('p',entry.note));
       if(entry.id==='panoradio_hf')card.append(element('code','iqscope dataset-import panoradio_hf fichier.npy --record 0 --out extrait'));
+      if(entry.id==='vksdr'){
+        for(const recording of vksdr.entries){
+          const row=element('div',undefined,'recording');
+          row.append(element('strong',recording.source_label));
+          row.append(element('p',`${recording.reference_sample_rate_hz/1000} kéch/s vérifiés · WAV IQ PCM16 · centre RF non fourni par les en-têtes vérifiés`,'hint'));
+          const button=element('button','Analyser un extrait · 2 Mio maximum','secondary');
+          button.setAttribute('aria-label',`Analyser l’extrait ${recording.source_label}`);
+          button.onclick=()=>runVksdr(recording.id,recording.source_label);row.append(button);card.append(row);
+        }
+      }
       $('dataset-list').append(card);
     }
     $('dataset-dialog').showModal();
   }catch(error){status(error.message,'error');}
 };
 $('close-datasets').onclick=()=>$('dataset-dialog').close();
+
+
+async function runVksdr(identifier,label){
+  if(busy)return;
+  $('dataset-dialog').close();await switchTab(false);
+  $('input-kind').value='iq';updateFileInput();setBusy(true);
+  status('Téléchargement du préfixe VKSDR (2 Mio maximum), puis analyse…','busy');
+  try{
+    const job=await api(`/api/recordings/vksdr/${encodeURIComponent(identifier)}/analyze`,{});
+    await followJob(job);
+    $('source-badge').textContent=`VKSDR · ${label} · extrait`;
+    status('Analyse terminée. Extrait IQ et provenance disponibles. Le protocole annoncé reste à valider.','success');
+  }catch(error){status(error.message,'error');}
+  finally{setBusy(false);}
+}

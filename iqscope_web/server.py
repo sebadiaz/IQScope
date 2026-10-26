@@ -19,6 +19,7 @@ from pydantic import BaseModel, Field
 from iqscope import analyze, analyze_samples, demo
 from iqscope_decoders import capabilities
 from iqscope_audio import analyze_audio
+from iqscope_recordings import recordings, import_vksdr
 from .live import LiveReceiver
 
 MAX_UPLOAD = 128 * 1024 * 1024
@@ -119,6 +120,16 @@ def create_app(root=None):
         from iqscope_datasets import catalog
         return catalog()
 
+    @app.get('/api/recordings/vksdr')
+    def get_recordings():
+        return recordings()
+
+    @app.post('/api/recordings/vksdr/{identifier}/analyze',status_code=202)
+    def start_recording(identifier: str):
+        if identifier not in {entry['id'] for entry in recordings()['entries']}:
+            raise HTTPException(404,'Unknown VKSDR recording')
+        return service.submit(lambda out: import_vksdr(identifier,out))
+
     @app.get('/api/capabilities')
     def get_capabilities():
         return {'decoders': capabilities(), 'max_upload_bytes': MAX_UPLOAD,
@@ -210,7 +221,7 @@ def create_app(root=None):
 
     @app.get('/api/jobs/{job_id}/artifacts/{name}')
     def artifact(job_id: str, name: str):
-        if job_id not in service.jobs or Path(name).name != name or not name.endswith(('.wav', '.json', '.csv', '.txt', '.bin')):
+        if job_id not in service.jobs or Path(name).name != name or not name.endswith(('.wav', '.json', '.csv', '.txt', '.bin', '.sigmf-data', '.sigmf-meta')):
             raise HTTPException(404, 'Artifact not found')
         path = service.root / job_id / name
         if not path.is_file():

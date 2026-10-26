@@ -1,7 +1,7 @@
 import tempfile
 import io
 import shutil
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 import asyncio
 import unittest
 from pathlib import Path
@@ -53,6 +53,50 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("default-src 'self'",page.headers['content-security-policy'])
         data = (await self.client.get('/api/capabilities')).json()
         self.assertEqual(len(data['decoders']),8)
+
+    async def test_recording_list_and_bounded_import_artifacts(self):
+        from test_formats import make_wave
+        from iqscope import read_iq
+        listing = (await self.client.get('/api/recordings/vksdr')).json()
+        self.assertEqual(len(listing['entries']),5)
+        self.assertEqual(listing['download_limit_bytes'],2*1024*1024)
+        self.assertIsNone(listing['entries'][0]['reference_center_frequency_hz'])
+        self.assertEqual((await self.client.post('/api/recordings/vksdr/unknown/analyze',headers=HEADERS)).status_code,404)
+        payload = np.random.default_rng(101).integers(-1000,1000,50000,dtype=np.int16).astype('<i2').tobytes()
+        response = io.BytesIO(make_wave(payload,fs=24000))
+        response.status = 200
+        response.headers = {'Content-Type':'audio/wav'}
+        opener = Mock()
+        opener.open.return_value = response
+        with patch('iqscope_recordings.urllib.request.build_opener',return_value=opener):
+            submitted = await self.client.post('/api/recordings/vksdr/noaa15_pds/analyze',json={'url':'http://127.0.0.1/private'},headers=HEADERS)
+            self.assertEqual(submitted.status_code,202)
+            job = await self.wait_job(submitted.json()['id'])
+        self.assertEqual(job['status'],'completed',job.get('error'))
+        request = opener.open.call_args.args[0]
+        self.assertTrue(request.full_url.startswith('https://bucket.vksdr.com/iq/'))
+        self.assertEqual(request.get_header('Range'),'bytes=0-2097151')
+        report = job['result']
+        self.assertEqual(report['source_kind'],'remote_iq_excerpt')
+        self.assertIsNone(report['recording_provenance']['header_center_frequency_hz'])
+        self.assertEqual(report['center_frequency_hz'],0)
+        self.assertEqual(report['sample_rate'],24000)
+        for name in report['recording_artifacts'].values():
+            artifact = await self.client.get(f"/api/jobs/{job['id']}/artifacts/{name}")
+            self.assertEqual(artifact.status_code,200,name)
+        self.assertEqual((await self.client.get(f"/api/jobs/{job['id']}/artifacts/source-prefix.wav")).status_code,404)
+        x,fs,center = read_iq(Path(self.temp.name)/job['id']/'excerpt.sigmf-data')
+        self.assertEqual(len(x),24000)
+        self.assertEqual(center,0)
+
+    async def test_recording_download_error_is_reported_as_failed_job(self):
+        opener = Mock()
+        opener.open.side_effect = TimeoutError('source timeout')
+        with patch('iqscope_recordings.urllib.request.build_opener',return_value=opener):
+            response = await self.client.post('/api/recordings/vksdr/uhf_fo/analyze',headers=HEADERS)
+            job = await self.wait_job(response.json()['id'])
+        self.assertEqual(job['status'],'failed')
+        self.assertIn('source timeout',job['error'])
 
     async def test_demo_job_and_audio_artifact(self):
         response=(await self.client.post('/api/analyses',json={'demo':True},headers=HEADERS))

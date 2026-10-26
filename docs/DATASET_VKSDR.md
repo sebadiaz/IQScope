@@ -59,3 +59,31 @@ Aucun centre RF n'a été trouvé dans les en-têtes lus : le rapport reste rela
 à la capture, tandis que les indications des noms de fichiers sont conservées
 séparément. Le statut `validated_subset` concerne ces préfixes et l'import,
 pas le décodage des modes ni l'intégrité des captures complètes.
+
+
+## Import depuis l'interface
+
+Ouvrir **Explorer les jeux de données**, puis la fiche VKSDR. Les cinq
+captures ont chacune un bouton **Analyser un extrait · 2 Mio maximum**. Le
+serveur télécharge le préfixe après ce clic, convertit les IQ en SigMF et lance
+l'analyse existante. Le catalogue lui-même utilise les métadonnées embarquées :
+il ne télécharge pas les cinq WAV lors de son ouverture.
+
+Le résultat montre le nom fourni par la source, les octets reçus et la durée
+analysée. Les fichiers `excerpt.sigmf-data`, `excerpt.sigmf-meta` et
+`provenance.json` sont téléchargeables séparément. Le WAV tronqué reste interne
+au traitement et n'est pas proposé comme une capture WAV complète.
+
+L'API expose `GET /api/recordings/vksdr` et
+`POST /api/recordings/vksdr/{id}/analyze`. Les identifiants doivent appartenir
+à la liste embarquée ; aucune URL fournie par l'appelant n'est utilisée. Les
+redirections sont limitées au bucket HTTPS VKSDR. Les jobs partagent la file
+locale d'analyse, les erreurs réseau apparaissent dans leur statut, et les
+résultats sont évincés selon la même limite de 32 jobs que les autres analyses.
+Une connexion Internet du serveur est requise pour importer un extrait.
+
+Ce raccourci réutilise le même lecteur et les mêmes contrôles que la sonde de
+corpus. Il ne fournit toujours pas de décodeur satellite ni de garantie de
+reconnaissance des modes annoncés. Les taux affichés dans le catalogue sont ceux
+du contrôle de référence ; le rapport d'import utilise les en-têtes effectivement
+lus lors du téléchargement.

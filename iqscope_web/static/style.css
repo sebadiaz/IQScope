@@ -11,3 +11,5 @@ dialog{max-height:85vh;overflow:auto}#dataset-dialog{max-width:680px;width:92vw}
 .fsk4-symbols{white-space:pre-wrap;overflow-wrap:anywhere;font-family:monospace}
 
 .ax25-text{white-space:pre-wrap;overflow-wrap:anywhere;font-family:monospace}
+
+.recording{margin-top:1rem;padding-top:1rem;border-top:1px solid #26384b}.recording-provenance{padding:1rem;border:1px solid #26384b;border-radius:10px;overflow-wrap:anywhere}.recording-provenance a{display:inline-block;margin:.4rem .7rem .4rem 0}

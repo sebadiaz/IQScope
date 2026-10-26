@@ -46,6 +46,9 @@ def main():
                 page.get_by_role('button',name='Explorer les jeux de données').click()
                 expect(page.locator('#dataset-dialog')).to_be_visible()
                 expect(page.locator('#dataset-list .capability')).to_have_count(19)
+                expect(page.locator('#dataset-list .recording')).to_have_count(5)
+                expect(page.get_by_role('button',name='Analyser l’extrait NOAA-15 (SARSAT-7) PDS')).to_be_visible()
+                expect(page.locator('#dataset-list .recording').first).to_contain_text('250 kéch/s')
                 page.get_by_role('button',name='Fermer le catalogue').click()
                 with tempfile.TemporaryDirectory() as directory:
                     from iqscope import demo

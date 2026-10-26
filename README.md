@@ -476,3 +476,15 @@ python scripts/vksdr_corpus.py --name uhf_fo
 See [the VKSDR notes](docs/DATASET_VKSDR.md). This checks import and existing
 analysis; it adds no NOAA PDS, LRIT image extraction or military payload decoder.
 CI uploads reports only. Source recordings remain outside Git and CI artifacts.
+
+
+VKSDR is also available from **Explorer les jeux de données** in the UI. Each
+of the five recording cards offers a bounded import-and-analyze button. Opening
+the catalog uses packaged metadata only; clicking a recording downloads at most
+2 MiB on the server and analyzes at most one second. The result offers complete
+SigMF data/metadata and provenance downloads. It never substitutes filename RF
+hints for unknown header metadata or claims that the advertised protocol decoded.
+Only fixed recording IDs and the HTTPS VKSDR bucket are accepted, including
+redirects. Download errors appear as failed jobs. This uses the same importer
+as the real-corpus CI probe; no full WAV download or remote arbitrary URL input
+is provided.

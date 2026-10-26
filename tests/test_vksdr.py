@@ -1,5 +1,6 @@
 import importlib.util
 import io
+import json
 from pathlib import Path
 import tempfile
 import unittest
@@ -34,3 +35,14 @@ class VksdrTests(unittest.TestCase):
             from iqscope_formats import read_wave_iq
             with self.assertRaises(ValueError):
                 read_wave_iq(Path(directory)/'test/source-prefix.wav')
+
+    def test_fixed_provider_and_redirects_reject_other_hosts(self):
+        from iqscope_recordings import check_url, VKSDRRedirectHandler, recordings
+        check_url('https://bucket.vksdr.com/iq/example.wav')
+        for url in ('http://bucket.vksdr.com/a','https://example.com/a','https://bucket.vksdr.com@127.0.0.1/a'):
+            with self.assertRaises(ValueError):
+                check_url(url)
+        with self.assertRaises(ValueError):
+            VKSDRRedirectHandler().redirect_request(None,None,302,'',{},'https://example.com/a')
+        manifest = json.loads((Path(__file__).parents[1]/'corpus/vksdr.json').read_text())
+        self.assertEqual([(e['id'],e['url']) for e in recordings()['entries']],[(e['id'],e['url']) for e in manifest['entries']])
