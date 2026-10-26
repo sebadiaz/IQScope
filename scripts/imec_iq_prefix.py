@@ -118,6 +118,15 @@ def main():
         hypothesis['roundtrip_exact'] = True
         hypothesis['analyzed_seconds'] = len(x)/fs
         hypothesis['detected_spectral_bands'] = len(report['signals'])
+        cp = next(t for t in report['wideband_trials'] if t['decoder']=='ofdm_cp')
+        cp['input_interpretation_status'] = report['interpretation_status']
+        cp['input_datatype_hypothesis'] = 'ci16_'+hypothesis['byte_order_hypothesis']
+        cp['sample_rate_source'] = evidence['sample_rate_source']
+        if report.get('ofdm_artifact'):
+            (result_dir/report['ofdm_artifact']).write_text(json.dumps(cp,indent=2))
+        (result_dir/'report.json').write_text(json.dumps(report,indent=2))
+        hypothesis['cyclic_prefix_status'] = cp['status']
+        hypothesis['cyclic_prefix_candidates'] = cp['candidates']
     (out/'provenance.json').write_text(json.dumps(evidence,indent=2))
     print(json.dumps(evidence),flush=True)
 

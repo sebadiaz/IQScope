@@ -20,6 +20,7 @@ class Capability:
 CAPABILITIES = (
     Capability('analog_fm', 'FM', 'mono audio candidate, 75 us de-emphasis', 'unvalidated'),
     Capability('analog_am', 'AM', 'envelope audio candidate, carrier-present AM only', 'unvalidated'),
+    Capability('ofdm_cp', 'Cyclic-prefix / OFDM evidence', 'bounded periodic guard correlation; integer useful/guard lengths; no protocol classification or payload', 'heuristic structural evidence only; no CRC'),
     Capability('afsk1200_ax25', 'AFSK1200 / AX.25 UI', 'receiver audio at 1200 baud, 1200/2200-Hz tones; no RF FM frontend', 'CRC-16/X-25 and UI structure; no APRS semantics'),
     Capability('ax25_ui', 'AX.25 UI', 'HDLC/NRZI or NRZ on generic 2-FSK bits; UI addresses/PID/payload; no AFSK/G3RUH frontend', 'CRC-16/X-25 plus UI structure; not sender authenticity'),
     Capability('fsk4_generic', '4-FSK', 'equally spaced stationary tones; automatic baud and symbol ranks; bounded channel search', 'timing only; symbol-to-bit mapping arbitrary, no checksum'),

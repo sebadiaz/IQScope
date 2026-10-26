@@ -563,3 +563,28 @@ filename-indicated 10 MS/s (6.5536 ms). Both byte-order interpretations round-tr
 exactly; physical layout and byte order remain unresolved. The catalog reports
 candidate conversion, not verified RF format or Wi-Fi recognition. See the
 imec notes for the checked run, source URL, size and hash.
+
+
+## Cyclic-prefix repetition evidence
+
+IQ analysis now tests a bounded model of periodic guard repetition compatible
+with OFDM. It averages complex lag products by candidate symbol phase, compares
+the guard interval with its background, checks both halves of the observation,
+and excludes spectrally concentrated tones. It estimates useful/guard lengths
+and nominal durations; **it does not identify Wi-Fi, LTE or DVB-T, recover FFT
+bins or bits, verify CRCs, or interpret payloads**. Other block waveforms with
+repeated guards can give the same evidence.
+
+Search limits: first 262144 complex samples, at most three windows of 131072
+samples, useful lengths 16–2048 in powers of two, guards 1/4, 1/8, 1/16 or 1/32
+(minimum two samples), and at least 32 symbols per trial. Short bursts, overlapping
+channels, clock drift, noninteger resampling, other guards and channel offsets
+can be missed. The detector searches the input directly without channelization.
+Timing in seconds depends on the supplied sample rate; filename-derived rates
+and unverified byte-order hypotheses remain unverified.
+
+Results appear in the UI as structural candidates and in `ofdm-candidates.json`.
+They do not increment the CRC packet counter. Synthetic tests exercise several
+length/guard pairs, arbitrary acquisition offset, CFO, noise and multipath, plus
+abstention on noise, colored noise, a carrier and binary FSK. The imec prefix
+probe records the candidates separately for each endian without selecting one.

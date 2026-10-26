@@ -250,6 +250,19 @@ function showReport(report, jobId) {
     card.append(element('p','CRC et structure UI vérifiés ; identité de l’émetteur et interprétation APRS non établies.','hint'));
     frameList.append(card);
   }
+  for(const trial of report.wideband_trials || []){
+    if(trial.decoder!=='ofdm_cp')continue;
+    if(trial.sample_budget_reached)frameList.append(element('p',`Recherche de préfixe cyclique limitée aux ${trial.analyzed_samples} premiers échantillons, soit ${trial.analyzed_seconds.toFixed(4)} s.`,'hint'));
+    for(const candidate of trial.candidates || []){
+      const card=element('div',undefined,'frame ofdm-candidate');const p=candidate.parameters;
+      card.append(element('h3','Répétition compatible avec un préfixe cyclique'));
+      card.append(element('p',`${p.useful_samples} échantillons utiles · garde ${p.guard_samples} · période ${p.symbol_samples}`,'ofdm-parameters'));
+      card.append(element('p',`Durée utile ${(p.useful_seconds*1e6).toFixed(2)} µs · garde ${(p.guard_seconds*1e6).toFixed(2)} µs · corrélation ${candidate.evidence.folded_prefix_correlation.toFixed(3)}`));
+      card.append(element('p','Structure compatible OFDM ; protocole inconnu. Aucun bit ni contenu extrait.','hint'));
+      frameList.append(card);
+    }
+    if(report.ofdm_artifact){const link=element('a','Télécharger les indices de préfixe cyclique');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(report.ofdm_artifact)}`;link.download=report.ofdm_artifact;frameList.append(link);}
+  }
   for(const frame of frames) {
     const card=element('div',undefined,'frame');card.append(element('code',frame.hex));
     const f=frame.fields;

@@ -52,7 +52,7 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('SDR en direct',page.text)
         self.assertIn("default-src 'self'",page.headers['content-security-policy'])
         data = (await self.client.get('/api/capabilities')).json()
-        self.assertEqual(len(data['decoders']),9)
+        self.assertEqual(len(data['decoders']),10)
 
     async def test_recording_list_and_bounded_import_artifacts(self):
         from test_formats import make_wave

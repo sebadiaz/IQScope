@@ -138,6 +138,22 @@ def main():
                     assert int(page.locator('#metric-frames').inner_text())>=3
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
                 with tempfile.TemporaryDirectory() as directory:
+                    from test_ofdm import fixture as ofdm_fixture
+                    x,fs = ofdm_fixture()
+                    raw = Path(directory)/'ofdm.sigmf-data'
+                    meta = Path(directory)/'ofdm.sigmf-meta'
+                    x.astype('<c8').tofile(raw)
+                    meta.write_text(json.dumps({'global':{'core:datatype':'cf32_le','core:sample_rate':fs}}))
+                    page.locator('#iq-file').set_input_files(str(raw))
+                    page.locator('#meta-file').set_input_files(str(meta))
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('.ofdm-parameters').first).to_have_text('64 échantillons utiles · garde 16 · période 80',timeout=30000)
+                    assert page.locator('#metric-frames').inner_text()=='0'
+                    link = page.get_by_role('link',name='Télécharger les indices de préfixe cyclique')
+                    response = page.request.get(urljoin(page.url,link.get_attribute('href')))
+                    assert response.ok and response.json()['candidates']
+                expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                with tempfile.TemporaryDirectory() as directory:
                     from test_cw import fixture as audio_fixture, TEXT as AUDIO_TEXT
                     from scipy.io import wavfile
                     x,fs = audio_fixture()
