@@ -37,5 +37,25 @@ Le succès du contrôle prouve l'import d'un extrait et l'exécution de l'analys
 existante. Il ne prouve pas la reconnaissance d'un satellite, l'extraction
 LRIT d'une image, le décodage PDS ou l'interprétation de communications UHF.
 Un préfixe d'une seconde au maximum peut aussi être trop court pour un protocole.
-Les résultats de taux et formats seront consignés après inspection de la CI
-`vksdr-iq` ; aucun format particulier n'est supposé avant lecture des en-têtes.
+Les taux et formats ci-dessous proviennent de la lecture des en-têtes.
+
+
+## Résultats observés
+
+Exécution : [CI 40361285578](https://github.com/sebadiaz/IQScope/actions/runs/40361285578).
+Le [résumé de validation](../corpus/vksdr_validation.json) conserve les empreintes
+SHA-256 et les réponses HTTP.
+
+| Identifiant | Taux lu | Durée analysée | Format |
+|---|---:|---:|---|
+| `noaa15_pds` | 250 000 éch/s | 1 s | PCM16, deux voies |
+| `fengyun4a_lrit` | 1 024 000 éch/s | 0,512 s | PCM16, deux voies |
+| `uhf_fo` | 750 000 éch/s | 0,699 s | PCM16, deux voies |
+| `coms1_multiple` | 375 000 éch/s | 1 s | PCM16, deux voies |
+| `coms1_fd02` | 375 000 éch/s | 1 s | PCM16, deux voies |
+
+Deux Mio ont été reçus par fichier et les cinq conversions SigMF sont exactes.
+Aucun centre RF n'a été trouvé dans les en-têtes lus : le rapport reste relatif
+à la capture, tandis que les indications des noms de fichiers sont conservées
+séparément. Le statut `validated_subset` concerne ces préfixes et l'import,
+pas le décodage des modes ni l'intégrité des captures complètes.

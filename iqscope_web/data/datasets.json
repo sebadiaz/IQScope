@@ -196,9 +196,11 @@
       "kind": "real_recording_collection",
       "url": "https://vksdr.com/iq/",
       "role": "IQ WAV import and satellite/wideband analysis references",
-      "status": "adapter_under_validation",
+      "status": "validated_subset",
       "adapter": "wav_iq",
-      "note": "Cinq WAV annoncés IQ. Sonde bornée et conversion SigMF en validation ; aucun décodage NOAA PDS, LRIT ou UHF-FO revendiqué."
+      "note": "Cinq préfixes IQ WAV vérifiés : PCM16 stéréo, 250–1024 kéch/s. Centre RF absent des en-têtes ; noms de fichiers conservés comme indices. Aucun décodage PDS, LRIT ou UHF-FO validé.",
+      "scope": "Five bounded PCM16 stereo IQ WAV excerpts imported and round-tripped exactly through SigMF; no source protocol decoding",
+      "validation_reference": "https://github.com/sebadiaz/IQScope/actions/runs/40361285578"
     }
   ]
 }
