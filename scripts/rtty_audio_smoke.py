@@ -1,4 +1,5 @@
 """Check receiver-audio import on an explicitly transformed real SDRangel IQ excerpt."""
+import argparse
 import json
 from pathlib import Path
 import numpy as np
@@ -11,11 +12,21 @@ from sdrangel_corpus import run
 def main():
     manifest = Path(__file__).resolve().parents[1]/'corpus/sdrangel.json'
     entry = next(e for e in json.loads(manifest.read_text())['entries'] if e['id']=='rtty')
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--reuse-source-root',type=Path)
+    args = parser.parse_args()
     root = Path('corpus-cache/rtty-audio')
-    source = run(entry,root)
-    report = json.loads((root/'rtty/results/report.json').read_text())
+    root.mkdir(parents=True,exist_ok=True)
+    source_root = args.reuse_source_root or root
+    if args.reuse_source_root:
+        source = json.loads((source_root/'rtty/provenance.json').read_text())
+        if source['excerpt_sha256']!=entry['expected_excerpt_sha256_16m']:
+            raise ValueError('Cached RTTY source provenance does not match the pinned reference')
+    else:
+        source = run(entry,root)
+    report = json.loads((source_root/'rtty/results/report.json').read_text())
     direct = next(t for t in report['wideband_trials'] if t['decoder']=='rtty_ita2')['candidates'][0]
-    x,fs,_ = read_iq(root/'rtty/excerpt.sigmf-data')
+    x,fs,_ = read_iq(source_root/'rtty/excerpt.sigmf-data')
     p = direct['parameters']
     offset = fs/4-(p['low_tone_hz']+p['high_tone_hz'])/2
     audio = np.real(x*np.exp(2j*np.pi*offset*np.arange(len(x))/fs)).astype(np.float32)

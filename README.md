@@ -520,3 +520,8 @@ remains in force for retained source uploads; sequential browser analyses no
 longer accumulate those sources. SDRangel corpus downloads explicitly request
 the ZIP beginning and identity encoding, and retry a failed prefix parse once.
 Each attempt keeps the original byte/parser limits and pinned excerpt hashes.
+
+
+CI reuses the already imported and pinned SDRangel RTTY excerpt for its derived
+audio check (`python scripts/rtty_audio_smoke.py --reuse-source-root corpus-cache`)
+instead of downloading the same ZIP again in the independent UDXF job.
