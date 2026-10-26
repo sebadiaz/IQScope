@@ -66,6 +66,10 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install .
+      - name: Install audio probe dependency
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg
       - run: ffmpeg -version
       - name: Inspect bounded UDXF receiver audio prefixes
         run: python scripts/udxf_audio_probe.py

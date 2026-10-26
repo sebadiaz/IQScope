@@ -143,7 +143,7 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
     async def test_dataset_catalog_available_to_ui(self):
         response = await self.client.get('/api/datasets')
         self.assertEqual(response.status_code,200)
-        self.assertEqual(len(response.json()['entries']),17)
+        self.assertEqual(len(response.json()['entries']),18)
         page = await self.client.get('/')
         self.assertIn('Explorer les jeux de données',page.text)
 
