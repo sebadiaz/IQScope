@@ -98,3 +98,12 @@ Voir [les notes et la sonde audio bornée](DATASET_UDXF_UC4.md).
 Le manifeste sélectionne cinq liens. La sonde valide des préfixes bornés et
 l'import SigMF, sans prétendre décoder les protocoles présentés par la source.
 Voir [les notes VKSDR](DATASET_VKSDR.md).
+
+
+## imec / UGent LTE, Wi-Fi, DVB-T
+
+Le partage [qrJCWgzQaGPfHPr](https://cloud.ilabt.imec.be/index.php/s/qrJCWgzQaGPfHPr)
+correspond au [corpus des auteurs](https://github.com/JaronFontaine/Technology-Recognition-dataset-of-real-life-LTE-WiFi-and-DVB-T),
+distinct du sub-GHz. Reconnaissance de technologies sur plusieurs lieux,
+licence annoncée CC BY-NC-SA 4.0 ; format `.bin` encore à vérifier et recouvrement
+potentiel avec RadioPile. Voir [les notes et limites](DATASET_IMEC_LTE_WIFI_DVBT.md).

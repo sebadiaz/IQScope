@@ -65,8 +65,11 @@ class DatasetTests(unittest.TestCase):
         entries = catalog()['entries']
         ids = [entry['id'] for entry in entries]
         self.assertEqual(len(ids),len(set(ids)))
-        self.assertEqual(len(ids),19)
+        self.assertEqual(len(ids),20)
         self.assertIsNone(next(e for e in entries if e['id']=='imec_subghz')['adapter'])
+        cellular = next(e for e in entries if e['id']=='imec_lte_wifi_dvbt')
+        self.assertIsNone(cellular['adapter'])
+        self.assertNotEqual(cellular['url'],next(e for e in entries if e['id']=='imec_subghz')['url'])
         vksdr = next(e for e in entries if e['id']=='vksdr')
         self.assertEqual(vksdr['adapter'],'wav_iq')
         self.assertIn(vksdr['status'],('adapter_under_validation','validated_subset'))

@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - corpus/imec-subghz.json
+      - corpus/imec-qrJCWgzQaGPfHPr.json
       - scripts/imec_catalog_probe.py
       - .github/workflows/imec-catalog.yml
 permissions:
@@ -17,8 +18,10 @@ jobs:
         with:
           python-version: '3.12'
       - name: Observe public share accessibility without downloading IQ
-        run: python scripts/imec_catalog_probe.py
+        run: |
+          python scripts/imec_catalog_probe.py
+          python scripts/imec_catalog_probe.py --share-token qrJCWgzQaGPfHPr --out corpus-cache/imec/new-share.json
       - uses: actions/upload-artifact@v4
         with:
           name: imec-catalog-observation
-          path: corpus-cache/imec/catalog.json
+          path: corpus-cache/imec/*.json

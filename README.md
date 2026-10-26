@@ -525,3 +525,15 @@ Each attempt keeps the original byte/parser limits and pinned excerpt hashes.
 CI reuses the already imported and pinned SDRangel RTTY excerpt for its derived
 audio check (`python scripts/rtty_audio_smoke.py --reuse-source-root corpus-cache`)
 instead of downloading the same ZIP again in the independent UDXF job.
+
+
+## imec real LTE / Wi-Fi / DVB-T corpus
+
+The share `qrJCWgzQaGPfHPr` is identified by its authors' repository as a distinct
+real over-air technology-recognition corpus, separate from the existing sub-GHz
+share. Its documented default rate is 1 MS/s unless filenames state otherwise.
+Scalar dtype, endian and IQ layout of the `.bin` files remain unverified; no
+adapter or content decoder is claimed. See [the source and metadata-probe notes](docs/DATASET_IMEC_LTE_WIFI_DVBT.md).
+The catalog keeps the declared CC BY-NC-SA 4.0 license and potential RadioPile
+overlap explicit. The public-share probe now accepts a validated share token and
+supports the modern public DAV endpoint/header as well as the legacy route.

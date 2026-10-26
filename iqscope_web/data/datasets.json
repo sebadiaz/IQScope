@@ -201,6 +201,18 @@
       "note": "Cinq préfixes IQ WAV vérifiés : PCM16 stéréo, 250–1024 kéch/s. Centre RF absent des en-têtes ; noms de fichiers conservés comme indices. Aucun décodage PDS, LRIT ou UHF-FO validé.",
       "scope": "Five bounded PCM16 stereo IQ WAV excerpts imported and round-tripped exactly through SigMF; no source protocol decoding",
       "validation_reference": "https://github.com/sebadiaz/IQScope/actions/runs/40361285578"
+    },
+    {
+      "id": "imec_lte_wifi_dvbt",
+      "name": "imec / UGent real LTE, Wi-Fi, DVB-T",
+      "kind": "real_measurements",
+      "url": "https://cloud.ilabt.imec.be/index.php/s/qrJCWgzQaGPfHPr",
+      "authors_repository": "https://github.com/JaronFontaine/Technology-Recognition-dataset-of-real-life-LTE-WiFi-and-DVB-T",
+      "role": "cross-environment technology recognition",
+      "status": "documentation_only",
+      "adapter": null,
+      "license_as_reported": "CC-BY-NC-SA-4.0",
+      "note": "Captures réelles de trois technologies sur six lieux. .bin : dtype, ordre I/Q et endian à confirmer ; aucun import ou décodage validé. Recouvrement possible avec RadioPile."
     }
   ]
 }

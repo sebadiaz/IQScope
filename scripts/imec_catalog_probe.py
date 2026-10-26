@@ -4,6 +4,7 @@ import base64
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 import json
+import re
 from pathlib import Path
 import urllib.error
 import urllib.parse
@@ -29,8 +30,12 @@ class PageTitle(HTMLParser):
         super().__init__()
         self.in_title = False
         self.parts = []
+        self.file_hints = {}
 
     def handle_starttag(self, tag, attrs):
+        values = dict(attrs)
+        if tag=='input' and values.get('id',values.get('name')) in ('filename','mimetype','filesize'):
+            self.file_hints[values.get('id',values.get('name'))] = values.get('value','')[:512]
         if tag == 'title':
             self.in_title = True
 
@@ -77,34 +82,44 @@ def public_listing(xml):
     return files
 
 
-def probe():
-    result = {'source':SHARE, 'checked_utc':datetime.now(timezone.utc).isoformat(),
+def probe(token=TOKEN):
+    if not re.fullmatch(r'[A-Za-z0-9]{10,64}',token):
+        raise ValueError('Invalid public share token')
+    share = HOST+'/index.php/s/'+token
+    result = {'source':share, 'checked_utc':datetime.now(timezone.utc).isoformat(),
               'status':'not_inspected', 'files':[], 'observations':[],
               'scope':'public metadata only; no IQ downloaded, no passwords attempted'}
     try:
-        status, content_type, body, truncated = fetch(urllib.request.Request(SHARE))
+        status, content_type, body, truncated = fetch(urllib.request.Request(share))
         title = PageTitle()
         if 'html' in content_type:
             title.feed(body.decode('utf-8',errors='replace'))
-        result['observations'].append({'method':'GET','status':status,'page_title':''.join(title.parts).strip(),'truncated':truncated})
+        result['observations'].append({'method':'GET','status':status,'page_title':''.join(title.parts).strip(),'file_hints':title.file_hints,'truncated':truncated})
     except Exception as exc:
         result['observations'].append({'method':'GET','error':str(exc)})
-    # Normal public-share WebDAV access: token as username and empty password.
-    # A 401/403 is recorded; there are no retries or password guesses.
-    auth = base64.b64encode((TOKEN+':').encode()).decode()
-    request = urllib.request.Request(HOST+'/public.php/webdav/',method='PROPFIND',
-        headers={'Authorization':'Basic '+auth,'Depth':'1','Content-Type':'application/xml'},
-        data=b'<?xml version="1.0"?><d:propfind xmlns:d="DAV:"><d:prop><d:displayname/><d:getcontentlength/><d:getcontenttype/><d:resourcetype/></d:prop></d:propfind>')
-    try:
-        status, content_type, body, truncated = fetch(request)
-        result['observations'].append({'method':'PROPFIND','status':status,'truncated':truncated})
-        if status == 207 and not truncated:
-            result['files'] = public_listing(body)
-            result['status'] = 'public_metadata_listed'
-        elif truncated:
-            result['status'] = 'metadata_exceeds_probe_limit'
-    except Exception as exc:
-        result['observations'].append({'method':'PROPFIND','error':str(exc)})
+    # Documented public DAV routes, not credential guesses or file downloads.
+    # Nextcloud 29+ uses /public.php/dav/files/{token} with no authentication
+    # for unprotected links and requires the AJAX header on non-GET requests.
+    auth = base64.b64encode((token+':').encode()).decode()
+    endpoints = [
+        (HOST+'/public.php/dav/files/'+token+'/',{}),
+        (HOST+'/public.php/webdav/',{'Authorization':'Basic '+auth})]
+    for endpoint,authorization in endpoints:
+        request = urllib.request.Request(endpoint,method='PROPFIND',
+            headers={**authorization,'Depth':'1','Content-Type':'application/xml',
+                     'X-Requested-With':'XMLHttpRequest'},
+            data=b'<?xml version="1.0"?><d:propfind xmlns:d="DAV:"><d:prop><d:displayname/><d:getcontentlength/><d:getcontenttype/><d:resourcetype/></d:prop></d:propfind>')
+        try:
+            status,content_type,body,truncated = fetch(request)
+            result['observations'].append({'method':'PROPFIND','endpoint':endpoint,'status':status,'truncated':truncated})
+            if status==207 and not truncated:
+                result['files'] = public_listing(body)
+                result['status'] = 'public_metadata_listed'
+                break
+            if truncated:
+                result['status'] = 'metadata_exceeds_probe_limit'
+        except Exception as exc:
+            result['observations'].append({'method':'PROPFIND','endpoint':endpoint,'error':str(exc)})
     if result['status'] == 'not_inspected':
         result['status'] = 'public_files_not_listed'
     return result
@@ -112,9 +127,10 @@ def probe():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--share-token',default=TOKEN)
     parser.add_argument('--out',default='corpus-cache/imec/catalog.json')
     args = parser.parse_args()
-    result = probe()
+    result = probe(args.share_token)
     path = Path(args.out)
     path.parent.mkdir(parents=True,exist_ok=True)
     path.write_text(json.dumps(result,indent=2))

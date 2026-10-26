@@ -1,0 +1,24 @@
+{
+  "id":"imec_lte_wifi_dvbt",
+  "name":"Technology Recognition: real-life LTE, Wi-Fi and DVB-T",
+  "shared_url":"https://cloud.ilabt.imec.be/index.php/s/qrJCWgzQaGPfHPr",
+  "authors_repository":"https://github.com/JaronFontaine/Technology-Recognition-dataset-of-real-life-LTE-WiFi-and-DVB-T",
+  "readme_blob_sha":"600de549458676e27f176b3f48f0e34d696ba6ac",
+  "checked_date":"2026-10-26",
+  "status":"authors_documentation_verified_files_under_inspection",
+  "source_type_as_reported":"real over-air IQ recordings",
+  "technologies_as_reported":["LTE","Wi-Fi","DVB-T"],
+  "locations_as_reported":["UZ","Reep","Rabot","Merelbeke","iGent","Gentbrugge"],
+  "sample_rate_policy_as_reported":"1 MS/s unless the filename specifies otherwise",
+  "filename_example_as_reported":{"name":"wf10Msps_g76_rabot_f5240MHz_r1.bin","sample_rate_hz":10000000,"center_frequency_hz":5240000000,"gain_db":76},
+  "file_format":{"extension_as_reported":".bin","scalar_dtype":null,"endianness":null,"iq_order":null,"channels":null,"header_layout":null},
+  "matlab_example":{"name_as_reported":"script_for_Accessing_bin_files.m","available_in_inspected_repository_root":false},
+  "license_as_reported":"CC-BY-NC-SA-4.0",
+  "license_url":"https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "publications_as_reported":[
+    {"year":2019,"title":"Towards low-complexity wireless technology classification across multiple environments","journal":"Ad Hoc Networks","volume":91,"article":101881},
+    {"year":2017,"title":"Wireless technology recognition based on RSSI distribution at sub-Nyquist sampling rate for constrained devices","journal":"Sensors","volume":17,"issue":9,"article":2081}
+  ],
+  "potential_overlap":["radiopile"],
+  "validation_scope":"Source identity and published acquisition conventions only; no file import, class prediction or protocol decoding"
+}

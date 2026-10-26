@@ -1,6 +1,7 @@
 import importlib.util
 from pathlib import Path
 import unittest
+from unittest.mock import patch
 import urllib.request
 
 spec = importlib.util.spec_from_file_location('imec_probe',Path(__file__).parents[1]/'scripts/imec_catalog_probe.py')
@@ -34,6 +35,24 @@ class CatalogTests(unittest.TestCase):
         title = probe.PageTitle()
         title.feed('<html><title>Public dataset</title><body>other text</body></html>')
         self.assertEqual(''.join(title.parts),'Public dataset')
+
+    def test_public_page_only_records_allowed_filename_hints(self):
+        title = probe.PageTitle()
+        title.feed('<input id="filename" value="dataset.bin"><input id="requesttoken" value="private"><input name="password" value="private">')
+        self.assertEqual(title.file_hints,{'filename':'dataset.bin'})
+
+    def test_new_token_uses_documented_public_dav_without_guessing_passwords(self):
+        html = b'<title>public dataset</title>'
+        xml = b'<d:multistatus xmlns:d="DAV:"><d:response><d:href>/dataset/</d:href></d:response></d:multistatus>'
+        with patch.object(probe,'fetch',side_effect=[(200,'text/html',html,False),(207,'application/xml',xml,False)]) as fetch:
+            result = probe.probe('qrJCWgzQaGPfHPr')
+        self.assertEqual(result['status'],'public_metadata_listed')
+        request = fetch.call_args.args[0]
+        self.assertEqual(request.full_url,probe.HOST+'/public.php/dav/files/qrJCWgzQaGPfHPr/')
+        self.assertEqual(request.get_header('X-requested-with'),'XMLHttpRequest')
+        self.assertIsNone(request.get_header('Authorization'))
+        with self.assertRaises(ValueError):
+            probe.probe('../invalid')
 
 
 if __name__ == '__main__':
