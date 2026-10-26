@@ -100,7 +100,7 @@ def inspect_matlab_document(token,listing):
     if len(payload)!=size or len(payload)>32768:
         raise ValueError('MATLAB documentation changed or exceeded the metadata budget')
     text = payload.decode('utf-8')
-    relevant = [line.strip() for line in text.splitlines() if re.search(r'fread|fopen|reshape|complex|real|imag|1:2|2:2|1i|1j',line,re.I)]
+    relevant = [line.strip() for line in text.splitlines() if re.search(r'fread|fopen|reshape|complex|real|imag|1:2|2:2|1i|1j|i_sample|q_sample|fs\s*=|fname2',line,re.I)]
     import hashlib
     return {'source_url':url,'bytes':len(payload),'sha256':hashlib.sha256(payload).hexdigest(),
             'kind':'MATLAB documentation, not executed','relevant_lines':relevant[:20]}
