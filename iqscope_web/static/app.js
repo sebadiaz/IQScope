@@ -114,7 +114,7 @@ function showReport(report, jobId) {
   $('download').href=`/api/jobs/${jobId}/artifacts/report.json`; $('download').hidden=false;
   const list=$('signal-list');list.replaceChildren();
   if(report.interpretation_status==='unverified_byte_order_and_header_layout'){
-    list.append(element('p',`Hypothèse de lecture ${report.interpretation_datatype || ''}. Ordre des octets et en-tête non validés ; le taux provient d’une convention de nom ou des auteurs, sans mesure indépendante.`,'hint'));
+    list.append(element('p',`Hypothèse de lecture ${report.interpretation_datatype || ''}. Type, ordre des octets et en-tête non validés ; le taux provient d’une convention de nom ou des auteurs, sans mesure indépendante.`,'hint'));
   }
   if(report.recording_provenance){
     const provenance=report.recording_provenance;
@@ -367,7 +367,7 @@ $('datasets').onclick=async()=>{
     const data=await api('/api/datasets',undefined,'GET');
     const vksdr=await api('/api/recordings/vksdr',undefined,'GET');
     $('dataset-list').replaceChildren();
-    const labels={audio_import_available:'Import audio disponible · texte candidat',audio_reference_only:'Référence audio · import IQ indisponible',annotations_validated:'Annotations vérifiées · IQ non importés',validated_subset:'Sous-ensemble validé',documentation_only:'Documentation seulement',adapter_under_validation:'Importateur en validation',window_import_validated:'Import de fenêtre validé'};
+    const labels={candidate_conversion_available:'Conversion candidate · format non certifié',audio_import_available:'Import audio disponible · texte candidat',audio_reference_only:'Référence audio · import IQ indisponible',annotations_validated:'Annotations vérifiées · IQ non importés',validated_subset:'Sous-ensemble validé',documentation_only:'Documentation seulement',adapter_under_validation:'Importateur en validation',window_import_validated:'Import de fenêtre validé'};
     const kinds={receiver_audio_collection:'Collection audio de récepteur',real_recordings:'Captures réelles',real_measurements:'Mesures réelles',synthetic_windows:'Fenêtres synthétiques',synthetic_generator:'Générateur synthétique',aggregate_windows:'Agrégat de fenêtres',real_recording_collection:'Collection de captures',real_recording:'Capture réelle',real_mono_waveforms:'Signaux réels mono'};
     for(const entry of data.entries){
       const card=element('div',undefined,'capability');

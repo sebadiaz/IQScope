@@ -533,8 +533,8 @@ The share `qrJCWgzQaGPfHPr` is identified by its authors' repository as a distin
 real over-air technology-recognition corpus, separate from the existing sub-GHz
 share. Its documented default rate is 1 MS/s unless filenames state otherwise.
 The public MATLAB example reads interleaved signed int16, I then Q, but leaves
-endianness implicit. Actual IQ bytes remain uninspected; no adapter or content
-decoder is claimed. See [the source and metadata-probe notes](docs/DATASET_IMEC_LTE_WIFI_DVBT.md).
+endianness implicit. A bounded prefix has since been inspected; conversion candidates are available
+but no physical-layout validation or content decoder is claimed. See [the source and metadata-probe notes](docs/DATASET_IMEC_LTE_WIFI_DVBT.md).
 The catalog keeps the declared CC BY-NC-SA 4.0 license and potential RadioPile
 overlap explicit. The public-share probe now accepts a validated share token and
 supports the modern public DAV endpoint/header as well as the legacy route.
@@ -555,3 +555,11 @@ prefix probe explores at most three public directories in one known location,
 downloads one bounded prefix and checks byte-exact conversion for both variants.
 This does not establish an independently verified physical format or decode LTE,
 Wi-Fi or DVB-T payloads.
+
+
+First real-prefix observation: 256 KiB from
+`wf10Msps_g30_rabot_f5240MHz_r1.bin`, 65,536 candidate complex samples at the
+filename-indicated 10 MS/s (6.5536 ms). Both byte-order interpretations round-trip
+exactly; physical layout and byte order remain unresolved. The catalog reports
+candidate conversion, not verified RF format or Wi-Fi recognition. See the
+imec notes for the checked run, source URL, size and hash.

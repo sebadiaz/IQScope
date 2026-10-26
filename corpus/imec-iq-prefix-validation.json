@@ -1,0 +1,56 @@
+{
+  "validated_date": "2026-10-26",
+  "run_url": "https://github.com/sebadiaz/IQScope/actions/runs/40389256077",
+  "dataset_id": "imec_lte_wifi_dvbt",
+  "source_filename": "wf10Msps_g30_rabot_f5240MHz_r1.bin",
+  "source_file_bytes": 8800000,
+  "prefix_bytes": 262144,
+  "sample_count": 65536,
+  "prefix_sha256": "e1ae5c4499bc21162b15403c20e622194a1f268019d3bea67829fc3689bcb777",
+  "sample_rate_hz": 10000000,
+  "sample_rate_source": "filename",
+  "filename_center_hint_hz": 5240000000,
+  "iq_order_basis": "public author MATLAB example: I then Q",
+  "endianness_verified": false,
+  "header_layout_verified": false,
+  "selected_hypothesis": null,
+  "whole_source_integrity_verified": false,
+  "interpretations": [
+    {
+      "byte_order_hypothesis": "le",
+      "data": "corpus-cache/imec-iq-prefix/excerpt.le.sigmf-data",
+      "metadata": "corpus-cache/imec-iq-prefix/excerpt.le.sigmf-meta",
+      "rms_normalized": 0.3512589528814285,
+      "mean_i_normalized": 0.010254603810608387,
+      "mean_q_normalized": -0.043562388978898525,
+      "clipped_scalar_fraction": 0,
+      "roundtrip_exact": true,
+      "analyzed_seconds": 0.0065536,
+      "detected_spectral_bands": 0
+    },
+    {
+      "byte_order_hypothesis": "be",
+      "data": "corpus-cache/imec-iq-prefix/excerpt.be.sigmf-data",
+      "metadata": "corpus-cache/imec-iq-prefix/excerpt.be.sigmf-meta",
+      "rms_normalized": 0.5714124106414078,
+      "mean_i_normalized": 0.16515002632513642,
+      "mean_q_normalized": -0.11680972389876842,
+      "clipped_scalar_fraction": 0,
+      "roundtrip_exact": true,
+      "analyzed_seconds": 0.0065536,
+      "detected_spectral_bands": 0
+    }
+  ],
+  "scope": "candidate conversion only; no class prediction, protocol or payload validation",
+  "source_url": "https://cloud.ilabt.imec.be/public.php/dav/files/qrJCWgzQaGPfHPr/rabot/wf10Msps_g30_rabot_f5240MHz_r1.bin",
+  "source_share": "https://cloud.ilabt.imec.be/index.php/s/qrJCWgzQaGPfHPr",
+  "visited_directories": [
+    "/public.php/dav/files/qrJCWgzQaGPfHPr/rabot/"
+  ],
+  "download_limit_bytes": 262144,
+  "http": {
+    "http_status": 206,
+    "content_range": "bytes 0-262143/8800000",
+    "source_file_bytes": 8800000
+  }
+}

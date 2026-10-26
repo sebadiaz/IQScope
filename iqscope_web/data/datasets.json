@@ -209,12 +209,12 @@
       "url": "https://cloud.ilabt.imec.be/index.php/s/qrJCWgzQaGPfHPr",
       "authors_repository": "https://github.com/JaronFontaine/Technology-Recognition-dataset-of-real-life-LTE-WiFi-and-DVB-T",
       "role": "cross-environment technology recognition",
-      "status": "documentation_only",
-      "adapter": null,
+      "status": "candidate_conversion_available",
+      "adapter": "imec_int16_endian_hypotheses",
       "license_as_reported": "CC-BY-NC-SA-4.0",
-      "note": "Listing public vérifié. Exemple MATLAB : int16 entrelacé I puis Q ; endian non déclaré et IQ réels non inspectés. Aucun import/décodage validé ; recouvrement potentiel avec RadioPile.",
+      "note": "Préfixe réel de 256 Kio lu ; deux conversions SigMF int16 I/Q vérifiées octet par octet. Endian et en-tête non résolus : aucune interprétation choisie, aucun décodage validé.",
       "metadata_status": "public_listing_verified",
-      "validation_reference": "https://github.com/sebadiaz/IQScope/actions/runs/40387035954"
+      "validation_reference": "https://github.com/sebadiaz/IQScope/actions/runs/40389256077"
     }
   ]
 }

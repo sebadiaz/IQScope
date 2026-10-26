@@ -25,8 +25,8 @@ L'extension `.bin` et la convention de noms ne définissent pas le dtype,
 l'endian, l'ordre I/Q, les voies ou un éventuel en-tête. Le README mentionne un
 exemple MATLAB, absent de la racine GitHub inspectée, mais trouvé ensuite dans le
 partage public. Cet exemple lit des entiers 16 bits signés et reconstruit I puis
-Q. Il ne précise pas l’endian ; aucun octet IQ réel n’a été inspecté et aucun
-importateur n’est donc déclaré.
+Q. Il ne précise pas l’endian. Un préfixe a ensuite été inspecté et la conversion
+candidate décrite ci-dessous conserve cette incertitude.
 Ce corpus reste distinct du partage sub-GHz `bqXtdp9QsfXLbb3`.
 
 ## Inspection des métadonnées publiques
@@ -61,7 +61,7 @@ Son empreinte est `d42050749e4fcedd81856f032d40ee5c215de7211528561239df15da1b7ce
 La lecture MATLAB utilise la précision `short`, puis une matrice à deux lignes :
 I vient de la première ligne et Q de la seconde. Il faut donc distinguer cet
 exemple int16 de l'import brut cf32 d'IQScope. La précision des fichiers réels,
-leur endian et tout éventuel en-tête restent à valider sur un extrait.
+leur endian et tout éventuel en-tête restent à confirmer indépendamment.
 
 Les commentaires d'unité et de durée du script sont incohérents avec certaines
 constantes : vingt millions de valeurs scalaires représenteraient dix secondes
@@ -95,3 +95,24 @@ Le rapport et l'interface gardent le statut d'interprétation non vérifiée qua
 ces métadonnées sont réutilisées. Les données et les SigMF générés restent dans
 `corpus-cache/` ; seuls les rapports sont téléversés en CI. Aucun classement de
 technologie ni décodage de contenu n'est revendiqué par ce contrôle.
+
+
+## Premier préfixe réel observé
+
+Le [contrôle 40389256077](https://github.com/sebadiaz/IQScope/actions/runs/40389256077)
+a lu les 256 premiers Kio de `wf10Msps_g30_rabot_f5240MHz_r1.bin` via HTTP 206.
+Le serveur annonce un fichier de 8 800 000 octets. Le nom indique 10 Méch/s ; sous
+l'hypothèse int16 I/Q, le préfixe représente 65 536 échantillons complexes, soit
+6,5536 ms. L'indication RF de 5 240 MHz reste séparée des métadonnées utilisées.
+
+Les deux SigMF ont passé le contrôle de réimport/reconstruction exact des octets.
+Les statistiques diffèrent entre les deux interprétations ; elles ne constituent
+pas une preuve d'endian. Le [résumé conservé](../corpus/imec-iq-prefix-validation.json)
+marque explicitement le format physique comme non résolu et ne choisit aucune
+hypothèse. Le statut du catalogue est `candidate_conversion_available`, pas une
+validation de protocole ou de représentation.
+
+Le détecteur stationnaire existant n'a isolé aucune bande dans ce court extrait.
+Cela ne démontre ni une absence d'émission, ni un mode particulier : ce contrôle
+n'est pas un test de reconnaissance Wi-Fi. Aucun IQ brut n'est ajouté aux
+artefacts ni au dépôt.

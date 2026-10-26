@@ -5,7 +5,7 @@
   "authors_repository": "https://github.com/JaronFontaine/Technology-Recognition-dataset-of-real-life-LTE-WiFi-and-DVB-T",
   "readme_blob_sha": "600de549458676e27f176b3f48f0e34d696ba6ac",
   "checked_date": "2026-10-26",
-  "status": "public_metadata_and_matlab_layout_verified_iq_not_downloaded",
+  "status": "one_prefix_converted_both_endians_physical_layout_unresolved",
   "source_type_as_reported": "real over-air IQ recordings",
   "technologies_as_reported": [
     "LTE",
@@ -36,7 +36,8 @@
     "header_layout": null,
     "scalar_dtype_as_read_by_example": "int16",
     "iq_order_as_read_by_example": "IQ",
-    "endianness_as_read_by_example": "MATLAB native default; not explicitly declared"
+    "endianness_as_read_by_example": "MATLAB native default; not explicitly declared",
+    "actual_file_bytes_inspected": true
   },
   "matlab_example": {
     "name_as_reported": "script_for_Accessing_bin_files.m",
@@ -70,5 +71,6 @@
   "potential_overlap": [
     "radiopile"
   ],
-  "validation_scope": "Author documentation, public listing and small MATLAB layout example only; actual IQ file bytes not inspected"
+  "validation_scope": "One 256 KiB prefix read; int16 I/Q conversion hypotheses round-trip exactly, but actual scalar type, endian and header layout remain unverified",
+  "prefix_validation_reference": "https://github.com/sebadiaz/IQScope/actions/runs/40389256077"
 }
