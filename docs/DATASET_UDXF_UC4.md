@@ -47,9 +47,26 @@ de redistribution ne sont pas établis. Les téléchargements sont temporaires ;
 seuls les rapports sont conservés. L'interface d'import IQ continue de refuser
 ces MP3 : aucun faux canal I/Q n'est créé et aucune fréquence RF n'est inventée.
 
-## Validation
+## Validation observée le 26 octobre 2026
+
+Exécution vérifiée : [CI 40321949433](https://github.com/sebadiaz/IQScope/actions/runs/40321949433).
+Le [résumé des résultats](../corpus/udxf_audio_validation.json) conserve les
+empreintes des préfixes et les hypothèses, sans les fichiers audio.
+
+| Extrait | Octets reçus | Audio décodé | Essai CW |
+|---|---:|---:|---|
+| `fdc_cw` | 331 904 | 20 s | Deux textes candidats, environ 24 mots/min |
+| `vtk_cw` | 711 365 | 20 s | Aucun candidat cohérent |
+| `link11` | 275 434 | 20 s | Aucun candidat cohérent ; aucune reconnaissance Link-11 effectuée |
+
+Le meilleur texte FDC contient `VVV` répété, puis `DE FDC FDC FDC AR`.
+Le préfixe initial diffère entre les deux hypothèses (`HV` ou `IV`) et peut
+comprendre un caractère tronqué. Les groupes `AR` ne sont pas interprétés comme
+un prosigne par ce décodeur. Le timing fournit une cohérence heuristique, pas un
+CRC, une transcription de référence ni une authentification. Ce résultat est
+une première observation sur audio réel, pas une mesure du taux d'erreur CW.
+L'absence de candidat pour les autres extraits ne confirme ni n'infirme leur mode.
 
 Les tests locaux vérifient la borne de lecture, la conversion audio bornée et un
-texte CW synthétique indépendant. Les résultats sur les fichiers publics sont
-à vérifier dans le job CI `audio-references` ; aucune récupération de texte réel
-n'est revendiquée avant inspection de ces rapports.
+texte CW synthétique indépendant. Les contrôles Python et navigateur passent ;
+le catalogue distingue toujours ces références audio des imports IQ.

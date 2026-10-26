@@ -1,0 +1,64 @@
+{
+  "validated_date": "2026-10-26",
+  "run_url": "https://github.com/sebadiaz/IQScope/actions/runs/40321949433",
+  "validation_scope": "bounded audio decoding; FDC unverified CW candidate only",
+  "results": [
+    {
+      "entry_id": "fdc_cw",
+      "source_url": "https://www.udxf.nl/FDC%20FAF%20Metz.mp3",
+      "received_bytes": 331904,
+      "prefix_sha256": "598144cd9fc458f2c54f553ae260c431b796471ce819c87a0eb0ffacda9662d0",
+      "decoded_audio_seconds": 20,
+      "cw_status": "timing_consistent_candidate",
+      "candidates": [
+        {
+          "text": "HV VVV VVV VVV VVV DE FDC FDC FDC AR",
+          "parameters": {
+            "words_per_minute": 23.999999999999996,
+            "dot_seconds": 0.05
+          },
+          "evidence": {
+            "timing_mean_squared_error_units": 0.027282051282051283,
+            "characters": 27,
+            "unknown_characters": 0,
+            "checksum": "not_present"
+          }
+        },
+        {
+          "text": "IV VVV VVV VVV VVV DE FDC FDC FDC AR",
+          "parameters": {
+            "words_per_minute": 23.76237623762376,
+            "dot_seconds": 0.0505
+          },
+          "evidence": {
+            "timing_mean_squared_error_units": 0.04901634220236082,
+            "characters": 27,
+            "unknown_characters": 0,
+            "checksum": "not_present"
+          }
+        }
+      ],
+      "independently_verified_text": null
+    },
+    {
+      "entry_id": "vtk_cw",
+      "source_url": "https://www.udxf.nl/VTK-Indian-Navy-2013-03-25-2027utc.mp3",
+      "received_bytes": 711365,
+      "prefix_sha256": "b36730b292b8d1d3ebf8411a0c028b5d250912dbaf615a6d6b2ae044d743f6ac",
+      "decoded_audio_seconds": 20,
+      "cw_status": "no_consistent_candidate",
+      "candidates": [],
+      "independently_verified_text": null
+    },
+    {
+      "entry_id": "link11",
+      "source_url": "https://www.udxf.nl/Link-11.mp3",
+      "received_bytes": 275434,
+      "prefix_sha256": "e047973e7d2fc3560a151ca66c7074bcc1ab6254db441ae720a034c7bb09c85a",
+      "decoded_audio_seconds": 20,
+      "cw_status": "no_consistent_candidate",
+      "candidates": [],
+      "independently_verified_text": null
+    }
+  ]
+}

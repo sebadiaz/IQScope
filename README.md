@@ -419,3 +419,10 @@ tries the existing CW receiver on analytic audio. It stores provenance and any
 unverified text candidates, never claims the analytic audio is original IQ, and
 does not add MP3 upload support to the main IQ interface. CI uploads reports
 only. No new military protocol decoder is implied by this catalog addition.
+
+First real-audio probe: three MP3 excerpts decoded successfully. The FDC excerpt
+produced CW candidates containing `DE FDC FDC FDC AR` around 24 WPM; initial
+characters differ between hypotheses and remain uncertain. VTK and Link-11
+excerpts produced no consistent CW candidate. See the linked inspection notes
+for the verified CI run and hashes. This is candidate recovery without a checksum
+or independent transcript, not validated military protocol decoding.

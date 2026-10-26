@@ -186,7 +186,9 @@
       "status": "audio_reference_only",
       "adapter": null,
       "scope": "Selected MP3 receiver audio, not original RF IQ; station and mode labels unverified",
-      "note": "Audio MP3 : import IQ indisponible. Sonde audio expérimentale fournie ; aucun support Link-11, Akula ou MIL-STD-110A ajouté."
+      "note": "Audio MP3 : import IQ indisponible. Sonde audio expérimentale fournie ; aucun support Link-11, Akula ou MIL-STD-110A ajouté.",
+      "validation_reference": "https://github.com/sebadiaz/IQScope/actions/runs/40321949433",
+      "validation_scope": "Three bounded MP3 excerpts decoded; FDC CW text candidate around 24 WPM, without checksum or independent transcript"
     }
   ]
 }
