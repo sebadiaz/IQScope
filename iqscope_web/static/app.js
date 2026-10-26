@@ -113,6 +113,9 @@ function showReport(report, jobId) {
   $('metric-duration').textContent=`${report.analyzed_seconds.toFixed(2)} s`;
   $('download').href=`/api/jobs/${jobId}/artifacts/report.json`; $('download').hidden=false;
   const list=$('signal-list');list.replaceChildren();
+  if(report.interpretation_status==='unverified_byte_order_and_header_layout'){
+    list.append(element('p',`Hypothèse de lecture ${report.interpretation_datatype || ''}. Ordre des octets et en-tête non validés ; le taux provient d’une convention de nom ou des auteurs, sans mesure indépendante.`,'hint'));
+  }
   if(report.recording_provenance){
     const provenance=report.recording_provenance;
     const note=element('div',undefined,'recording-provenance');
@@ -372,6 +375,7 @@ $('datasets').onclick=async()=>{
       card.append(link,element('p',`${kinds[entry.kind] || entry.kind} · ${labels[entry.status] || entry.status}`));
       if(entry.note)card.append(element('p',entry.note));
       if(entry.id==='panoradio_hf')card.append(element('code','iqscope dataset-import panoradio_hf fichier.npy --record 0 --out extrait'));
+      if(entry.id==='imec_lte_wifi_dvbt'){card.append(element('code','iqscope dataset-import imec_lte_wifi_dvbt fichier.bin --out extrait'));card.append(element('p','Deux interprétations d’endianness, sans choix automatique ni validation du format réel.','hint'));}
       if(entry.id==='vksdr'){
         for(const recording of vksdr.entries){
           const row=element('div',undefined,'recording');

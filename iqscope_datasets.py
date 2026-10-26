@@ -154,3 +154,73 @@ def fpv_annotations(path):
             'limitations':['An inactive target transmitter is not a guarantee of noise-only RF.',
                            'Sample rate and frequency units are not inferred from bare numeric CSV values.',
                            'This is annotation import, not IQ import or video reconstruction.']}
+
+
+def imec_filename_metadata(name):
+    """Author-described rate convention; filename hints are not RF measurements."""
+    import re
+    name = Path(name).name
+    rates = re.findall(r'(\d+(?:\.\d+)?)([mk]?)sps',name,re.I)
+    if len(rates)>1:
+        raise ValueError('Ambiguous sampling rates in filename')
+    rate = float(rates[0][0])*{'':1,'k':1000,'m':1000000}[rates[0][1].lower()] if rates else 1000000
+    if not 1000<=rate<=20000000:
+        raise ValueError('Filename sample rate is outside the supported 1 kS/s to 20 MS/s range')
+    centers = re.findall(r'f(\d+(?:\.\d+)?)mhz',name,re.I)
+    return {'sample_rate_hz':rate,'sample_rate_source':'filename' if rates else 'authors_default_not_measured',
+            'filename_center_hint_hz':float(centers[0])*1e6 if len(centers)==1 else None}
+
+
+def export_imec_hypotheses(path,out,max_bytes=262144):
+    """Export both int16 byte orders. Neither hypothesis is selected as truth."""
+    if not 4096<=max_bytes<=1048576 or max_bytes%4:
+        raise ValueError('IQ prefix budget must be 4 KiB to 1 MiB and divisible by four')
+    path = Path(path)
+    if path.stat().st_size%4:
+        raise ValueError('Source does not contain complete int16 I/Q pairs')
+    with path.open('rb') as handle:
+        prefix = handle.read(max_bytes)
+    if len(prefix)%4:
+        raise ValueError('Prefix does not contain complete int16 I/Q pairs')
+    if len(prefix)<4096:
+        raise ValueError('Need at least 1024 int16 I/Q pairs')
+    info = imec_filename_metadata(path.name)
+    target = Path(out)
+    target.parent.mkdir(parents=True,exist_ok=True)
+    outputs = {}
+    interpretations = []
+    for order in ('le','be'):
+        name = str(target)+'.'+order
+        data_path,meta_path = Path(name+'.sigmf-data'),Path(name+'.sigmf-meta')
+        words = np.frombuffer(prefix,dtype='<i2' if order=='le' else '>i2').reshape(-1,2)
+        interpretations.append({'byte_order_hypothesis':order,'data':str(data_path),'metadata':str(meta_path),
+            'rms_normalized':float(np.sqrt(np.mean((words.astype(float)/32768)**2))),
+            'mean_i_normalized':float(np.mean(words[:,0])/32768),
+            'mean_q_normalized':float(np.mean(words[:,1])/32768),
+            'clipped_scalar_fraction':float(np.mean((words==-32768)|(words==32767)))})
+        meta = {'global':{'core:datatype':'ci16_'+order,'core:sample_rate':info['sample_rate_hz'],'core:version':'1.2.0',
+                         'core:description':'imec int16 I/Q candidate interpretation; byte order and header layout not independently verified',
+                         'iqscope:byte_order_status':'unverified_hypothesis','iqscope:sample_rate_source':info['sample_rate_source']},
+                'captures':[{'core:sample_start':0}],'annotations':[]}
+        outputs[data_path] = prefix
+        outputs[meta_path] = json.dumps(meta,indent=2).encode()
+    provenance = {'dataset_id':'imec_lte_wifi_dvbt','source_filename':path.name,'source_file_bytes':path.stat().st_size,
+                  'prefix_bytes':len(prefix),'sample_count':len(prefix)//4,'prefix_sha256':hashlib.sha256(prefix).hexdigest(),
+                  **info,'iq_order_basis':'public author MATLAB example: I then Q',
+                  'endianness_verified':False,'header_layout_verified':False,'selected_hypothesis':None,
+                  'whole_source_integrity_verified':False,
+                  'interpretations':interpretations,'scope':'candidate conversion only; no class prediction, protocol or payload validation'}
+    outputs[Path(str(target)+'.provenance.json')] = json.dumps(provenance,indent=2).encode()
+    if any(p.exists() for p in outputs):
+        raise ValueError('Output exists; choose a new prefix')
+    created = []
+    try:
+        for name,payload in outputs.items():
+            with name.open('xb') as handle:
+                created.append(name)
+                handle.write(payload)
+    except BaseException:
+        for name in created:
+            name.unlink(missing_ok=True)
+        raise
+    return provenance

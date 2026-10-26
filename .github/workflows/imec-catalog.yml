@@ -5,6 +5,8 @@ on:
       - corpus/imec-subghz.json
       - corpus/imec-qrJCWgzQaGPfHPr.json
       - scripts/imec_catalog_probe.py
+      - scripts/imec_iq_prefix.py
+      - iqscope_datasets.py
       - .github/workflows/imec-catalog.yml
 permissions:
   contents: read
@@ -25,3 +27,22 @@ jobs:
         with:
           name: imec-catalog-observation
           path: corpus-cache/imec/*.json
+  iq-prefix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install .
+      - name: Inspect one bounded real IQ prefix without choosing an endian
+        run: python scripts/imec_iq_prefix.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: imec-iq-prefix-reports
+          path: |
+            corpus-cache/imec-iq-prefix/provenance.json
+            corpus-cache/imec-iq-prefix/**/results/report.json
+          if-no-files-found: ignore

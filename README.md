@@ -538,3 +538,20 @@ decoder is claimed. See [the source and metadata-probe notes](docs/DATASET_IMEC_
 The catalog keeps the declared CC BY-NC-SA 4.0 license and potential RadioPile
 overlap explicit. The public-share probe now accepts a validated share token and
 supports the modern public DAV endpoint/header as well as the legacy route.
+
+
+The local candidate converter is now available:
+
+```bash
+iqscope dataset-import imec_lte_wifi_dvbt recording.bin --out excerpt
+```
+
+It reads at most 256 KiB and exports both `ci16_le` and `ci16_be` SigMF
+interpretations with identical source bytes. Neither endian is selected as
+correct. Rate conventions and unknown original header layout remain explicit;
+filename RF hints are not promoted to verified capture frequencies. The normal
+analyzer and UI preserve this uncertainty from the generated metadata. The CI
+prefix probe explores at most three public directories in one known location,
+downloads one bounded prefix and checks byte-exact conversion for both variants.
+This does not establish an independently verified physical format or decode LTE,
+Wi-Fi or DVB-T payloads.

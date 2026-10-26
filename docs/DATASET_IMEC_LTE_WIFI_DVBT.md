@@ -67,3 +67,31 @@ Les commentaires d'unité et de durée du script sont incohérents avec certaine
 constantes : vingt millions de valeurs scalaires représenteraient dix secondes
 à un million d'échantillons complexes par seconde, pas une seconde. La durée
 d'une capture ne doit donc pas être déduite de cette tranche de démonstration.
+
+
+## Conversion candidate et essai borné
+
+```bash
+iqscope dataset-import imec_lte_wifi_dvbt fichier.bin --out extrait
+python scripts/imec_iq_prefix.py --location rabot
+```
+
+La conversion lit au plus 256 Kio et produit `extrait.le.sigmf-data` /
+`extrait.le.sigmf-meta` et les fichiers `.be` correspondants. Les octets sont
+conservés à l'identique ; seul le datatype SigMF indique l'hypothèse. Aucun ordre
+n'est sélectionné comme vérité. Le taux vient du nom lorsqu'il est explicite,
+sinon du défaut des auteurs ; le centre RF suggéré par le nom n'est pas promu
+en métadonnée vérifiée. L'en-tête éventuel du fichier reste non vérifié.
+
+La sonde réseau explore au plus trois répertoires dans un lieu documenté,
+choisit un `.bin` et demande seulement ses premiers 256 Kio. Elle vérifie le
+chemin, le début de la plage HTTP et la taille annoncée, et conserve la borne
+même si Range est ignoré. Les deux interprétations sont réimportées et leurs
+octets reconstruits doivent être exactement ceux du préfixe avant analyse.
+Ce contrôle de conversion ne démontre pas quel endian correspond au signal RF.
+Les statistiques des deux hypothèses servent à comparer, pas à certifier.
+
+Le rapport et l'interface gardent le statut d'interprétation non vérifiée quand
+ces métadonnées sont réutilisées. Les données et les SigMF générés restent dans
+`corpus-cache/` ; seuls les rapports sont téléversés en CI. Aucun classement de
+technologie ni décodage de contenu n'est revendiqué par ce contrôle.

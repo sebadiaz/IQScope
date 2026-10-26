@@ -183,7 +183,18 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
 
 def analyze(path, out, sample_rate=None, seconds=10, threshold_db=9):
     x, fs, center = read_iq(path, sample_rate, seconds)
-    return analyze_samples(x, fs, center, out, source=path, threshold_db=threshold_db)
+    report = analyze_samples(x, fs, center, out, source=path, threshold_db=threshold_db)
+    path = Path(path)
+    meta_path = path if path.suffix=='.sigmf-meta' else path.with_suffix('.sigmf-meta')
+    if path.suffix.lower() not in ('.wav','.sdriq') and meta_path.exists():
+        global_meta = json.loads(meta_path.read_text()).get('global',{})
+        if global_meta.get('iqscope:byte_order_status')=='unverified_hypothesis':
+            report['interpretation_status'] = 'unverified_byte_order_and_header_layout'
+            report['interpretation_datatype'] = global_meta['core:datatype']
+            report['sample_rate_source'] = global_meta.get('iqscope:sample_rate_source')
+            report['limitations'].insert(0,'Candidate byte-order interpretation; endian and original header layout are not independently verified.')
+            (Path(out)/'report.json').write_text(json.dumps(report,indent=2))
+    return report
 
 
 def demo(out):
@@ -220,8 +231,8 @@ def main():
     annotations.add_argument('dataset', choices=['fpv_analog'])
     annotations.add_argument('file')
     sub.add_parser('datasets', help='List dataset sources and actual integration status')
-    dataset = sub.add_parser('dataset-import', help='Export one independent dataset window as SigMF')
-    dataset.add_argument('dataset', choices=['panoradio_hf'])
+    dataset = sub.add_parser('dataset-import', help='Export a bounded dataset excerpt as SigMF')
+    dataset.add_argument('dataset', choices=['panoradio_hf','imec_lte_wifi_dvbt'])
     dataset.add_argument('file')
     dataset.add_argument('--record', type=int, default=0)
     dataset.add_argument('--out', required=True)
@@ -241,8 +252,14 @@ def main():
             print(json.dumps(catalog(), indent=2))
             return
         if args.command == 'dataset-import':
-            from iqscope_datasets import export_panoradio_window
-            print(json.dumps(export_panoradio_window(args.file, args.out, args.record), indent=2))
+            from iqscope_datasets import export_panoradio_window, export_imec_hypotheses
+            if args.dataset=='imec_lte_wifi_dvbt':
+                if args.record:
+                    raise ValueError('Record selection applies only to Panoradio windows')
+                result = export_imec_hypotheses(args.file,args.out)
+            else:
+                result = export_panoradio_window(args.file,args.out,args.record)
+            print(json.dumps(result,indent=2))
             return
         if args.command == 'convert':
             x, fs, center = read_iq(args.file, args.sample_rate, args.seconds)
