@@ -82,7 +82,31 @@ def public_listing(xml):
     return files
 
 
-def probe(token=TOKEN):
+def inspect_matlab_document(token,listing):
+    name = 'script_for_accessing_bin_files.m'
+    entry = next((item for item in listing if item.get('name')==name and not item.get('directory')),None)
+    if entry is None:
+        return None
+    size = int(entry.get('bytes') or 0)
+    if not 0<size<=32768:
+        raise ValueError('MATLAB documentation exceeds the 32 KiB metadata budget')
+    prefix = '/public.php/dav/files/'+token+'/'
+    if entry['href']!=prefix+name:
+        raise ValueError('Unexpected MATLAB document path')
+    url = HOST+entry['href']
+    opener = urllib.request.build_opener(SameHostRedirect())
+    with opener.open(urllib.request.Request(url),timeout=15) as response:
+        payload = response.read(32769)
+    if len(payload)!=size or len(payload)>32768:
+        raise ValueError('MATLAB documentation changed or exceeded the metadata budget')
+    text = payload.decode('utf-8')
+    relevant = [line.strip() for line in text.splitlines() if re.search(r'fread|fopen|reshape|complex|real|imag|1:2|2:2|1i|1j',line,re.I)]
+    import hashlib
+    return {'source_url':url,'bytes':len(payload),'sha256':hashlib.sha256(payload).hexdigest(),
+            'kind':'MATLAB documentation, not executed','relevant_lines':relevant[:20]}
+
+
+def probe(token=TOKEN,read_document=False):
     if not re.fullmatch(r'[A-Za-z0-9]{10,64}',token):
         raise ValueError('Invalid public share token')
     share = HOST+'/index.php/s/'+token
@@ -122,15 +146,21 @@ def probe(token=TOKEN):
             result['observations'].append({'method':'PROPFIND','endpoint':endpoint,'error':str(exc)})
     if result['status'] == 'not_inspected':
         result['status'] = 'public_files_not_listed'
+    if read_document and result['status']=='public_metadata_listed':
+        try:
+            result['matlab_document'] = inspect_matlab_document(token,result['files'])
+        except Exception as exc:
+            result['observations'].append({'method':'GET MATLAB documentation','error':str(exc)})
     return result
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--read-matlab-document',action='store_true')
     parser.add_argument('--share-token',default=TOKEN)
     parser.add_argument('--out',default='corpus-cache/imec/catalog.json')
     args = parser.parse_args()
-    result = probe(args.share_token)
+    result = probe(args.share_token,args.read_matlab_document)
     path = Path(args.out)
     path.parent.mkdir(parents=True,exist_ok=True)
     path.write_text(json.dumps(result,indent=2))

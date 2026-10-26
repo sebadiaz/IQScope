@@ -20,7 +20,7 @@ jobs:
       - name: Observe public share accessibility without downloading IQ
         run: |
           python scripts/imec_catalog_probe.py
-          python scripts/imec_catalog_probe.py --share-token qrJCWgzQaGPfHPr --out corpus-cache/imec/new-share.json
+          python scripts/imec_catalog_probe.py --share-token qrJCWgzQaGPfHPr --read-matlab-document --out corpus-cache/imec/new-share.json
       - uses: actions/upload-artifact@v4
         with:
           name: imec-catalog-observation
