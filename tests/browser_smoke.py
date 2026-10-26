@@ -175,6 +175,23 @@ def main():
                     assert response.ok and response.body()==RTTY_AUDIO_TEXT.encode()
                     assert page.locator('#metric-frames').inner_text()=='0'
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                with tempfile.TemporaryDirectory() as directory:
+                    from test_afsk import fixture as afsk_fixture, TEXT as AFSK_TEXT
+                    audio,fs = afsk_fixture()
+                    wave = Path(directory)/'afsk.wav'
+                    mp3 = Path(directory)/'afsk.mp3'
+                    wavfile.write(wave,fs,audio.astype(np.float32))
+                    subprocess.run(['ffmpeg','-nostdin','-v','error','-i',str(wave),'-ar','24000','-b:a','64k',str(mp3)],check=True,timeout=20)
+                    page.locator('#iq-file').set_input_files(str(mp3))
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('.ax25-text').first).to_have_text(AFSK_TEXT,timeout=30000)
+                    expect(page.locator('.ax25-addresses').first).to_contain_text('N0CALL-1 → APRS')
+                    assert int(page.locator('#metric-frames').inner_text())>=3
+                    expect(page.locator('#center-label')).to_contain_text('aucune fréquence RF')
+                    link = page.get_by_role('link',name='Télécharger les trames AX.25 validées')
+                    response = page.request.get(urljoin(page.url,link.get_attribute('href')))
+                    assert response.ok and len(response.json()['frames'])>=3
+                expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
                 page.get_by_role('tab',name='SDR en direct').click()
                 assert page.locator('#live-panel').is_visible()
                 assert page.locator('#live-frequency').input_value() == '100'

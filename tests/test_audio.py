@@ -21,7 +21,7 @@ class AudioTests(unittest.TestCase):
             self.assertEqual(report['source_kind'],'receiver_audio')
             self.assertIsNone(report['center_frequency_hz'])
             self.assertEqual(report['frequency_reference'],'audio_hz')
-            self.assertEqual([t['decoder'] for t in report['wideband_trials']],['cw_morse','rtty_ita2'])
+            self.assertEqual([t['decoder'] for t in report['wideband_trials']],['cw_morse','rtty_ita2','afsk1200_ax25'])
             best = report['wideband_trials'][0]['candidates'][0]
             self.assertEqual(best['text'],TEXT)
             self.assertIn('audio_frequency_hz',best['channel'])
@@ -67,7 +67,7 @@ class AudioTests(unittest.TestCase):
             wavfile.write(path,16000,np.ones(48000,dtype=np.float32))
             report = analyze_audio(path,Path(directory)/'out',seconds=2)
             self.assertEqual(report['analyzed_seconds'],2)
-            self.assertTrue(all(not t['candidates'] for t in report['wideband_trials']))
+            self.assertTrue(all(not t.get('candidates') and not t.get('frames') for t in report['wideband_trials']))
             with self.assertRaises(ValueError):
                 decode_audio(path,21)
             bad = Path(directory)/'bad.mp3'

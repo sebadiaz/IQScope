@@ -9,6 +9,7 @@ from scipy import signal
 from scipy.io import wavfile
 from iqscope_cw import search_cw
 from iqscope_rtty import decode_rtty
+from iqscope_afsk import decode_afsk1200
 
 
 def decode_audio(path,seconds=20):
@@ -39,6 +40,7 @@ def analyze_audio(path,out,seconds=20):
     out.mkdir(parents=True,exist_ok=True)
     analytic = signal.hilbert(audio)
     cw = search_cw(analytic,fs)
+    afsk = decode_afsk1200(audio,fs)
     rtty = decode_rtty(analytic,fs)
     rtty['frequency_reference'] = 'audio_hz'
     for candidate in rtty['candidates']:
@@ -61,15 +63,16 @@ def analyze_audio(path,out,seconds=20):
               'sample_rate':fs,'center_frequency_hz':None,'frequency_reference':'audio_hz',
               'analyzed_seconds':len(audio)/fs,'requested_seconds':seconds,
               'duration_scope':'At most the requested first audio seconds; source duration is not measured.',
-              'audio_artifact':'audio-preview.wav','signals':[],'wideband_trials':[cw,rtty],
+              'audio_artifact':'audio-preview.wav','signals':[],'wideband_trials':[cw,rtty,afsk],
               'spectrum':{'frequency_hz':frequency.tolist(),'power_db':power_db.tolist()},
               'waterfall':{'power_db':waterfall.tolist(),'time_seconds':(starts/fs).tolist(),'sampled_windows':True},
               'capabilities':[{'id':'cw_morse','family':'CW / Morse','validation':'timing candidates only; no checksum'},
-                              {'id':'rtty_ita2','family':'RTTY / ITA2','validation':'framing candidates only; no checksum'}],
+                              {'id':'rtty_ita2','family':'RTTY / ITA2','validation':'framing candidates only; no checksum'},
+                              {'id':'afsk1200_ax25','family':'AFSK1200 / AX.25 UI','validation':'CRC-16/X-25 and UI structure, not sender identity'}],
               'limitations':['Receiver audio, not original RF IQ; no RF center, phase or original bandwidth can be recovered.',
                              'Mono mixdown at 8 kHz; stereo cancellation and lossy compression may affect results.',
-                             'Only CW/RTTY text trials are enabled for audio; no voice transcription or military protocol decoding.',
-                             'First 1–20 seconds only; text remains candidate content, not a verified transcript.',
+                             'CW/RTTY candidates and AFSK1200 AX.25 UI frames only; no voice transcription or military protocol decoding.',
+                             'First 1–20 seconds only; CW/RTTY text is candidate content; AX.25 FCS does not establish sender identity.',
                              'RTTY tests at most the first 12 seconds.']}
     if cw['candidates']:
         cw['candidates'][0]['text_artifact'] = 'cw-candidate.txt'
@@ -77,5 +80,8 @@ def analyze_audio(path,out,seconds=20):
     if rtty['candidates']:
         rtty['candidates'][0]['text_artifact'] = 'rtty-candidate.txt'
         (out/'rtty-candidate.txt').write_text(rtty['candidates'][0]['text'],encoding='utf-8')
+    if afsk['frames']:
+        report['frame_artifact'] = 'ax25-frames.json'
+        (out/'ax25-frames.json').write_text(json.dumps(afsk,indent=2))
     (out/'report.json').write_text(json.dumps(report,indent=2))
     return report

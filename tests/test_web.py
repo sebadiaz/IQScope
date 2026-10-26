@@ -52,7 +52,7 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('SDR en direct',page.text)
         self.assertIn("default-src 'self'",page.headers['content-security-policy'])
         data = (await self.client.get('/api/capabilities')).json()
-        self.assertEqual(len(data['decoders']),8)
+        self.assertEqual(len(data['decoders']),9)
 
     async def test_recording_list_and_bounded_import_artifacts(self):
         from test_formats import make_wave
@@ -160,6 +160,24 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         artifact = await self.client.get(f"/api/jobs/{job['id']}/artifacts/rtty-candidate.txt")
         self.assertEqual(artifact.status_code,200)
         self.assertEqual(artifact.content,TEXT.encode())
+
+    @unittest.skipUnless(shutil.which('ffmpeg'),'ffmpeg is an optional audio dependency')
+    async def test_audio_afsk_ax25_crc_frame_export(self):
+        from test_afsk import fixture,TEXT
+        from scipy.io import wavfile
+        audio,fs = fixture()
+        stream = io.BytesIO()
+        wavfile.write(stream,fs,audio.astype(np.float32))
+        identifier = (await self.client.post('/api/uploads',content=stream.getvalue(),headers={**HEADERS,'X-IQScope-Filename':'afsk.wav'})).json()['upload_id']
+        response = await self.client.post('/api/analyses',json={'upload_id':identifier,'input_kind':'audio'},headers=HEADERS)
+        job = await self.wait_job(response.json()['id'])
+        self.assertEqual(job['status'],'completed',job.get('error'))
+        trial = next(t for t in job['result']['wideband_trials'] if t['decoder']=='afsk1200_ax25')
+        self.assertEqual(len(trial['frames']),4)
+        self.assertEqual(trial['frames'][0]['fields']['text'],TEXT)
+        artifact = await self.client.get(f"/api/jobs/{job['id']}/artifacts/ax25-frames.json")
+        self.assertEqual(artifact.status_code,200)
+        self.assertEqual(artifact.json()['frames'],trial['frames'])
 
     async def test_audio_mode_validation_and_missing_dependency(self):
         headers = {**HEADERS,'X-IQScope-Filename':'audio.mp3'}

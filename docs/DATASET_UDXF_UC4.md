@@ -78,11 +78,12 @@ Dans l'onglet Fichier, choisir **Audio de récepteur · MP3 / WAV**, puis ouvrir
 fichier et analyser 1 à 20 secondes. `ffmpeg` doit être installé sur PATH. Les
 métadonnées SigMF et le taux IQ ne sont pas utilisés en audio. Le résultat propose
 une lecture du mono à 8 kéch/s, un spectre audio positif, un waterfall et les essais
-CW/RTTY. L'API expose `input_kind: "audio"` ; le rapport indique `source_kind:
+CW/RTTY et AX.25 AFSK1200. L'API expose `input_kind: "audio"` ; le rapport indique `source_kind:
 "receiver_audio"`, `frequency_reference: "audio_hz"` et un centre RF nul. Les
 fréquences des candidats CW/RTTY utilisent le champ `audio_frequency_hz`.
 
-Le mode audio ne lance pas les décodeurs ADS-B, AX.25 ou FSK générique. Aucun texte
+Le mode audio ne lance pas ADS-B ni les décodeurs FSK RF génériques. Il inclut
+un frontal audio AFSK1200 vers AX.25 UI, avec vérification CRC-16/X-25. Aucun texte
 vocal n'est transcrit. Le fichier est mélangé en mono ; une annulation entre
 canaux stéréo est possible. L'audio rééchantillonné et borné est exporté sous
 `audio-preview.wav`, le meilleur candidat CW sous `cw-candidate.txt` et le meilleur

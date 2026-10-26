@@ -106,7 +106,7 @@ function showReport(report, jobId) {
   }
   updateAxes();drawSpectrum();drawWaterfall();
   const frames=(report.wideband_trials || []).filter(t=>t.decoder==='adsb_1090es').flatMap(t=>t.frames || []);
-  const ax25Trials=(report.wideband_trials || []).filter(t=>t.decoder==='ax25_ui');
+  const ax25Trials=(report.wideband_trials || []).filter(t=>(t.decoder==='ax25_ui' || t.decoder==='afsk1200_ax25'));
   const ax25Frames=ax25Trials.flatMap(t=>t.frames || []);
   $('metric-signals').textContent=signals.length;
   $('metric-frames').textContent=frames.length+ax25Frames.length;
@@ -126,7 +126,7 @@ function showReport(report, jobId) {
     }
     list.append(note);
   }
-  if(!signals.length) list.append(element('div',audioPlot?'Audio importé : lecture et essais Morse/RTTY ci-dessous. Les émissions RF ne sont pas recherchées dans ce mode.':'Aucune bande stationnaire détectée. Les paquets sont recherchés séparément.','empty-results'));
+  if(!signals.length) list.append(element('div',audioPlot?'Audio importé : lecture et essais Morse/RTTY/AX.25 ci-dessous. Les émissions RF ne sont pas recherchées dans ce mode.':'Aucune bande stationnaire détectée. Les paquets sont recherchés séparément.','empty-results'));
   for(const sig of signals) {
     const details=element('details',undefined,'signal'), summary=element('summary');
     summary.append(element('strong',formatFrequency(sig.frequency_hz)));
@@ -146,9 +146,10 @@ function showReport(report, jobId) {
   }
   const frameList=$('frame-list');frameList.replaceChildren();
   if(audioPlot){
-    frameList.append(element('h3','Audio de récepteur · essais Morse et RTTY'));
-    frameList.append(element('p','Fréquences audio uniquement. Le texte est candidat, sans CRC ni transcription indépendante.','hint'));
+    frameList.append(element('h3','Audio de récepteur · Morse, RTTY et AX.25'));
+    frameList.append(element('p','Fréquences audio uniquement. Morse/RTTY : textes candidats sans CRC. AX.25 : structure et CRC vérifiés.','hint'));
     frameList.append(element('p',`Début de l’enregistrement : ${report.analyzed_seconds.toFixed(2)} s analysées (maximum demandé ${report.requested_seconds} s).`,'hint'));
+    if(report.frame_artifact){const link=element('a','Télécharger les trames AX.25 validées');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(report.frame_artifact)}`;link.download=report.frame_artifact;frameList.append(link);}
     if(report.audio_artifact){
       const player=element('audio');player.id='audio-preview';player.controls=true;player.preload='none';
       player.src=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(report.audio_artifact)}`;frameList.append(player);
@@ -240,7 +241,7 @@ function showReport(report, jobId) {
     const address=a=>`${a.callsign}${a.ssid?'-'+a.ssid:''}`;
     card.append(element('p',`${address(f.source)} → ${address(f.destination)} · ${frame.line_coding} · CRC-16/X-25 valide`,'ax25-addresses'));
     if(f.via.length)card.append(element('p',`Via : ${f.via.map(address).join(', ')}`));
-    card.append(element('p',`t=${frame.time_seconds.toFixed(6)} s · PID 0x${f.pid.toString(16).padStart(2,'0')}${frame.channel?' · '+formatFrequency(frame.channel.frequency_hz):''}`));
+    card.append(element('p',`t=${frame.time_seconds.toFixed(6)} s · PID 0x${f.pid.toString(16).padStart(2,'0')}${frame.channel?' · '+formatFrequency(frame.channel.audio_frequency_hz ?? frame.channel.frequency_hz)+(frame.channel.audio_frequency_hz!==undefined?' audio':''):''}`));
     if(f.text!==undefined)card.append(element('pre',f.text,'ax25-text'));
     else card.append(element('code',f.payload_hex));
     card.append(element('p','CRC et structure UI vérifiés ; identité de l’émetteur et interprétation APRS non établies.','hint'));
@@ -280,7 +281,7 @@ async function runFile(isDemo) {
     status('Détection des émissions et essais de décodage…','busy');
     const job=await api('/api/analyses',body);await followJob(job);
     $('source-badge').textContent=isDemo?'Démo synthétique':audioPlot?'Audio · fréquences audio':'Fichier IQ';
-    status(audioPlot?'Analyse terminée. Audio et résultats Morse/RTTY disponibles.':'Analyse terminée. Sélectionnez une émission pour écouter les candidats audio.','success');
+    status(audioPlot?'Analyse terminée. Audio et résultats Morse/RTTY/AX.25 disponibles.':'Analyse terminée. Sélectionnez une émission pour écouter les candidats audio.','success');
   } catch(error) {status(error.message,'error');}
   finally {setBusy(false);}
 }

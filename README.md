@@ -388,7 +388,7 @@ streams. FCS failures are rejected without bit correction. A valid FCS and
 address structure do not authenticate a sender. Truncated frames, upstream
 clock/rate errors and inter-window gaps can cause missed packets.
 
-**This does not yet implement AFSK1200 over an FM discriminator, G3RUH
+**This does not yet implement a RF FM discriminator for AFSK1200, G3RUH
 scrambling/descrambling, connected-mode AX.25, KISS output or APRS field parsing.**
 The initial end-to-end tests use synthetic continuous direct-2-FSK recordings,
 NRZI with both polarities, independent FCS generation, stuffed payloads,
@@ -432,7 +432,7 @@ or independent transcript, not validated military protocol decoding.
 
 Install `ffmpeg` on PATH, run `iqscope serve`, and select **Audio de récepteur**
 in the File panel. Choose MP3 or WAV and 1–20 seconds. The server mixes to mono,
-resamples to 8 kHz, and runs **CW timing and RTTY/ITA2 framing trials**. Results include audio
+resamples to 8 kHz, and runs **CW timing, RTTY/ITA2 framing, and AFSK1200 AX.25 UI trials**. Results include audio
 playback, an audio-frequency spectrum/waterfall, candidate Morse/RTTY text and JSON.
 There is no RF center frequency, RF-band discovery, speech recognition or new
 military-protocol support in this mode. IQ mode still rejects MP3 and mono WAV.
@@ -488,3 +488,26 @@ Only fixed recording IDs and the HTTPS VKSDR bucket are accepted, including
 redirects. Download errors appear as failed jobs. This uses the same importer
 as the real-corpus CI probe; no full WAV download or remote arbitrary URL input
 is provided.
+
+
+## AFSK1200 audio to AX.25 UI
+
+Receiver-audio mode now also tests 1200-baud AFSK with nominal 1200/2200-Hz tones.
+A noncoherent two-tone receiver tries 32 fixed sampling phases, then reuses HDLC,
+NRZI/NRZ, bit-unstuffing, CRC-16/X-25 and AX.25 UI structure checks. Only accepted
+frames enter the CRC counter. Phase copies of the same frame at the same time
+are deduplicated; repeated transmissions at distinct times are retained.
+
+The UI displays callsigns/SSIDs, path, PID and payload, with frequencies labeled
+as audio. `ax25-frames.json` exports accepted frames. PID 0xf0 text is decoded
+as safe UTF-8, without interpreting APRS positions, telemetry or other fields.
+A valid CRC does not authenticate an emitter. No RF FM discriminator, G3RUH,
+connected-mode AX.25, speech transcription or general AFSK classifier is added.
+
+Limits: first 20 seconds, 32 phases, 6000 total flag-pair attempts and 128 unique
+frames. There is no frequency or clock tracking. Tests use synthetic NRZI audio
+with both tone polarities, fractional timing, 8/44.1-kHz input, corrupted FCS,
+noise, unkeyed tone and phase deduplication. WAV and a 24-kHz/64-kbit/s MP3 fixture
+exercise import, UI and export. Aggressively compressed MP3 can destroy valid
+packets; WAV is preferable for protocol validation. No real over-air AFSK1200
+capture has yet been validated.
