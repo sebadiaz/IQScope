@@ -417,7 +417,7 @@ python scripts/udxf_audio_probe.py
 It downloads bounded prefixes and decodes at most 20 seconds per entry, then
 tries the existing CW receiver on analytic audio. It stores provenance and any
 unverified text candidates, never claims the analytic audio is original IQ, and
-does not add MP3 upload support to the main IQ interface. CI uploads reports
+supports the same bounded decoder as the explicit receiver-audio mode in the UI. CI uploads reports
 only. No new military protocol decoder is implied by this catalog addition.
 
 First real-audio probe: three MP3 excerpts decoded successfully. The FDC excerpt
@@ -426,3 +426,21 @@ characters differ between hypotheses and remain uncertain. VTK and Link-11
 excerpts produced no consistent CW candidate. See the linked inspection notes
 for the verified CI run and hashes. This is candidate recovery without a checksum
 or independent transcript, not validated military protocol decoding.
+
+
+## MP3 / WAV receiver audio in the UI
+
+Install `ffmpeg` on PATH, run `iqscope serve`, and select **Audio de récepteur**
+in the File panel. Choose MP3 or WAV and 1–20 seconds. The server mixes to mono,
+resamples to 8 kHz, and runs **CW timing trials only**. Results include audio
+playback, an audio-frequency spectrum/waterfall, candidate Morse text and JSON.
+There is no RF center frequency, RF-band discovery, speech recognition or new
+military-protocol support in this mode. IQ mode still rejects MP3 and mono WAV.
+
+API: submit an upload with `input_kind: "audio"` and no SigMF sidecar. Reports
+use `source_kind: "receiver_audio"`, `frequency_reference: "audio_hz"`, null
+`center_frequency_hz` and CW `audio_frequency_hz` fields. The first requested
+seconds are bounded; the total source duration is not measured. Missing ffmpeg
+returns an actionable error. Browser CI covers MP3 upload, CW text, audio
+playback artifact and audio/RF labeling; the real UDXF probe exercises the same
+importer separately from original-RF-IQ validation.

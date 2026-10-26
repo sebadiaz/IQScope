@@ -4,17 +4,19 @@
 <body>
 <header><a class="brand" href="/" aria-label="IQScope accueil"><span class="brand-icon">≋</span> IQScope <small>RADIO EXPLORER</small></a><span class="local"><i></i> Traitement local</span></header>
 <main>
-<section class="intro"><div><p class="eyebrow">EXPLORER · MESURER · DÉCODER</p><h1>Écouter le spectre.<br><span>Comprendre les signaux.</span></h1><p class="subtitle">Importez une capture IQ ou connectez votre SDR. Les paramètres de traitement sont choisis automatiquement.</p></div><div class="version">PROTOTYPE / 0.9<br><span>AM · FM · ADS-B · RTTY · CW · 2/4-FSK · AX.25</span></div></section>
+<section class="intro"><div><p class="eyebrow">EXPLORER · MESURER · DÉCODER</p><h1>Écouter le spectre.<br><span>Comprendre les signaux.</span></h1><p class="subtitle">Importez une capture IQ, un enregistrement audio ou connectez votre SDR. Les paramètres de traitement sont choisis automatiquement.</p></div><div class="version">PROTOTYPE / 0.10<br><span>AM · FM · ADS-B · RTTY · CW · 2/4-FSK · AX.25</span></div></section>
 <div class="workspace">
 <aside class="panel source">
 <div class="panel-heading"><h2>Source du signal</h2><span class="step">01</span></div>
-<div class="tabs" role="tablist" aria-label="Type de source"><button id="tab-file" role="tab" aria-selected="true" aria-controls="file-panel" class="active">Fichier IQ</button><button id="tab-live" role="tab" aria-selected="false" aria-controls="live-panel">SDR en direct</button></div>
+<div class="tabs" role="tablist" aria-label="Type de source"><button id="tab-file" role="tab" aria-selected="true" aria-controls="file-panel" class="active">Fichier</button><button id="tab-live" role="tab" aria-selected="false" aria-controls="live-panel">SDR en direct</button></div>
 <section id="file-panel" role="tabpanel" aria-labelledby="tab-file">
+<label class="field">Nature du fichier<select id="input-kind"><option value="iq">Capture IQ RF</option><option value="audio">Audio de récepteur · MP3 / WAV</option></select></label>
+<p class="hint" id="audio-input-hint" hidden>Audio : 1 à 20 secondes, lecture et essai Morse uniquement. Les fréquences affichées sont audio, pas RF. Nécessite ffmpeg sur cette machine.</p>
 <label class="upload" for="iq-file"><span class="upload-icon">↥</span><strong>Ouvrir une capture</strong><span id="filename">SigMF · WAV IQ · .sdriq · .cf32</span><input id="iq-file" type="file" accept=".sigmf-data,.cf32,.iq,.bin,.wav,.sdriq"></label>
 <label class="field">Métadonnées SigMF <span>recommandé</span><input id="meta-file" type="file" accept=".sigmf-meta,.json"></label>
 <label class="field">Fréquence d’échantillonnage <span>fichier brut uniquement</span><div class="input-unit"><input id="file-rate" type="number" min="1000" max="20000000" value="1024000"><span>éch/s</span></div></label>
 <label class="field">Durée à analyser<div class="input-unit"><input id="seconds" type="number" min="0.01" max="120" step="0.01" value="10"><span>secondes</span></div></label>
-<p class="hint">Jusqu’à 8 millions d’échantillons par analyse. Les métadonnées déterminent le format et le taux lorsqu’elles sont fournies.</p>
+<p class="hint"><span id="iq-input-hint">Jusqu’à 8 millions d’échantillons par analyse. Les métadonnées déterminent le format et le taux lorsqu’elles sont fournies.</span></p>
 <button id="analyze" class="primary">Analyser automatiquement <span>→</span></button>
 <button id="demo" class="secondary">Essayer la démo synthétique</button>
 </section>

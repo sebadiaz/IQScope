@@ -1,5 +1,6 @@
 'use strict';
 const $ = id => document.getElementById(id);
+let audioPlot = false;
 let busy = false, liveMode = false, liveConnected = false, pollingLive = false;
 let currentSpectrum = null, waterfallRows = [], selectedSignal = null, signals = [];
 let center = 0, sampleRate = 0, lastSnapshot = 0, lastLiveSample = -1, reportJob = null;
@@ -15,7 +16,7 @@ const api = async (url, body, method = 'POST') => {
 function status(text, kind = '') { $('status-text').textContent = text; $('status-dot').className = `dot ${kind}`; }
 function setBusy(value) {
   busy = value;
-  for (const id of ['analyze','demo','tab-file','tab-live']) $(id).disabled = value;
+  for (const id of ['analyze','demo','tab-file','tab-live','input-kind']) $(id).disabled = value;
 }
 function element(tag, text, className) {
   const item = document.createElement(tag);
@@ -84,6 +85,11 @@ function drawWaterfall() {
   ctx.putImageData(image,0,0); $('empty-plot').hidden=true;
 }
 function updateAxes() {
+  if(audioPlot){
+    $('axis-left').textContent='0 Hz';$('axis-center').textContent=formatFrequency(sampleRate/4);$('axis-right').textContent=formatFrequency(sampleRate/2);
+    $('center-label').textContent='Fréquences audio · aucune fréquence RF disponible';
+    $('rate-label').textContent=`${sampleRate/1000} kéch/s · mono`;return;
+  }
   $('axis-left').textContent=formatFrequency(center-sampleRate/2);
   $('axis-center').textContent=formatFrequency(center);
   $('axis-right').textContent=formatFrequency(center+sampleRate/2);
@@ -91,6 +97,7 @@ function updateAxes() {
   $('rate-label').textContent=`${(sampleRate/1e6).toFixed(3)} Méch/s`;
 }
 function showReport(report, jobId) {
+  audioPlot=report.source_kind==='receiver_audio';
   reportJob=jobId; center=report.center_frequency_hz;sampleRate=report.sample_rate;
   signals=report.signals;selectedSignal=null;currentSpectrum=report.spectrum;
   if(!liveMode) {
@@ -106,7 +113,7 @@ function showReport(report, jobId) {
   $('metric-duration').textContent=`${report.analyzed_seconds.toFixed(2)} s`;
   $('download').href=`/api/jobs/${jobId}/artifacts/report.json`; $('download').hidden=false;
   const list=$('signal-list');list.replaceChildren();
-  if(!signals.length) list.append(element('div','Aucune bande stationnaire détectée. Les paquets sont recherchés séparément.','empty-results'));
+  if(!signals.length) list.append(element('div',audioPlot?'Audio importé : lecture et essai Morse ci-dessous. Les émissions RF ne sont pas recherchées dans ce mode.':'Aucune bande stationnaire détectée. Les paquets sont recherchés séparément.','empty-results'));
   for(const sig of signals) {
     const details=element('details',undefined,'signal'), summary=element('summary');
     summary.append(element('strong',formatFrequency(sig.frequency_hz)));
@@ -125,9 +132,19 @@ function showReport(report, jobId) {
     details.append(content);list.append(details);
   }
   const frameList=$('frame-list');frameList.replaceChildren();
-  frameList.append(element('h3',`Mode S / ADS-B · ${frames.length} paquet(s) CRC valide(s)`,'frames-title'));
-  if(sampleRate<2e6) frameList.append(element('p','Recherche ADS-B non applicable : il faut au moins 2 Méch/s.','hint'));
-  else if(!frames.length) frameList.append(element('p','Aucun paquet DF17/18 validé dans cette fenêtre. Cela ne prouve pas l’absence d’autres protocoles.','hint'));
+  if(audioPlot){
+    frameList.append(element('h3','Audio de récepteur · essai Morse'));
+    frameList.append(element('p','Fréquences audio uniquement. Le texte est candidat, sans CRC ni transcription indépendante.','hint'));
+    frameList.append(element('p',`Début de l’enregistrement : ${report.analyzed_seconds.toFixed(2)} s analysées (maximum demandé ${report.requested_seconds} s).`,'hint'));
+    if(report.audio_artifact){
+      const player=element('audio');player.id='audio-preview';player.controls=true;player.preload='none';
+      player.src=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(report.audio_artifact)}`;frameList.append(player);
+    }
+    if(!(report.wideband_trials || []).some(t=>t.candidates?.length))frameList.append(element('p','Aucun texte Morse cohérent dans cet extrait.','hint'));
+  }
+  if(!audioPlot)frameList.append(element('h3',`Mode S / ADS-B · ${frames.length} paquet(s) CRC valide(s)`,'frames-title'));
+  if(!audioPlot && sampleRate<2e6) frameList.append(element('p','Recherche ADS-B non applicable : il faut au moins 2 Méch/s.','hint'));
+  else if(!audioPlot && !frames.length) frameList.append(element('p','Aucun paquet DF17/18 validé dans cette fenêtre. Cela ne prouve pas l’absence d’autres protocoles.','hint'));
   for(const trial of report.wideband_trials || []) {
     if(trial.decoder==='adsb_1090es' && trial.budget_exhausted) frameList.append(element('p',`Recherche partielle : budget atteint après ${trial.candidates_examined} candidats. Tous les paquets de la fenêtre n’ont pas été examinés.`,'hint'));
   }
@@ -152,7 +169,7 @@ function showReport(report, jobId) {
     for(const candidate of trial.candidates || []){
       const card=element('div',undefined,'frame');
       card.append(element('h3','CW / Morse · texte candidat, sans CRC'));
-      card.append(element('p',`${candidate.parameters.words_per_minute.toFixed(1)} mots/min · ${(candidate.channel.frequency_hz/1e6).toFixed(6)} MHz · ${candidate.evidence.characters} caractères`));
+      card.append(element('p',`${candidate.parameters.words_per_minute.toFixed(1)} mots/min · ${candidate.channel.audio_frequency_hz!==undefined?formatFrequency(candidate.channel.audio_frequency_hz)+' audio':(candidate.channel.frequency_hz/1e6).toFixed(6)+' MHz'} · ${candidate.evidence.characters} caractères`));
       card.append(element('pre',candidate.text,'cw-text'));
       frameList.append(card);
     }
@@ -239,15 +256,16 @@ async function runFile(isDemo) {
       const file=$('iq-file').files[0]; if(!file) throw new Error('Choisissez un fichier IQ.');
       if(file.size>128*1024*1024) throw new Error('La limite d’import est de 128 Mio.');
       let metadata=null;
-      const meta=$('meta-file').files[0];
+      const audioInput=$('input-kind').value==='audio';
+      const meta=audioInput?null:$('meta-file').files[0];
       if(meta) {if(meta.size>1024*1024) throw new Error('Métadonnées trop volumineuses.');metadata=JSON.parse(await meta.text());}
       const uploaded=await api('/api/uploads',file);
-      body={upload_id:uploaded.upload_id, metadata,sample_rate:Number($('file-rate').value),seconds:Number($('seconds').value)};
+      body={upload_id:uploaded.upload_id,input_kind:audioInput?'audio':'iq',metadata,sample_rate:Number($('file-rate').value),seconds:Number($('seconds').value)};
     }
     status('Détection des émissions et essais de décodage…','busy');
     const job=await api('/api/analyses',body);await followJob(job);
-    $('source-badge').textContent=isDemo ? 'Démo synthétique' : 'Fichier IQ';
-    status('Analyse terminée. Sélectionnez une émission pour écouter les candidats audio.','success');
+    $('source-badge').textContent=isDemo?'Démo synthétique':audioPlot?'Audio · fréquences audio':'Fichier IQ';
+    status(audioPlot?'Analyse terminée. Audio et résultats Morse disponibles.':'Analyse terminée. Sélectionnez une émission pour écouter les candidats audio.','success');
   } catch(error) {status(error.message,'error');}
   finally {setBusy(false);}
 }
@@ -259,14 +277,20 @@ async function switchTab(live) {
   $('file-panel').hidden=live;$('live-panel').hidden=!live;
 }
 $('tab-file').onclick=()=>switchTab(false);$('tab-live').onclick=()=>switchTab(true);
-$('iq-file').onchange=()=>{
+function updateFileInput(){
   const file=$('iq-file').files[0];
-  $('filename').textContent=file?.name || 'SigMF · WAV IQ · .sdriq · .cf32';
-  const embedded=/\.(wav|sdriq)$/i.test(file?.name || '');
-  if(embedded) $('meta-file').value='';
-  $('meta-file').disabled=embedded;
-  $('file-rate').disabled=embedded;
-};
+  const audio=$('input-kind').value==='audio';
+  $('filename').textContent=file?.name || (audio?'MP3 · WAV audio':'SigMF · WAV IQ · .sdriq · .cf32');
+  $('iq-file').accept=audio?'.mp3,.wav':'.sigmf-data,.cf32,.iq,.bin,.wav,.sdriq';
+  const embedded=audio || /\.(wav|sdriq)$/i.test(file?.name || '');
+  if(embedded)$('meta-file').value='';
+  $('meta-file').disabled=embedded;$('file-rate').disabled=embedded;
+  $('meta-file').closest('label').hidden=audio;$('file-rate').closest('label').hidden=audio;
+  $('audio-input-hint').hidden=!audio;$('iq-input-hint').hidden=audio;
+  $('seconds').max=audio?'20':'120';$('seconds').min=audio?'1':'0.01';
+  if(audio)$('seconds').value=String(Math.max(1,Math.min(20,Number($('seconds').value))));
+}
+$('iq-file').onchange=updateFileInput;$('input-kind').onchange=updateFileInput;
 $('analyze').onclick=()=>runFile(false);$('demo').onclick=()=>runFile(true);
 $('connect').onclick=async()=>{
   try {
@@ -291,7 +315,7 @@ async function pollLive() {
     const {spectrum}=await api('/api/live/spectrum',undefined,'GET');
     if(spectrum && spectrum.received_samples!==lastLiveSample) {
       lastLiveSample=spectrum.received_samples;currentSpectrum=spectrum;
-      center=spectrum.center_frequency_hz;sampleRate=spectrum.sample_rate;
+      audioPlot=false;center=spectrum.center_frequency_hz;sampleRate=spectrum.sample_rate;
       waterfallRows.unshift(spectrum.power_db);if(waterfallRows.length>180) waterfallRows.pop();
       $('waterfall-label').textContent='Direct · fenêtres reçues, plus récente en haut';
       $('source-badge').textContent='SDR · direct';updateAxes();drawSpectrum();drawWaterfall();
@@ -319,7 +343,7 @@ $('datasets').onclick=async()=>{
   try {
     const data=await api('/api/datasets',undefined,'GET');
     $('dataset-list').replaceChildren();
-    const labels={audio_reference_only:'Référence audio · import IQ indisponible',annotations_validated:'Annotations vérifiées · IQ non importés',validated_subset:'Sous-ensemble validé',documentation_only:'Documentation seulement',adapter_under_validation:'Importateur en validation',window_import_validated:'Import de fenêtre validé'};
+    const labels={audio_import_available:'Import audio disponible · texte candidat',audio_reference_only:'Référence audio · import IQ indisponible',annotations_validated:'Annotations vérifiées · IQ non importés',validated_subset:'Sous-ensemble validé',documentation_only:'Documentation seulement',adapter_under_validation:'Importateur en validation',window_import_validated:'Import de fenêtre validé'};
     const kinds={receiver_audio_collection:'Collection audio de récepteur',real_recordings:'Captures réelles',real_measurements:'Mesures réelles',synthetic_windows:'Fenêtres synthétiques',synthetic_generator:'Générateur synthétique',aggregate_windows:'Agrégat de fenêtres',real_recording_collection:'Collection de captures',real_recording:'Capture réelle',real_mono_waveforms:'Signaux réels mono'};
     for(const entry of data.entries){
       const card=element('div',undefined,'capability');

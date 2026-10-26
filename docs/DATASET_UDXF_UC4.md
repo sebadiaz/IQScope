@@ -44,8 +44,8 @@ la reconnaissance de Link-11 ou d'un autre mode.
 
 Les octets MP3 ne sont pas stockés dans Git ni dans les artefacts CI. Les droits
 de redistribution ne sont pas établis. Les téléchargements sont temporaires ;
-seuls les rapports sont conservés. L'interface d'import IQ continue de refuser
-ces MP3 : aucun faux canal I/Q n'est créé et aucune fréquence RF n'est inventée.
+seuls les rapports sont conservés. L’interface accepte maintenant ces MP3 dans le mode explicite Audio de récepteur,
+avec ffmpeg. Le mode IQ continue de les refuser ; aucune fréquence RF n’est inventée.
 
 ## Validation observée le 26 octobre 2026
 
@@ -70,3 +70,19 @@ L'absence de candidat pour les autres extraits ne confirme ni n'infirme leur mod
 Les tests locaux vérifient la borne de lecture, la conversion audio bornée et un
 texte CW synthétique indépendant. Les contrôles Python et navigateur passent ;
 le catalogue distingue toujours ces références audio des imports IQ.
+
+
+## Import dans l'interface
+
+Dans l'onglet Fichier, choisir **Audio de récepteur · MP3 / WAV**, puis ouvrir le
+fichier et analyser 1 à 20 secondes. `ffmpeg` doit être installé sur PATH. Les
+métadonnées SigMF et le taux IQ ne sont pas utilisés en audio. Le résultat propose
+une lecture du mono à 8 kéch/s, un spectre audio positif, un waterfall et l'essai
+CW. L'API expose `input_kind: "audio"` ; le rapport indique `source_kind:
+"receiver_audio"`, `frequency_reference: "audio_hz"` et un centre RF nul. Les
+fréquences CW utilisent le champ `audio_frequency_hz`.
+
+Le mode audio ne lance pas les décodeurs ADS-B, AX.25, FSK ou RTTY. Aucun texte
+vocal n'est transcrit. Le fichier est mélangé en mono ; une annulation entre
+canaux stéréo est possible. L'audio rééchantillonné et borné est exporté sous
+`audio-preview.wav` et le meilleur candidat CW sous `cw-candidate.txt`.

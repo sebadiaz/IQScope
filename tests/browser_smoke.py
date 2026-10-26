@@ -134,6 +134,27 @@ def main():
                     expect(page.locator('.ax25-addresses').first).to_contain_text('N0CALL-1 → APRS')
                     assert int(page.locator('#metric-frames').inner_text())>=3
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                with tempfile.TemporaryDirectory() as directory:
+                    from test_cw import fixture as audio_fixture, TEXT as AUDIO_TEXT
+                    from scipy.io import wavfile
+                    x,fs = audio_fixture()
+                    wave = Path(directory)/'audio.wav'
+                    mp3 = Path(directory)/'audio.mp3'
+                    wavfile.write(wave,fs,x.real.astype(np.float32))
+                    subprocess.run(['ffmpeg','-nostdin','-v','error','-i',str(wave),str(mp3)],check=True,timeout=20)
+                    page.locator('#input-kind').select_option('audio')
+                    page.locator('#seconds').fill('20')
+                    page.locator('#iq-file').set_input_files(str(mp3))
+                    expect(page.locator('#meta-file')).to_be_disabled()
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('.cw-text').first).to_have_text(AUDIO_TEXT,timeout=30000)
+                    expect(page.locator('#source-badge')).to_have_text('Audio · fréquences audio')
+                    expect(page.locator('#center-label')).to_contain_text('aucune fréquence RF')
+                    expect(page.locator('#audio-preview')).to_be_visible()
+                    response = page.request.get(urljoin(page.url,page.locator('#audio-preview').get_attribute('src')))
+                    assert response.ok and response.body()[:4]==b'RIFF'
+                    assert page.locator('#metric-frames').inner_text()=='0'
+                expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
                 page.get_by_role('tab',name='SDR en direct').click()
                 assert page.locator('#live-panel').is_visible()
                 assert page.locator('#live-frequency').input_value() == '100'

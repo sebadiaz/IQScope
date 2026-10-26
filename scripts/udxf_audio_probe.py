@@ -7,13 +7,13 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
-import subprocess
 import tempfile
 import urllib.request
 
 import numpy as np
 from scipy import signal
 from iqscope_cw import search_cw
+from iqscope_audio import decode_audio, analyze_audio
 
 
 def read_prefix(response,limit=1024*1024):
@@ -28,22 +28,6 @@ def read_prefix(response,limit=1024*1024):
         chunks.append(part)
         received += len(part)
     return b''.join(chunks)
-
-
-def decode_audio(path,seconds=20):
-    if not 1<=seconds<=20:
-        raise ValueError('Audio duration must be 1 to 20 seconds')
-    process = subprocess.run(['ffmpeg','-nostdin','-v','quiet','-i',str(path),
-                              '-t',str(seconds),'-ac','1','-ar','8000',
-                              '-f','f32le','pipe:1'],capture_output=True,timeout=20)
-    if process.returncode or not process.stdout:
-        raise ValueError('ffmpeg could not decode the bounded audio prefix')
-    if len(process.stdout)>seconds*8000*4:
-        raise ValueError('Decoded audio exceeded duration budget')
-    audio = np.frombuffer(process.stdout,dtype='<f4')
-    if len(audio)<8000 or not np.all(np.isfinite(audio)):
-        raise ValueError('Need at least one second of finite decoded audio')
-    return audio,8000
 
 
 def inspect_audio(audio,fs):
@@ -71,12 +55,17 @@ def probe(entry,out,limit=1024*1024):
         path = Path(directory)/'prefix.mp3'
         path.write_bytes(prefix)
         audio,fs = decode_audio(path)
+        ui_report = analyze_audio(path,Path(directory)/'results')
     result = {'dataset_id':'udxf_uc4','entry_id':entry['id'],'source_page':'https://www.udxf.nl/uc4.html',
               'source_url':entry['url'],'source_label':entry['source_label'],
               'source_mode_hint':entry['source_mode_hint'],'source_labels_independently_verified':False,
               'http_status':status,'http_content_type':content_type,
               'received_bytes':len(prefix),'download_limit_bytes':limit,
               'prefix_sha256':hashlib.sha256(prefix).hexdigest(),'whole_source_integrity_verified':False,
+              'ui_audio_import_check':{'source_kind':ui_report['source_kind'],
+                  'frequency_reference':ui_report['frequency_reference'],
+                  'rf_center_is_null':ui_report['center_frequency_hz'] is None,
+                  'cw_status':ui_report['wideband_trials'][0]['status']},
               **inspect_audio(audio,fs)}
     out = Path(out)/entry['id']
     out.mkdir(parents=True,exist_ok=True)

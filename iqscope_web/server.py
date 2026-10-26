@@ -3,6 +3,8 @@ from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 import json
 import math
+import shutil
+from typing import Literal
 from pathlib import Path
 import tempfile
 import threading
@@ -16,6 +18,7 @@ from pydantic import BaseModel, Field
 
 from iqscope import analyze, analyze_samples, demo
 from iqscope_decoders import capabilities
+from iqscope_audio import analyze_audio
 from .live import LiveReceiver
 
 MAX_UPLOAD = 128 * 1024 * 1024
@@ -27,6 +30,7 @@ class AnalyzeRequest(BaseModel):
     metadata: dict | None = None
     seconds: float = Field(default=10, gt=0, le=120)
     demo: bool = False
+    input_kind: Literal['iq','audio'] = 'iq'
 
 
 class LiveRequest(BaseModel):
@@ -118,7 +122,8 @@ def create_app(root=None):
     @app.get('/api/capabilities')
     def get_capabilities():
         return {'decoders': capabilities(), 'max_upload_bytes': MAX_UPLOAD,
-                'live': 'rtl_tcp on 127.0.0.1', 'max_analysis_samples': 8_000_000}
+                'live': 'rtl_tcp on 127.0.0.1', 'max_analysis_samples': 8_000_000,
+                'audio':{'available':bool(shutil.which('ffmpeg')),'formats':['mp3','wav'],'max_seconds':20,'decoders':['cw_morse']}}
 
     @app.post('/api/uploads')
     async def upload(request: Request):
@@ -127,8 +132,8 @@ def create_app(root=None):
         identifier = uuid.uuid4().hex
         original_name = unquote(request.headers.get('x-iqscope-filename', 'recording.sigmf-data'))
         suffix = Path(original_name).suffix.lower()
-        if suffix not in ('.wav', '.sdriq', '.sigmf-data', '.cf32', '.iq', '.bin'):
-            raise HTTPException(400, 'Supported inputs: WAV IQ, .sdriq, SigMF or raw cf32')
+        if suffix not in ('.wav', '.sdriq', '.sigmf-data', '.cf32', '.iq', '.bin', '.mp3'):
+            raise HTTPException(400, 'Supported inputs: WAV IQ, .sdriq, SigMF, raw cf32, or MP3 in explicit audio mode')
         path = service.root / f'{identifier}{suffix}'
         count = 0
         service.upload_sizes[identifier] = 0
@@ -143,7 +148,7 @@ def create_app(root=None):
                         raise HTTPException(413, 'File exceeds 128 MiB limit')
                     handle.write(block)
             if count < 1024:
-                raise HTTPException(400, 'IQ file is too short')
+                raise HTTPException(400, 'Input file is too short')
         except BaseException:
             path.unlink(missing_ok=True)
             service.upload_sizes.pop(identifier, None)
@@ -161,6 +166,16 @@ def create_app(root=None):
         source = service.uploads.get(body.upload_id)
         if source is None:
             raise HTTPException(404, 'Upload not found')
+        if body.input_kind=='audio':
+            if source.suffix not in ('.mp3','.wav') or body.metadata is not None:
+                raise HTTPException(400, 'Audio mode requires MP3/WAV without a SigMF sidecar')
+            if not 1<=body.seconds<=20:
+                raise HTTPException(400, 'Audio duration must be between 1 and 20 seconds')
+            if not shutil.which('ffmpeg'):
+                raise HTTPException(400, 'Audio import requires ffmpeg installed on PATH')
+            return service.submit(lambda out: analyze_audio(source,out,body.seconds))
+        if source.suffix=='.mp3':
+            raise HTTPException(400, 'MP3 is receiver audio; select explicit audio mode')
         self_describing = source.suffix in ('.wav', '.sdriq')
         if self_describing and body.metadata is not None:
             raise HTTPException(400, 'WAV and .sdriq already contain metadata; omit the SigMF sidecar')

@@ -87,5 +87,6 @@ Le [portail européen](https://data.europa.eu/data/datasets/oai-zenodo-org-10811
 
 Source ajoutée : [UDXF UC4](https://www.udxf.nl/uc4.html).
 Les références MP3 sélectionnées sont de l'audio de récepteur, pas des IQ RF.
-Le catalogue conserve le statut `audio_reference_only` et aucun adaptateur IQ.
+Le catalogue indique `audio_import_available` et l’adaptateur audio `receiver_audio_ffmpeg`.
+Il ne s’agit pas d’un import IQ RF.
 Voir [les notes et la sonde audio bornée](DATASET_UDXF_UC4.md).

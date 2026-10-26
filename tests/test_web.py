@@ -1,4 +1,7 @@
 import tempfile
+import io
+import shutil
+from unittest.mock import patch
 import asyncio
 import unittest
 from pathlib import Path
@@ -72,6 +75,41 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(bad.status_code,400)
         good=(await self.client.post('/api/analyses',json={'upload_id':identifier,'sample_rate':128000},headers=HEADERS))
         self.assertEqual((await self.wait_job(good.json()['id']))['status'],'completed')
+
+    @unittest.skipUnless(shutil.which('ffmpeg'),'ffmpeg is an optional audio dependency')
+    async def test_explicit_audio_upload_cw_and_preview(self):
+        from test_cw import fixture,TEXT
+        from scipy.io import wavfile
+        x,fs = fixture()
+        stream = io.BytesIO()
+        wavfile.write(stream,fs,x.real.astype(np.float32))
+        headers = {**HEADERS,'X-IQScope-Filename':'cw.wav'}
+        identifier = (await self.client.post('/api/uploads',content=stream.getvalue(),headers=headers)).json()['upload_id']
+        iq = await self.client.post('/api/analyses',json={'upload_id':identifier},headers=HEADERS)
+        self.assertEqual((await self.wait_job(iq.json()['id']))['status'],'failed')
+        response = await self.client.post('/api/analyses',json={'upload_id':identifier,'input_kind':'audio','seconds':20},headers=HEADERS)
+        self.assertEqual(response.status_code,202)
+        job = await self.wait_job(response.json()['id'])
+        self.assertEqual(job['status'],'completed',job.get('error'))
+        self.assertEqual(job['result']['source_kind'],'receiver_audio')
+        self.assertIsNone(job['result']['center_frequency_hz'])
+        self.assertEqual(job['result']['wideband_trials'][0]['candidates'][0]['text'],TEXT)
+        preview = await self.client.get(f"/api/jobs/{job['id']}/artifacts/audio-preview.wav")
+        self.assertEqual(preview.status_code,200)
+        self.assertEqual(preview.content[:4],b'RIFF')
+
+    async def test_audio_mode_validation_and_missing_dependency(self):
+        headers = {**HEADERS,'X-IQScope-Filename':'audio.mp3'}
+        identifier = (await self.client.post('/api/uploads',content=b'x'*2048,headers=headers)).json()['upload_id']
+        for body in ({'upload_id':identifier},
+                     {'upload_id':identifier,'input_kind':'audio','seconds':21},
+                     {'upload_id':identifier,'input_kind':'audio','metadata':{}}):
+            response = await self.client.post('/api/analyses',json=body,headers=HEADERS)
+            self.assertEqual(response.status_code,400,response.text)
+        with patch('iqscope_web.server.shutil.which',return_value=None):
+            response = await self.client.post('/api/analyses',json={'upload_id':identifier,'input_kind':'audio'},headers=HEADERS)
+            self.assertEqual(response.status_code,400)
+            self.assertIn('ffmpeg',response.text)
 
     async def test_sigmf_upload_and_invalid_metadata(self):
         x=np.tile(np.array([16384,-8192],dtype='<i2'),4096)
