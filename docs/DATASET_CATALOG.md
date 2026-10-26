@@ -90,3 +90,11 @@ Les références MP3 sélectionnées sont de l'audio de récepteur, pas des IQ R
 Le catalogue indique `audio_import_available` et l’adaptateur audio `receiver_audio_ffmpeg`.
 Il ne s’agit pas d’un import IQ RF.
 Voir [les notes et la sonde audio bornée](DATASET_UDXF_UC4.md).
+
+
+## VKSDR IQ Recordings
+
+[VKSDR](https://vksdr.com/iq/) est une collection distincte de WAV annoncés IQ.
+Le manifeste sélectionne cinq liens. La sonde valide des préfixes bornés et
+l'import SigMF, sans prétendre décoder les protocoles présentés par la source.
+Voir [les notes VKSDR](DATASET_VKSDR.md).

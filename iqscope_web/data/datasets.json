@@ -189,6 +189,16 @@
       "note": "MP3 audio : choisir le mode Audio de récepteur, avec ffmpeg. Lecture et essais Morse/RTTY ; fréquences audio uniquement, aucun support Link-11, Akula ou MIL-STD-110A ajouté.",
       "validation_reference": "https://github.com/sebadiaz/IQScope/actions/runs/40321949433",
       "validation_scope": "Three bounded MP3 excerpts decoded; FDC CW text candidate around 24 WPM, without checksum or independent transcript"
+    },
+    {
+      "id": "vksdr",
+      "name": "VKSDR IQ Recordings",
+      "kind": "real_recording_collection",
+      "url": "https://vksdr.com/iq/",
+      "role": "IQ WAV import and satellite/wideband analysis references",
+      "status": "adapter_under_validation",
+      "adapter": "wav_iq",
+      "note": "Cinq WAV annoncés IQ. Sonde bornée et conversion SigMF en validation ; aucun décodage NOAA PDS, LRIT ou UHF-FO revendiqué."
     }
   ]
 }

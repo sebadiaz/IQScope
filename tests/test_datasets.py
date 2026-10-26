@@ -65,8 +65,11 @@ class DatasetTests(unittest.TestCase):
         entries = catalog()['entries']
         ids = [entry['id'] for entry in entries]
         self.assertEqual(len(ids),len(set(ids)))
-        self.assertEqual(len(ids),18)
+        self.assertEqual(len(ids),19)
         self.assertIsNone(next(e for e in entries if e['id']=='imec_subghz')['adapter'])
+        vksdr = next(e for e in entries if e['id']=='vksdr')
+        self.assertEqual(vksdr['adapter'],'wav_iq')
+        self.assertIn(vksdr['status'],('adapter_under_validation','validated_subset'))
         udxf = next(e for e in entries if e['id']=='udxf_uc4')
         self.assertEqual(udxf['adapter'],'receiver_audio_ffmpeg')
         self.assertEqual(udxf['status'],'audio_import_available')

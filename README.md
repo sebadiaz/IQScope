@@ -458,3 +458,21 @@ Tests cover receiver-audio WAV in both polarities, letters/figures, MP3 browser
 upload, text download and the per-decoder duration limit. CI also attempts a
 frequency-translated, real-valued audio version of the SDRangel RTTY IQ excerpt;
 that is a transformed recording, not a separate off-air audio acquisition.
+
+
+## VKSDR IQ WAV recordings
+
+[VKSDR](https://vksdr.com/iq/) provides five IQ WAV references selected in
+`corpus/vksdr.json`. The bounded probe downloads at most 2 MiB per recording,
+reads at most one second, exports a complete SigMF excerpt and checks its exact
+round-trip before analysis. It retains header RF metadata separately from
+filename hints; filenames alone are not promoted to verified center frequencies.
+
+```bash
+python scripts/vksdr_corpus.py
+python scripts/vksdr_corpus.py --name uhf_fo
+```
+
+See [the VKSDR notes](docs/DATASET_VKSDR.md). This checks import and existing
+analysis; it adds no NOAA PDS, LRIT image extraction or military payload decoder.
+CI uploads reports only. Source recordings remain outside Git and CI artifacts.

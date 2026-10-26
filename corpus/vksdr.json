@@ -1,0 +1,13 @@
+{
+  "source_page":"https://vksdr.com/iq/",
+  "inspected_date":"2026-10-26",
+  "scope":"Publicly described IQ WAV recordings; mode labels are source claims, not independent protocol validation",
+  "redistribution_license":"not established; store reports only in Git and CI artifacts",
+  "entries":[
+    {"id":"noaa15_pds","source_label":"NOAA-15 (SARSAT-7) PDS","url":"https://bucket.vksdr.com/iq/SDRSharp_20200728_093524Z_1544500000Hz_NOAA-15_SARP-3_PDS.wav"},
+    {"id":"fengyun4a_lrit","source_label":"FENGYUN-4A LRIT","url":"https://bucket.vksdr.com/iq/SDRSharp_20200219_052759Z_1697000000Hz_IQ_FY-4A-LRIT.wav"},
+    {"id":"uhf_fo","source_label":"UHF-FO / UFO transponders","url":"https://bucket.vksdr.com/iq/SDRSharp_20200210_074503Z_249095068Hz_IQ_UHF-FO.wav"},
+    {"id":"coms1_multiple","source_label":"COMS-1 LRIT multiple images","url":"https://bucket.vksdr.com/iq/COMS-1%20LRIT%20%28multiple%20images%29%201692140000Hz%20375kSps.wav"},
+    {"id":"coms1_fd02","source_label":"COMS-1 LRIT FD02","url":"https://bucket.vksdr.com/iq/COMS-1%20LRIT%20%28FD02%29%201692140000Hz%20375kSps.wav"}
+  ]
+}
