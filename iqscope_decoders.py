@@ -20,6 +20,7 @@ class Capability:
 CAPABILITIES = (
     Capability('analog_fm', 'FM', 'mono audio candidate, 75 us de-emphasis', 'unvalidated'),
     Capability('analog_am', 'AM', 'envelope audio candidate, carrier-present AM only', 'unvalidated'),
+    Capability('fsk4_generic', '4-FSK', 'equally spaced stationary tones; automatic baud and symbol ranks; bounded channel search', 'timing only; symbol-to-bit mapping arbitrary, no checksum'),
     Capability('fsk2_generic', '2-FSK', 'stationary channels; direct <=96 kS/s or bounded wideband search <=2.4 MS/s; blind baud and raw bits', 'timing only; protocol unknown, no checksum'),
     Capability('cw_morse', 'CW / Morse', 'A-Z and 0-9; automatic stationary carrier and 5-50 WPM timing; bounded channel search', 'timing only; no checksum'),
     Capability('rtty_ita2', 'RTTY / ITA2', '45.45/50/75/100 baud, blind tones and polarity; bounded stationary wideband channel search', 'framing only; no checksum'),

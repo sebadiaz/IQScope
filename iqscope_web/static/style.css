@@ -7,3 +7,5 @@ dialog{max-height:85vh;overflow:auto}#dataset-dialog{max-width:680px;width:92vw}
 .cw-text{white-space:pre-wrap;overflow-wrap:anywhere;font-family:monospace;color:var(--accent)}
 
 .fsk-bits{white-space:pre-wrap;overflow-wrap:anywhere;font-family:monospace}
+
+.fsk4-symbols{white-space:pre-wrap;overflow-wrap:anywhere;font-family:monospace}

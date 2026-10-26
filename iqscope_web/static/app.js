@@ -175,6 +175,27 @@ function showReport(report, jobId) {
       frameList.append(card);
     }
   }
+  for(const trial of report.wideband_trials || []) {
+    if(trial.decoder!=='fsk4_generic')continue;
+    if(trial.channels_examined)frameList.append(element('p',`Recherche 4-FSK : ${trial.channels_examined.length} canaux examinés · ${trial.deferred_channel_count} différés · ${trial.excluded_wide_band_count} bandes trop larges. Recherche non exhaustive.`,'hint'));
+    for(const candidate of trial.candidates || []){
+      const card=element('div',undefined,'frame');
+      card.append(element('h3','4-FSK · symboles candidats, protocole inconnu'));
+      if(candidate.channel)card.append(element('p',`Canal ${(candidate.channel.frequency_hz/1e6).toFixed(6)} MHz`,'fsk4-frequency'));
+      card.append(element('p',`${candidate.parameters.baud.toFixed(2)} bauds · espacement ${candidate.parameters.spacing_hz.toFixed(1)} Hz · ${candidate.symbol_count} symboles`));
+      card.append(element('p','Symboles 0–3 par fréquence croissante. Export bits selon la convention 00/01/10/11 ; correspondance réelle inconnue. Aucune trame ni CRC validé.','hint'));
+      if(trial.duration_limited || candidate.bit_budget_reached)card.append(element('p','Export partiel : limite de durée ou de symboles atteinte.','hint'));
+      card.append(element('pre',candidate.symbols.slice(0,512),'fsk4-symbols'));
+      const labels={symbols:'Télécharger les symboles 4-FSK',bits:'Télécharger les bits 4-FSK (convention)',packed:'Télécharger le binaire 4-FSK (convention)'};
+      for(const [kind,name] of Object.entries(candidate.artifacts || {})){
+        const link=element('a',labels[kind]);
+        link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(name)}`;
+        link.download=name;card.append(link,document.createTextNode(' '));
+      }
+      card.append(element('p',`Binaire : premier symbole récupéré en tête d’octet, ${candidate.packed_padding_bits} bit(s) de remplissage nul à la fin.`,'hint'));
+      frameList.append(card);
+    }
+  }
   for(const frame of frames) {
     const card=element('div',undefined,'frame');card.append(element('code',frame.hex));
     const f=frame.fields;

@@ -345,3 +345,28 @@ subsequent candidates use `fsk-2-bits.txt`, `fsk-2-packed.bin`, etc. Tone freque
 are offsets from the original IQ center, and symbol timestamps include channel
 filter trimming. The UI displays frequency and separate downloads for each
 candidate, plus examined/deferred/excluded channel counts for band searches.
+
+
+## Generic 4-FSK candidate symbols
+
+The first 4-FSK receiver fits four equally spaced stationary frequency levels
+and a common symbol clock automatically. It accepts a single IQ channel at
+1–96 kS/s or uses the bounded wideband spectral-band search up to 2.4 MS/s.
+Rate limits remain 20 baud to channel_rate/8 (capped at 9600). All four tones
+must be sufficiently represented; shaped FSK, clock drift, bursts, collisions
+and unknown spacing patterns are outside this first scope.
+
+Symbols **0,1,2,3 are only ranks in ascending frequency order**. The true protocol
+mapping may be Gray-coded, reversed or another permutation. `fsk4-symbols.txt`
+is the primary export. `fsk4-bits.txt` and `fsk4-packed.bin` use an explicitly
+arbitrary natural-binary convention 00/01/10/11, MSB-first with zero padding;
+JSON records the symbol/bit counts and padding. This does not establish framing,
+CRC, protocol identity or payload meaning. Initial/final partial symbols are
+omitted, and repetitive data can leave symbol-rate aliases unresolved.
+
+Search budgets are eight spectral bands, twelve seconds and 100000 convention
+bits (50000 symbols). Fitting uses at most 512 inter-transition intervals with
+a subsequent whole-window timing check. Each wideband candidate retains its
+frequency, timing origin and separate exports. Validation uses independent
+synthetic symbol sequences at 50/137/300/1200 baud, two simultaneous wideband
+channels and a stronger carrier. Real recorded 4-FSK has not yet been validated.

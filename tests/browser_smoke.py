@@ -103,6 +103,23 @@ def main():
                     response = page.request.get(urljoin(page.url,binary_link.get_attribute('href')))
                     assert response.ok and len(response.body())>0
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                with tempfile.TemporaryDirectory() as directory:
+                    from test_fsk4 import fixture as fsk4_fixture
+                    x,fs,expected = fsk4_fixture(fs=192000)
+                    x *= np.exp(-2j*np.pi*35000*np.arange(len(x))/fs)
+                    raw = Path(directory)/'fsk4.sigmf-data'
+                    meta = Path(directory)/'fsk4.sigmf-meta'
+                    x.astype('<c8').tofile(raw)
+                    meta.write_text(json.dumps({'global':{'core:datatype':'cf32_le','core:sample_rate':fs}}))
+                    page.locator('#iq-file').set_input_files(str(raw))
+                    page.locator('#meta-file').set_input_files(str(meta))
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('.fsk4-symbols').first).to_be_visible(timeout=30000)
+                    assert page.locator('.fsk4-symbols').first.inner_text() in expected
+                    symbol_link = page.get_by_role('link',name='Télécharger les symboles 4-FSK')
+                    response = page.request.get(urljoin(page.url,symbol_link.get_attribute('href')))
+                    assert response.ok and response.body().decode('ascii') in expected
+                expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
                 page.get_by_role('tab',name='SDR en direct').click()
                 assert page.locator('#live-panel').is_visible()
                 assert page.locator('#live-frequency').input_value() == '100'

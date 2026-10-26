@@ -40,32 +40,12 @@ def decode_fsk(x,fs,max_seconds=12,max_bits=100000):
     # Interpolate discriminator crossings. Frequency samples are at IQ midpoints.
     fraction = (threshold-frequency[indices])/(frequency[indices+1]-frequency[indices])
     edges = indices+fraction+.5
-    durations = np.diff(edges)
-    shortest = fs/min(9600,fs/8)
-    longest = fs/20
-    fit_durations = durations[:512]
-    hypotheses = np.unique(np.round((fit_durations[:,None]/np.arange(1,9)).ravel(),3))
-    hypotheses = hypotheses[(hypotheses>=shortest)&(hypotheses<=longest)]
-    good = []
-    for period in hypotheses:
-        units = fit_durations/period
-        error = float(np.mean(np.minimum(abs(units-np.round(units)),1)**2))
-        if error<.008 and np.mean(abs(units-np.round(units))<.2)>.95:
-            good.append((period,error))
-    if not good:
+    clock = recover_clock(edges,fs,max_bits)
+    if clock is None:
         return dict(base,status='no_consistent_candidate')
-    # The slowest consistent clock avoids arbitrary integer-multiple oversampling.
-    period,_ = max(good)
-    symbol_numbers = np.r_[0,np.cumsum(np.maximum(1,np.round(durations/period)))]
-    period,origin = np.polyfit(symbol_numbers,edges,1)
-    residual = float(np.sqrt(np.mean(((edges-(origin+period*symbol_numbers))/period)**2)))
-    if residual>.15 or not shortest*.98<=period<=longest*1.02:
-        return dict(base,status='no_consistent_candidate')
-    count = int(np.floor((edges[-1]-origin)/period))
-    if count<32:
-        return dict(base,status='no_consistent_candidate')
-    count_out = min(count,max_bits)
-    centers = origin+(np.arange(count_out)+.5)*period
+    centers,residual,count = clock
+    count_out = len(centers)
+    period = centers[1]-centers[0]
     values = np.interp(centers-.5,np.arange(len(frequency)),frequency)
     bits = (values>threshold).astype(np.uint8)
     contrast = np.minimum(abs(values-low),abs(values-high))/(high-low)
@@ -83,19 +63,20 @@ def decode_fsk(x,fs,max_seconds=12,max_bits=100000):
     return dict(base,status='timing_consistent_candidate',candidates=[candidate])
 
 
-def search_fsk(x,fs,bands,center_hz=0,max_channels=8,max_seconds=12,max_bits=100000):
+def search_fsk(x,fs,bands,center_hz=0,max_channels=8,max_seconds=12,max_bits=100000,decoder=None):
     """Try the full narrowband input, otherwise isolate detected spectral bands.
 
     Bands come from the shared stationary-spectrum detector. This does not infer
     a protocol and cannot guarantee that all FSK emitters have been found.
     """
     from scipy import signal
-    direct = decode_fsk(x,fs,max_seconds=max_seconds,max_bits=max_bits)
+    decoder = decoder or decode_fsk
+    direct = decoder(x,fs,max_seconds=max_seconds,max_bits=max_bits)
     if direct['candidates']:
         direct['search_mode'] = 'direct_single_channel'
         for candidate in direct['candidates']:
             p = candidate['parameters']
-            offset = (p['low_tone_hz']+p['high_tone_hz'])/2
+            offset = float(np.mean(p['tone_hz'])) if 'tone_hz' in p else (p['low_tone_hz']+p['high_tone_hz'])/2
             candidate['channel'] = {'offset_hz':offset,'frequency_hz':center_hz+offset,'sample_rate':fs}
         return direct
     if not 1000<=fs<=2_400_000 or len(x)<fs*.1:
@@ -123,26 +104,60 @@ def search_fsk(x,fs,bands,center_hz=0,max_channels=8,max_seconds=12,max_bits=100
         narrow = signal.convolve(narrow,taps,mode='same')
         # Exclude filter boundary transients from timing evidence.
         trim = min(int(rate*.02),len(narrow)//10)
-        trial = decode_fsk(narrow[trim:len(narrow)-trim],rate,max_seconds=max_seconds,max_bits=max_bits)
+        trial = decoder(narrow[trim:len(narrow)-trim],rate,max_seconds=max_seconds,max_bits=max_bits)
         channels.append({'offset_hz':offset,'frequency_hz':center_hz+offset,
                          'sample_rate':rate,'status':trial['status'],
                          'bandwidth_hz':band['bandwidth_hz']})
         for candidate in trial['candidates']:
             p = candidate['parameters']
             p['first_symbol_center_seconds'] += trim/rate
-            for name in ('low_tone_hz','high_tone_hz'):
-                p[name] += offset
-            tone_center = (p['low_tone_hz']+p['high_tone_hz'])/2
+            if 'tone_hz' in p:
+                p['tone_hz'] = [tone+offset for tone in p['tone_hz']]
+                tone_center = float(np.mean(p['tone_hz']))
+            else:
+                for name in ('low_tone_hz','high_tone_hz'):
+                    p[name] += offset
+                tone_center = (p['low_tone_hz']+p['high_tone_hz'])/2
             candidate['channel'] = {'offset_hz':tone_center,'frequency_hz':center_hz+tone_center,
                                     'sample_rate':rate,'detected_band_offset_hz':offset}
             candidates.append(candidate)
-    return {'decoder':'fsk2_generic','family':'2-FSK','search_mode':'detected_spectral_bands',
+    return {'decoder':direct['decoder'],'family':direct['family'],'search_mode':'detected_spectral_bands',
             'status':'timing_consistent_candidate' if candidates else 'no_consistent_candidate',
             'candidates':candidates,'channels_examined':channels,'channel_budget':max_channels,
             'deferred_channel_count':max(0,len(eligible)-len(selected)),
             'excluded_wide_band_count':sum(b['bandwidth_hz']>24000 for b in bands),
             'analyzed_seconds':len(x)/fs,'duration_limited':len(x)<original,
             'validation_scope':direct.get('validation_scope','timing only; no protocol or checksum validation'),
-            'limitations':['Shared stationary spectral detector; weak, overlapping, hopping and short burst signals can be missed.',
+            'limitations':direct.get('limitations',[])+['Shared stationary spectral detector; weak, overlapping, hopping and short burst signals can be missed.',
                            'At most eight bands <=24 kHz; output rate limits supported baud to channel_rate/8 (max 9600).',
                            'Polarity, byte alignment and protocol are unknown. Integer baud aliases remain possible.']}
+
+
+def recover_clock(edges,fs,max_symbols):
+    durations = np.diff(edges)
+    shortest = fs/min(9600,fs/8)
+    longest = fs/20
+    fit_durations = durations[:512]
+    hypotheses = np.unique(np.round((fit_durations[:,None]/np.arange(1,9)).ravel(),3))
+    hypotheses = hypotheses[(hypotheses>=shortest)&(hypotheses<=longest)]
+    good = []
+    for period in hypotheses:
+        units = fit_durations/period
+        error = float(np.mean(np.minimum(abs(units-np.round(units)),1)**2))
+        if error<.008 and np.mean(abs(units-np.round(units))<.2)>.95:
+            good.append((period,error))
+    if not good:
+        return None
+    # The slowest consistent clock avoids arbitrary integer-multiple oversampling.
+    period,_ = max(good)
+    symbol_numbers = np.r_[0,np.cumsum(np.maximum(1,np.round(durations/period)))]
+    period,origin = np.polyfit(symbol_numbers,edges,1)
+    residual = float(np.sqrt(np.mean(((edges-(origin+period*symbol_numbers))/period)**2)))
+    if residual>.15 or not shortest*.98<=period<=longest*1.02:
+        return None
+    count = int(np.floor((edges[-1]-origin)/period))
+    if count<32:
+        return None
+    count_out = min(count,max_symbols)
+    centers = origin+(np.arange(count_out)+.5)*period
+    return centers,residual,count
