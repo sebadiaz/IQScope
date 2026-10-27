@@ -50,7 +50,7 @@ n'a donc été inspectée ; les nombres de lignes et colonnes restent des chiffr
 annoncés. Le succès du job de sonde signifie que les observations ont été
 produites, pas que les fichiers sont importables.
 
-### Sources IQ déclarées, encore à inspecter
+### Sources IQ : métadonnées vérifiées, échantillons non inspectés
 
 - [Zenodo 22019720](https://zenodo.org/records/22019720)
 - [Zenodo 22036530](https://zenodo.org/records/22036530)
@@ -58,7 +58,26 @@ produites, pas que les fichiers sont importables.
 - [Zenodo 22052172](https://zenodo.org/records/22052172)
 - [Zenodo 22071547](https://zenodo.org/records/22071547)
 
-Ces liens viennent de l'API Mendeley. Leur contenu, leurs formats et leurs
-licences propres n'ont pas été vérifiés ici ; la licence du tableau dérivé ne
-leur est pas automatiquement appliquée. Ils sont conservés comme liens de
-provenance, sans créer cinq entrées de captures prétendument validées.
+Ces liens viennent de l'API Mendeley. La [sonde Zenodo exécutée en CI](https://github.com/sebadiaz/IQScope/actions/runs/40484096396)
+a obtenu HTTP 200 pour les cinq notices. Chacune déclare sa propre licence
+`cc-by-4.0`, un accès ouvert et des mesures IQ RTL-SDR V3 à 2,048 Méch/s.
+Le [rapport d'inventaire](../corpus/iraq-zenodo-observation.json) conserve les
+identités, tailles et sommes MD5 annoncées ; les archives n'ont pas été
+téléchargées et ces sommes n'ont donc pas été vérifiées sur leurs octets.
+
+Les cinq parties couvrent les jours 1 à 20. Les fichiers sont essentiellement
+des ZIP de plusieurs Go, avec un petit document Markdown par partie et un CSV
+de métadonnées global dans la partie 5. Le découpage d'une journée en plusieurs
+archives ne crée pas des journées indépendantes pour l'évaluation.
+
+**Écart de provenance à résoudre :** la description Zenodo de la partie 5 annonce
+295 enregistrements bruts, contre 297 sources dans Mendeley. Ne pas présumer une
+correspondance un à un avant comparaison des identifiants dans les deux tables.
+
+La sonde `scripts/iraq_zenodo_probe.py` limite chaque réponse JSON à 1 Mio et
+refuse une identité de notice différente. Aucun fichier radio n'est demandé.
+Le type numérique, l'ordre I/Q, le boutisme, les éventuels en-têtes et la
+correspondance des annotations restent à vérifier dans la documentation puis
+sur un extrait borné. Aucune validation LoRa, GSM ou ADS-B n'est déduite des
+noms de bandes. Ces parties restent des sources de provenance, sans nouvelle
+entrée de capture validée dans le catalogue.
