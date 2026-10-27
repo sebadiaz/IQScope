@@ -178,3 +178,18 @@ avec leurs contraintes actuelles. Ce résultat n'identifie pas le protocole et
 n'établit pas l'absence de signal dans l'enregistrement complet. L'artefact CI
 `iraq-iq-observation` contient le rapport détaillé avec spectre et waterfall,
 ainsi que le CSV spectral ; l'incertitude d'encodage y est conservée.
+
+### Fenêtre étendue bornée
+
+L'option `--seconds 1` demande jusqu'à une seconde sous l'hypothèse du débit
+publié, soit 16 384 000 octets décompressés. Le transfert HTTP reste plafonné à
+16 Mio ; la valeur par défaut reste 4 ms. Une requête hors de l'intervalle
+[0,004 ; 1] seconde est refusée. Le mode local accepte au plus 16 384 000 octets.
+
+Chaque boutisme reste indépendant : une interprétation contenant des valeurs
+non finies est conservée en octets mais signalée comme rejetée par le lecteur,
+sans bloquer la lecture de l'autre hypothèse. Aucun remplacement de NaN ni
+nettoyage silencieux n'est effectué. La CI demande désormais une seconde pour
+exercer le moteur au-delà de la fenêtre initiale ; le rapport donne toujours
+la durée réellement analysée. L'absence de candidat reste une observation sur
+ce seul extrait, sous hypothèse d'encodage.

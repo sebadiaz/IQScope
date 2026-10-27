@@ -10,13 +10,14 @@ from fpv_metadata_probe import RangeReader
 
 URL = 'https://zenodo.org/records/22019720/files/Day1-1.zip?download=1'
 EXPECTED_BYTES = 5454861376
+MAX_PREFIX_BYTES = 2048000 * 8
 
 
 def export_prefix(body, target):
     """Write byte-identical SigMF hypotheses; never choose an encoding implicitly."""
     from iqscope import read_iq
-    if not 8192 <= len(body) <= 65536 or len(body) % 8:
-        raise ValueError('Expected 1024 or more complete complex float32 pairs, at most 64 KiB')
+    if not 8192 <= len(body) <= MAX_PREFIX_BYTES or len(body) % 8:
+        raise ValueError('Expected 1024 or more complete complex float32 pairs, at most one second (16,384,000 bytes)')
     target = Path(target)
     outputs = {}
     for order in ('le', 'be'):
@@ -40,8 +41,14 @@ def export_prefix(body, target):
         checks = []
         for order in ('le', 'be'):
             path = Path(str(target) + '.' + order + '.sigmf-meta')
-            values, rate, _ = read_iq(path)
             expected = np.frombuffer(body, dtype='<c8' if order == 'le' else '>c8')
+            if not np.all(np.isfinite(expected)):
+                checks.append({'datatype': 'cf32_' + order, 'metadata': str(path),
+                    'sample_count': len(expected), 'read_back_equal': None,
+                    'read_back_status': 'rejected_nonfinite_interpretation',
+                    'stored_bytes_exact': Path(str(target) + '.' + order + '.sigmf-data').read_bytes() == body})
+                continue
+            values, rate, _ = read_iq(path)
             exact = np.array_equal(values, expected, equal_nan=True)
             if not exact or rate != 2048000:
                 raise ValueError('IQScope read-back differs from the candidate interpretation')
@@ -65,7 +72,7 @@ def analyze_hypothesis(target, order):
         raise ValueError('Analysis lost the unverified interpretation warning')
     report['frequency_reference'] = 'baseband_hz'
     report['center_frequency_verified'] = False
-    report['limitations'].insert(0, 'Only a 4 ms or shorter candidate IQ prefix; no verified RF center. Absence of a candidate does not establish absence of a protocol.')
+    report['limitations'].insert(0, f"Only {report['analyzed_seconds']:.6g} s of candidate IQ; no verified RF center. Absence of a candidate does not establish absence of a protocol.")
     (out / 'report.json').write_text(json.dumps(report, indent=2, allow_nan=False))
     return {'requested_hypothesis': order, 'interpretation_status': report['interpretation_status'],
             'analyzed_seconds': report['analyzed_seconds'], 'spectral_bands': len(report['signals']),
@@ -81,20 +88,26 @@ def main():
     parser.add_argument('--local-prefix', type=Path)
     parser.add_argument('--out', type=Path, default=Path('corpus-cache/iraq-iq/candidate'))
     parser.add_argument('--analyze-hypothesis', choices=('le', 'be'))
+    parser.add_argument('--seconds', type=float, default=0.004, help='Prefix duration under the declared 2.048 MS/s rate, from .004 to 1 second')
     args = parser.parse_args()
+    if not np.isfinite(args.seconds) or not 0.004 <= args.seconds <= 1:
+        parser.error('--seconds must be finite and between .004 and 1')
+    prefix_limit = int(args.seconds * 2048000) * 8
+    network_budget = min(16*1024*1024, max(1024*1024, prefix_limit+65536))
     if args.local_prefix:
         with args.local_prefix.open('rb') as handle:
-            body = handle.read(65537)
+            body = handle.read(MAX_PREFIX_BYTES+1)
         result = {'sigmf_hypotheses': export_prefix(body, args.out)}
         if args.analyze_hypothesis:
             result['analysis'] = analyze_hypothesis(args.out, args.analyze_hypothesis)
         print(json.dumps(result))
         return
-    result = {'source_url': URL, 'scope': 'ZIP index and first 64 KiB of one IQ member',
+    result = {'source_url': URL, 'scope': 'ZIP index and bounded prefix of one IQ member',
+              'prefix_limit_bytes': prefix_limit, 'network_budget_bytes': network_budget,
               'archive_integrity_verified': False, 'member_crc_verified': False,
               'sample_layout_status': 'unverified_hypotheses', 'hypotheses': []}
     try:
-        with RangeReader(URL, budget=1024*1024) as remote:
+        with RangeReader(URL, budget=network_budget) as remote:
             if remote.size != EXPECTED_BYTES:
                 raise ValueError('Archive size differs from inspected Zenodo inventory')
             with zipfile.ZipFile(remote) as archive:
@@ -108,7 +121,7 @@ def main():
                 if member.flag_bits & 1:
                     raise ValueError('Encrypted ZIP member is outside this importer')
                 with archive.open(member) as stream:
-                    body = stream.read(65536)
+                    body = stream.read(prefix_limit)
                 result.update(selected_member=member.filename, prefix_bytes=len(body),
                               prefix_sha256=hashlib.sha256(body).hexdigest(), bytes_received=remote.received)
                 # Never extract a remote path; keep only a bounded local prefix outside artifacts.

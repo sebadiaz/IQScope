@@ -26,7 +26,7 @@ class IraqImportTests(unittest.TestCase):
             self.assertEqual(Path(str(target)+'.le.sigmf-data').read_bytes(), body)
 
     def test_reject_incomplete_and_over_budget(self):
-        for body in (b'', b'123456789', b'x'*65544):
+        for body in (b'', b'123456789', b'x'*(probe.MAX_PREFIX_BYTES+8)):
             with self.assertRaises(ValueError):
                 probe.export_prefix(body, 'unused')
 
@@ -44,3 +44,12 @@ class IraqImportTests(unittest.TestCase):
             self.assertFalse(report['center_frequency_verified'])
             self.assertEqual(summary['analyzed_seconds'], 0.004)
             self.assertIn('unverified', summary['interpretation_status'])
+
+    def test_nonfinite_alternative_does_not_prevent_valid_interpretation(self):
+        # Little endian finite float with bytes that encode a big endian NaN.
+        body = bytes.fromhex('7fc0003f0000803f') * 1024
+        with tempfile.TemporaryDirectory() as tmp:
+            result = probe.export_prefix(body, Path(tmp) / 'candidate')
+            self.assertTrue(result[0]['read_back_equal'])
+            self.assertEqual(result[1]['read_back_status'], 'rejected_nonfinite_interpretation')
+            self.assertTrue(result[1]['stored_bytes_exact'])
