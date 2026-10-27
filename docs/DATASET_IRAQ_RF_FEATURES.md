@@ -193,3 +193,16 @@ nettoyage silencieux n'est effectué. La CI demande désormais une seconde pour
 exercer le moteur au-delà de la fenêtre initiale ; le rapport donne toujours
 la durée réellement analysée. L'absence de candidat reste une observation sur
 ce seul extrait, sous hypothèse d'encodage.
+
+Le [contrôle 40504449495](https://github.com/sebadiaz/IQScope/actions/runs/40504449495)
+a obtenu 16 384 000 octets décompressés, soit 2 048 000 échantillons candidats,
+pour 16 384 799 octets transférés au total. Les deux exports SigMF conservent
+les octets et se relisent exactement. Le
+[rapport une seconde](../corpus/iraq-iq-one-second-observation.json) conserve
+le hash du préfixe et le résultat d'analyse explicite en petit-boutiste.
+
+Aucune bande spectrale ni candidat cohérent RTTY/CW/2-FSK/4-FSK/CP n'est retenu,
+et aucune trame ADS-B/AX.25 n'est validée. Ce résultat porte sur une seconde,
+sans centre RF certifié et avec encodage non vérifié. Il ne constitue pas un
+test négatif de LoRa : aucun décodeur LoRa n'est encore implémenté. Les noms de
+fichiers ne sont pas utilisés comme identification automatique de protocole.
