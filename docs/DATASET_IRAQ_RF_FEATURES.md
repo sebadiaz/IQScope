@@ -126,3 +126,25 @@ l'archive entière et le CRC du membre entier ne sont pas vérifiés sur ce pré
 
 La sonde limite ses lectures réseau à 1 Mio et le préfixe décompressé à 64 Kio.
 Le fichier binaire reste hors des artefacts CI ; seul le rapport JSON est publié.
+
+### Conversion candidate vers SigMF
+
+Depuis un préfixe local de 8 à 64 Kio, contenant des paires float32 complètes :
+
+```sh
+python scripts/iraq_iq_probe.py --local-prefix prefix.bin --out /tmp/iraq-candidate
+```
+
+La commande produit deux paires `.le.sigmf-data`/`.le.sigmf-meta` et
+`.be.sigmf-data`/`.be.sigmf-meta`. Les fichiers de données conservent exactement
+les octets du préfixe ; la commande vérifie leur lecture par `read_iq` pour les
+deux interprétations. Elle refuse tout écrasement. Aucun téléchargement n'est
+effectué avec `--local-prefix`.
+
+Les métadonnées reprennent le débit publié de 2 048 000 échantillons/s sans
+fréquence RF vérifiée, et portent `iqscope:byte_order_status` à
+`unverified_hypothesis`. Charger une de ces métadonnées SigMF dans l'interface
+conserve donc l'incertitude dans le rapport d'analyse. Le boutisme, l'ordre I/Q
+et l'absence d'en-tête restent des hypothèses ; la conversion ne certifie aucun
+protocole. La sonde réseau effectue également cette relecture sur le préfixe
+réel ; ses artefacts publics ne contiennent que le rapport JSON.
