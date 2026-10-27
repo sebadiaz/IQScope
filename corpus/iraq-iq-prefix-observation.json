@@ -68,5 +68,57 @@
       "stored_bytes_exact": true
     }
   ],
-  "evidence_run": "https://github.com/sebadiaz/IQScope/actions/runs/40502855066"
+  "analysis": {
+    "requested_hypothesis": "le",
+    "interpretation_status": "unverified_byte_order_and_header_layout",
+    "analyzed_seconds": 0.004,
+    "spectral_bands": 0,
+    "trials": [
+      {
+        "decoder": "adsb_1090es",
+        "status": "no_valid_frame",
+        "candidate_count": 0,
+        "frame_count": 0
+      },
+      {
+        "decoder": "rtty_ita2",
+        "status": "not_applicable",
+        "candidate_count": 0,
+        "frame_count": 0
+      },
+      {
+        "decoder": "cw_morse",
+        "status": "not_applicable",
+        "candidate_count": 0,
+        "frame_count": 0
+      },
+      {
+        "decoder": "fsk2_generic",
+        "status": "not_applicable",
+        "candidate_count": 0,
+        "frame_count": 0
+      },
+      {
+        "decoder": "fsk4_generic",
+        "status": "not_applicable",
+        "candidate_count": 0,
+        "frame_count": 0
+      },
+      {
+        "decoder": "ax25_ui",
+        "status": "no_valid_frames",
+        "candidate_count": 0,
+        "frame_count": 0
+      },
+      {
+        "decoder": "ofdm_cp",
+        "status": "no_consistent_candidate",
+        "candidate_count": 0,
+        "frame_count": 0
+      }
+    ],
+    "report": "corpus-cache/iraq-iq/candidate.le.analysis/report.json",
+    "spectrum": "corpus-cache/iraq-iq/candidate.le.analysis/spectrum.csv"
+  },
+  "evidence_run": "https://github.com/sebadiaz/IQScope/actions/runs/40503411350"
 }

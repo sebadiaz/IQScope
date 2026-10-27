@@ -169,3 +169,12 @@ La CI demande explicitement `le` pour examiner le préfixe réel et publie le
 rapport et le spectre, sans le fichier IQ ni les essais audio/binaires.
 L'absence de candidat sur ces 4 ms ne permet pas d'exclure un protocole du
 fichier complet.
+
+Le [contrôle 40503411350](https://github.com/sebadiaz/IQScope/actions/runs/40503411350)
+a exécuté cette analyse sur les 4 ms réelles : aucune bande n'est retenue par le
+détecteur stationnaire, aucune trame ADS-B/AX.25 n'est validée et aucune répétition
+CP cohérente n'est retenue. RTTY, CW et FSK sont non applicables sur cette fenêtre
+avec leurs contraintes actuelles. Ce résultat n'identifie pas le protocole et
+n'établit pas l'absence de signal dans l'enregistrement complet. L'artefact CI
+`iraq-iq-observation` contient le rapport détaillé avec spectre et waterfall,
+ainsi que le CSV spectral ; l'incertitude d'encodage y est conservée.
