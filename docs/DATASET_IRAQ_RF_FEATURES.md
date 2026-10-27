@@ -229,3 +229,17 @@ conserve le rapport avec `if: always()`. Les requêtes Range demandent une
 revalidation du cache ; chaque capture a une URL de requête distincte, tout en
 restant dans la même archive publique. Les contrôles stricts de plages et les
 limites de transfert sont maintenus.
+
+Le [passage corrigé 40505971755](https://github.com/sebadiaz/IQScope/actions/runs/40505971755)
+a importé et analysé une seconde de chacune des trois nouvelles captures.
+Deux bandes spectrales sont retenues dans `uhf450`, sans contenu validé ; aucune
+bande n'est retenue dans `vhf144` et `vhf150`. Les essais numériques ne produisent
+aucun candidat cohérent ni trame validée sur ces fenêtres. Les deux bandes UHF
+ne constituent pas une identification de modulation ou de protocole.
+
+La capture `ism915` a de nouveau échoué à l'ouverture de l'index ZIP distant.
+Son analyse antérieure d'une seconde reste documentée séparément ; ce nouveau
+passage n'est pas présenté comme une validation des quatre imports. Le
+[rapport multi-captures](../corpus/iraq-iq-multi-observation.json) conserve les
+trois réussites et l'erreur. Le job correspondant est bien en échec, les trois
+autres sont indépendants et leurs rapports/spectres sont disponibles.

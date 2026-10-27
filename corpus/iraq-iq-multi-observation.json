@@ -1,0 +1,400 @@
+{
+  "evidence_run": "https://github.com/sebadiaz/IQScope/actions/runs/40505971755",
+  "scope": "One candidate second per exact recording; partial remote-source failure retained",
+  "records": [
+    {
+      "recording_id": "ism915",
+      "filename_frequency_is_hint_only": true,
+      "source_url": "https://zenodo.org/records/22019720/files/Day1-1.zip?download=1",
+      "scope": "ZIP index and bounded prefix of one IQ member",
+      "prefix_limit_bytes": 16384000,
+      "network_budget_bytes": 16449536,
+      "archive_integrity_verified": false,
+      "member_crc_verified": false,
+      "sample_layout_status": "unverified_hypotheses",
+      "hypotheses": [],
+      "error": "File is not a zip file"
+    },
+    {
+      "recording_id": "uhf450",
+      "filename_frequency_is_hint_only": true,
+      "source_url": "https://zenodo.org/records/22019720/files/Day1-1.zip?download=1",
+      "scope": "ZIP index and bounded prefix of one IQ member",
+      "prefix_limit_bytes": 16384000,
+      "network_budget_bytes": 16449536,
+      "archive_integrity_verified": false,
+      "member_crc_verified": false,
+      "sample_layout_status": "unverified_hypotheses",
+      "hypotheses": [
+        {
+          "datatype": "cf32_le",
+          "complex_samples": 2048000,
+          "finite_fraction": 1,
+          "rms": 0.01716973528743313,
+          "maximum_magnitude": 0.12556513677831535,
+          "sample_rate_hz_publisher_declared": 2048000,
+          "interpretation": "Headerless interleaved I/Q hypothesis only; no automatic selection or protocol claim"
+        },
+        {
+          "datatype": "cf32_be",
+          "complex_samples": 2048000,
+          "finite_fraction": 1,
+          "rms": 1.435263273521377e+23,
+          "maximum_magnitude": 6.159889796153914e+24,
+          "sample_rate_hz_publisher_declared": 2048000,
+          "interpretation": "Headerless interleaved I/Q hypothesis only; no automatic selection or protocol claim"
+        }
+      ],
+      "member_count": 6,
+      "iq_member_count": 4,
+      "iq_members": [
+        {
+          "name": "Day1-1/Day1-1/loraism-outdoor_915e6MHz.iq",
+          "bytes": 5901395536,
+          "compression": 8
+        },
+        {
+          "name": "Day1-1/Day1-1/UHF_outdoor_450e6MHz.iq",
+          "bytes": 3837802152,
+          "compression": 8
+        },
+        {
+          "name": "Day1-1/Day1-1/VHF-outdoor_144e6MHz.iq",
+          "bytes": 6702519808,
+          "compression": 8
+        },
+        {
+          "name": "Day1-1/Day1-1/VHF-outdoor_150e6MHz.iq",
+          "bytes": 10118790768,
+          "compression": 8
+        }
+      ],
+      "selected_member": "Day1-1/Day1-1/UHF_outdoor_450e6MHz.iq",
+      "prefix_bytes": 16384000,
+      "prefix_sha256": "896b8a52d99dbe8220bb95d560f317363576d7e913b056edb3c2c1fe6e0c2459",
+      "bytes_received": 16384795,
+      "sigmf_hypotheses": [
+        {
+          "datatype": "cf32_le",
+          "metadata": "corpus-cache/iraq-iq/candidate.le.sigmf-meta",
+          "sample_count": 2048000,
+          "read_back_equal": true,
+          "stored_bytes_exact": true
+        },
+        {
+          "datatype": "cf32_be",
+          "metadata": "corpus-cache/iraq-iq/candidate.be.sigmf-meta",
+          "sample_count": 2048000,
+          "read_back_equal": true,
+          "stored_bytes_exact": true
+        }
+      ],
+      "analysis": {
+        "requested_hypothesis": "le",
+        "interpretation_status": "unverified_byte_order_and_header_layout",
+        "analyzed_seconds": 1,
+        "spectral_bands": 2,
+        "trials": [
+          {
+            "decoder": "adsb_1090es",
+            "status": "no_valid_frame",
+            "candidate_count": 0,
+            "frame_count": 0
+          },
+          {
+            "decoder": "rtty_ita2",
+            "status": "no_consistent_candidate",
+            "candidate_count": 0,
+            "frame_count": 0
+          },
+          {
+            "decoder": "cw_morse",
+            "status": "no_consistent_candidate",
+            "candidate_count": 0,
+            "frame_count": 0
+          },
+          {
+            "decoder": "fsk2_generic",
+            "status": "no_consistent_candidate",
+            "candidate_count": 0,
+            "frame_count": 0
+          },
+          {
+            "decoder": "fsk4_generic",
+            "status": "no_consistent_candidate",
+            "candidate_count": 0,
+            "frame_count": 0
+          },
+          {
+            "decoder": "ax25_ui",
+            "status": "no_valid_frames",
+            "candidate_count": 0,
+            "frame_count": 0
+          },
+          {
+            "decoder": "ofdm_cp",
+            "status": "no_consistent_candidate",
+            "candidate_count": 0,
+            "frame_count": 0
+          }
+        ],
+        "report": "corpus-cache/iraq-iq/candidate.le.analysis/report.json",
+        "spectrum": "corpus-cache/iraq-iq/candidate.le.analysis/spectrum.csv"
+      }
+    },
+    {
+      "recording_id": "vhf144",
+      "filename_frequency_is_hint_only": true,
+      "source_url": "https://zenodo.org/records/22019720/files/Day1-1.zip?download=1",
+      "scope": "ZIP index and bounded prefix of one IQ member",
+      "prefix_limit_bytes": 16384000,
+      "network_budget_bytes": 16449536,
+      "archive_integrity_verified": false,
+      "member_crc_verified": false,
+      "sample_layout_status": "unverified_hypotheses",
+      "hypotheses": [
+        {
+          "datatype": "cf32_le",
+          "complex_samples": 2048000,
+          "finite_fraction": 1,
+          "rms": 0.07375642667900068,
+          "maximum_magnitude": 0.5306246313581323,
+          "sample_rate_hz_publisher_declared": 2048000,
+          "interpretation": "Headerless interleaved I/Q hypothesis only; no automatic selection or protocol claim"
+        },
+        {
+          "datatype": "cf32_be",
+          "complex_samples": 2048000,
+          "finite_fraction": 1,
+          "rms": 1.2260227857708062e+24,
+          "maximum_magnitude": 6.16990722197404e+24,
+          "sample_rate_hz_publisher_declared": 2048000,
+          "interpretation": "Headerless interleaved I/Q hypothesis only; no automatic selection or protocol claim"
+        }
+      ],
+      "member_count": 6,
+      "iq_member_count": 4,
+      "iq_members": [
+        {
+          "name": "Day1-1/Day1-1/loraism-outdoor_915e6MHz.iq",
+          "bytes": 5901395536,
+          "compression": 8
+        },
+        {
+          "name": "Day1-1/Day1-1/UHF_outdoor_450e6MHz.iq",
+          "bytes": 3837802152,
+          "compression": 8
+        },
+        {
+          "name": "Day1-1/Day1-1/VHF-outdoor_144e6MHz.iq",
+          "bytes": 6702519808,
+          "compression": 8
+        },
+        {
+          "name": "Day1-1/Day1-1/VHF-outdoor_150e6MHz.iq",
+          "bytes": 10118790768,
+          "compression": 8
+        }
+      ],
+      "selected_member": "Day1-1/Day1-1/VHF-outdoor_144e6MHz.iq",
+      "prefix_bytes": 16384000,
+      "prefix_sha256": "a2aa2e3b9d46c9c747c01672bd8474f58342b78e9c5bc61c320c46d1a374570e",
+      "bytes_received": 16384795,
+      "sigmf_hypotheses": [
+        {
+          "datatype": "cf32_le",
+          "metadata": "corpus-cache/iraq-iq/candidate.le.sigmf-meta",
+          "sample_count": 2048000,
+          "read_back_equal": true,
+          "stored_bytes_exact": true
+        },
+        {
+          "datatype": "cf32_be",
+          "metadata": "corpus-cache/iraq-iq/candidate.be.sigmf-meta",
+          "sample_count": 2048000,
+          "read_back_equal": true,
+          "stored_bytes_exact": true
+        }
+      ],
+      "analysis": {
+        "requested_hypothesis": "le",
+        "interpretation_status": "unverified_byte_order_and_header_layout",
+        "analyzed_seconds": 1,
+        "spectral_bands": 0,
+        "trials": [
+          {
+            "decoder": "adsb_1090es",
+            "status": "no_valid_frame",
+            "candidate_count": 0,
+            "frame_count": 0
+          },
+          {
+            "decoder": "rtty_ita2",
+            "status": "no_consistent_candidate",
+            "candidate_count": 0,
+            "frame_count": 0
+          },
+          {
+            "decoder": "cw_morse",
+            "status": "no_consistent_candidate",
+            "candidate_count": 0,
+            "frame_count": 0
+          },
+          {
+            "decoder": "fsk2_generic",
+            "status": "no_consistent_candidate",
+            "candidate_count": 0,
+            "frame_count": 0
+          },
+          {
+            "decoder": "fsk4_generic",
+            "status": "no_consistent_candidate",
+            "candidate_count": 0,
+            "frame_count": 0
+          },
+          {
+            "decoder": "ax25_ui",
+            "status": "no_valid_frames",
+            "candidate_count": 0,
+            "frame_count": 0
+          },
+          {
+            "decoder": "ofdm_cp",
+            "status": "no_consistent_candidate",
+            "candidate_count": 0,
+            "frame_count": 0
+          }
+        ],
+        "report": "corpus-cache/iraq-iq/candidate.le.analysis/report.json",
+        "spectrum": "corpus-cache/iraq-iq/candidate.le.analysis/spectrum.csv"
+      }
+    },
+    {
+      "recording_id": "vhf150",
+      "filename_frequency_is_hint_only": true,
+      "source_url": "https://zenodo.org/records/22019720/files/Day1-1.zip?download=1",
+      "scope": "ZIP index and bounded prefix of one IQ member",
+      "prefix_limit_bytes": 16384000,
+      "network_budget_bytes": 16449536,
+      "archive_integrity_verified": false,
+      "member_crc_verified": false,
+      "sample_layout_status": "unverified_hypotheses",
+      "hypotheses": [
+        {
+          "datatype": "cf32_le",
+          "complex_samples": 2048000,
+          "finite_fraction": 1,
+          "rms": 0.05140128995761004,
+          "maximum_magnitude": 0.33567575676283307,
+          "sample_rate_hz_publisher_declared": 2048000,
+          "interpretation": "Headerless interleaved I/Q hypothesis only; no automatic selection or protocol claim"
+        },
+        {
+          "datatype": "cf32_be",
+          "complex_samples": 2048000,
+          "finite_fraction": 1,
+          "rms": 1.0274911927176064e+24,
+          "maximum_magnitude": 6.16990722197404e+24,
+          "sample_rate_hz_publisher_declared": 2048000,
+          "interpretation": "Headerless interleaved I/Q hypothesis only; no automatic selection or protocol claim"
+        }
+      ],
+      "member_count": 6,
+      "iq_member_count": 4,
+      "iq_members": [
+        {
+          "name": "Day1-1/Day1-1/loraism-outdoor_915e6MHz.iq",
+          "bytes": 5901395536,
+          "compression": 8
+        },
+        {
+          "name": "Day1-1/Day1-1/UHF_outdoor_450e6MHz.iq",
+          "bytes": 3837802152,
+          "compression": 8
+        },
+        {
+          "name": "Day1-1/Day1-1/VHF-outdoor_144e6MHz.iq",
+          "bytes": 6702519808,
+          "compression": 8
+        },
+        {
+          "name": "Day1-1/Day1-1/VHF-outdoor_150e6MHz.iq",
+          "bytes": 10118790768,
+          "compression": 8
+        }
+      ],
+      "selected_member": "Day1-1/Day1-1/VHF-outdoor_150e6MHz.iq",
+      "prefix_bytes": 16384000,
+      "prefix_sha256": "4273492363661a9a2814da31c8c41b26e02b8991600419a1324326f4371befa0",
+      "bytes_received": 16384795,
+      "sigmf_hypotheses": [
+        {
+          "datatype": "cf32_le",
+          "metadata": "corpus-cache/iraq-iq/candidate.le.sigmf-meta",
+          "sample_count": 2048000,
+          "read_back_equal": true,
+          "stored_bytes_exact": true
+        },
+        {
+          "datatype": "cf32_be",
+          "metadata": "corpus-cache/iraq-iq/candidate.be.sigmf-meta",
+          "sample_count": 2048000,
+          "read_back_equal": true,
+          "stored_bytes_exact": true
+        }
+      ],
+      "analysis": {
+        "requested_hypothesis": "le",
+        "interpretation_status": "unverified_byte_order_and_header_layout",
+        "analyzed_seconds": 1,
+        "spectral_bands": 0,
+        "trials": [
+          {
+            "decoder": "adsb_1090es",
+            "status": "no_valid_frame",
+            "candidate_count": 0,
+            "frame_count": 0
+          },
+          {
+            "decoder": "rtty_ita2",
+            "status": "no_consistent_candidate",
+            "candidate_count": 0,
+            "frame_count": 0
+          },
+          {
+            "decoder": "cw_morse",
+            "status": "no_consistent_candidate",
+            "candidate_count": 0,
+            "frame_count": 0
+          },
+          {
+            "decoder": "fsk2_generic",
+            "status": "no_consistent_candidate",
+            "candidate_count": 0,
+            "frame_count": 0
+          },
+          {
+            "decoder": "fsk4_generic",
+            "status": "no_consistent_candidate",
+            "candidate_count": 0,
+            "frame_count": 0
+          },
+          {
+            "decoder": "ax25_ui",
+            "status": "no_valid_frames",
+            "candidate_count": 0,
+            "frame_count": 0
+          },
+          {
+            "decoder": "ofdm_cp",
+            "status": "no_consistent_candidate",
+            "candidate_count": 0,
+            "frame_count": 0
+          }
+        ],
+        "report": "corpus-cache/iraq-iq/candidate.le.analysis/report.json",
+        "spectrum": "corpus-cache/iraq-iq/candidate.le.analysis/spectrum.csv"
+      }
+    }
+  ]
+}
