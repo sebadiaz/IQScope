@@ -122,7 +122,7 @@ def main():
               'archive_integrity_verified': False, 'member_crc_verified': False,
               'sample_layout_status': 'unverified_hypotheses', 'hypotheses': []}
     try:
-        with RangeReader(URL, budget=network_budget) as remote:
+        with RangeReader(URL + '&iqscope_recording=' + args.recording, budget=network_budget) as remote:
             if remote.size != EXPECTED_BYTES:
                 raise ValueError('Archive size differs from inspected Zenodo inventory')
             with zipfile.ZipFile(remote) as archive:
@@ -162,6 +162,8 @@ def main():
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(result, indent=2, allow_nan=False))
     print(json.dumps(result, allow_nan=False), flush=True)
+    if result.get('error'):
+        raise SystemExit(1)
 
 
 if __name__ == '__main__':

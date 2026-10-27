@@ -220,3 +220,12 @@ budget d'au plus 16 Mio par job. Chaque artefact porte l'identifiant de la
 capture et contient son rapport, son spectre et sa provenance. L'échec d'une
 capture n'annule pas les trois autres contrôles. Les hypothèses restent
 indépendantes et les données binaires ne sont pas publiées dans les artefacts.
+
+Le premier passage multi-captures (40505601077) a réussi l'import et l'analyse
+d'une seconde VHF 144 MHz nominale, sans candidat retenu. Les trois autres
+rapports contenaient des erreurs réseau/ZIP ; leur fin de job ne validait pas
+l'import. La sonde fait désormais échouer le job en présence d'une erreur et
+conserve le rapport avec `if: always()`. Les requêtes Range demandent une
+revalidation du cache ; chaque capture a une URL de requête distincte, tout en
+restant dans la même archive publique. Les contrôles stricts de plages et les
+limites de transfert sont maintenus.

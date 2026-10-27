@@ -34,7 +34,7 @@ class RangeReader(io.RawIOBase):
         wanted = end-start+1
         if wanted > self.budget-self.received:
             raise ValueError('Remote ZIP metadata transfer budget exceeded')
-        request = urllib.request.Request(self.url,headers={'Range':f'bytes={start}-{end}','Accept-Encoding':'identity'})
+        request = urllib.request.Request(self.url,headers={'Range':f'bytes={start}-{end}','Accept-Encoding':'identity','Cache-Control':'no-cache'})
         with urllib.request.urlopen(request,timeout=30) as response:
             match = re.fullmatch(r'bytes (\d+)-(\d+)/(\d+)',response.headers.get('Content-Range',''))
             if response.status != 206 or not match or (int(match[1]),int(match[2])) != (start,end):
