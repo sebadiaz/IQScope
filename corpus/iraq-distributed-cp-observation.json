@@ -1,0 +1,44 @@
+{
+  "evidence_run": "https://github.com/sebadiaz/IQScope/actions/runs/40569155572",
+  "recording_id": "uhf450",
+  "input_prefix_sha256": "896b8a52d99dbe8220bb95d560f317363576d7e913b056edb3c2c1fe6e0c2459",
+  "input_interpretation_status": "unverified_byte_order_and_header_layout",
+  "coverage": {
+    "decoder": "ofdm_cp",
+    "limitations": [
+      "Repetition compatible with a cyclic prefix does not uniquely identify OFDM, Wi-Fi, LTE or DVB-T.",
+      "Single source, powers-of-two useful lengths 16–2048, guard ratios 1/4 to 1/32; at least 32 symbols per window.",
+      "At most three non-overlapping windows distributed across the source; aggregate budget at most 262144 samples. Unsampled gaps are not inspected. Bursts, overlapping channels, resampling, clock drift and other guards may be missed.",
+      "No frequency/channel search, synchronization guarantee, demodulated bits, checksum or payload interpretation."
+    ],
+    "sample_budget_reached": true,
+    "analyzed_seconds": 0.128,
+    "source_span_seconds": 1,
+    "sampled_fraction": 0.128,
+    "coverage_complete": false,
+    "window_selection": "distributed_nonoverlapping",
+    "windows_examined": [
+      {
+        "sample_start": 0,
+        "sample_count": 87382,
+        "effective_spectral_bin_fraction": 0.09935352534661224
+      },
+      {
+        "sample_start": 980310,
+        "sample_count": 87381,
+        "effective_spectral_bin_fraction": 0.09145495114139655
+      },
+      {
+        "sample_start": 1960619,
+        "sample_count": 87381,
+        "effective_spectral_bin_fraction": 0.10088287909875529
+      }
+    ]
+  },
+  "result": {
+    "decoder": "ofdm_cp",
+    "status": "no_consistent_candidate",
+    "candidate_count": 0,
+    "frame_count": 0
+  }
+}
