@@ -104,3 +104,25 @@ Zenodo confirme le nombre 295 mais n'explique pas cette différence. Les noms de
 bandes restent des annotations ; ils ne certifient pas la présence d'une trame
 LoRa, GSM ou ADS-B. Les heures estimées et l'absence de calibration RF externe
 sont explicitement documentées. Aucune archive IQ n'a été téléchargée à ce stade.
+
+### Premier extrait IQ borné
+
+La [sonde 40502220779](https://github.com/sebadiaz/IQScope/actions/runs/40502220779)
+a inspecté l'index de `Day1-1.zip` par requêtes HTTP Range exactes et lu les
+65 536 premiers octets de `Day1-1/Day1-1/loraism-outdoor_915e6MHz.iq`.
+Le transfert total observé est de 66 335 octets ; aucune archive complète n'est
+ téléchargée. L'index contient quatre fichiers IQ. Le
+[rapport](../corpus/iraq-iq-prefix-observation.json) conserve leurs tailles,
+le SHA-256 du préfixe et les hypothèses numériques.
+
+En supposant du complexe float32 sans en-tête, le préfixe représente 8 192
+échantillons, soit 4 ms au débit déclaré. Les deux boutismes donnent des valeurs
+finies ; le RMS est environ 0,0202 en petit-boutiste contre 2,64e23 en
+grand-boutiste. Cela favorise l'hypothèse petit-boutiste pour ce préfixe, sans
+certifier l'ordre I/Q, l'absence d'en-tête ou tous les fichiers du corpus.
+Aucune sélection automatique, conversion validée ou reconnaissance LoRa n'est
+réalisée. Le nom 915 MHz reste une indication du nom de fichier. Les sommes de
+l'archive entière et le CRC du membre entier ne sont pas vérifiés sur ce préfixe.
+
+La sonde limite ses lectures réseau à 1 Mio et le préfixe décompressé à 64 Kio.
+Le fichier binaire reste hors des artefacts CI ; seul le rapport JSON est publié.

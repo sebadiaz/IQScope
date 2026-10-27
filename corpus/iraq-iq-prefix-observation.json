@@ -1,0 +1,56 @@
+{
+  "source_url": "https://zenodo.org/records/22019720/files/Day1-1.zip?download=1",
+  "scope": "ZIP index and first 64 KiB of one IQ member",
+  "archive_integrity_verified": false,
+  "member_crc_verified": false,
+  "sample_layout_status": "unverified_hypotheses",
+  "hypotheses": [
+    {
+      "datatype": "cf32_le",
+      "complex_samples": 8192,
+      "finite_fraction": 1,
+      "rms": 0.020165971718850154,
+      "maximum_magnitude": 0.16589748071961039,
+      "sample_rate_hz_publisher_declared": 2048000,
+      "interpretation": "Headerless interleaved I/Q hypothesis only; no automatic selection or protocol claim"
+    },
+    {
+      "datatype": "cf32_be",
+      "complex_samples": 8192,
+      "finite_fraction": 1,
+      "rms": 2.6364394889875664e+23,
+      "maximum_magnitude": 4.3627832359496965e+24,
+      "sample_rate_hz_publisher_declared": 2048000,
+      "interpretation": "Headerless interleaved I/Q hypothesis only; no automatic selection or protocol claim"
+    }
+  ],
+  "member_count": 6,
+  "iq_member_count": 4,
+  "iq_members": [
+    {
+      "name": "Day1-1/Day1-1/loraism-outdoor_915e6MHz.iq",
+      "bytes": 5901395536,
+      "compression": 8
+    },
+    {
+      "name": "Day1-1/Day1-1/UHF_outdoor_450e6MHz.iq",
+      "bytes": 3837802152,
+      "compression": 8
+    },
+    {
+      "name": "Day1-1/Day1-1/VHF-outdoor_144e6MHz.iq",
+      "bytes": 6702519808,
+      "compression": 8
+    },
+    {
+      "name": "Day1-1/Day1-1/VHF-outdoor_150e6MHz.iq",
+      "bytes": 10118790768,
+      "compression": 8
+    }
+  ],
+  "selected_member": "Day1-1/Day1-1/loraism-outdoor_915e6MHz.iq",
+  "prefix_bytes": 65536,
+  "prefix_sha256": "a9d159f91e2bdaecedf9bd3c2dc1449826db6064235014fc94f97fa805126a15",
+  "bytes_received": 66335,
+  "evidence_run": "https://github.com/sebadiaz/IQScope/actions/runs/40502220779"
+}
