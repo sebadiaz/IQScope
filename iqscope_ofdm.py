@@ -8,17 +8,22 @@ def detect_cyclic_prefix(x,fs,max_samples=262144):
     if not np.isfinite(fs) or fs<=0 or len(x)<2048:
         return dict(base,status='not_applicable')
     original = len(x)
-    x = np.asarray(x[:max_samples],dtype=np.complex128)
-    if not np.all(np.isfinite(x)):
-        return dict(base,status='not_applicable')
-    x = x-np.mean(x)
-    size = min(len(x),131072)
-    starts = np.unique(np.linspace(0,len(x)-size,min(3,1+(len(x)-1)//size),dtype=int))
+    if not isinstance(max_samples, int) or not 2048 <= max_samples <= 262144:
+        return dict(base,status='not_applicable',reason='sample budget must be an integer from 2048 to 262144')
+    total = min(original,max_samples)
+    count = min(3, (original+131071)//131072)
+    sizes = [total//count + (i < total%count) for i in range(count)]
+    # Non-overlapping windows, including both ends, with a strict aggregate budget.
+    starts = [sum(sizes[:i]) + (round(i*(original-total)/(count-1)) if count>1 else 0)
+              for i in range(count)]
     candidates = []
     trials = 0
     windows = []
-    for start in starts:
-        block = x[start:start+size]
+    for start,size in zip(starts,sizes):
+        block = np.asarray(x[start:start+size],dtype=np.complex128)
+        if not np.all(np.isfinite(block)):
+            return dict(base,status='not_applicable',reason='nonfinite samples in a selected window')
+        block = block-np.mean(block)
         power = abs(block)**2
         _,psd = signal.welch(block,fs,nperseg=min(1024,len(block)),return_onesided=False)
         occupied = float(np.sum(psd)**2/max(len(psd)*np.sum(psd**2),1e-30))
@@ -83,9 +88,12 @@ def detect_cyclic_prefix(x,fs,max_samples=262144):
             break
     return dict(base,status='periodic_prefix_candidate' if distinct else 'no_consistent_candidate',
                 candidates=distinct,trials=trials,windows_examined=windows,
-                analyzed_samples=len(x),analyzed_seconds=len(x)/fs,sample_budget=max_samples,
-                sample_budget_reached=original>len(x),
+                analyzed_samples=total,analyzed_seconds=total/fs,sample_budget=max_samples,
+                sample_budget_reached=original>total,
+                source_samples=original,source_span_seconds=original/fs,
+                sampled_fraction=total/original,window_selection='distributed_nonoverlapping',
+                coverage_complete=total==original,
                 limitations=['Repetition compatible with a cyclic prefix does not uniquely identify OFDM, Wi-Fi, LTE or DVB-T.',
                              'Single source, powers-of-two useful lengths 16–2048, guard ratios 1/4 to 1/32; at least 32 symbols per window.',
-                             'At most three windows in the first 262144 samples. Bursts, overlapping channels, resampling, clock drift and other guards may be missed.',
+                             'At most three non-overlapping windows distributed across the source; aggregate budget at most 262144 samples. Unsampled gaps are not inspected. Bursts, overlapping channels, resampling, clock drift and other guards may be missed.',
                              'No frequency/channel search, synchronization guarantee, demodulated bits, checksum or payload interpretation.'])

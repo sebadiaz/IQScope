@@ -269,3 +269,22 @@ sur une seconde ici, mais le détecteur CP/OFDM atteint son budget de 262 144
 une inspection complète de la seconde ni comme une exclusion de l'OFDM.
 Le résumé de sonde publie désormais ces limites et les mesures des bandes en
 plus des simples compteurs, sans modifier les seuils pour forcer un résultat.
+
+
+### Couverture CP distribuée
+
+Le détecteur CP répartit désormais son budget de 262 144 échantillons sur au
+plus trois fenêtres sans chevauchement, incluant le début et la fin de la
+source. Pour une seconde à 2,048 Méch/s, la somme examinée reste 128 ms, mais
+elle est répartie dans la seconde ; les intervalles entre fenêtres restent
+non inspectés. `analyzed_seconds` indique la somme effectivement examinée,
+`source_span_seconds` la durée source, et `coverage_complete` reste faux si des
+échantillons ne sont pas examinés. Chaque fenêtre conserve son indice source.
+Les observations précédentes décrivent l'ancienne sélection limitée au début.
+
+Un test de régression place un signal à préfixe cyclique dans la fin d'un
+long enregistrement : il doit être détecté au-delà des 262 144 premiers
+échantillons. Des tests vérifient aussi l'abstention sur bruit, les limites
+budgétaires et l'absence de chevauchement. Les seuils et les limites de
+reconnaissance restent identiques : cette preuve structurelle ne décode aucun
+protocole ni contenu.

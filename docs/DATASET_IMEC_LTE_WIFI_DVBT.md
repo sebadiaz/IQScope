@@ -575,7 +575,7 @@ and nominal durations; **it does not identify Wi-Fi, LTE or DVB-T, recover FFT
 bins or bits, verify CRCs, or interpret payloads**. Other block waveforms with
 repeated guards can give the same evidence.
 
-Search limits: first 262144 complex samples, at most three windows of 131072
+Search limits: at most 262144 complex samples in total, distributed across up to three non-overlapping windows of at most 131072
 samples, useful lengths 16–2048 in powers of two, guards 1/4, 1/8, 1/16 or 1/32
 (minimum two samples), and at least 32 symbols per trial. Short bursts, overlapping
 channels, clock drift, noninteger resampling, other guards and channel offsets

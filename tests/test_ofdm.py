@@ -79,3 +79,27 @@ class OfdmTests(unittest.TestCase):
         self.assertEqual(result['analyzed_samples'],262144)
         self.assertLessEqual(len(result['windows_examined']),3)
         self.assertEqual(detect_cyclic_prefix(x[:500],fs)['status'],'not_applicable')
+
+    def test_late_prefix_detected_with_bounded_distributed_windows(self):
+        rng = np.random.default_rng(110)
+        source = (rng.normal(size=1048576)+1j*rng.normal(size=1048576))*.05
+        late,fs = fixture(64,16,symbols=1200)
+        source[-len(late):] = late
+        result = detect_cyclic_prefix(source,fs)
+        self.assertTrue(result['candidates'], result)
+        self.assertGreater(result['candidates'][0]['window_sample_start'], 262144)
+        self.assertEqual(sum(w['sample_count'] for w in result['windows_examined']), result['analyzed_samples'])
+        self.assertLessEqual(result['analyzed_samples'], 262144)
+        self.assertFalse(result['coverage_complete'])
+        windows = result['windows_examined']
+        self.assertEqual(windows[-1]['sample_start']+windows[-1]['sample_count'], len(source))
+        for left,right in zip(windows,windows[1:]):
+            self.assertLessEqual(left['sample_start']+left['sample_count'], right['sample_start'])
+
+    def test_distributed_noise_abstains_and_small_budget_is_respected(self):
+        rng = np.random.default_rng(111)
+        noise = rng.normal(size=500000)+1j*rng.normal(size=500000)
+        result = detect_cyclic_prefix(noise,1e6,max_samples=12000)
+        self.assertEqual(result['candidates'], [])
+        self.assertEqual(result['analyzed_samples'],12000)
+        self.assertEqual(sum(w['sample_count'] for w in result['windows_examined']),12000)

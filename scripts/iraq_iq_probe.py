@@ -91,7 +91,7 @@ def analyze_hypothesis(target, order):
     return {'requested_hypothesis': order, 'interpretation_status': report['interpretation_status'],
             'analyzed_seconds': report['analyzed_seconds'], 'spectral_bands': len(report['signals']),
             'band_observations': report['signals'],
-            'trial_limits': [{key: trial[key] for key in ('decoder', 'limitations', 'reason', 'channels_examined', 'sample_budget_reached', 'analyzed_seconds') if key in trial}
+            'trial_limits': [{key: trial[key] for key in ('decoder', 'limitations', 'reason', 'channels_examined', 'sample_budget_reached', 'analyzed_seconds', 'source_span_seconds', 'sampled_fraction', 'coverage_complete', 'window_selection', 'windows_examined') if key in trial}
                              for trial in report['wideband_trials']],
             'trials': [{'decoder': trial.get('decoder'), 'status': trial.get('status'),
                         'candidate_count': len(trial.get('candidates', [])),
