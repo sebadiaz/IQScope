@@ -252,7 +252,7 @@ function showReport(report, jobId) {
   }
   for(const trial of report.wideband_trials || []){
     if(trial.decoder!=='ofdm_cp')continue;
-    if(trial.sample_budget_reached)frameList.append(element('p',`Recherche de préfixe cyclique limitée aux ${trial.analyzed_samples} premiers échantillons, soit ${trial.analyzed_seconds.toFixed(4)} s.`,'hint'));
+    if(trial.sample_budget_reached)frameList.append(element('p',`Recherche de préfixe cyclique : ${trial.analyzed_samples} échantillons répartis en fenêtres, soit ${trial.analyzed_seconds.toFixed(4)} s réellement examinées.`,'hint'));
     for(const candidate of trial.candidates || []){
       const card=element('div',undefined,'frame ofdm-candidate');const p=candidate.parameters;
       card.append(element('h3','Répétition compatible avec un préfixe cyclique'));
@@ -262,6 +262,17 @@ function showReport(report, jobId) {
       frameList.append(card);
     }
     if(report.ofdm_artifact){const link=element('a','Télécharger les indices de préfixe cyclique');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(report.ofdm_artifact)}`;link.download=report.ofdm_artifact;frameList.append(link);}
+  }
+  for(const trial of report.wideband_trials || []){
+    if(trial.decoder!=='lora_preamble')continue;
+    for(const candidate of trial.candidates || []){
+      const card=element('div',undefined,'frame lora-candidate');const p=candidate.parameters;
+      card.append(element('h3','Chirps répétés compatibles avec un préambule LoRa'));
+      card.append(element('p',`SF${p.spreading_factor} · largeur ${p.bandwidth_hz/1000} kHz · ${candidate.evidence.repeated_chirps} chirps répétés`));
+      card.append(element('p','Indice CSS uniquement : synchronisation de paquet, en-tête, CRC et contenu non décodés.','hint'));
+      frameList.append(card);
+    }
+    if(report.lora_artifact){const link=element('a','Télécharger les indices de préambule CSS');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(report.lora_artifact)}`;link.download=report.lora_artifact;frameList.append(link);}
   }
   for(const frame of frames) {
     const card=element('div',undefined,'frame');card.append(element('code',frame.hex));

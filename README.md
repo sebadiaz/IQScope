@@ -599,3 +599,11 @@ large compressed feature tables are not downloaded by the probe. The dataset
 license is CC BY 4.0. See [the source notes](docs/DATASET_IRAQ_RF_FEATURES.md)
 for the small supporting files and related raw-IQ lineage. No waveform importer,
 radio decoder or prediction model is added for these CSV features.
+
+### LoRa-compatible preamble evidence
+
+Automatic centered-channel CSS preamble search is available for BW125/250/500 kHz
+and SF7–12, with both chirp directions. Candidate parameters and repeated-chirp
+evidence appear in the UI and JSON. This is not packet decoding: no sync word,
+header, coding-rate recovery, CRC, payload or LoRaWAN identification.
+See [scope, budgets and validation](docs/LORA_PREAMBLE.md).

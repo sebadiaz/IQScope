@@ -14,6 +14,7 @@ from iqscope_fsk import search_fsk
 from iqscope_fsk4 import search_fsk4
 from iqscope_ax25 import decode_ax25
 from iqscope_ofdm import detect_cyclic_prefix
+from iqscope_lora import detect_lora_preamble
 
 
 def read_iq(path, sample_rate=None, limit_seconds=10):
@@ -146,6 +147,7 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
     fsk4 = search_fsk4(x, fs, detections, center)
     ax25 = decode_ax25(fsk.get('candidates',[]))
     ofdm = detect_cyclic_prefix(x,fs)
+    lora = detect_lora_preamble(x,fs)
     size = min(512, len(x))
     starts = np.unique(np.linspace(0, len(x)-size, min(96, max(1, len(x)//size)), dtype=int))
     window = np.hanning(size)
@@ -157,7 +159,7 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
               'limitations': ['Stationary spectral detector; overlapping, hopping and weak bursts may be missed.',
                              'AM/FM audio are unvalidated candidates. ADS-B and AX.25 UI frames have CRC checks; RTTY/CW text candidates have timing or framing evidence only.',
                              'At most 12 spectral bands receive audio trials; other detections remain visible.'],
-              'signals': results, 'wideband_trials': [digital, rtty, cw, fsk, fsk4, ax25, ofdm],
+              'signals': results, 'wideband_trials': [digital, rtty, cw, fsk, fsk4, ax25, ofdm, lora],
               'spectrum': {'frequency_hz': frequencies.tolist(), 'power_db': spectrum.tolist()},
               'waterfall': {'power_db': waterfall.tolist(), 'time_seconds': (starts/fs).tolist(),
                             'sampled_windows': True}}
@@ -177,6 +179,9 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
                 symbol_name = prefix+'-symbols.txt'
                 (out / symbol_name).write_text(candidate['symbols'],encoding='ascii')
                 candidate['artifacts']['symbols'] = symbol_name
+    if lora['candidates']:
+        report['lora_artifact'] = 'lora-preamble-candidates.json'
+        (out/'lora-preamble-candidates.json').write_text(json.dumps(lora,indent=2))
     if ofdm['candidates']:
         report['ofdm_artifact'] = 'ofdm-candidates.json'
         (out/'ofdm-candidates.json').write_text(json.dumps(ofdm,indent=2))
@@ -198,12 +203,13 @@ def analyze(path, out, sample_rate=None, seconds=10, threshold_db=9):
             report['interpretation_datatype'] = global_meta['core:datatype']
             report['sample_rate_source'] = global_meta.get('iqscope:sample_rate_source')
             for trial in report['wideband_trials']:
-                if trial['decoder']=='ofdm_cp':
+                if trial['decoder'] in ('ofdm_cp','lora_preamble'):
                     trial['input_interpretation_status'] = report['interpretation_status']
                     trial['input_datatype_hypothesis'] = report['interpretation_datatype']
                     trial['sample_rate_source'] = report['sample_rate_source']
-                    if report.get('ofdm_artifact'):
-                        (Path(out)/report['ofdm_artifact']).write_text(json.dumps(trial,indent=2))
+                    artifact_key = 'ofdm_artifact' if trial['decoder']=='ofdm_cp' else 'lora_artifact'
+                    if report.get(artifact_key):
+                        (Path(out)/report[artifact_key]).write_text(json.dumps(trial,indent=2))
             report['limitations'].insert(0,'Candidate byte-order interpretation; endian and original header layout are not independently verified.')
             (Path(out)/'report.json').write_text(json.dumps(report,indent=2))
     return report

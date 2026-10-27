@@ -154,6 +154,23 @@ def main():
                     assert response.ok and response.json()['candidates']
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
                 with tempfile.TemporaryDirectory() as directory:
+                    from test_lora import preamble
+                    x,fs = preamble()
+                    raw = Path(directory)/'lora.sigmf-data'
+                    meta = Path(directory)/'lora.sigmf-meta'
+                    x.astype('<c8').tofile(raw)
+                    meta.write_text(json.dumps({'global':{'core:datatype':'cf32_le','core:sample_rate':fs}}))
+                    page.locator('#iq-file').set_input_files(str(raw))
+                    page.locator('#meta-file').set_input_files(str(meta))
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('.lora-candidate').first).to_contain_text('SF7',timeout=30000)
+                    assert page.locator('#metric-frames').inner_text()=='0'
+                    link = page.get_by_role('link',name='Télécharger les indices de préambule CSS')
+                    response = page.request.get(urljoin(page.url,link.get_attribute('href')))
+                    assert response.ok and response.json()['candidates']
+                    assert 'frames' not in response.json()
+                expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                with tempfile.TemporaryDirectory() as directory:
                     from test_cw import fixture as audio_fixture, TEXT as AUDIO_TEXT
                     from scipy.io import wavfile
                     x,fs = audio_fixture()

@@ -4,6 +4,7 @@ on:
     paths:
       - scripts/iraq_iq_probe.py
       - iqscope_ofdm.py
+      - iqscope_lora.py
       - tests/test_ofdm.py
       - .github/workflows/iraq-iq.yml
 permissions:
