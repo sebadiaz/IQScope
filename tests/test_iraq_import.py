@@ -53,3 +53,16 @@ class IraqImportTests(unittest.TestCase):
             self.assertTrue(result[0]['read_back_equal'])
             self.assertEqual(result[1]['read_back_status'], 'rejected_nonfinite_interpretation')
             self.assertTrue(result[1]['stored_bytes_exact'])
+
+    def test_recording_selection_is_exact_and_size_checked(self):
+        import zipfile
+        name, size = probe.RECORDINGS['vhf144']
+        member = zipfile.ZipInfo(name)
+        member.file_size = size
+        self.assertIs(probe.select_recording([member], 'vhf144'), member)
+        for members in ([], [member, member]):
+            with self.assertRaises(ValueError):
+                probe.select_recording(members, 'vhf144')
+        member.file_size -= 1
+        with self.assertRaises(ValueError):
+            probe.select_recording([member], 'vhf144')

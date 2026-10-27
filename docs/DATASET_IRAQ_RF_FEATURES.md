@@ -206,3 +206,17 @@ et aucune trame ADS-B/AX.25 n'est validée. Ce résultat porte sur une seconde,
 sans centre RF certifié et avec encodage non vérifié. Il ne constitue pas un
 test négatif de LoRa : aucun décodeur LoRa n'est encore implémenté. Les noms de
 fichiers ne sont pas utilisés comme identification automatique de protocole.
+
+### Quatre captures distinctes
+
+La sonde accepte `--recording ism915|uhf450|vhf144|vhf150`. Ces identifiants
+sélectionnent des chemins exacts de l'index déjà inspecté, avec contrôle de la
+taille déclarée du membre et refus des noms absents ou dupliqués. Ils désignent
+les indications des noms de fichiers, sans certifier une fréquence RF ou un
+protocole. Aucune URL ni chemin d'extraction arbitraire n'est accepté.
+
+La CI exécute les quatre captures séparément avec une seconde candidate et un
+budget d'au plus 16 Mio par job. Chaque artefact porte l'identifiant de la
+capture et contient son rapport, son spectre et sa provenance. L'échec d'une
+capture n'annule pas les trois autres contrôles. Les hypothèses restent
+indépendantes et les données binaires ne sont pas publiées dans les artefacts.

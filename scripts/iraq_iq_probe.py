@@ -11,6 +11,20 @@ from fpv_metadata_probe import RangeReader
 URL = 'https://zenodo.org/records/22019720/files/Day1-1.zip?download=1'
 EXPECTED_BYTES = 5454861376
 MAX_PREFIX_BYTES = 2048000 * 8
+RECORDINGS = {
+    'ism915': ('Day1-1/Day1-1/loraism-outdoor_915e6MHz.iq', 5901395536),
+    'uhf450': ('Day1-1/Day1-1/UHF_outdoor_450e6MHz.iq', 3837802152),
+    'vhf144': ('Day1-1/Day1-1/VHF-outdoor_144e6MHz.iq', 6702519808),
+    'vhf150': ('Day1-1/Day1-1/VHF-outdoor_150e6MHz.iq', 10118790768),
+}
+
+
+def select_recording(members, recording):
+    name, size = RECORDINGS[recording]
+    matches = [member for member in members if member.filename == name]
+    if len(matches) != 1 or matches[0].file_size != size or matches[0].is_dir():
+        raise ValueError('Selected recording identity or size differs from inspected inventory')
+    return matches[0]
 
 
 def export_prefix(body, target):
@@ -86,6 +100,7 @@ def analyze_hypothesis(target, order):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--local-prefix', type=Path)
+    parser.add_argument('--recording', choices=tuple(RECORDINGS), default='ism915')
     parser.add_argument('--out', type=Path, default=Path('corpus-cache/iraq-iq/candidate'))
     parser.add_argument('--analyze-hypothesis', choices=('le', 'be'))
     parser.add_argument('--seconds', type=float, default=0.004, help='Prefix duration under the declared 2.048 MS/s rate, from .004 to 1 second')
@@ -102,7 +117,7 @@ def main():
             result['analysis'] = analyze_hypothesis(args.out, args.analyze_hypothesis)
         print(json.dumps(result))
         return
-    result = {'source_url': URL, 'scope': 'ZIP index and bounded prefix of one IQ member',
+    result = {'recording_id': args.recording, 'filename_frequency_is_hint_only': True, 'source_url': URL, 'scope': 'ZIP index and bounded prefix of one IQ member',
               'prefix_limit_bytes': prefix_limit, 'network_budget_bytes': network_budget,
               'archive_integrity_verified': False, 'member_crc_verified': False,
               'sample_layout_status': 'unverified_hypotheses', 'hypotheses': []}
@@ -117,7 +132,7 @@ def main():
                               iq_members=[{'name':m.filename,'bytes':m.file_size,'compression':m.compress_type} for m in candidates[:100]])
                 if not candidates:
                     raise ValueError('No IQ member found in the first archive')
-                member = candidates[0]
+                member = select_recording(members, args.recording)
                 if member.flag_bits & 1:
                     raise ValueError('Encrypted ZIP member is outside this importer')
                 with archive.open(member) as stream:
