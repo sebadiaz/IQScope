@@ -55,15 +55,40 @@ def export_prefix(body, target):
     return checks
 
 
+def analyze_hypothesis(target, order):
+    """Analyze only an explicitly requested interpretation, retaining its warning."""
+    from iqscope import analyze
+    metadata = Path(str(target) + '.' + order + '.sigmf-meta')
+    out = Path(str(target) + '.' + order + '.analysis')
+    report = analyze(metadata, out)
+    if report.get('interpretation_status') != 'unverified_byte_order_and_header_layout':
+        raise ValueError('Analysis lost the unverified interpretation warning')
+    report['frequency_reference'] = 'baseband_hz'
+    report['center_frequency_verified'] = False
+    report['limitations'].insert(0, 'Only a 4 ms or shorter candidate IQ prefix; no verified RF center. Absence of a candidate does not establish absence of a protocol.')
+    (out / 'report.json').write_text(json.dumps(report, indent=2, allow_nan=False))
+    return {'requested_hypothesis': order, 'interpretation_status': report['interpretation_status'],
+            'analyzed_seconds': report['analyzed_seconds'], 'spectral_bands': len(report['signals']),
+            'trials': [{'decoder': trial.get('decoder'), 'status': trial.get('status'),
+                        'candidate_count': len(trial.get('candidates', [])),
+                        'frame_count': len(trial.get('frames', []))}
+                       for trial in report['wideband_trials']],
+            'report': str(out / 'report.json'), 'spectrum': str(out / 'spectrum.csv')}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--local-prefix', type=Path)
     parser.add_argument('--out', type=Path, default=Path('corpus-cache/iraq-iq/candidate'))
+    parser.add_argument('--analyze-hypothesis', choices=('le', 'be'))
     args = parser.parse_args()
     if args.local_prefix:
         with args.local_prefix.open('rb') as handle:
             body = handle.read(65537)
-        print(json.dumps(export_prefix(body, args.out)))
+        result = {'sigmf_hypotheses': export_prefix(body, args.out)}
+        if args.analyze_hypothesis:
+            result['analysis'] = analyze_hypothesis(args.out, args.analyze_hypothesis)
+        print(json.dumps(result))
         return
     result = {'source_url': URL, 'scope': 'ZIP index and first 64 KiB of one IQ member',
               'archive_integrity_verified': False, 'member_crc_verified': False,
@@ -91,6 +116,8 @@ def main():
                 cache.mkdir(parents=True, exist_ok=True)
                 (cache/'prefix.bin').write_bytes(body)
                 result['sigmf_hypotheses'] = export_prefix(body, args.out)
+                if args.analyze_hypothesis:
+                    result['analysis'] = analyze_hypothesis(args.out, args.analyze_hypothesis)
                 for endian in ('<','>'):
                     values = np.frombuffer(body[:len(body)//8*8], dtype=endian+'c8')
                     finite = np.isfinite(values)

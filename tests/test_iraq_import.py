@@ -29,3 +29,18 @@ class IraqImportTests(unittest.TestCase):
         for body in (b'', b'123456789', b'x'*65544):
             with self.assertRaises(ValueError):
                 probe.export_prefix(body, 'unused')
+
+    def test_analysis_retains_uncertainty_and_baseband_reference(self):
+        import json
+        rng = np.random.default_rng(7)
+        body = (rng.choice([-0.5, -0.25, 0.25, 0.5], 8192) + 1j*rng.choice([-0.5, -0.25, 0.25, 0.5], 8192)).astype('<c8').tobytes()
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / 'candidate'
+            probe.export_prefix(body, target)
+            summary = probe.analyze_hypothesis(target, 'le')
+            report = json.loads(Path(summary['report']).read_text())
+            self.assertEqual(report['interpretation_datatype'], 'cf32_le')
+            self.assertEqual(report['frequency_reference'], 'baseband_hz')
+            self.assertFalse(report['center_frequency_verified'])
+            self.assertEqual(summary['analyzed_seconds'], 0.004)
+            self.assertIn('unverified', summary['interpretation_status'])

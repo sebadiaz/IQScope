@@ -153,3 +153,19 @@ Le [contrôle réel 40502855066](https://github.com/sebadiaz/IQScope/actions/run
 confirme la conservation exacte des octets et la relecture des 8 192 échantillons
 pour chacune des deux hypothèses. Ces contrôles de cohérence ne choisissent pas
 le boutisme et ne vérifient pas le CRC du fichier IQ entier.
+
+### Analyse explicite d'une hypothèse
+
+```sh
+python scripts/iraq_iq_probe.py --local-prefix prefix.bin --out /tmp/iraq-analysis --analyze-hypothesis le
+```
+
+Cette option lance le moteur existant sur l'hypothèse demandée et écrit
+`/tmp/iraq-analysis.le.analysis/report.json` et `spectrum.csv`. Le rapport
+conserve le statut d'encodage non vérifié et précise la référence fréquentielle
+en bande de base, sans centre RF certifié. Aucun boutisme n'est sélectionné
+implicitement. Sans cette option, la commande reste une conversion candidate.
+La CI demande explicitement `le` pour examiner le préfixe réel et publie le
+rapport et le spectre, sans le fichier IQ ni les essais audio/binaires.
+L'absence de candidat sur ces 4 ms ne permet pas d'exclure un protocole du
+fichier complet.

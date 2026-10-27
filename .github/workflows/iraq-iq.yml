@@ -16,8 +16,11 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install .
-      - run: python scripts/iraq_iq_probe.py
+      - run: python scripts/iraq_iq_probe.py --analyze-hypothesis le
       - uses: actions/upload-artifact@v4
         with:
           name: iraq-iq-observation
-          path: corpus-cache/iraq-iq/observation.json
+          path: |
+            corpus-cache/iraq-iq/observation.json
+            corpus-cache/iraq-iq/*.analysis/report.json
+            corpus-cache/iraq-iq/*.analysis/spectrum.csv
