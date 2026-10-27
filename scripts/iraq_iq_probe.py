@@ -90,6 +90,9 @@ def analyze_hypothesis(target, order):
     (out / 'report.json').write_text(json.dumps(report, indent=2, allow_nan=False))
     return {'requested_hypothesis': order, 'interpretation_status': report['interpretation_status'],
             'analyzed_seconds': report['analyzed_seconds'], 'spectral_bands': len(report['signals']),
+            'band_observations': report['signals'],
+            'trial_limits': [{key: trial[key] for key in ('decoder', 'limitations', 'reason', 'channels_examined', 'sample_budget_reached', 'analyzed_seconds') if key in trial}
+                             for trial in report['wideband_trials']],
             'trials': [{'decoder': trial.get('decoder'), 'status': trial.get('status'),
                         'candidate_count': len(trial.get('candidates', [])),
                         'frame_count': len(trial.get('frames', []))}
