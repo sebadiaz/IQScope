@@ -243,3 +243,29 @@ passage n'est pas présenté comme une validation des quatre imports. Le
 [rapport multi-captures](../corpus/iraq-iq-multi-observation.json) conserve les
 trois réussites et l'erreur. Le job correspondant est bien en échec, les trois
 autres sont indépendants et leurs rapports/spectres sont disponibles.
+
+### Détail des bandes UHF
+
+Le [contrôle 40531925274](https://github.com/sebadiaz/IQScope/actions/runs/40531925274)
+a cette fois terminé les quatre imports sans erreur. Le
+[rapport UHF détaillé](../corpus/iraq-uhf-band-observation.json) rend visibles
+les mesures et les limites par décodeur :
+
+| Bande | Décalage en bande de base | Largeur estimée | Excès spectral sur le fond |
+| --- | ---: | ---: | ---: |
+| 1 | −721 342 Hz | 1 500 Hz | 25,93 dB |
+| 2 | +212 253 Hz | 1 000 Hz | 9,91 dB |
+
+Ces nombres dépendent de l'interprétation petit-boutiste non certifiée. Ce ne
+sont ni des fréquences RF mesurées ni des puissances absolues calibrées. Les
+variations d'enveloppe sont respectivement 0,143 et 0,388 ; elles ne suffisent
+pas à identifier une modulation. Aucun essai audio AM/FM n'est retenu par les
+critères actuels et les recherches CW/FSK ne produisent pas de candidat
+cohérent. Ces bandes restent donc `unresolved`, sans contenu validé.
+
+La couverture temporelle varie par décodeur : les recherches RTTY/CW/FSK portent
+sur une seconde ici, mais le détecteur CP/OFDM atteint son budget de 262 144
+échantillons, soit **128 ms** à ce débit. Ne pas présenter son résultat comme
+une inspection complète de la seconde ni comme une exclusion de l'OFDM.
+Le résumé de sonde publie désormais ces limites et les mesures des bandes en
+plus des simples compteurs, sans modifier les seuils pour forcer un résultat.

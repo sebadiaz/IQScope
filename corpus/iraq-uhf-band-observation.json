@@ -1,0 +1,362 @@
+{
+  "recording_id": "uhf450",
+  "filename_frequency_is_hint_only": true,
+  "source_url": "https://zenodo.org/records/22019720/files/Day1-1.zip?download=1",
+  "scope": "ZIP index and bounded prefix of one IQ member",
+  "prefix_limit_bytes": 16384000,
+  "network_budget_bytes": 16449536,
+  "archive_integrity_verified": false,
+  "member_crc_verified": false,
+  "sample_layout_status": "unverified_hypotheses",
+  "hypotheses": [
+    {
+      "datatype": "cf32_le",
+      "complex_samples": 2048000,
+      "finite_fraction": 1,
+      "rms": 0.01716973528743313,
+      "maximum_magnitude": 0.12556513677831535,
+      "sample_rate_hz_publisher_declared": 2048000,
+      "interpretation": "Headerless interleaved I/Q hypothesis only; no automatic selection or protocol claim"
+    },
+    {
+      "datatype": "cf32_be",
+      "complex_samples": 2048000,
+      "finite_fraction": 1,
+      "rms": 1.435263273521377e+23,
+      "maximum_magnitude": 6.159889796153914e+24,
+      "sample_rate_hz_publisher_declared": 2048000,
+      "interpretation": "Headerless interleaved I/Q hypothesis only; no automatic selection or protocol claim"
+    }
+  ],
+  "member_count": 6,
+  "iq_member_count": 4,
+  "iq_members": [
+    {
+      "name": "Day1-1/Day1-1/loraism-outdoor_915e6MHz.iq",
+      "bytes": 5901395536,
+      "compression": 8
+    },
+    {
+      "name": "Day1-1/Day1-1/UHF_outdoor_450e6MHz.iq",
+      "bytes": 3837802152,
+      "compression": 8
+    },
+    {
+      "name": "Day1-1/Day1-1/VHF-outdoor_144e6MHz.iq",
+      "bytes": 6702519808,
+      "compression": 8
+    },
+    {
+      "name": "Day1-1/Day1-1/VHF-outdoor_150e6MHz.iq",
+      "bytes": 10118790768,
+      "compression": 8
+    }
+  ],
+  "selected_member": "Day1-1/Day1-1/UHF_outdoor_450e6MHz.iq",
+  "prefix_bytes": 16384000,
+  "prefix_sha256": "896b8a52d99dbe8220bb95d560f317363576d7e913b056edb3c2c1fe6e0c2459",
+  "bytes_received": 16384795,
+  "sigmf_hypotheses": [
+    {
+      "datatype": "cf32_le",
+      "metadata": "corpus-cache/iraq-iq/candidate.le.sigmf-meta",
+      "sample_count": 2048000,
+      "read_back_equal": true,
+      "stored_bytes_exact": true
+    },
+    {
+      "datatype": "cf32_be",
+      "metadata": "corpus-cache/iraq-iq/candidate.be.sigmf-meta",
+      "sample_count": 2048000,
+      "read_back_equal": true,
+      "stored_bytes_exact": true
+    }
+  ],
+  "analysis": {
+    "requested_hypothesis": "le",
+    "interpretation_status": "unverified_byte_order_and_header_layout",
+    "analyzed_seconds": 1,
+    "spectral_bands": 2,
+    "band_observations": [
+      {
+        "offset_hz": -721342.0769080368,
+        "bandwidth_hz": 1500,
+        "spectral_snr_db": 25.929824829101562,
+        "band_edges_hz": [
+          -722000,
+          -721000
+        ],
+        "id": 1,
+        "frequency_hz": -721342.0769080368,
+        "measurements": {
+          "envelope_variation": 0.14304866457720955,
+          "frequency_deviation_p90_hz": 616.9928989013441,
+          "channel_sample_rate": 12047.058823529413
+        },
+        "hypotheses": [
+          {
+            "family": "unknown",
+            "confidence": "unresolved"
+          }
+        ],
+        "status": "unresolved",
+        "validated_content": null,
+        "decoder_trials": []
+      },
+      {
+        "offset_hz": 212252.57532305614,
+        "bandwidth_hz": 1000,
+        "spectral_snr_db": 9.913612365722656,
+        "band_edges_hz": [
+          212000,
+          212500
+        ],
+        "id": 2,
+        "frequency_hz": 212252.57532305614,
+        "measurements": {
+          "envelope_variation": 0.38754203940620185,
+          "frequency_deviation_p90_hz": 3185.176175109253,
+          "channel_sample_rate": 12047.058823529413
+        },
+        "hypotheses": [
+          {
+            "family": "unknown",
+            "confidence": "unresolved"
+          }
+        ],
+        "status": "unresolved",
+        "validated_content": null,
+        "decoder_trials": []
+      }
+    ],
+    "trial_limits": [
+      {
+        "decoder": "adsb_1090es"
+      },
+      {
+        "decoder": "rtty_ita2",
+        "limitations": [
+          "Stationary separated tone pairs only; weak, overlapping or hopping signals may be missed.",
+          "Peak, channel and duration budgets bound the search; this is not an exhaustive detector."
+        ],
+        "channels_examined": [
+          {
+            "offset_hz": 212248,
+            "frequency_hz": 212248,
+            "sample_rate": 4000,
+            "status": "no_consistent_candidate",
+            "candidate_count": 0
+          },
+          {
+            "offset_hz": -564420,
+            "frequency_hz": -564420,
+            "sample_rate": 4000,
+            "status": "no_consistent_candidate",
+            "candidate_count": 0
+          },
+          {
+            "offset_hz": 213636,
+            "frequency_hz": 213636,
+            "sample_rate": 4000,
+            "status": "no_consistent_candidate",
+            "candidate_count": 0
+          },
+          {
+            "offset_hz": 211088,
+            "frequency_hz": 211088,
+            "sample_rate": 4000,
+            "status": "no_consistent_candidate",
+            "candidate_count": 0
+          },
+          {
+            "offset_hz": 675648,
+            "frequency_hz": 675648,
+            "sample_rate": 4000,
+            "status": "no_consistent_candidate",
+            "candidate_count": 0
+          },
+          {
+            "offset_hz": 209984,
+            "frequency_hz": 209984,
+            "sample_rate": 4000,
+            "status": "no_consistent_candidate",
+            "candidate_count": 0
+          },
+          {
+            "offset_hz": 233968,
+            "frequency_hz": 233968,
+            "sample_rate": 4000,
+            "status": "no_consistent_candidate",
+            "candidate_count": 0
+          },
+          {
+            "offset_hz": 235396,
+            "frequency_hz": 235396,
+            "sample_rate": 4000,
+            "status": "no_consistent_candidate",
+            "candidate_count": 0
+          }
+        ],
+        "analyzed_seconds": 1
+      },
+      {
+        "decoder": "cw_morse",
+        "limitations": [
+          "Stationary on-off keyed carriers, 5–50 WPM and standard spacing only.",
+          "Short messages, hand keying, Farnsworth spacing, fading, overlap and hopping may fail.",
+          "Boundary characters may be incomplete; alphabet supports A–Z and 0–9 only."
+        ],
+        "channels_examined": [
+          {
+            "offset_hz": -721336,
+            "frequency_hz": -721336,
+            "status": "no_consistent_candidate"
+          },
+          {
+            "offset_hz": 211848,
+            "frequency_hz": 211848,
+            "status": "no_consistent_candidate"
+          },
+          {
+            "offset_hz": 212584,
+            "frequency_hz": 212584,
+            "status": "no_consistent_candidate"
+          },
+          {
+            "offset_hz": -564856,
+            "frequency_hz": -564856,
+            "status": "no_consistent_candidate"
+          },
+          {
+            "offset_hz": -563984,
+            "frequency_hz": -563984,
+            "status": "no_consistent_candidate"
+          },
+          {
+            "offset_hz": 212384,
+            "frequency_hz": 212384,
+            "status": "no_consistent_candidate"
+          }
+        ],
+        "analyzed_seconds": 1
+      },
+      {
+        "decoder": "fsk2_generic",
+        "limitations": [
+          "Shared stationary spectral detector; weak, overlapping, hopping and short burst signals can be missed.",
+          "At most eight bands <=24 kHz; output rate limits supported baud to channel_rate/8 (max 9600).",
+          "Polarity, byte alignment and protocol are unknown. Integer baud aliases remain possible."
+        ],
+        "channels_examined": [
+          {
+            "offset_hz": -721342.0769080368,
+            "frequency_hz": -721342.0769080368,
+            "sample_rate": 12047.058823529413,
+            "status": "no_consistent_candidate",
+            "bandwidth_hz": 1500
+          },
+          {
+            "offset_hz": 212252.57532305614,
+            "frequency_hz": 212252.57532305614,
+            "sample_rate": 12047.058823529413,
+            "status": "no_consistent_candidate",
+            "bandwidth_hz": 1000
+          }
+        ],
+        "analyzed_seconds": 1
+      },
+      {
+        "decoder": "fsk4_generic",
+        "limitations": [
+          "Shared stationary spectral detector; weak, overlapping, hopping and short burst signals can be missed.",
+          "At most eight bands <=24 kHz; output rate limits supported baud to channel_rate/8 (max 9600).",
+          "Polarity, byte alignment and protocol are unknown. Integer baud aliases remain possible."
+        ],
+        "channels_examined": [
+          {
+            "offset_hz": -721342.0769080368,
+            "frequency_hz": -721342.0769080368,
+            "sample_rate": 12047.058823529413,
+            "status": "no_consistent_candidate",
+            "bandwidth_hz": 1500
+          },
+          {
+            "offset_hz": 212252.57532305614,
+            "frequency_hz": 212252.57532305614,
+            "sample_rate": 12047.058823529413,
+            "status": "no_consistent_candidate",
+            "bandwidth_hz": 1000
+          }
+        ],
+        "analyzed_seconds": 1
+      },
+      {
+        "decoder": "ax25_ui",
+        "limitations": [
+          "AX.25 UI only, at most ten addresses and 256 payload octets; NRZI/NRZ trials on recovered 2-FSK bits.",
+          "No AFSK-over-FM frontend, G3RUH descrambler, connected-mode frames or APRS field parsing.",
+          "Upstream demodulation may miss frames; a valid CRC does not authenticate an emitter.",
+          "Wideband detection can merge sidelobes into a band >24 kHz and exclude even a low-baud signal."
+        ]
+      },
+      {
+        "decoder": "ofdm_cp",
+        "limitations": [
+          "Repetition compatible with a cyclic prefix does not uniquely identify OFDM, Wi-Fi, LTE or DVB-T.",
+          "Single source, powers-of-two useful lengths 16–2048, guard ratios 1/4 to 1/32; at least 32 symbols per window.",
+          "At most three windows in the first 262144 samples. Bursts, overlapping channels, resampling, clock drift and other guards may be missed.",
+          "No frequency/channel search, synchronization guarantee, demodulated bits, checksum or payload interpretation."
+        ],
+        "sample_budget_reached": true,
+        "analyzed_seconds": 0.128
+      }
+    ],
+    "trials": [
+      {
+        "decoder": "adsb_1090es",
+        "status": "no_valid_frame",
+        "candidate_count": 0,
+        "frame_count": 0
+      },
+      {
+        "decoder": "rtty_ita2",
+        "status": "no_consistent_candidate",
+        "candidate_count": 0,
+        "frame_count": 0
+      },
+      {
+        "decoder": "cw_morse",
+        "status": "no_consistent_candidate",
+        "candidate_count": 0,
+        "frame_count": 0
+      },
+      {
+        "decoder": "fsk2_generic",
+        "status": "no_consistent_candidate",
+        "candidate_count": 0,
+        "frame_count": 0
+      },
+      {
+        "decoder": "fsk4_generic",
+        "status": "no_consistent_candidate",
+        "candidate_count": 0,
+        "frame_count": 0
+      },
+      {
+        "decoder": "ax25_ui",
+        "status": "no_valid_frames",
+        "candidate_count": 0,
+        "frame_count": 0
+      },
+      {
+        "decoder": "ofdm_cp",
+        "status": "no_consistent_candidate",
+        "candidate_count": 0,
+        "frame_count": 0
+      }
+    ],
+    "report": "corpus-cache/iraq-iq/candidate.le.analysis/report.json",
+    "spectrum": "corpus-cache/iraq-iq/candidate.le.analysis/spectrum.csv"
+  },
+  "evidence_run": "https://github.com/sebadiaz/IQScope/actions/runs/40531925274"
+}
