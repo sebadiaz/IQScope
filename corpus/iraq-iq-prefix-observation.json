@@ -52,5 +52,21 @@
   "prefix_bytes": 65536,
   "prefix_sha256": "a9d159f91e2bdaecedf9bd3c2dc1449826db6064235014fc94f97fa805126a15",
   "bytes_received": 66335,
-  "evidence_run": "https://github.com/sebadiaz/IQScope/actions/runs/40502220779"
+  "sigmf_hypotheses": [
+    {
+      "datatype": "cf32_le",
+      "metadata": "corpus-cache/iraq-iq/candidate.le.sigmf-meta",
+      "sample_count": 8192,
+      "read_back_equal": true,
+      "stored_bytes_exact": true
+    },
+    {
+      "datatype": "cf32_be",
+      "metadata": "corpus-cache/iraq-iq/candidate.be.sigmf-meta",
+      "sample_count": 8192,
+      "read_back_equal": true,
+      "stored_bytes_exact": true
+    }
+  ],
+  "evidence_run": "https://github.com/sebadiaz/IQScope/actions/runs/40502855066"
 }

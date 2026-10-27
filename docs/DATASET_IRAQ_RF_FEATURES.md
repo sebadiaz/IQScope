@@ -148,3 +148,8 @@ conserve donc l'incertitude dans le rapport d'analyse. Le boutisme, l'ordre I/Q
 et l'absence d'en-tête restent des hypothèses ; la conversion ne certifie aucun
 protocole. La sonde réseau effectue également cette relecture sur le préfixe
 réel ; ses artefacts publics ne contiennent que le rapport JSON.
+
+Le [contrôle réel 40502855066](https://github.com/sebadiaz/IQScope/actions/runs/40502855066)
+confirme la conservation exacte des octets et la relecture des 8 192 échantillons
+pour chacune des deux hypothèses. Ces contrôles de cohérence ne choisissent pas
+le boutisme et ne vérifient pas le CRC du fichier IQ entier.
