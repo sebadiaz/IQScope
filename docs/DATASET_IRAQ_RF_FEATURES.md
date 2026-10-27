@@ -81,3 +81,26 @@ correspondance des annotations restent à vérifier dans la documentation puis
 sur un extrait borné. Aucune validation LoRa, GSM ou ADS-B n'est déduite des
 noms de bandes. Ces parties restent des sources de provenance, sans nouvelle
 entrée de capture validée dans le catalogue.
+
+### Documentation source inspectée
+
+Le [contrôle 40500221026](https://github.com/sebadiaz/IQScope/actions/runs/40500221026)
+a lu les cinq documents Markdown et le CSV global (150 700 octets), avec
+vérification de la taille et de la somme MD5 publiées pour chacun des six
+fichiers. Le [rapport](../corpus/iraq-zenodo-documentation.json) conserve les
+sommes SHA-256, colonnes et observations.
+
+Le CSV contient effectivement **295 lignes et 37 colonnes**, couvrant Day1 à
+Day20. Les valeurs de fréquence d'échantillonnage sont toutes `2048000`.
+Les formats renseignés sont `Complex Float32 IQ (complex64)` ou
+`Raw complex64 IQ` ; certaines cellules de format sont vides. Le document de
+la partie 1 précise que l'extension `.iq` ne définit pas l'encodage numérique.
+Le boutisme, l'ordre des composantes et l'absence d'en-tête ne sont pas
+explicitement établis par ces documents. Un futur import devra donc conserver
+ces hypothèses et les confronter aux octets d'un extrait borné.
+
+L'écart avec les 297 sources annoncées côté Mendeley reste ouvert : le CSV
+Zenodo confirme le nombre 295 mais n'explique pas cette différence. Les noms de
+bandes restent des annotations ; ils ne certifient pas la présence d'une trame
+LoRa, GSM ou ADS-B. Les heures estimées et l'absence de calibration RF externe
+sont explicitement documentées. Aucune archive IQ n'a été téléchargée à ce stade.

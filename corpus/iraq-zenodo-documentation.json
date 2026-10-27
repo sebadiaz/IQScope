@@ -1,0 +1,646 @@
+{
+  "checked_utc": "2026-10-27T11:59:09.854582+00:00",
+  "scope": "Five declared source records; metadata and small verified documentation only; no IQ archive downloads",
+  "records": [
+    {
+      "record_id": "22019720",
+      "url": "https://zenodo.org/api/records/22019720",
+      "http_status": 200,
+      "bytes_read": 6824,
+      "sha256": "c5810a6fe1c61f94551fcff793938428aed78b23ab84a16443ffd87027dbf49d",
+      "metadata": {
+        "id": "22019720",
+        "doi": "10.5281/zenodo.22019720",
+        "title": "Iraq RF Spectrum Dataset: Real-World Multi-Band Raw IQ Measurements from Baghdad – Part 1",
+        "publication_date": "2026-08-21",
+        "license": {
+          "id": "cc-by-4.0"
+        },
+        "access_right": "open",
+        "creators": [
+          {
+            "name": "Jalal, Mays",
+            "affiliation": "Informatics Institute for Postgraduate Studies , Information  Technology & Communication University",
+            "orcid": "0009-0004-9234-4771"
+          },
+          {
+            "name": "Taresh, Ali",
+            "affiliation": "Informatics Institute for Postgraduate Studies , Information Technology & Communications University",
+            "orcid": "0000-0002-8776-0322"
+          }
+        ],
+        "related_identifiers": [],
+        "file_count": 6,
+        "files": [
+          {
+            "key": "Day1-1.zip",
+            "size": 5454861376,
+            "checksum": "md5:6c902a10d510504177828911d23affe6",
+            "type": null
+          },
+          {
+            "key": "Day1-2.zip",
+            "size": 9331700975,
+            "checksum": "md5:cce7f511f833b252bf4d1446b5aeeeed",
+            "type": null
+          },
+          {
+            "key": "Day 1-3.zip",
+            "size": 4084194735,
+            "checksum": "md5:35169c390b40511c8ba791344661df95",
+            "type": null
+          },
+          {
+            "key": "Day 1-4.zip",
+            "size": 6065386967,
+            "checksum": "md5:8812e53e2c6d5a3a3effebb1d3631bac",
+            "type": null
+          },
+          {
+            "key": "Day2.zip",
+            "size": 20802798054,
+            "checksum": "md5:07f1d12c1c481d32fd140b9f22e6307a",
+            "type": null
+          },
+          {
+            "key": "README_Iraq_RF_Spectrum_Dataset_Part1_FINAL.md",
+            "size": 3955,
+            "checksum": "md5:7cb13458c2d223717275d54b43210d70",
+            "type": null
+          }
+        ],
+        "interpretation": "Publisher metadata only; sample layout, labels and payloads not validated"
+      },
+      "documents": [
+        {
+          "name": "README_Iraq_RF_Spectrum_Dataset_Part1_FINAL.md",
+          "declared_bytes": 3955,
+          "bytes_read": 3955,
+          "sha256": "bb974d9958c7b84e6f63a4e4e54a5aa15d59a98846f84b7391571fab4ae6a785",
+          "published_md5_verified": true
+        }
+      ]
+    },
+    {
+      "record_id": "22036530",
+      "url": "https://zenodo.org/api/records/22036530",
+      "http_status": 200,
+      "bytes_read": 6176,
+      "sha256": "bcb4b68b9e6f727fc20eebfd101e7170dac32b74382853e2aa3db6ee7856e513",
+      "metadata": {
+        "id": "22036530",
+        "doi": "10.5281/zenodo.22036530",
+        "title": "Iraq RF Spectrum Dataset: Real-World Multi-Band Raw IQ Measurements from Baghdad – Part 2",
+        "publication_date": "2026-08-21",
+        "license": {
+          "id": "cc-by-4.0"
+        },
+        "access_right": "open",
+        "creators": [
+          {
+            "name": "Jalal, Mays",
+            "affiliation": "Informatics Institute for Postgraduate Studies, University of Information Technology  and Communications(UOITC), Baghdad ,Iraq",
+            "orcid": "0009-0004-9234-4771"
+          },
+          {
+            "name": "Taresh, Ali",
+            "affiliation": "Informatics Institute for Postgraduate Studies, University of Information Technology  and Communications(UOITC), Baghdad ,Iraq",
+            "orcid": "0000-0002-8776-0322"
+          }
+        ],
+        "related_identifiers": [],
+        "file_count": 3,
+        "files": [
+          {
+            "key": "Day4.zip",
+            "size": 22922299200,
+            "checksum": "md5:86a33e8055f693b7f0a21200ec710859",
+            "type": null
+          },
+          {
+            "key": "Day3.zip",
+            "size": 24599595785,
+            "checksum": "md5:f752058851b4ce94684e668d1f9e3ca0",
+            "type": null
+          },
+          {
+            "key": "METADATA_Iraq_RF_Spectrum_Dataset_Part2.md",
+            "size": 3299,
+            "checksum": "md5:8ffa4db805939537cf23357d90fc8b21",
+            "type": null
+          }
+        ],
+        "interpretation": "Publisher metadata only; sample layout, labels and payloads not validated"
+      },
+      "documents": [
+        {
+          "name": "METADATA_Iraq_RF_Spectrum_Dataset_Part2.md",
+          "declared_bytes": 3299,
+          "bytes_read": 3299,
+          "sha256": "34d4adebd175d451ff4c8ca2bb3958ed3fb2dfb054a3b7c40070d7de79aca9b5",
+          "published_md5_verified": true
+        }
+      ]
+    },
+    {
+      "record_id": "22046487",
+      "url": "https://zenodo.org/api/records/22046487",
+      "http_status": 200,
+      "bytes_read": 6834,
+      "sha256": "f5c5dd33e65798ae813ac0901d30959baa3679b95956062dd53392e10c535521",
+      "metadata": {
+        "id": "22046487",
+        "doi": "10.5281/zenodo.22046487",
+        "title": "Iraq RF Spectrum Dataset: Real-World Multi-Band Raw IQ Measurements from Baghdad – Part3",
+        "publication_date": "2026-08-22",
+        "license": {
+          "id": "cc-by-4.0"
+        },
+        "access_right": "open",
+        "creators": [
+          {
+            "name": "Jalal, Mays",
+            "affiliation": "Informatics Institute for Postgraduate Studies, University of Information Technology  and Communications(UOITC), Baghdad ,Iraq",
+            "orcid": "0009-0004-9234-4771"
+          },
+          {
+            "name": "Taresh, Ali",
+            "affiliation": "Informatics Institute for Postgraduate Studies, University of Information Technology  and Communications(UOITC), Baghdad ,Iraq",
+            "orcid": "0000-0002-8776-0322"
+          }
+        ],
+        "related_identifiers": [],
+        "file_count": 5,
+        "files": [
+          {
+            "key": "Day7-1.zip",
+            "size": 7640843336,
+            "checksum": "md5:533f67ef2b801be025b09b27ddb1d25e",
+            "type": null
+          },
+          {
+            "key": "Day7-2.zip",
+            "size": 5502722766,
+            "checksum": "md5:54e544d36f6f2ea6ad9374cb5b7286cd",
+            "type": null
+          },
+          {
+            "key": "Day5.zip",
+            "size": 23776680718,
+            "checksum": "md5:1288917c18a2aa413d068e91e6883e8b",
+            "type": null
+          },
+          {
+            "key": "Day6.zip",
+            "size": 12127651424,
+            "checksum": "md5:e2770d3616595f30a8a5f5ea1d59266a",
+            "type": null
+          },
+          {
+            "key": "METADATA_Iraq_RF_Spectrum_Dataset_Part3_UPDATED.md",
+            "size": 3788,
+            "checksum": "md5:7a5abdbf15aac788677953430c9bb04b",
+            "type": null
+          }
+        ],
+        "interpretation": "Publisher metadata only; sample layout, labels and payloads not validated"
+      },
+      "documents": [
+        {
+          "name": "METADATA_Iraq_RF_Spectrum_Dataset_Part3_UPDATED.md",
+          "declared_bytes": 3788,
+          "bytes_read": 3788,
+          "sha256": "9e9174eb89b3158476c27e355c046004325b1c638dcecb28fea516b39b39ccb3",
+          "published_md5_verified": true
+        }
+      ]
+    },
+    {
+      "record_id": "22052172",
+      "url": "https://zenodo.org/api/records/22052172",
+      "http_status": 200,
+      "bytes_read": 6620,
+      "sha256": "f0d0431686eed7c09ceb8f57c912d2555251310b9e4b75fe63da874323a4a892",
+      "metadata": {
+        "id": "22052172",
+        "doi": "10.5281/zenodo.22052172",
+        "title": "Iraq RF Spectrum Dataset: Real-World Multi-Band Raw IQ Measurements from Baghdad – Part4",
+        "publication_date": "2026-08-23",
+        "license": {
+          "id": "cc-by-4.0"
+        },
+        "access_right": "open",
+        "creators": [
+          {
+            "name": "Jalal, Mays",
+            "affiliation": "Informatics Institute for Postgraduate Studies, University of Information Technology  and Communications(UOITC), Baghdad ,Iraq",
+            "orcid": "0009-0004-9234-4771"
+          },
+          {
+            "name": "Taresh, Ali",
+            "affiliation": "Informatics Institute for Postgraduate Studies, University of Information Technology  and Communications(UOITC), Baghdad ,Iraq",
+            "orcid": "0000-0002-8776-0322"
+          }
+        ],
+        "related_identifiers": [],
+        "file_count": 4,
+        "files": [
+          {
+            "key": "Day8.zip",
+            "size": 15568876412,
+            "checksum": "md5:db0f5c5f45688969597cc8cb80f5646b",
+            "type": null
+          },
+          {
+            "key": "Day9.zip",
+            "size": 19710743567,
+            "checksum": "md5:ab5c13025c6d867f717d5dbb722a2757",
+            "type": null
+          },
+          {
+            "key": "Day10.zip",
+            "size": 12679707470,
+            "checksum": "md5:2c1e9a3ba2bf348088cef388fb9277d6",
+            "type": null
+          },
+          {
+            "key": "METADATA_Iraq_RF_Spectrum_Dataset_Part4.md",
+            "size": 2572,
+            "checksum": "md5:5cdbddd16210d5ee1954f38ebb1950d1",
+            "type": null
+          }
+        ],
+        "interpretation": "Publisher metadata only; sample layout, labels and payloads not validated"
+      },
+      "documents": [
+        {
+          "name": "METADATA_Iraq_RF_Spectrum_Dataset_Part4.md",
+          "declared_bytes": 2572,
+          "bytes_read": 2572,
+          "sha256": "c242f05612e78be6911af276596db938fe0bd8691d88b6703e7347968a3c2a41",
+          "published_md5_verified": true
+        }
+      ]
+    },
+    {
+      "record_id": "22071547",
+      "url": "https://zenodo.org/api/records/22071547",
+      "http_status": 200,
+      "bytes_read": 10792,
+      "sha256": "409755c0662e1f70549f90121997ac1e9ea7601126a9e007a2fbc88f68ea957f",
+      "metadata": {
+        "id": "22071547",
+        "doi": "10.5281/zenodo.22071547",
+        "title": "Iraq RF Spectrum Dataset: Real-World Multi-Band Raw IQ Measurements from Baghdad – Part5",
+        "publication_date": "2026-08-26",
+        "license": {
+          "id": "cc-by-4.0"
+        },
+        "access_right": "open",
+        "creators": [
+          {
+            "name": "Jalal, Mays",
+            "affiliation": "Informatics Institute for Postgraduate Studies, University of Information Technology  and Communications(UOITC), Baghdad ,Iraq",
+            "orcid": "0009-0004-9234-4771"
+          },
+          {
+            "name": "Taresh, Ali",
+            "affiliation": "Informatics Institute for Postgraduate Studies, University of Information Technology  and Communications(UOITC), Baghdad ,Iraq",
+            "orcid": "0000-0002-8776-0322"
+          }
+        ],
+        "related_identifiers": [],
+        "file_count": 15,
+        "files": [
+          {
+            "key": "Day11-3.zip",
+            "size": 3223265271,
+            "checksum": "md5:645982237e5336110c0c98cb29dc7151",
+            "type": null
+          },
+          {
+            "key": "Iraq_RF_Master_Metadata_FINAL.csv",
+            "size": 150700,
+            "checksum": "md5:770a47a59c95f0a363ee8b06dbb51f23",
+            "type": null
+          },
+          {
+            "key": "Day11-1.zip",
+            "size": 6249668155,
+            "checksum": "md5:bf9f792698f4f00be8b94e684053271e",
+            "type": null
+          },
+          {
+            "key": "README_Iraq_RF_Spectrum_Dataset_Part5.md",
+            "size": 6843,
+            "checksum": "md5:875fdee789ad2e51f77913457499fc3c",
+            "type": null
+          },
+          {
+            "key": "Day11-2.zip",
+            "size": 7470191789,
+            "checksum": "md5:2c8f361a214a26559a91edac21e2a70b",
+            "type": null
+          },
+          {
+            "key": "Day11-4.zip",
+            "size": 7438480888,
+            "checksum": "md5:d5830d57dbd801468110bd9ccc53d9ce",
+            "type": null
+          },
+          {
+            "key": "Day13.zip",
+            "size": 17533156394,
+            "checksum": "md5:ae710021e9e004947813cc0b2ff4aeaf",
+            "type": null
+          },
+          {
+            "key": "Day16.zip",
+            "size": 15966520759,
+            "checksum": "md5:82cbd18b99897fcbe7475a2930f85241",
+            "type": null
+          },
+          {
+            "key": "Day18.zip",
+            "size": 18834980642,
+            "checksum": "md5:1909a56045ee4add70ce4a7e589f93ea",
+            "type": null
+          },
+          {
+            "key": "Day19.zip",
+            "size": 20061585083,
+            "checksum": "md5:a6853b08b52e86e059c9ff20285a261a",
+            "type": null
+          },
+          {
+            "key": "Day17.zip",
+            "size": 18060599929,
+            "checksum": "md5:02cb1c0c5d87eed3ca2c2bde74c67ab5",
+            "type": null
+          },
+          {
+            "key": "Day20.zip",
+            "size": 19403337891,
+            "checksum": "md5:c817b9fe83489fd9a8e7d91006cbed50",
+            "type": null
+          },
+          {
+            "key": "Day12.zip",
+            "size": 16259514243,
+            "checksum": "md5:4a3a1343c88c0e04cb80db96ab7dd81f",
+            "type": null
+          },
+          {
+            "key": "Day15.zip",
+            "size": 21831017038,
+            "checksum": "md5:ddf3cc1eabf7a81e09790d5128fd1908",
+            "type": null
+          },
+          {
+            "key": "Day14.zip",
+            "size": 18786216104,
+            "checksum": "md5:ea08d83181a7c55bb6338ddd9682747d",
+            "type": null
+          }
+        ],
+        "interpretation": "Publisher metadata only; sample layout, labels and payloads not validated"
+      },
+      "documents": [
+        {
+          "name": "Iraq_RF_Master_Metadata_FINAL.csv",
+          "declared_bytes": 150700,
+          "bytes_read": 150700,
+          "sha256": "04007c6d137dc68af39b3a100f5fc492eab67e01a2c454a6b4a77d02d7556c11",
+          "published_md5_verified": true,
+          "columns": [
+            "Dataset_Day",
+            "File_Name",
+            "Filename_Note",
+            "Recording_Date",
+            "Estimated_Start_Time",
+            "File_Modified_Time",
+            "Duration_seconds",
+            "Duration_minutes",
+            "Session",
+            "City",
+            "Country",
+            "Location_Context",
+            "Environment",
+            "Elevation_Context",
+            "Antenna_Description",
+            "Antenna_Placement",
+            "Center_Frequency_MHz",
+            "Band",
+            "Sample_Rate_Hz",
+            "RF_Gain_dB",
+            "IF_Gain_dB",
+            "BB_Gain_dB",
+            "Gain_Mode",
+            "Frequency_Correction_ppm",
+            "DC_Offset_Mode",
+            "IQ_Balance_Mode",
+            "Receiver",
+            "Acquisition_Software",
+            "Recording_Format",
+            "Timing_Source",
+            "Timing_Precision",
+            "Timing_Status",
+            "Start_Time_Method",
+            "Calibration_Notes",
+            "Post_Acquisition_QC",
+            "Notes",
+            "Metadata_Source_File"
+          ],
+          "rows": 295,
+          "first_rows": [
+            {
+              "Dataset_Day": "Day1",
+              "File_Name": "UHF_outdoor-450e6MHz.iq",
+              "Filename_Note": "",
+              "Recording_Date": "2026-06-02",
+              "Estimated_Start_Time": "18:50:05",
+              "File_Modified_Time": "18:54",
+              "Duration_seconds": "",
+              "Duration_minutes": "3.904014233398437",
+              "Session": "Evening",
+              "City": "",
+              "Country": "",
+              "Location_Context": "",
+              "Environment": "Outdoor",
+              "Elevation_Context": "Non-elevated",
+              "Antenna_Description": "Telescopic antenna",
+              "Antenna_Placement": "",
+              "Center_Frequency_MHz": "450.0",
+              "Band": "UHF",
+              "Sample_Rate_Hz": "2048000",
+              "RF_Gain_dB": "40",
+              "IF_Gain_dB": "30",
+              "BB_Gain_dB": "20",
+              "Gain_Mode": "",
+              "Frequency_Correction_ppm": "",
+              "DC_Offset_Mode": "",
+              "IQ_Balance_Mode": "",
+              "Receiver": "RTL-SDR V3",
+              "Acquisition_Software": "GNU Radio",
+              "Recording_Format": "Complex Float32 IQ (complex64)",
+              "Timing_Source": "Preserved file-system Date Modified",
+              "Timing_Precision": "Minute",
+              "Timing_Status": "Estimated from preserved timestamp",
+              "Start_Time_Method": "",
+              "Calibration_Notes": "No external RF calibration",
+              "Post_Acquisition_QC": "Yes",
+              "Notes": "Day1 raw IQ data are distributed across multiple archive/subfolder parts. The parts belong to the same acquisition day. Recording start time was estimated by subtracting the IQ-file duration from the preserved file-system Date Modified timestamp. Raw IQ measurements were not altered.",
+              "Metadata_Source_File": "Day1_Master_Metadata_FINAL.csv"
+            },
+            {
+              "Dataset_Day": "Day1",
+              "File_Name": "loraism_outdoor-868e6MHz.iq",
+              "Filename_Note": "Original filename uses lora/LoRaISM naming.",
+              "Recording_Date": "2026-06-02",
+              "Estimated_Start_Time": "19:02:15",
+              "File_Modified_Time": "19:06",
+              "Duration_seconds": "",
+              "Duration_minutes": "3.7467450602213535",
+              "Session": "Evening",
+              "City": "",
+              "Country": "",
+              "Location_Context": "",
+              "Environment": "Outdoor",
+              "Elevation_Context": "Non-elevated",
+              "Antenna_Description": "Telescopic antenna",
+              "Antenna_Placement": "",
+              "Center_Frequency_MHz": "868.0",
+              "Band": "ISM/LoRa 868",
+              "Sample_Rate_Hz": "2048000",
+              "RF_Gain_dB": "40",
+              "IF_Gain_dB": "30",
+              "BB_Gain_dB": "20",
+              "Gain_Mode": "",
+              "Frequency_Correction_ppm": "",
+              "DC_Offset_Mode": "",
+              "IQ_Balance_Mode": "",
+              "Receiver": "RTL-SDR V3",
+              "Acquisition_Software": "GNU Radio",
+              "Recording_Format": "Complex Float32 IQ (complex64)",
+              "Timing_Source": "Preserved file-system Date Modified",
+              "Timing_Precision": "Minute",
+              "Timing_Status": "Estimated from preserved timestamp",
+              "Start_Time_Method": "",
+              "Calibration_Notes": "No external RF calibration",
+              "Post_Acquisition_QC": "Yes",
+              "Notes": "Day1 raw IQ data are distributed across multiple archive/subfolder parts. The parts belong to the same acquisition day. Recording start time was estimated by subtracting the IQ-file duration from the preserved file-system Date Modified timestamp. Raw IQ measurements were not altered.",
+              "Metadata_Source_File": "Day1_Master_Metadata_FINAL.csv"
+            },
+            {
+              "Dataset_Day": "Day1",
+              "File_Name": "FM-outdoor_99.5e6MHz.iq",
+              "Filename_Note": "",
+              "Recording_Date": "2026-06-02",
+              "Estimated_Start_Time": "19:08:36",
+              "File_Modified_Time": "19:15",
+              "Duration_seconds": "",
+              "Duration_minutes": "6.396330354817708",
+              "Session": "Evening",
+              "City": "",
+              "Country": "",
+              "Location_Context": "",
+              "Environment": "Outdoor",
+              "Elevation_Context": "Non-elevated",
+              "Antenna_Description": "Telescopic antenna",
+              "Antenna_Placement": "",
+              "Center_Frequency_MHz": "99.5",
+              "Band": "FM",
+              "Sample_Rate_Hz": "2048000",
+              "RF_Gain_dB": "40",
+              "IF_Gain_dB": "30",
+              "BB_Gain_dB": "20",
+              "Gain_Mode": "",
+              "Frequency_Correction_ppm": "",
+              "DC_Offset_Mode": "",
+              "IQ_Balance_Mode": "",
+              "Receiver": "RTL-SDR V3",
+              "Acquisition_Software": "GNU Radio",
+              "Recording_Format": "Complex Float32 IQ (complex64)",
+              "Timing_Source": "Preserved file-system Date Modified",
+              "Timing_Precision": "Minute",
+              "Timing_Status": "Estimated from preserved timestamp",
+              "Start_Time_Method": "",
+              "Calibration_Notes": "No external RF calibration",
+              "Post_Acquisition_QC": "Yes",
+              "Notes": "Day1 raw IQ data are distributed across multiple archive/subfolder parts. The parts belong to the same acquisition day. Recording start time was estimated by subtracting the IQ-file duration from the preserved file-system Date Modified timestamp. Raw IQ measurements were not altered.",
+              "Metadata_Source_File": "Day1_Master_Metadata_FINAL.csv"
+            }
+          ],
+          "column_values": {
+            "Dataset_Day": [
+              "Day1",
+              "Day10",
+              "Day11",
+              "Day12",
+              "Day13",
+              "Day14",
+              "Day15",
+              "Day16",
+              "Day17",
+              "Day18",
+              "Day19",
+              "Day2",
+              "Day20",
+              "Day3",
+              "Day4",
+              "Day5",
+              "Day6",
+              "Day7",
+              "Day8",
+              "Day9"
+            ],
+            "Band": [
+              "ADS-B",
+              "FM",
+              "FM Broadcast",
+              "GSM900",
+              "ISM",
+              "ISM 433",
+              "ISM/LoRa 868",
+              "ISM/LoRa 915",
+              "LoRa / ISM",
+              "UHF",
+              "VHF"
+            ],
+            "Sample_Rate_Hz": [
+              "2048000"
+            ],
+            "RF_Gain_dB": [
+              "40"
+            ],
+            "IF_Gain_dB": [
+              "30"
+            ],
+            "BB_Gain_dB": [
+              "20"
+            ],
+            "Gain_Mode": [
+              "",
+              "False",
+              "Fixed",
+              "Manual"
+            ],
+            "Recording_Format": [
+              "",
+              "Complex Float32 IQ (complex64)",
+              "Raw complex64 IQ"
+            ]
+          }
+        },
+        {
+          "name": "README_Iraq_RF_Spectrum_Dataset_Part5.md",
+          "declared_bytes": 6843,
+          "bytes_read": 6843,
+          "sha256": "282fc2e4986d983bbe82eb88165f7f725a59e6896d4cd312df79183fff18b99e",
+          "published_md5_verified": true
+        }
+      ]
+    }
+  ],
+  "evidence_run": "https://github.com/sebadiaz/IQScope/actions/runs/40500221026"
+}
