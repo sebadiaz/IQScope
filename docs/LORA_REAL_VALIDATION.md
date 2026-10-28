@@ -74,3 +74,20 @@ attend des hertz ; la description du dataset annonce une porteuse de 862,5 MHz.
 Le rapport n'en déduit pas une fréquence RF vérifiée et utilise la bande de base.
 Le CRC physique ne prouve pas l'identité de l'émetteur ; aucun parsing,
 authentification ou déchiffrement LoRaWAN n'est effectué.
+
+## Régression intégrée et export vérifié
+
+Le [contrôle 40750399589](https://github.com/sebadiaz/IQScope/actions/runs/40750399589)
+a répété le résultat avec les empreintes figées, vérifié aussi le SHA-512 publié
+dans les métadonnées SigMF, puis exécuté le moteur principal et comparé son
+export binaire aux sept octets indépendamment annotés. Le
+[rapport conservé](../corpus/loraiq-reference-observation.json) distingue les
+champs comparés des limites de validation. Le sync word reste un candidat non
+comparé à une valeur de référence publiée.
+
+L'artefact `independent-loraiq-reference` de ce contrôle contient le rapport
+complet avec spectre/waterfall, le CSV spectral et la charge utile binaire.
+Il ne contient pas les IQ source. L'attribution et la licence sont conservées
+dans le rapport. Les 170 tests Python et le contrôle Chromium passent au même
+état de code ; aucun changement d'algorithme n'a été nécessaire pour cette
+référence radio.

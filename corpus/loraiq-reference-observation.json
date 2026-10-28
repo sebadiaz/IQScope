@@ -1,0 +1,83 @@
+{
+  "source": "https://zenodo.org/records/20341802",
+  "doi": "10.5281/zenodo.20341802",
+  "license": {
+    "id": "cc-by-4.0"
+  },
+  "creators": [
+    "Tapparel, Joachim",
+    "Burg, Andreas"
+  ],
+  "checked_utc": "2026-10-28T19:01:04.372219+00:00",
+  "evidence_run": "https://github.com/sebadiaz/IQScope/actions/runs/40750399589",
+  "selection_rule": "First SF7/BW125k/CR1 row above annotated SNR20dB, otherwise highest SNR in prefix",
+  "selected_annotation": {
+    "sf": "7",
+    "cr": "1",
+    "fc": "862.5",
+    "bandwidth": "125000",
+    "payload_base64": "MDAwMDAwMQ==",
+    "rrh_idx": "4",
+    "rx_sample_rate": "250000",
+    "cfo": "7.739",
+    "snr": "20.3859",
+    "sigmf_file": "./sigmfs/25_01_17-13_40/rrh4/2",
+    "sigmf_file_offset": "7842.0",
+    "sigmf_file_n_samples": "9024"
+  },
+  "source_sample_count": 19426,
+  "sample_rate_hz": 250000,
+  "source_duration_seconds": 0.077704,
+  "integrity": {
+    "csv_prefix_sha256": "96122f6ae2f1ff6b3ea8601a4d1e3336abab94e35cb6313a01fe5a16d6d135cf",
+    "data_sha256": "954c295af3fa3e129eef981915401428bf22b401d5a9d414f4a316554f1f4bc4",
+    "meta_sha256": "92c4ca429c73e128f07de282a963eede7c1534f90ba7227c228bbe861ea5034d",
+    "publisher_sigmf_sha512_verified": true,
+    "member_zip_crc_verified": true,
+    "archive_integrity_verified": false,
+    "archive_bytes_transferred": 25483105
+  },
+  "automatic_result": {
+    "mode": "whole_member_blind",
+    "detector_inputs": [
+      "IQ samples",
+      "sample rate from SigMF"
+    ],
+    "payload_matches_reference": true,
+    "sf_matches_annotation": true,
+    "bandwidth_matches_annotation": true,
+    "coding_rate_matches_annotation": true,
+    "frame": {
+      "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+      "status": "payload_crc_valid",
+      "payload_hex": "30303030303031",
+      "payload_length_bytes": 7,
+      "received_crc": 58965,
+      "calculated_crc": 58965,
+      "coding_rate": "4/5",
+      "coding_rate_index": 1,
+      "corrected_spillover_bits": 0,
+      "corrected_payload_codeword_bits": 0,
+      "symbols_consumed": 23,
+      "validation": "Header 5-bit checksum and LoRa payload CRC16 passed; not emitter authenticity",
+      "text": "0000001",
+      "time_seconds": 0.043928,
+      "parameters": {
+        "bandwidth_hz": 125000,
+        "spreading_factor": 7,
+        "symbol_seconds": 0.001024,
+        "chirp_polarity": 1
+      },
+      "sync_word": "96"
+    },
+    "sync_word_independently_verified": false,
+    "main_pipeline_export_verified": true
+  },
+  "diagnostic_annotation_window_matches_reference": true,
+  "rf_center_policy": "Numeric 862.5 in source SigMF has uncertain units; use baseband only",
+  "limitations": [
+    "One short high-SNR SF7/BW125kHz/CR4/5 recording only; not a coverage or error-rate benchmark.",
+    "The supplied dataset file already contains a frame with guard samples; long-recording acquisition is not validated here.",
+    "Other coding rates currently have synthetic references only."
+  ]
+}
