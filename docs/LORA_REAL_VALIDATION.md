@@ -111,3 +111,32 @@ est publié en artifact par `loraiq-batch.yml`, sans les fichiers IQ.
 
 Cet échantillon réduit ne constitue ni une courbe de sensibilité, ni une mesure
 de performance représentative du jeu de données complet.
+
+
+### Premier résultat par tranche SNR
+
+Le [contrôle 40757758266](https://github.com/sebadiaz/IQScope/actions/runs/40757758266)
+a traité les six membres sélectionnés, sans modification du décodeur :
+
+| SNR annoté | Résultat du décodage automatique |
+| --- | --- |
+| −1,0897 dB | Aucun préambule retenu |
+| 3,7885 dB | Aucun préambule retenu |
+| 7,1515 dB | Aucun préambule retenu |
+| 10,2641 dB | Préambule et deux chirps inversés ; sync word non retenu |
+| 19,7319 dB | En-tête valide ; extraction arrêtée à 14 symboles, 23 nécessaires |
+| 20,3859 dB | `0000001`, CRC valide, octets identiques à l’annotation |
+
+Bilan : **1 correspondance exacte sur 6 membres**, 5 échecs de décodage, aucune
+autre charge utile à CRC valide. Les SHA-512 publiés et CRC ZIP des six membres
+sont vérifiés ; 51 690 080 octets ont été transférés depuis l’archive.
+Le [rapport conservé](../corpus/loraiq-batch-observation.json) contient aussi les
+empreintes SHA-256, chemins et résultats détaillés.
+
+Les enregistrements proviennent de la même session ; certains récepteurs peuvent
+observer une même émission. Ces six membres ne sont donc pas six essais radio
+statistiquement indépendants. Le résultat révèle notamment une limite de
+synchronisation et une extraction incomplète même à bon SNR ; il ne permet pas
+de fixer un seuil de sensibilité. Le détecteur conserve ses limites temporelles
+internes sur les fichiers longs. Aucun seuil n’a été assoupli pour ce benchmark.
+Les 171 tests Python et Chromium passent au même état de code.

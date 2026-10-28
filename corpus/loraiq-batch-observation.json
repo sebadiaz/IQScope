@@ -1,0 +1,1097 @@
+{
+  "source": "https://zenodo.org/records/20341802",
+  "doi": "10.5281/zenodo.20341802",
+  "license": {
+    "id": "cc-by-4.0"
+  },
+  "creators": [
+    "Tapparel, Joachim",
+    "Burg, Andreas"
+  ],
+  "csv_prefix_sha256": "96122f6ae2f1ff6b3ea8601a4d1e3336abab94e35cb6313a01fe5a16d6d135cf",
+  "rows_in_prefix": 518,
+  "selection_rule": "First distinct member per SNR stratum [-inf,0),[0,5),[5,10),[10,15),[15,20),[20,inf); SF7/BW125k/CR1 only",
+  "selected_count": 6,
+  "observations": [
+    {
+      "stratum": "[-inf,0) dB",
+      "annotation": {
+        "sf": "7",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "125000",
+        "payload_base64": "MDAwMDAwMA==",
+        "rrh_idx": "1",
+        "rx_sample_rate": "250000",
+        "cfo": "7.016",
+        "snr": "-1.0897",
+        "sigmf_file": "./sigmfs/25_01_17-13_40/rrh1/1",
+        "sigmf_file_offset": "7730.0",
+        "sigmf_file_n_samples": "9024"
+      },
+      "data_sha256": "3c59fa48b65aae5129d583ded3f0696249c9271314ade8e582c53cf4ebc1f957",
+      "meta_sha256": "901637cf927356ee20934aa5e7fb53d2ac44f66650c36c739babd4eed08200f8",
+      "publisher_sha512_verified": true,
+      "zip_member_crc_verified": true,
+      "input_samples": 2017726,
+      "sample_rate_hz": 250000,
+      "trial": {
+        "decoder": "lora_preamble",
+        "family": "LoRa-compatible CSS preamble",
+        "candidates": [],
+        "status": "no_consistent_candidate",
+        "trials": 24,
+        "analyzed_seconds": 1,
+        "search_windows": [
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.262144,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 8,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.524288,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 9,
+            "symbol_blocks": 244,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 10,
+            "symbol_blocks": 122,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 11,
+            "symbol_blocks": 61,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 12,
+            "symbol_blocks": 30,
+            "examined_seconds": 0.98304,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 7,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.131072,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 8,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.262144,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 9,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.524288,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "symbol_blocks": 244,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 11,
+            "symbol_blocks": 122,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 12,
+            "symbol_blocks": 61,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          }
+        ],
+        "sample_budget_reached": true,
+        "limitations": [
+          "Centered single-channel search only; no RF center or carrier-offset estimation.",
+          "BW 125/250/500 kHz, SF7–SF12, both chirp directions; six stable concentrated FFT peaks required.",
+          "First second only; at most 256 symbols per BW/SF. Late/short/weak bursts, clock drift and off-center channels may be missed.",
+          "Other CSS waveforms can match preamble evidence. Header checksum and supported payload CRC are checked separately; all other stages remain candidates. Payload: explicit CR4/5–4/8, SF7–SF10 only."
+        ]
+      },
+      "expected_payload_hex": "30303030303030",
+      "payload_matches_reference": false,
+      "crc_valid_other_payloads": [],
+      "oracle_parameters_applied": []
+    },
+    {
+      "stratum": "[0,5) dB",
+      "annotation": {
+        "sf": "7",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "125000",
+        "payload_base64": "MDAwMDAwMg==",
+        "rrh_idx": "3",
+        "rx_sample_rate": "250000",
+        "cfo": "7.6228",
+        "snr": "3.7885",
+        "sigmf_file": "./sigmfs/25_01_17-13_40/rrh3/2",
+        "sigmf_file_offset": "254773.0",
+        "sigmf_file_n_samples": "9024"
+      },
+      "data_sha256": "908fdaedcf94f999acec0c230450142375b00221354eb5ca87807e6f1b3d502e",
+      "meta_sha256": "eefb6ab08a46d03ac7299280342b460857d04ad996433a81a5b70b8203501be2",
+      "publisher_sha512_verified": true,
+      "zip_member_crc_verified": true,
+      "input_samples": 1514630,
+      "sample_rate_hz": 250000,
+      "trial": {
+        "decoder": "lora_preamble",
+        "family": "LoRa-compatible CSS preamble",
+        "candidates": [],
+        "status": "no_consistent_candidate",
+        "trials": 24,
+        "analyzed_seconds": 1,
+        "search_windows": [
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.262144,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 8,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.524288,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 9,
+            "symbol_blocks": 244,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 10,
+            "symbol_blocks": 122,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 11,
+            "symbol_blocks": 61,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 12,
+            "symbol_blocks": 30,
+            "examined_seconds": 0.98304,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 7,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.131072,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 8,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.262144,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 9,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.524288,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "symbol_blocks": 244,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 11,
+            "symbol_blocks": 122,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 12,
+            "symbol_blocks": 61,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          }
+        ],
+        "sample_budget_reached": true,
+        "limitations": [
+          "Centered single-channel search only; no RF center or carrier-offset estimation.",
+          "BW 125/250/500 kHz, SF7–SF12, both chirp directions; six stable concentrated FFT peaks required.",
+          "First second only; at most 256 symbols per BW/SF. Late/short/weak bursts, clock drift and off-center channels may be missed.",
+          "Other CSS waveforms can match preamble evidence. Header checksum and supported payload CRC are checked separately; all other stages remain candidates. Payload: explicit CR4/5–4/8, SF7–SF10 only."
+        ]
+      },
+      "expected_payload_hex": "30303030303032",
+      "payload_matches_reference": false,
+      "crc_valid_other_payloads": [],
+      "oracle_parameters_applied": []
+    },
+    {
+      "stratum": "[5,10) dB",
+      "annotation": {
+        "sf": "7",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "125000",
+        "payload_base64": "MDAwMDAwMA==",
+        "rrh_idx": "3",
+        "rx_sample_rate": "250000",
+        "cfo": "7.5704",
+        "snr": "7.1515",
+        "sigmf_file": "./sigmfs/25_01_17-13_40/rrh3/1",
+        "sigmf_file_offset": "7043.0",
+        "sigmf_file_n_samples": "9024"
+      },
+      "data_sha256": "2376ebc206af761889b4d541d495d784eed7c5116d27c18dae1483ad88245058",
+      "meta_sha256": "0f819f2a1ffa07176d58187494cab782522b828a9e9c2a90e510454f5ee893ba",
+      "publisher_sha512_verified": true,
+      "zip_member_crc_verified": true,
+      "input_samples": 18627,
+      "sample_rate_hz": 250000,
+      "trial": {
+        "decoder": "lora_preamble",
+        "family": "LoRa-compatible CSS preamble",
+        "candidates": [],
+        "status": "no_consistent_candidate",
+        "trials": 18,
+        "analyzed_seconds": 0.074508,
+        "search_windows": [
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "symbol_blocks": 72,
+            "examined_seconds": 0.073728,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 8,
+            "symbol_blocks": 36,
+            "examined_seconds": 0.073728,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 9,
+            "symbol_blocks": 18,
+            "examined_seconds": 0.073728,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 10,
+            "symbol_blocks": 9,
+            "examined_seconds": 0.073728,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 7,
+            "symbol_blocks": 145,
+            "examined_seconds": 0.07424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 8,
+            "symbol_blocks": 72,
+            "examined_seconds": 0.073728,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 9,
+            "symbol_blocks": 36,
+            "examined_seconds": 0.073728,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "symbol_blocks": 18,
+            "examined_seconds": 0.073728,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 11,
+            "symbol_blocks": 9,
+            "examined_seconds": 0.073728,
+            "symbol_budget_reached": false
+          }
+        ],
+        "sample_budget_reached": false,
+        "limitations": [
+          "Centered single-channel search only; no RF center or carrier-offset estimation.",
+          "BW 125/250/500 kHz, SF7–SF12, both chirp directions; six stable concentrated FFT peaks required.",
+          "First second only; at most 256 symbols per BW/SF. Late/short/weak bursts, clock drift and off-center channels may be missed.",
+          "Other CSS waveforms can match preamble evidence. Header checksum and supported payload CRC are checked separately; all other stages remain candidates. Payload: explicit CR4/5–4/8, SF7–SF10 only."
+        ]
+      },
+      "expected_payload_hex": "30303030303030",
+      "payload_matches_reference": false,
+      "crc_valid_other_payloads": [],
+      "oracle_parameters_applied": []
+    },
+    {
+      "stratum": "[10,15) dB",
+      "annotation": {
+        "sf": "7",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "125000",
+        "payload_base64": "MDAwMDAwMA==",
+        "rrh_idx": "2",
+        "rx_sample_rate": "250000",
+        "cfo": "7.6724",
+        "snr": "10.2641",
+        "sigmf_file": "./sigmfs/25_01_17-13_40/rrh2/1",
+        "sigmf_file_offset": "7931.0",
+        "sigmf_file_n_samples": "9024"
+      },
+      "data_sha256": "3ae3330856923d9edfbd9a07fea563db1a0bd23da4c56e4522b632cce352b074",
+      "meta_sha256": "415cfa2c6cfd9678dd86e087dbd93a3851cb76bc13311ac33528bfedcdae9c68",
+      "publisher_sha512_verified": true,
+      "zip_member_crc_verified": true,
+      "input_samples": 271140,
+      "sample_rate_hz": 250000,
+      "trial": {
+        "decoder": "lora_preamble",
+        "family": "LoRa-compatible CSS preamble",
+        "candidates": [
+          {
+            "parameters": {
+              "bandwidth_hz": 125000,
+              "spreading_factor": 7,
+              "symbol_seconds": 0.001024,
+              "chirp_polarity": 1
+            },
+            "time_seconds": 0.031744,
+            "evidence": {
+              "repeated_chirps": 8,
+              "median_three_bin_energy_fraction": 0.8303522452396059,
+              "dechirped_peak_bin": 10,
+              "required_chirps": 6
+            },
+            "synchronization": {
+              "status": "opposite_chirp_pair_candidate",
+              "time_seconds": 0.041984,
+              "sample_start_at_chip_rate": 5248,
+              "search_step_chips": 4,
+              "minimum_three_bin_energy_fraction": 0.8358050882567811,
+              "dechirped_peak_bins": [
+                5,
+                5
+              ],
+              "scope": "Two opposite-direction chirps only; sync word, quarter chirp, exact boundary and payload not validated"
+            },
+            "sync_word": {
+              "status": "no_consistent_sync_word"
+            },
+            "data_symbols": {
+              "status": "not_available_without_sync_word"
+            },
+            "explicit_header": {
+              "scope": "Explicit-header hypothesis only; no payload CRC, bytes or emitter identity validated",
+              "status": "insufficient_symbols",
+              "required_symbols": 8
+            },
+            "payload": {
+              "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+              "status": "no_valid_explicit_header"
+            },
+            "score": 0.8303522452396059,
+            "score_kind": "heuristic_not_probability",
+            "validation_scope": "Bounded LoRa PHY trial; only explicit header checks and supported payload CRC results are validated. No LoRaWAN identity or authentication."
+          }
+        ],
+        "status": "repeated_chirp_candidate",
+        "trials": 24,
+        "analyzed_seconds": 1,
+        "search_windows": [
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.262144,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 8,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.524288,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 9,
+            "symbol_blocks": 244,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 10,
+            "symbol_blocks": 122,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 11,
+            "symbol_blocks": 61,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 12,
+            "symbol_blocks": 30,
+            "examined_seconds": 0.98304,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 7,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.131072,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 8,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.262144,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 9,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.524288,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "symbol_blocks": 244,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 11,
+            "symbol_blocks": 122,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 12,
+            "symbol_blocks": 61,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          }
+        ],
+        "sample_budget_reached": true,
+        "limitations": [
+          "Centered single-channel search only; no RF center or carrier-offset estimation.",
+          "BW 125/250/500 kHz, SF7–SF12, both chirp directions; six stable concentrated FFT peaks required.",
+          "First second only; at most 256 symbols per BW/SF. Late/short/weak bursts, clock drift and off-center channels may be missed.",
+          "Other CSS waveforms can match preamble evidence. Header checksum and supported payload CRC are checked separately; all other stages remain candidates. Payload: explicit CR4/5–4/8, SF7–SF10 only."
+        ]
+      },
+      "expected_payload_hex": "30303030303030",
+      "payload_matches_reference": false,
+      "crc_valid_other_payloads": [],
+      "oracle_parameters_applied": []
+    },
+    {
+      "stratum": "[15,20) dB",
+      "annotation": {
+        "sf": "7",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "125000",
+        "payload_base64": "MDAwMDAwMg==",
+        "rrh_idx": "2",
+        "rx_sample_rate": "250000",
+        "cfo": "7.7195",
+        "snr": "19.7319",
+        "sigmf_file": "./sigmfs/25_01_17-13_40/rrh2/2",
+        "sigmf_file_offset": "5805.0",
+        "sigmf_file_n_samples": "9024"
+      },
+      "data_sha256": "7712185f2920d225c2cdaf38f3fac10f5520fadc500673a270b3f1a5c0e4ed78",
+      "meta_sha256": "46b875e7179238851cd722bc5537e0bc0e2ca839fb71918adaa2de03300aed37",
+      "publisher_sha512_verified": true,
+      "zip_member_crc_verified": true,
+      "input_samples": 17389,
+      "sample_rate_hz": 250000,
+      "trial": {
+        "decoder": "lora_preamble",
+        "family": "LoRa-compatible CSS preamble",
+        "candidates": [
+          {
+            "parameters": {
+              "bandwidth_hz": 125000,
+              "spreading_factor": 7,
+              "symbol_seconds": 0.001024,
+              "chirp_polarity": 1
+            },
+            "time_seconds": 0.022528,
+            "evidence": {
+              "repeated_chirps": 8,
+              "median_three_bin_energy_fraction": 0.8355446565787997,
+              "dechirped_peak_bin": 49,
+              "required_chirps": 6
+            },
+            "synchronization": {
+              "status": "opposite_chirp_pair_candidate",
+              "time_seconds": 0.033472,
+              "sample_start_at_chip_rate": 4184,
+              "search_step_chips": 4,
+              "minimum_three_bin_energy_fraction": 0.8985743964484957,
+              "dechirped_peak_bins": [
+                6,
+                6
+              ],
+              "scope": "Two opposite-direction chirps only; sync word, quarter chirp, exact boundary and payload not validated"
+            },
+            "sync_word": {
+              "status": "sync_word_candidate",
+              "value_hex": "96",
+              "relative_symbol_bins": [
+                72,
+                48
+              ],
+              "symbol_bin_errors": [
+                0,
+                0
+              ],
+              "opposite_chirp_start_seconds": 0.033464,
+              "opposite_chirp_start_chip": 4183,
+              "minimum_three_bin_energy_fraction": 0.8495754098888837,
+              "scope": "Conventional two-nibble sync-word hypothesis only; no network identity, quarter-chirp, header, CRC or payload validation"
+            },
+            "data_symbols": {
+              "status": "raw_css_symbol_candidates",
+              "quarter_chirp_correlation": 0.832414188729008,
+              "candidate_data_start_seconds": 0.035776,
+              "symbol_bins": [
+                109,
+                9,
+                125,
+                13,
+                25,
+                97,
+                1,
+                5,
+                2,
+                125,
+                75,
+                86,
+                57,
+                112
+              ],
+              "fft_peak_symbol_bins": [
+                109,
+                9,
+                125,
+                13,
+                25,
+                97,
+                1,
+                5,
+                2,
+                125,
+                75,
+                86,
+                58,
+                112
+              ],
+              "symbol_energy_fractions": [
+                0.7975981864539274,
+                0.8239390001724342,
+                0.90475599749496,
+                0.809697003723861,
+                0.7729432255793511,
+                0.7552278361435407,
+                0.9152693642717338,
+                0.8557655150733842,
+                0.9142803981890507,
+                0.9045920918311537,
+                0.8450027418260615,
+                0.7617698722855244,
+                0.6640744816976967,
+                0.803757536637303
+              ],
+              "symbol_bin_uncertainty": 1,
+              "symbol_budget": 64,
+              "symbol_budget_reached": false,
+              "stop_reason": "insufficient_spectral_concentration",
+              "scope": "Raw relative CSS bins only; timing remains a hypothesis. No Gray mapping, deinterleaving, error correction, whitening, header, CRC or payload bytes decoded"
+            },
+            "explicit_header": {
+              "scope": "Explicit-header hypothesis only; no payload CRC, bytes or emitter identity validated",
+              "status": "header_checksum_valid",
+              "payload_length_bytes": 7,
+              "coding_rate_index": 1,
+              "coding_rate": "4/5",
+              "payload_crc_present": true,
+              "header_checksum": 9,
+              "corrected_codeword_bits": 0,
+              "header_nibbles": [
+                0,
+                7,
+                3,
+                0,
+                9
+              ],
+              "validation": "5-bit header checksum only; payload is not decoded or validated"
+            },
+            "payload": {
+              "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+              "status": "insufficient_symbols",
+              "required_symbols": 23,
+              "available_symbols": 14
+            },
+            "score": 0.8355446565787997,
+            "score_kind": "heuristic_not_probability",
+            "validation_scope": "Bounded LoRa PHY trial; only explicit header checks and supported payload CRC results are validated. No LoRaWAN identity or authentication."
+          }
+        ],
+        "status": "repeated_chirp_candidate",
+        "trials": 18,
+        "analyzed_seconds": 0.069556,
+        "search_windows": [
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "symbol_blocks": 67,
+            "examined_seconds": 0.068608,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 8,
+            "symbol_blocks": 33,
+            "examined_seconds": 0.067584,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 9,
+            "symbol_blocks": 16,
+            "examined_seconds": 0.065536,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 10,
+            "symbol_blocks": 8,
+            "examined_seconds": 0.065536,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 7,
+            "symbol_blocks": 135,
+            "examined_seconds": 0.06912,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 8,
+            "symbol_blocks": 67,
+            "examined_seconds": 0.068608,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 9,
+            "symbol_blocks": 33,
+            "examined_seconds": 0.067584,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "symbol_blocks": 16,
+            "examined_seconds": 0.065536,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 11,
+            "symbol_blocks": 8,
+            "examined_seconds": 0.065536,
+            "symbol_budget_reached": false
+          }
+        ],
+        "sample_budget_reached": false,
+        "limitations": [
+          "Centered single-channel search only; no RF center or carrier-offset estimation.",
+          "BW 125/250/500 kHz, SF7–SF12, both chirp directions; six stable concentrated FFT peaks required.",
+          "First second only; at most 256 symbols per BW/SF. Late/short/weak bursts, clock drift and off-center channels may be missed.",
+          "Other CSS waveforms can match preamble evidence. Header checksum and supported payload CRC are checked separately; all other stages remain candidates. Payload: explicit CR4/5–4/8, SF7–SF10 only."
+        ]
+      },
+      "expected_payload_hex": "30303030303032",
+      "payload_matches_reference": false,
+      "crc_valid_other_payloads": [],
+      "oracle_parameters_applied": []
+    },
+    {
+      "stratum": "[20,inf) dB",
+      "annotation": {
+        "sf": "7",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "125000",
+        "payload_base64": "MDAwMDAwMQ==",
+        "rrh_idx": "4",
+        "rx_sample_rate": "250000",
+        "cfo": "7.739",
+        "snr": "20.3859",
+        "sigmf_file": "./sigmfs/25_01_17-13_40/rrh4/2",
+        "sigmf_file_offset": "7842.0",
+        "sigmf_file_n_samples": "9024"
+      },
+      "data_sha256": "954c295af3fa3e129eef981915401428bf22b401d5a9d414f4a316554f1f4bc4",
+      "meta_sha256": "92c4ca429c73e128f07de282a963eede7c1534f90ba7227c228bbe861ea5034d",
+      "publisher_sha512_verified": true,
+      "zip_member_crc_verified": true,
+      "input_samples": 19426,
+      "sample_rate_hz": 250000,
+      "trial": {
+        "decoder": "lora_preamble",
+        "family": "LoRa-compatible CSS preamble",
+        "candidates": [
+          {
+            "parameters": {
+              "bandwidth_hz": 125000,
+              "spreading_factor": 7,
+              "symbol_seconds": 0.001024,
+              "chirp_polarity": 1
+            },
+            "time_seconds": 0.03072,
+            "evidence": {
+              "repeated_chirps": 8,
+              "median_three_bin_energy_fraction": 0.7854768735140176,
+              "dechirped_peak_bin": 54,
+              "required_chirps": 6
+            },
+            "synchronization": {
+              "status": "opposite_chirp_pair_candidate",
+              "time_seconds": 0.041632,
+              "sample_start_at_chip_rate": 5204,
+              "search_step_chips": 4,
+              "minimum_three_bin_energy_fraction": 0.9532419740637862,
+              "dechirped_peak_bins": [
+                5,
+                5
+              ],
+              "scope": "Two opposite-direction chirps only; sync word, quarter chirp, exact boundary and payload not validated"
+            },
+            "sync_word": {
+              "status": "sync_word_candidate",
+              "value_hex": "96",
+              "relative_symbol_bins": [
+                73,
+                49
+              ],
+              "symbol_bin_errors": [
+                1,
+                1
+              ],
+              "opposite_chirp_start_seconds": 0.041608,
+              "opposite_chirp_start_chip": 5201,
+              "minimum_three_bin_energy_fraction": 0.7706345029483783,
+              "scope": "Conventional two-nibble sync-word hypothesis only; no network identity, quarter-chirp, header, CRC or payload validation"
+            },
+            "data_symbols": {
+              "status": "raw_css_symbol_candidates",
+              "quarter_chirp_correlation": 0.8680842120654413,
+              "candidate_data_start_seconds": 0.043928,
+              "symbol_bins": [
+                109,
+                9,
+                125,
+                13,
+                25,
+                97,
+                1,
+                5,
+                2,
+                125,
+                75,
+                86,
+                57,
+                81,
+                33,
+                39,
+                109,
+                127,
+                62,
+                60,
+                83,
+                6,
+                126
+              ],
+              "fft_peak_symbol_bins": [
+                110,
+                9,
+                125,
+                14,
+                26,
+                98,
+                1,
+                5,
+                2,
+                125,
+                76,
+                87,
+                58,
+                82,
+                34,
+                40,
+                110,
+                127,
+                63,
+                61,
+                84,
+                6,
+                126
+              ],
+              "symbol_energy_fractions": [
+                0.8552462247525577,
+                0.8486024003065236,
+                0.8674046962553965,
+                0.8929122015271018,
+                0.8557948991635457,
+                0.8108830422609464,
+                0.8909533247511526,
+                0.86790271652818,
+                0.8919366691011565,
+                0.8661349294463105,
+                0.7833221712414189,
+                0.762502956261108,
+                0.7643452748232314,
+                0.7465545773089275,
+                0.8484884395657152,
+                0.8026206915247244,
+                0.8902424193682015,
+                0.8892008503770134,
+                0.7552425839732143,
+                0.7582525636875669,
+                0.7670418525124083,
+                0.8720010310721328,
+                0.8991004438598353
+              ],
+              "symbol_bin_uncertainty": 1,
+              "symbol_budget": 64,
+              "symbol_budget_reached": false,
+              "stop_reason": "insufficient_spectral_concentration",
+              "scope": "Raw relative CSS bins only; timing remains a hypothesis. No Gray mapping, deinterleaving, error correction, whitening, header, CRC or payload bytes decoded"
+            },
+            "explicit_header": {
+              "scope": "Explicit-header hypothesis only; no payload CRC, bytes or emitter identity validated",
+              "status": "header_checksum_valid",
+              "payload_length_bytes": 7,
+              "coding_rate_index": 1,
+              "coding_rate": "4/5",
+              "payload_crc_present": true,
+              "header_checksum": 9,
+              "corrected_codeword_bits": 0,
+              "header_nibbles": [
+                0,
+                7,
+                3,
+                0,
+                9
+              ],
+              "validation": "5-bit header checksum only; payload is not decoded or validated"
+            },
+            "payload": {
+              "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+              "status": "payload_crc_valid",
+              "payload_hex": "30303030303031",
+              "payload_length_bytes": 7,
+              "received_crc": 58965,
+              "calculated_crc": 58965,
+              "coding_rate": "4/5",
+              "coding_rate_index": 1,
+              "corrected_spillover_bits": 0,
+              "corrected_payload_codeword_bits": 0,
+              "symbols_consumed": 23,
+              "validation": "Header 5-bit checksum and LoRa payload CRC16 passed; not emitter authenticity",
+              "text": "0000001"
+            },
+            "score": 0.7854768735140176,
+            "score_kind": "heuristic_not_probability",
+            "validation_scope": "Bounded LoRa PHY trial; only explicit header checks and supported payload CRC results are validated. No LoRaWAN identity or authentication."
+          }
+        ],
+        "status": "crc_valid_payload",
+        "trials": 18,
+        "analyzed_seconds": 0.077704,
+        "search_windows": [
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "symbol_blocks": 75,
+            "examined_seconds": 0.0768,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 8,
+            "symbol_blocks": 37,
+            "examined_seconds": 0.075776,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 9,
+            "symbol_blocks": 18,
+            "examined_seconds": 0.073728,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 10,
+            "symbol_blocks": 9,
+            "examined_seconds": 0.073728,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 7,
+            "symbol_blocks": 151,
+            "examined_seconds": 0.077312,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 8,
+            "symbol_blocks": 75,
+            "examined_seconds": 0.0768,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 9,
+            "symbol_blocks": 37,
+            "examined_seconds": 0.075776,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "symbol_blocks": 18,
+            "examined_seconds": 0.073728,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 11,
+            "symbol_blocks": 9,
+            "examined_seconds": 0.073728,
+            "symbol_budget_reached": false
+          }
+        ],
+        "frames": [
+          {
+            "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+            "status": "payload_crc_valid",
+            "payload_hex": "30303030303031",
+            "payload_length_bytes": 7,
+            "received_crc": 58965,
+            "calculated_crc": 58965,
+            "coding_rate": "4/5",
+            "coding_rate_index": 1,
+            "corrected_spillover_bits": 0,
+            "corrected_payload_codeword_bits": 0,
+            "symbols_consumed": 23,
+            "validation": "Header 5-bit checksum and LoRa payload CRC16 passed; not emitter authenticity",
+            "text": "0000001",
+            "time_seconds": 0.043928,
+            "parameters": {
+              "bandwidth_hz": 125000,
+              "spreading_factor": 7,
+              "symbol_seconds": 0.001024,
+              "chirp_polarity": 1
+            },
+            "sync_word": "96"
+          }
+        ],
+        "sample_budget_reached": false,
+        "limitations": [
+          "Centered single-channel search only; no RF center or carrier-offset estimation.",
+          "BW 125/250/500 kHz, SF7–SF12, both chirp directions; six stable concentrated FFT peaks required.",
+          "First second only; at most 256 symbols per BW/SF. Late/short/weak bursts, clock drift and off-center channels may be missed.",
+          "Other CSS waveforms can match preamble evidence. Header checksum and supported payload CRC are checked separately; all other stages remain candidates. Payload: explicit CR4/5–4/8, SF7–SF10 only."
+        ]
+      },
+      "expected_payload_hex": "30303030303031",
+      "payload_matches_reference": true,
+      "crc_valid_other_payloads": [],
+      "oracle_parameters_applied": []
+    }
+  ],
+  "archive_bytes_transferred": 51690080,
+  "matched_count": 1,
+  "missed_count": 5,
+  "limitations": [
+    "Small bounded CSV prefix; not a representative population or sensitivity curve.",
+    "Whole-member blind decoding only; no RF center verified; no guided timing/CFO correction.",
+    "Only SF7/BW125k/CR4/5; unoccupied SNR strata omitted. Full archive hash not verified.",
+    "Decoder misses are benchmark outcomes; transport/integrity errors fail the job."
+  ],
+  "workflow_url": "https://github.com/sebadiaz/IQScope/actions/runs/40757758266"
+}
