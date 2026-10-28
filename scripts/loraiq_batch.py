@@ -60,7 +60,7 @@ def run(result):
             def member(name,limit):
                 entries=index.get(name,[])
                 if len(entries)!=1 or entries[0].flag_bits&1 or not 0<entries[0].file_size<=limit:
-                    raise ValueError('Missing, duplicated, encrypted or oversized member: '+name)
+                    raise ValueError('Invalid member '+name+': '+str([(e.filename,e.file_size,e.flag_bits) for e in entries]))
                 with archive.open(entries[0]) as stream:
                     data=stream.read(limit+1)
                 if len(data)!=entries[0].file_size:
