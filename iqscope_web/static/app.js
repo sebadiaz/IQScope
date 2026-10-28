@@ -108,8 +108,9 @@ function showReport(report, jobId) {
   const frames=(report.wideband_trials || []).filter(t=>t.decoder==='adsb_1090es').flatMap(t=>t.frames || []);
   const ax25Trials=(report.wideband_trials || []).filter(t=>(t.decoder==='ax25_ui' || t.decoder==='afsk1200_ax25'));
   const ax25Frames=ax25Trials.flatMap(t=>t.frames || []);
+  const loraFrames=(report.wideband_trials || []).filter(t=>t.decoder==='lora_preamble').flatMap(t=>t.frames || []);
   $('metric-signals').textContent=signals.length;
-  $('metric-frames').textContent=frames.length+ax25Frames.length;
+  $('metric-frames').textContent=frames.length+ax25Frames.length+loraFrames.length;
   $('metric-duration').textContent=`${report.analyzed_seconds.toFixed(2)} s`;
   $('download').href=`/api/jobs/${jobId}/artifacts/report.json`; $('download').hidden=false;
   const list=$('signal-list');list.replaceChildren();
@@ -272,7 +273,7 @@ function showReport(report, jobId) {
       if(candidate.synchronization?.status==='opposite_chirp_pair_candidate')card.append(element('p',`Paire de chirps opposés candidate vers ${candidate.synchronization.time_seconds.toFixed(6)} s ; limite de paquet et sync word non validés.`,'lora-sync-evidence'));
       if(candidate.sync_word?.status==='sync_word_candidate')card.append(element('p',`Sync word candidat : 0x${candidate.sync_word.value_hex} ; aucun réseau ni paquet authentifié.`,'lora-sync-word'));
       if(candidate.data_symbols?.status==='raw_css_symbol_candidates'){
-        card.append(element('p',`${candidate.data_symbols.symbol_bins.length} symboles CSS bruts candidats ; aucun octet ni CRC décodé.`,'lora-data-symbols'));
+        card.append(element('p',`${candidate.data_symbols.symbol_bins.length} symboles CSS bruts candidats avant décodage.`,'lora-data-symbols'));
         card.append(element('code',candidate.data_symbols.symbol_bins.slice(0,16).join(', ')));
         if(['insufficient_spectral_concentration','unstable_phase_estimate'].includes(candidate.data_symbols.stop_reason))card.append(element('p','Lecture arrêtée sur un symbole insuffisamment fiable ; la séquence peut être incomplète.','hint'));
         if(candidate.data_symbols.symbol_budget_reached)card.append(element('p','Limite de 64 symboles atteinte ; la séquence peut être incomplète.','hint'));
@@ -280,13 +281,23 @@ function showReport(report, jobId) {
       if(candidate.explicit_header?.status==='header_checksum_valid'){
         const h=candidate.explicit_header;
         card.append(element('p',`En-tête explicite candidat : ${h.payload_length_bytes} octets annoncés · codage ${h.coding_rate} · CRC de données ${h.payload_crc_present?'annoncé':'absent'}.`,'lora-header'));
-        card.append(element('p','Somme d’en-tête de 5 bits vérifiée ; contenu et CRC de données non validés.','hint'));
+        card.append(element('p','Somme d’en-tête de 5 bits vérifiée.','hint'));
       }
       if(candidate.sync_word?.status==='ambiguous_sync_word')card.append(element('p','Sync word ambigu : aucune valeur sélectionnée.','hint'));
-      card.append(element('p','Indice CSS uniquement : synchronisation de paquet, en-tête, CRC et contenu non décodés.','hint'));
+      if(candidate.payload?.status!=='payload_crc_valid')card.append(element('p','Charge utile non validée ; consulter le rapport pour les limites de décodage.','hint'));
       frameList.append(card);
     }
-    if(report.lora_artifact){const link=element('a','Télécharger les indices de préambule CSS');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(report.lora_artifact)}`;link.download=report.lora_artifact;frameList.append(link);}
+    for(const frame of trial.frames || []){
+      const card=element('div',undefined,'frame lora-payload');
+      card.append(element('h3','LoRa · charge utile à CRC16 valide'));
+      card.append(element('p',`${frame.payload_length_bytes} octets · somme d’en-tête et CRC de données vérifiés`));
+      if(frame.text!==undefined)card.append(element('pre',frame.text,'lora-payload-text'));
+      else card.append(element('code',frame.payload_hex));
+      card.append(element('p','CRC cohérent ; identité de l’émetteur et interprétation LoRaWAN non établies.','hint'));
+      if(frame.artifact){const link=element('a','Télécharger la charge utile LoRa');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(frame.artifact)}`;link.download=frame.artifact;card.append(link);}
+      frameList.append(card);
+    }
+    if(report.lora_artifact){const link=element('a','Télécharger le rapport LoRa');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(report.lora_artifact)}`;link.download=report.lora_artifact;frameList.append(link);}
   }
   for(const frame of frames) {
     const card=element('div',undefined,'frame');card.append(element('code',frame.hex));

@@ -1,7 +1,8 @@
 # Détection initiale de préambule LoRa compatible
 
 La capacité `lora_preamble` cherche automatiquement des répétitions de chirps
-CSS dans un canal centré. Ce n'est pas encore un décodeur de paquets LoRa.
+CSS dans un canal centré. Une chaîne PHY partielle décode aussi les en-têtes
+explicites et les charges utiles CR4/5, SF7–SF10, avec contrôle du CRC.
 La relation nominale utilisée est T_sym = 2^SF / BW ; voir la note fabricant
 [Semtech AN1200.22](https://www.mouser.com/pdfdocs/an120022.pdf).
 
@@ -28,8 +29,8 @@ incertitude d'encodage SigMF est propagée dans cet artefact.
   préambules très courts ne sont pas couverts par cette première version.
 - Une autre forme d'onde CSS répétitive peut correspondre. Les chirps opposés
   et le sync word restent des hypothèses. Un en-tête explicite peut être
-  contrôlé ; le codage de charge utile, le CRC de données et le contenu ne
-  sont pas décodés. Aucune identification LoRaWAN n'est effectuée.
+  contrôlé ; une charge utile est décodée uniquement dans le périmètre
+  explicite CR4/5, SF7–SF10 décrit plus bas. Aucune identification LoRaWAN n'est effectuée.
 
 ## Validation
 
@@ -40,8 +41,8 @@ propagation d'une hypothèse d'encodage non vérifiée. Ces tests ne remplacent 
 une validation avec un émetteur indépendant et un paquet connu.
 
 Les prochaines étapes sont la synchronisation fine du paquet,
-puis la chaîne de décodage de charge utile jusqu'au CRC. L'en-tête explicite
-candidat est décrit plus bas ; il ne valide pas le paquet complet.
+l'élargissement des taux de codage et la validation sur un émetteur indépendant.
+L'en-tête seul ne valide pas le paquet complet.
 
 ## Première preuve de synchronisation
 
@@ -90,7 +91,8 @@ valeurs restent compatibles, aucune n'est sélectionnée. L'interface affiche
 l'hexadécimal candidat sans inférer un réseau, LoRaWAN ou l'identité d'un
 émetteur. La frontière estimée n'est pas une synchronisation fine validée :
 le quart de chirp et l'en-tête sont examinés par les étages suivants ;
-le suivi fin de l'horloge et le CRC de données restent à traiter.
+le suivi fin de l'horloge reste à améliorer. Le CRC de données est vérifié
+uniquement par l'étage de charge utile pris en charge.
 
 Validation synthétique : plusieurs valeurs (dont 0x34, 0x12, 0x00 et 0xAB),
 SF7/SF8/SF9/SF12, inversion, bruit, délais différents et décalages fréquentiels
@@ -120,15 +122,15 @@ L'interface affiche le nombre de symboles et un aperçu. Ces nombres ne sont
 pas directement des octets ou des caractères. Un étage séparé peut interpréter
 leurs huit premiers éléments comme un en-tête explicite candidat. Les
 transformations Gray, désentrelacement et Hamming de cet en-tête sont décrites
-plus bas ; le déblanchiment, le décodage de charge utile et son CRC restent
-à implémenter. La synchronisation fractionnaire et
+plus bas ; le déblanchiment, la charge utile et son CRC sont pris en charge
+dans le périmètre CR4/5, SF7–SF10 décrit en fin de document. La synchronisation fractionnaire et
 le suivi de l'horloge restent à améliorer ; aucun contenu LoRaWAN n'est extrait.
 
 Les tests comparent les symboles récupérés aux symboles transmis par le
 générateur synthétique, avec SF7/SF8/SF10, inversion, bruit, délais et décalages
 fréquentiels. Un quart absent interdit la sortie de symboles ; un test impose
-la limite de 64 symboles. Chromium vérifie le téléchargement d'une séquence
-connue en conservant le compteur de trames validées à zéro. Aucun paquet radio
+la limite de 64 symboles. L'interface distingue ces symboles candidats des octets dont le CRC de données
+a été vérifié ; seuls ces derniers contribuent au compteur de trames validées. Aucun paquet radio
 réel connu n'est encore validé par cette chaîne.
 
 Le champ `stop_reason` distingue fin de source, budget atteint, concentration
@@ -151,9 +153,9 @@ rejetées. Des erreurs plus nombreuses ne sont pas toutes détectables.
 La longueur annoncée (1 à 255), le taux de codage 4/5 à 4/8, le drapeau CRC et
 les bits réservés sont contrôlés. Une somme linéaire de cinq bits porte sur les
 trois premiers nibbles. Seul son succès donne `header_checksum_valid`.
-**Ce statut valide la cohérence de l'en-tête candidat, pas le paquet : le CRC
-de données, les octets de charge utile et l'identité de l'émetteur ne sont pas
-vérifiés.** Les trames validées restent à zéro pour cette chaîne.
+**Ce statut seul valide la cohérence de l'en-tête candidat, pas le paquet.**
+Le CRC et les octets de charge utile exigent l'étage séparé décrit ci-dessous ;
+l'identité de l'émetteur n'est jamais authentifiée par ces sommes. Un en-tête seul ne contribue pas au compteur de trames validées.
 
 Les vecteurs numériques figés décrivent une longueur 17, un codage 4/5 et un
 CRC de données annoncé, avec somme d'en-tête 0x1B et nibbles 1,1,3,1,B :
@@ -171,3 +173,54 @@ d'horloge ne sont pas pris en charge. Une erreur de synchronisation ou de symbol
 peut empêcher la lecture. Il n'y a pas de recherche combinatoire destinée à
 forcer une somme valide. La somme de cinq bits est courte : elle ne constitue
 ni une authentification ni une preuve suffisante de contenu radio.
+
+
+## Charge utile CR4/5 avec CRC de données
+
+Le module `iqscope_lora_payload` traite l'en-tête explicite, le codage **4/5**
+et les **SF7 à SF10**, sans optimisation bas débit. Les nibbles de charge utile
+qui débordent dans le premier bloc à codage 4/8 sont récupérés après les cinq
+nibbles d'en-tête. Les blocs suivants regroupent cinq symboles et utilisent le
+désentrelacement diagonal à largeur SF. Le code 4/5 possède un bit de parité :
+un échec de parité est rejeté, sans recherche de correction destinée à faire
+passer le CRC. Les nibbles sont assemblés poids faible d'abord.
+
+Le déblanchiment est généré par un LFSR de huit bits, initialisé à 0xFF, avec
+retour des bits 7,5,4,3. Une étape par octet produit notamment
+`FF FE FC F8 F0 E1 C2 85`. Les deux octets de CRC ne sont pas déblanchis.
+La convention CRC utilisée applique CRC-16/XMODEM (poly 0x1021, init 0) aux
+len−2 premiers octets, puis XOR avec les deux derniers octets de données dans
+l'ordre fort/faible. Le CRC reçu est assemblé poids faible d'abord. Pour
+`HELLO`, il vaut 0x8332, transmis `32 83`. Les longueurs avec CRC inférieures
+à deux octets sont explicitement non prises en charge.
+
+Seul `payload_crc_valid`, après en-tête cohérent et CRC de données égal,
+produit une trame dans `frames`, incrémente le compteur et autorise un export
+`lora-payload-N.bin`. Le JSON conserve les octets en hexadécimal, les deux CRC,
+les paramètres et la portée de validation. Le texte UTF-8 n'est affiché que
+s'il est lisible ; les autres octets restent en hexadécimal. Une hypothèse
+SigMF non vérifiée reste attachée au rapport et aux trames exportées.
+
+Une charge utile sans CRC reste `payload_without_crc`, avec octets candidats
+uniquement dans le rapport, sans trame validée ni export binaire validé.
+`insufficient_symbols`, `payload_parity_mismatch`, `payload_crc_mismatch` et les
+modes non pris en charge ne donnent aucune trame valide. Aucune ambiguïté de
+symboles n'est résolue par recherche combinatoire du CRC.
+
+### Validation et limites
+
+Les vecteurs figés d'émission couvrent `HELLO` en SF7/SF8/SF9/SF10 et des octets
+binaires non textuels. Les tests vérifient la troncature, l'absence de CRC, les
+corruptions de symboles, et un CRC faux malgré une parité de codage cohérente.
+La chaîne complète depuis les IQ synthétiques restitue les octets attendus et
+le test navigateur télécharge exactement `HELLO`. Ces vecteurs sont calculés
+côté émission ; **aucun paquet d'un émetteur radio indépendant n'a encore été
+validé**. La convention est confrontée aux blocs de référence
+[gr-lora_sdr](https://github.com/tapparelj/gr-lora_sdr), sans les embarquer.
+
+Les limites de synchronisation et les 64 symboles bruts restent applicables.
+Avec CRC présent, ce budget permet au plus 36/42/48/54 octets annoncés en
+SF7/8/9/10 respectivement. Les CR4/6, 4/7, 4/8, SF11/SF12 pour la charge utile,
+l'en-tête implicite et les paquets plus longs restent non pris en charge.
+Un CRC PHY valide prouve une cohérence, pas l'identité ni la confidentialité.
+Aucun parsing, déchiffrement ou authentification LoRaWAN n'est effectué.

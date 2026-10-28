@@ -157,7 +157,7 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
               'center_frequency_hz': center, 'analyzed_seconds': len(x) / fs,
               'noise_floor_db_per_hz': noise, 'capabilities': capabilities(),
               'limitations': ['Stationary spectral detector; overlapping, hopping and weak bursts may be missed.',
-                             'AM/FM audio are unvalidated candidates. ADS-B and AX.25 UI frames have CRC checks; RTTY/CW text candidates have timing or framing evidence only.',
+                             'AM/FM audio are unvalidated candidates. ADS-B, AX.25 UI and supported LoRa PHY frames have CRC checks; RTTY/CW text candidates have timing or framing evidence only.',
                              'At most 12 spectral bands receive audio trials; other detections remain visible.'],
               'signals': results, 'wideband_trials': [digital, rtty, cw, fsk, fsk4, ax25, ofdm, lora],
               'spectrum': {'frequency_hz': frequencies.tolist(), 'power_db': spectrum.tolist()},
@@ -179,6 +179,10 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
                 symbol_name = prefix+'-symbols.txt'
                 (out / symbol_name).write_text(candidate['symbols'],encoding='ascii')
                 candidate['artifacts']['symbols'] = symbol_name
+    for index,frame in enumerate(lora.get('frames',[]),1):
+        name=f'lora-payload-{index}.bin'
+        (out/name).write_bytes(bytes.fromhex(frame['payload_hex']))
+        frame['artifact']=name
     if lora['candidates']:
         report['lora_artifact'] = 'lora-preamble-candidates.json'
         (out/'lora-preamble-candidates.json').write_text(json.dumps(lora,indent=2))
@@ -207,6 +211,9 @@ def analyze(path, out, sample_rate=None, seconds=10, threshold_db=9):
                     trial['input_interpretation_status'] = report['interpretation_status']
                     trial['input_datatype_hypothesis'] = report['interpretation_datatype']
                     trial['sample_rate_source'] = report['sample_rate_source']
+                    for frame in trial.get('frames',[]):
+                        frame['input_interpretation_status']=report['interpretation_status']
+                        frame['input_datatype_hypothesis']=report['interpretation_datatype']
                     artifact_key = 'ofdm_artifact' if trial['decoder']=='ofdm_cp' else 'lora_artifact'
                     if report.get(artifact_key):
                         (Path(out)/report[artifact_key]).write_text(json.dumps(trial,indent=2))

@@ -155,8 +155,8 @@ def main():
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
                 with tempfile.TemporaryDirectory() as directory:
                     from test_lora import synchronized_preamble
-                    from test_lora_header import HEADER_SF8
-                    x,fs = synchronized_preamble(offset=0,cfo_bins=0,data_symbols=HEADER_SF8)
+                    from test_lora_payload import HELLO
+                    x,fs = synchronized_preamble(offset=0,cfo_bins=0,data_symbols=HELLO[8])
                     raw = Path(directory)/'lora.sigmf-data'
                     meta = Path(directory)/'lora.sigmf-meta'
                     x.astype('<c8').tofile(raw)
@@ -165,17 +165,21 @@ def main():
                     page.locator('#meta-file').set_input_files(str(meta))
                     page.get_by_role('button',name='Analyser automatiquement').click()
                     expect(page.locator('.lora-candidate').first).to_contain_text('SF8',timeout=30000)
-                    assert page.locator('#metric-frames').inner_text()=='0'
-                    link = page.get_by_role('link',name='Télécharger les indices de préambule CSS')
+                    assert page.locator('#metric-frames').inner_text()=='1'
+                    link = page.get_by_role('link',name='Télécharger le rapport LoRa')
                     response = page.request.get(urljoin(page.url,link.get_attribute('href')))
                     assert response.ok and response.json()['candidates']
-                    assert 'frames' not in response.json()
+                    assert len(response.json()['frames'])==1
                     expect(page.locator('.lora-sync-evidence').first).to_contain_text('Paire de chirps opposés candidate')
                     expect(page.locator('.lora-sync-word').first).to_contain_text('0x34')
-                    expect(page.locator('.lora-header').first).to_contain_text('17 octets annoncés')
-                    expect(page.locator('.lora-data-symbols').first).to_contain_text('8 symboles CSS bruts candidats')
+                    expect(page.locator('.lora-header').first).to_contain_text('5 octets annoncés')
+                    expect(page.locator('.lora-data-symbols').first).to_contain_text('18 symboles CSS bruts candidats')
                     assert any(c.get('sync_word',{}).get('value_hex')=='34' for c in response.json()['candidates'])
-                    assert any(c.get('data_symbols',{}).get('symbol_bins')==HEADER_SF8 for c in response.json()['candidates'])
+                    assert any(c.get('data_symbols',{}).get('symbol_bins')==HELLO[8] for c in response.json()['candidates'])
+                    expect(page.locator('.lora-payload-text').first).to_have_text('HELLO')
+                    binary=page.get_by_role('link',name='Télécharger la charge utile LoRa')
+                    response=page.request.get(urljoin(page.url,binary.get_attribute('href')))
+                    assert response.ok and response.body()==b'HELLO'
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
                 with tempfile.TemporaryDirectory() as directory:
                     from test_cw import fixture as audio_fixture, TEXT as AUDIO_TEXT

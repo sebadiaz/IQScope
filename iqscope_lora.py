@@ -1,8 +1,9 @@
-"""LoRa-compatible chirps and candidate sync word; no header or payload decoder."""
+"""Bounded LoRa PHY trials: CSS, explicit headers and CR4/5 payload CRC."""
 from fractions import Fraction
 import numpy as np
 from scipy import signal
 from iqscope_lora_header import decode_explicit_header
+from iqscope_lora_payload import decode_payload
 
 
 def _opposite_chirp_pair(y, chirp, polarity, run_end, bandwidth):
@@ -215,13 +216,24 @@ def detect_lora_preamble(x, fs):
                     'sync_word': sync,
                     'data_symbols': data,
                     'explicit_header': decode_explicit_header(data.get('symbol_bins',[]),sf),
+                    'payload': decode_payload(data.get('symbol_bins',[]),sf),
                     'score': strength, 'score_kind': 'heuristic_not_probability',
-                    'validation_scope': 'CSS preamble, optional sync word and raw symbol hypotheses; no validated packet, header, CRC, payload bytes or LoRaWAN identification'})
+                    'validation_scope': 'Bounded LoRa PHY trial; only explicit header checks and supported payload CRC results are validated. No LoRaWAN identity or authentication.'})
     candidates.sort(key=lambda item: item['score'], reverse=True)
-    return dict(base, status='repeated_chirp_candidate' if candidates else 'no_consistent_candidate',
+    frames=[]
+    for candidate in candidates[:6]:
+        payload=candidate['payload']
+        if payload['status']!='payload_crc_valid':
+            continue
+        time=candidate['data_symbols']['candidate_data_start_seconds']
+        if any(frame['payload_hex']==payload['payload_hex'] and abs(frame['time_seconds']-time)<candidate['parameters']['symbol_seconds'] for frame in frames):
+            continue
+        frames.append({**payload,'time_seconds':time,'parameters':candidate['parameters'],'sync_word':candidate['sync_word'].get('value_hex')})
+    return dict(base, status='crc_valid_payload' if frames else ('repeated_chirp_candidate' if candidates else 'no_consistent_candidate'),
                 candidates=candidates[:6], trials=trials, analyzed_seconds=len(x)/fs, search_windows=search_windows,
+                **({'frames':frames} if frames else {}),
                 sample_budget_reached=limit < original,
                 limitations=['Centered single-channel search only; no RF center or carrier-offset estimation.',
                     'BW 125/250/500 kHz, SF7–SF12, both chirp directions; six stable concentrated FFT peaks required.',
                     'First second only; at most 256 symbols per BW/SF. Late/short/weak bursts, clock drift and off-center channels may be missed.',
-                    'Other repeated CSS waveforms can match; sync-word and boundary estimates remain hypotheses, with no validated packet, header, coding rate, CRC or payload.'])
+                    'Other CSS waveforms can match preamble evidence. Header checksum and supported payload CRC are checked separately; all other stages remain candidates. Payload: explicit CR4/5, SF7–SF10 only.'])
