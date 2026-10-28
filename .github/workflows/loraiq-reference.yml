@@ -3,6 +3,9 @@ on:
   push:
     paths:
       - scripts/loraiq_reference.py
+      - iqscope_lora.py
+      - iqscope_lora_header.py
+      - iqscope_lora_payload.py
       - .github/workflows/loraiq-reference.yml
 permissions:
   contents: read
@@ -21,4 +24,8 @@ jobs:
         if: always()
         with:
           name: independent-loraiq-reference
-          path: corpus-cache/loraiq/observation.json
+          path: |
+            corpus-cache/loraiq/observation.json
+            corpus-cache/loraiq/analysis/report.json
+            corpus-cache/loraiq/analysis/spectrum.csv
+            corpus-cache/loraiq/analysis/lora-payload-*.bin

@@ -96,8 +96,7 @@ uniquement par l'étage de charge utile pris en charge.
 
 Validation synthétique : plusieurs valeurs (dont 0x34, 0x12, 0x00 et 0xAB),
 SF7/SF8/SF9/SF12, inversion, bruit, délais différents et décalages fréquentiels
-de quelques bins. Des symboles hors convention sont rejetés. Aucun paquet réel
-connu n'est encore validé ; le résultat n'est pas compté comme une trame.
+de quelques bins. Des symboles hors convention sont rejetés. Ce champ seul ne valide aucun paquet réel et n'est pas compté comme une trame.
 
 ## Quart de chirp final et symboles bruts
 
@@ -130,8 +129,8 @@ Les tests comparent les symboles récupérés aux symboles transmis par le
 générateur synthétique, avec SF7/SF8/SF10, inversion, bruit, délais et décalages
 fréquentiels. Un quart absent interdit la sortie de symboles ; un test impose
 la limite de 64 symboles. L'interface distingue ces symboles candidats des octets dont le CRC de données
-a été vérifié ; seuls ces derniers contribuent au compteur de trames validées. Aucun paquet radio
-réel connu n'est encore validé par cette chaîne.
+a été vérifié ; seuls ces derniers contribuent au compteur de trames validées. Une référence radio indépendante est maintenant comparée au niveau de la
+charge utile et de son CRC ; voir [la validation indépendante](LORA_REAL_VALIDATION.md).
 
 Le champ `stop_reason` distingue fin de source, budget atteint, concentration
 spectrale insuffisante et phase instable. Les cas de bruit et de décalage les
@@ -217,9 +216,8 @@ Les vecteurs figés d'émission couvrent `HELLO` en SF7/SF8/SF9/SF10 et des octe
 binaires non textuels. Les tests vérifient la troncature, l'absence de CRC, les
 corruptions de symboles, et un CRC faux malgré une parité de codage cohérente.
 La chaîne complète depuis les IQ synthétiques restitue les octets attendus et
-le test navigateur télécharge exactement `HELLO`. Ces vecteurs sont calculés
-côté émission ; **aucun paquet d'un émetteur radio indépendant n'a encore été
-validé**. La convention est confrontée aux blocs de référence
+le test navigateur télécharge exactement `HELLO`. Ces vecteurs sont calculés côté émission. Une trame radio indépendante
+SF7/CR4/5 est également vérifiée ; voir [les résultats et limites](LORA_REAL_VALIDATION.md). La convention est confrontée aux blocs de référence
 [gr-lora_sdr](https://github.com/tapparelj/gr-lora_sdr), sans les embarquer.
 
 Les limites de synchronisation et les 64 symboles bruts restent applicables.
@@ -237,7 +235,8 @@ non corrigibles en 4/8 et un paquet sans CRC. Ils sont construits côté émissi
 sans appeler les fonctions du décodeur. Les tests IQ couvrent les trois nouveaux
 taux et l'inversion ; Chromium vérifie qu'une séquence 4/8 contenant une erreur
 de codeword retrouve `HELLO`, affiche une correction et exporte les octets exacts.
-Cela ne remplace toujours pas une capture d'un émetteur indépendant.
+Ces nouveaux taux restent à valider sur radio : la référence indépendante
+décrite séparément concerne uniquement le 4/5.
 
 Le rapport conserve `corrected_payload_codeword_bits` et
 `corrected_spillover_bits`. L'interface affiche les corrections dans les données
@@ -257,3 +256,11 @@ inchangée ; elle impose ces longueurs maximales théoriques :
 
 Les contraintes de synchronisation, de centrage et de durée peuvent réduire
 ces limites pratiques. Aucun seuil n'est abaissé pour forcer un CRC valide.
+
+
+## Référence radio indépendante
+
+Une trame LoRaIQ SF7/BW125 kHz/CR4/5 a été décodée automatiquement avec CRC
+et octets identiques à l'annotation publiée. Voir [méthode, intégrité et
+limites de cette validation](LORA_REAL_VALIDATION.md). Ce premier résultat
+positif ne valide pas l'ensemble des paramètres ou des conditions radio.
