@@ -269,6 +269,7 @@ function showReport(report, jobId) {
       const card=element('div',undefined,'frame lora-candidate');const p=candidate.parameters;
       card.append(element('h3','Chirps répétés compatibles avec un préambule LoRa'));
       card.append(element('p',`SF${p.spreading_factor} · largeur ${p.bandwidth_hz/1000} kHz · ${candidate.evidence.repeated_chirps} chirps répétés`));
+      if(candidate.synchronization?.status==='opposite_chirp_pair_candidate')card.append(element('p',`Paire de chirps opposés candidate vers ${candidate.synchronization.time_seconds.toFixed(6)} s ; limite de paquet et sync word non validés.`,'lora-sync-evidence'));
       card.append(element('p','Indice CSS uniquement : synchronisation de paquet, en-tête, CRC et contenu non décodés.','hint'));
       frameList.append(card);
     }

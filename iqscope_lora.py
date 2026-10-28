@@ -4,6 +4,32 @@ import numpy as np
 from scipy import signal
 
 
+def _opposite_chirp_pair(y, chirp, polarity, run_end, bandwidth):
+    """Look for two concentrated opposite chirps; not a packet-boundary solution."""
+    length = len(chirp)
+    template = chirp.conj() if polarity == 1 else chirp
+    step = max(1, length//32)
+    first = max(0, run_end-length)
+    last = min(len(y)-2*length, run_end+4*length)
+    best = None
+    for start in range(first,last+1,step):
+        matrix = y[start:start+2*length].reshape(2,length)
+        power = abs(np.fft.fft(matrix*template.conj(),axis=1))**2
+        peaks = np.argmax(power,axis=1)
+        fraction = sum(power[np.arange(2),(peaks+offset)%length] for offset in (-1,0,1))/np.maximum(power.sum(axis=1),1e-30)
+        separation = min((int(peaks[0])-int(peaks[1]))%length,(int(peaks[1])-int(peaks[0]))%length)
+        strength = float(min(fraction))
+        if strength < .8 or separation > 1:
+            continue
+        if best is None or strength > best['minimum_three_bin_energy_fraction']:
+            best = {'status':'opposite_chirp_pair_candidate', 'time_seconds':start/bandwidth,
+                    'sample_start_at_chip_rate':start, 'search_step_chips':step,
+                    'minimum_three_bin_energy_fraction':strength,
+                    'dechirped_peak_bins':[int(value) for value in peaks],
+                    'scope':'Two opposite-direction chirps only; sync word, quarter chirp, exact boundary and payload not validated'}
+    return best or {'status':'no_consistent_opposite_pair'}
+
+
 def detect_lora_preamble(x, fs):
     base = {'decoder': 'lora_preamble', 'family': 'LoRa-compatible CSS preamble', 'candidates': []}
     if not np.isfinite(fs) or not 125000 <= fs <= 2400000 or len(x) < 1024:
@@ -62,6 +88,7 @@ def detect_lora_preamble(x, fs):
                     'time_seconds': best_start*length/bandwidth,
                     'evidence': {'repeated_chirps': best_count, 'median_three_bin_energy_fraction': strength,
                                  'dechirped_peak_bin': int(peaks[best_start]), 'required_chirps': 6},
+                    'synchronization': _opposite_chirp_pair(y, chirp, polarity, (best_start+best_count)*length, bandwidth),
                     'score': strength, 'score_kind': 'heuristic_not_probability',
                     'validation_scope': 'Repeated CSS chirps compatible with a LoRa preamble; no sync word, header, CRC, payload or LoRaWAN identification'})
     candidates.sort(key=lambda item: item['score'], reverse=True)

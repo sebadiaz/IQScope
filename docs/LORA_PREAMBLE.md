@@ -41,3 +41,25 @@ une validation avec un émetteur indépendant et un paquet connu.
 Les prochaines étapes sont la synchronisation du paquet et du sync word,
 puis l'en-tête et la chaîne de décodage jusqu'au CRC. Cette version constitue
 uniquement le premier étage de cette chaîne.
+
+## Première preuve de synchronisation
+
+Chaque préambule candidat est désormais suivi d'une recherche locale de deux
+chirps consécutifs de sens opposé. La recherche couvre de −1 à +4 durées symbole
+par rapport à la fin du train répété, par pas de 1/32 de symbole (au moins un
+chip). Chaque bloc doit concentrer au moins 80 % de son énergie dans trois bins
+FFT voisins, avec des pics séparés d'au plus un bin. Le minimum des deux
+concentrations sert à choisir la meilleure fenêtre.
+
+Le champ `synchronization` distingue `opposite_chirp_pair_candidate` de
+`no_consistent_opposite_pair`. L'interface montre cette preuve séparément.
+L'horodatage est celui d'une fenêtre candidate, pas une frontière exacte du
+paquet : plusieurs fenêtres peuvent satisfaire la condition dans les chirps de
+synchronisation. Le quart de chirp final et les deux symboles de sync word ne
+sont pas validés. Une autre forme d'onde CSS peut encore correspondre.
+
+Les tests incluent un préambule suivi de symboles CSS décalés puis de deux
+chirps opposés et d'un quart de chirp, avec inversion I/Q et faible décalage
+fréquentiel. Les contrôles négatifs comportent le préambule seul et un unique
+chirp opposé. Cela reste une validation synthétique ; aucun paquet réel connu
+ni CRC n'est revendiqué par cette étape.

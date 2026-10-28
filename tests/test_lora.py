@@ -20,6 +20,19 @@ def preamble(sf=7, bandwidth=125000, inverted=False):
     return np.r_[np.zeros(47), waveform], bandwidth*2
 
 
+def synchronized_preamble(inverted=False):
+    # Independent instantaneous-frequency integration at two samples per chip.
+    length,bandwidth = 256,125000
+    t = np.arange(2*length)/2
+    up = np.exp(2j*np.pi*(t*t/(2*length)-t/2))
+    x = np.r_[np.zeros(47),np.tile(up,8),np.roll(up,16),np.roll(up,40),
+              np.tile(up.conj(),2),up.conj()[:length//2],np.zeros(4*length)]
+    if inverted:
+        x = x.conj()
+    x *= np.exp(2j*np.pi*.19*np.arange(len(x))/(2*length))
+    return x,2*bandwidth
+
+
 class LoRaPreambleTests(unittest.TestCase):
     def test_bw_sf_and_inverted_chirps_with_offset_noise(self):
         for sf,bw,inverted in ((7,125000,False),(9,250000,False),(12,125000,True),(8,500000,True)):
@@ -69,3 +82,27 @@ class LoRaPreambleTests(unittest.TestCase):
             artifact = json.loads((root/'results'/report['lora_artifact']).read_text())
             self.assertEqual(artifact['input_interpretation_status'],'unverified_byte_order_and_header_layout')
             self.assertNotIn('frames',artifact)
+
+    def test_opposite_chirp_pair_after_preamble_and_sync_symbols(self):
+        for inverted in (False,True):
+            sf,bandwidth,length = 8,125000,256
+            x,fs = synchronized_preamble(inverted)
+            result = detect_lora_preamble(x,2*bandwidth)
+            matches = [c for c in result['candidates'] if c['parameters']['spreading_factor']==sf and c['parameters']['bandwidth_hz']==bandwidth]
+            self.assertTrue(matches,result)
+            sync = matches[0]['synchronization']
+            self.assertEqual(sync['status'],'opposite_chirp_pair_candidate',sync)
+            self.assertLess(abs(sync['time_seconds']-(47/2+10*length)/bandwidth),length/bandwidth/4)
+
+    def test_preamble_alone_and_single_opposite_chirp_do_not_confirm_pair(self):
+        x,fs = preamble()
+        result = detect_lora_preamble(x,fs)
+        self.assertTrue(result['candidates'])
+        self.assertTrue(all(c['synchronization']['status']=='no_consistent_opposite_pair' for c in result['candidates']))
+        length=128
+        n=np.arange(length)
+        up=np.exp(1j*np.pi*(n*n/length-n))
+        x=np.r_[np.tile(up,8),np.roll(up,8),np.roll(up,16),up.conj(),np.zeros(3*length)]
+        result=detect_lora_preamble(x,125000)
+        self.assertTrue(result['candidates'])
+        self.assertTrue(all(c['synchronization']['status']=='no_consistent_opposite_pair' for c in result['candidates']))

@@ -154,8 +154,8 @@ def main():
                     assert response.ok and response.json()['candidates']
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
                 with tempfile.TemporaryDirectory() as directory:
-                    from test_lora import preamble
-                    x,fs = preamble()
+                    from test_lora import synchronized_preamble
+                    x,fs = synchronized_preamble()
                     raw = Path(directory)/'lora.sigmf-data'
                     meta = Path(directory)/'lora.sigmf-meta'
                     x.astype('<c8').tofile(raw)
@@ -163,12 +163,13 @@ def main():
                     page.locator('#iq-file').set_input_files(str(raw))
                     page.locator('#meta-file').set_input_files(str(meta))
                     page.get_by_role('button',name='Analyser automatiquement').click()
-                    expect(page.locator('.lora-candidate').first).to_contain_text('SF7',timeout=30000)
+                    expect(page.locator('.lora-candidate').first).to_contain_text('SF8',timeout=30000)
                     assert page.locator('#metric-frames').inner_text()=='0'
                     link = page.get_by_role('link',name='Télécharger les indices de préambule CSS')
                     response = page.request.get(urljoin(page.url,link.get_attribute('href')))
                     assert response.ok and response.json()['candidates']
                     assert 'frames' not in response.json()
+                    expect(page.locator('.lora-sync-evidence').first).to_contain_text('Paire de chirps opposés candidate')
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
                 with tempfile.TemporaryDirectory() as directory:
                     from test_cw import fixture as audio_fixture, TEXT as AUDIO_TEXT
