@@ -604,6 +604,7 @@ radio decoder or prediction model is added for these CSV features.
 
 Automatic centered-channel CSS preamble search is available for BW125/250/500 kHz
 and SF7–12, with both chirp directions. Candidate parameters and repeated-chirp
-evidence appear in the UI and JSON. This is not packet decoding: no sync word,
-header, coding-rate recovery, CRC, payload or LoRaWAN identification.
+evidence appear in the UI and JSON. A conventional sync-word hypothesis may be reported after opposite chirps.
+This is not packet decoding: no verified boundary, header, coding-rate recovery,
+CRC, payload or LoRaWAN identification.
 See [scope, budgets and validation](docs/LORA_PREAMBLE.md).

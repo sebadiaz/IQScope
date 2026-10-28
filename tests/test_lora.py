@@ -20,16 +20,16 @@ def preamble(sf=7, bandwidth=125000, inverted=False):
     return np.r_[np.zeros(47), waveform], bandwidth*2
 
 
-def synchronized_preamble(inverted=False):
+def synchronized_preamble(inverted=False, sync_word=0x34, sf=8, bandwidth=125000, offset=47, cfo_bins=.19):
     # Independent instantaneous-frequency integration at two samples per chip.
-    length,bandwidth = 256,125000
+    length = 2**sf
     t = np.arange(2*length)/2
     up = np.exp(2j*np.pi*(t*t/(2*length)-t/2))
-    x = np.r_[np.zeros(47),np.tile(up,8),np.roll(up,16),np.roll(up,40),
+    x = np.r_[np.zeros(offset),np.tile(up,8),np.roll(up,-16*(sync_word>>4)),np.roll(up,-16*(sync_word&15)),
               np.tile(up.conj(),2),up.conj()[:length//2],np.zeros(4*length)]
     if inverted:
         x = x.conj()
-    x *= np.exp(2j*np.pi*.19*np.arange(len(x))/(2*length))
+    x *= np.exp(2j*np.pi*cfo_bins*np.arange(len(x))/(2*length))
     return x,2*bandwidth
 
 
@@ -106,3 +106,35 @@ class LoRaPreambleTests(unittest.TestCase):
         result=detect_lora_preamble(x,125000)
         self.assertTrue(result['candidates'])
         self.assertTrue(all(c['synchronization']['status']=='no_consistent_opposite_pair' for c in result['candidates']))
+
+    def test_sync_words_with_inversion_noise_and_different_spreading_factors(self):
+        for word,sf,inverted in ((0x34,7,False),(0x12,8,True),(0x00,9,False),(0xAB,12,True)):
+            x,fs = synchronized_preamble(inverted,word,sf)
+            rng = np.random.default_rng(80)
+            x += .01*(rng.normal(size=len(x))+1j*rng.normal(size=len(x)))
+            result = detect_lora_preamble(x,fs)
+            matches = [c for c in result['candidates'] if c['parameters']['spreading_factor']==sf and c['parameters']['bandwidth_hz']==125000]
+            self.assertTrue(matches,result)
+            sync = matches[0]['sync_word']
+            self.assertEqual(sync['status'],'sync_word_candidate',sync)
+            self.assertEqual(sync['value_hex'],f'{word:02X}')
+            self.assertNotIn('frames',result)
+
+    def test_nonconventional_sync_symbols_are_not_rounded_to_a_word(self):
+        length=256
+        t=np.arange(2*length)/2
+        up=np.exp(2j*np.pi*(t*t/(2*length)-t/2))
+        x=np.r_[np.zeros(47),np.tile(up,8),np.roll(up,-6),np.roll(up,-54),np.tile(up.conj(),2),up.conj()[:length//2],np.zeros(4*length)]
+        result=detect_lora_preamble(x,250000)
+        matches=[c for c in result['candidates'] if c['parameters']['spreading_factor']==8 and c['parameters']['bandwidth_hz']==125000]
+        self.assertTrue(matches,result)
+        self.assertEqual(matches[0]['synchronization']['status'],'opposite_chirp_pair_candidate')
+        self.assertEqual(matches[0]['sync_word']['status'],'no_consistent_sync_word')
+
+    def test_sync_word_with_varied_delays_and_carrier_offsets(self):
+        for delay,cfo in ((0,0),(197,3.3),(773,-2.2)):
+            x,fs=synchronized_preamble(False,0x34,8,125000,delay,cfo)
+            result=detect_lora_preamble(x,fs)
+            matches=[c for c in result['candidates'] if c['parameters']['spreading_factor']==8 and c['parameters']['bandwidth_hz']==125000]
+            self.assertTrue(matches,result)
+            self.assertEqual(matches[0]['sync_word'].get('value_hex'),'34',matches[0]['sync_word'])

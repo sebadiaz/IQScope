@@ -170,6 +170,8 @@ def main():
                     assert response.ok and response.json()['candidates']
                     assert 'frames' not in response.json()
                     expect(page.locator('.lora-sync-evidence').first).to_contain_text('Paire de chirps opposés candidate')
+                    expect(page.locator('.lora-sync-word').first).to_contain_text('0x34')
+                    assert any(c.get('sync_word',{}).get('value_hex')=='34' for c in response.json()['candidates'])
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
                 with tempfile.TemporaryDirectory() as directory:
                     from test_cw import fixture as audio_fixture, TEXT as AUDIO_TEXT

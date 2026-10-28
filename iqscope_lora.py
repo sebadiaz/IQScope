@@ -1,4 +1,4 @@
-"""LoRa-compatible repeated chirp evidence; no sync word, header or payload decoder."""
+"""LoRa-compatible chirps and candidate sync word; no header or payload decoder."""
 from fractions import Fraction
 import numpy as np
 from scipy import signal
@@ -28,6 +28,56 @@ def _opposite_chirp_pair(y, chirp, polarity, run_end, bandwidth):
                     'dechirped_peak_bins':[int(value) for value in peaks],
                     'scope':'Two opposite-direction chirps only; sync word, quarter chirp, exact boundary and payload not validated'}
     return best or {'status':'no_consistent_opposite_pair'}
+
+
+def _sync_word_candidate(y, chirp, polarity, preamble_bin, pair, bandwidth):
+    """Resolve timing hypotheses from up/down bins, then read two relative CSS bins."""
+    if pair['status'] != 'opposite_chirp_pair_candidate':
+        return {'status':'not_available_without_opposite_pair'}
+    length = len(chirp)
+    start = pair['sample_start_at_chip_rate']
+    down_bin = pair['dechirped_peak_bins'][0]
+    phase = ((polarity*(down_bin-preamble_bin)+start)/2) % (length/2)
+    template = chirp if polarity == 1 else chirp.conj()
+    hypotheses = []
+    tested = set()
+    for half in (0,length/2):
+        for cycle in range(start//length-1,start//length+2):
+            center = round(cycle*length+phase+half)
+            for delta in (-1,0,1):
+                boundary = center+delta
+                if boundary in tested or boundary < 3*length or abs(boundary-start)>length/2:
+                    continue
+                tested.add(boundary)
+                matrix = y[boundary-3*length:boundary].reshape(3,length)
+                power = abs(np.fft.fft(matrix*template.conj(),axis=1))**2
+                peaks = np.argmax(power,axis=1)
+                energy = sum(power[np.arange(3),(peaks+offset)%length] for offset in (-1,0,1))/np.maximum(power.sum(axis=1),1e-30)
+                # Use the preamble concentration criterion for shifted upchirps too.
+                if min(energy)<.65:
+                    continue
+                symbols = [(polarity*(int(value)-int(peaks[0])))%length for value in peaks[1:]]
+                nibbles,errors = [],[]
+                for value in symbols:
+                    distances = [min((value-8*n)%length,(8*n-value)%length) for n in range(16)]
+                    nibble = int(np.argmin(distances))
+                    nibbles.append(nibble)
+                    errors.append(distances[nibble])
+                if max(errors)>1:
+                    continue
+                hypotheses.append({'word':16*nibbles[0]+nibbles[1], 'boundary':boundary,
+                                   'symbols':symbols, 'strength':float(min(energy)), 'errors':errors})
+    words = {item['word'] for item in hypotheses}
+    if not hypotheses:
+        return {'status':'no_consistent_sync_word'}
+    if len(words)>1:
+        return {'status':'ambiguous_sync_word', 'word_hypotheses_hex':[f'{word:02X}' for word in sorted(words)]}
+    best = max(hypotheses,key=lambda item:item['strength'])
+    return {'status':'sync_word_candidate', 'value_hex':f"{best['word']:02X}",
+            'relative_symbol_bins':best['symbols'], 'symbol_bin_errors':best['errors'],
+            'opposite_chirp_start_seconds':best['boundary']/bandwidth,
+            'minimum_three_bin_energy_fraction':best['strength'],
+            'scope':'Conventional two-nibble sync-word hypothesis only; no network identity, quarter-chirp, header, CRC or payload validation'}
 
 
 def detect_lora_preamble(x, fs):
@@ -83,14 +133,16 @@ def detect_lora_preamble(x, fs):
                 if best_count < 6:
                     continue
                 strength = float(np.median(concentration[best_start:best_start+best_count]))
+                pair = _opposite_chirp_pair(y, chirp, polarity, (best_start+best_count)*length, bandwidth)
                 candidates.append({'parameters': {'bandwidth_hz': bandwidth, 'spreading_factor': sf,
                     'symbol_seconds': length/bandwidth, 'chirp_polarity': polarity},
                     'time_seconds': best_start*length/bandwidth,
                     'evidence': {'repeated_chirps': best_count, 'median_three_bin_energy_fraction': strength,
                                  'dechirped_peak_bin': int(peaks[best_start]), 'required_chirps': 6},
-                    'synchronization': _opposite_chirp_pair(y, chirp, polarity, (best_start+best_count)*length, bandwidth),
+                    'synchronization': pair,
+                    'sync_word': _sync_word_candidate(y, chirp, polarity, int(peaks[best_start]), pair, bandwidth),
                     'score': strength, 'score_kind': 'heuristic_not_probability',
-                    'validation_scope': 'Repeated CSS chirps compatible with a LoRa preamble; no sync word, header, CRC, payload or LoRaWAN identification'})
+                    'validation_scope': 'Repeated CSS chirps and optional conventional sync-word hypothesis; no validated packet, header, CRC, payload or LoRaWAN identification'})
     candidates.sort(key=lambda item: item['score'], reverse=True)
     return dict(base, status='repeated_chirp_candidate' if candidates else 'no_consistent_candidate',
                 candidates=candidates[:6], trials=trials, analyzed_seconds=len(x)/fs, search_windows=search_windows,
@@ -98,4 +150,4 @@ def detect_lora_preamble(x, fs):
                 limitations=['Centered single-channel search only; no RF center or carrier-offset estimation.',
                     'BW 125/250/500 kHz, SF7–SF12, both chirp directions; six stable concentrated FFT peaks required.',
                     'First second only; at most 256 symbols per BW/SF. Late/short/weak bursts, clock drift and off-center channels may be missed.',
-                    'Other repeated CSS waveforms can match; no LoRa packet, sync word, header, coding rate, CRC or payload decoded.'])
+                    'Other repeated CSS waveforms can match; sync-word and boundary estimates remain hypotheses, with no validated packet, header, coding rate, CRC or payload.'])

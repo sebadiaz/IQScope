@@ -26,9 +26,9 @@ incertitude d'encodage SigMF est propagée dans cet artefact.
   examinée et si cette limite est atteinte. Un préambule tardif peut être manqué.
 - SF5/SF6, autres largeurs, dérive d'horloge, faibles signaux, collisions et
   préambules très courts ne sont pas couverts par cette première version.
-- Une autre forme d'onde CSS répétitive peut correspondre. Le sync word, les
-  downchirps de synchronisation, l'en-tête, le codage, le CRC et la charge utile
-  ne sont pas décodés. Aucune identification LoRaWAN n'est effectuée.
+- Une autre forme d'onde CSS répétitive peut correspondre. Les chirps opposés
+  et le sync word restent des hypothèses. L'en-tête, le codage, le CRC et la
+  charge utile ne sont pas décodés. Aucune identification LoRaWAN n'est effectuée.
 
 ## Validation
 
@@ -38,7 +38,7 @@ blanc/coloré, porteuse et symboles CSS changeants. Tests de pipeline, export et
 propagation d'une hypothèse d'encodage non vérifiée. Ces tests ne remplacent pas
 une validation avec un émetteur indépendant et un paquet connu.
 
-Les prochaines étapes sont la synchronisation du paquet et du sync word,
+Les prochaines étapes sont la synchronisation fine du paquet,
 puis l'en-tête et la chaîne de décodage jusqu'au CRC. Cette version constitue
 uniquement le premier étage de cette chaîne.
 
@@ -55,11 +55,42 @@ Le champ `synchronization` distingue `opposite_chirp_pair_candidate` de
 `no_consistent_opposite_pair`. L'interface montre cette preuve séparément.
 L'horodatage est celui d'une fenêtre candidate, pas une frontière exacte du
 paquet : plusieurs fenêtres peuvent satisfaire la condition dans les chirps de
-synchronisation. Le quart de chirp final et les deux symboles de sync word ne
-sont pas validés. Une autre forme d'onde CSS peut encore correspondre.
+synchronisation. Cette preuve seule ne valide ni le quart de chirp final ni
+les deux symboles de sync word ; le champ séparé `sync_word` décrit leur
+interprétation candidate. Une autre forme d'onde CSS peut encore correspondre.
 
 Les tests incluent un préambule suivi de symboles CSS décalés puis de deux
 chirps opposés et d'un quart de chirp, avec inversion I/Q et faible décalage
 fréquentiel. Les contrôles négatifs comportent le préambule seul et un unique
 chirp opposé. Cela reste une validation synthétique ; aucun paquet réel connu
 ni CRC n'est revendiqué par cette étape.
+
+
+## Sync word candidat
+
+Après la paire de chirps opposés, une estimation d'alignement utilise la
+différence des bins de déchirpage montant/descendant. Les deux solutions
+modulo une demi-durée symbole et leurs voisins d'un chip sont évalués près de
+la fenêtre candidate. Trois blocs montants (référence de préambule puis deux
+symboles de synchronisation) doivent concentrer chacun au moins 65 % de leur
+énergie dans trois bins voisins, comme pour le préambule.
+
+Les différences de bins par rapport à la référence sont normalisées selon la
+polarité. Chaque symbole doit être à au plus un bin d'une valeur 8*n, avec n
+entre 0 et 15. Les deux nibbles donnent le sync word candidat. Cette convention
+est documentée par le modulateur de référence
+[gr-lora_sdr](https://github.com/tapparelj/gr-lora_sdr/blob/master/lib/modulate_impl.cc).
+Le code de synchronisation IQScope est une implémentation indépendante et
+n'embarque pas cette bibliothèque.
+
+Le champ `sync_word` indique `sync_word_candidate`, `no_consistent_sync_word`,
+`not_available_without_opposite_pair` ou `ambiguous_sync_word`. Si plusieurs
+valeurs restent compatibles, aucune n'est sélectionnée. L'interface affiche
+l'hexadécimal candidat sans inférer un réseau, LoRaWAN ou l'identité d'un
+émetteur. La frontière estimée n'est pas une synchronisation fine validée :
+le quart de chirp, l'horloge, l'en-tête et le CRC restent à traiter.
+
+Validation synthétique : plusieurs valeurs (dont 0x34, 0x12, 0x00 et 0xAB),
+SF7/SF8/SF9/SF12, inversion, bruit, délais différents et décalages fréquentiels
+de quelques bins. Des symboles hors convention sont rejetés. Aucun paquet réel
+connu n'est encore validé ; le résultat n'est pas compté comme une trame.
