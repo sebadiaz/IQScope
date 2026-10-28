@@ -1,4 +1,4 @@
-"""Bounded LoRa PHY trials: CSS, explicit headers and CR4/5 payload CRC."""
+"""Bounded LoRa PHY trials: CSS, explicit headers and CR4/5–4/8 payload CRC."""
 from fractions import Fraction
 import numpy as np
 from scipy import signal
@@ -236,4 +236,4 @@ def detect_lora_preamble(x, fs):
                 limitations=['Centered single-channel search only; no RF center or carrier-offset estimation.',
                     'BW 125/250/500 kHz, SF7–SF12, both chirp directions; six stable concentrated FFT peaks required.',
                     'First second only; at most 256 symbols per BW/SF. Late/short/weak bursts, clock drift and off-center channels may be missed.',
-                    'Other CSS waveforms can match preamble evidence. Header checksum and supported payload CRC are checked separately; all other stages remain candidates. Payload: explicit CR4/5, SF7–SF10 only.'])
+                    'Other CSS waveforms can match preamble evidence. Header checksum and supported payload CRC are checked separately; all other stages remain candidates. Payload: explicit CR4/5–4/8, SF7–SF10 only.'])

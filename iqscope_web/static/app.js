@@ -290,7 +290,9 @@ function showReport(report, jobId) {
     for(const frame of trial.frames || []){
       const card=element('div',undefined,'frame lora-payload');
       card.append(element('h3','LoRa · charge utile à CRC16 valide'));
-      card.append(element('p',`${frame.payload_length_bytes} octets · somme d’en-tête et CRC de données vérifiés`));
+      card.append(element('p',`${frame.payload_length_bytes} octets · codage ${frame.coding_rate || 'inconnu'} · somme d’en-tête et CRC de données vérifiés`));
+      const corrections=(frame.corrected_payload_codeword_bits || 0)+(frame.corrected_spillover_bits || 0);
+      if(corrections)card.append(element('p',`${corrections} bit${corrections>1?'s':''} de codeword corrigé${corrections>1?'s':''} dans les données.`,'lora-fec-corrections'));
       if(frame.text!==undefined)card.append(element('pre',frame.text,'lora-payload-text'));
       else card.append(element('code',frame.payload_hex));
       card.append(element('p','CRC cohérent ; identité de l’émetteur et interprétation LoRaWAN non établies.','hint'));

@@ -155,8 +155,8 @@ def main():
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
                 with tempfile.TemporaryDirectory() as directory:
                     from test_lora import synchronized_preamble
-                    from test_lora_payload import HELLO
-                    x,fs = synchronized_preamble(offset=0,cfo_bins=0,data_symbols=HELLO[8])
+                    from test_lora_payload import RATE_VECTORS
+                    x,fs = synchronized_preamble(offset=0,cfo_bins=0,data_symbols=RATE_VECTORS['8-4-1-bit-errors'])
                     raw = Path(directory)/'lora.sigmf-data'
                     meta = Path(directory)/'lora.sigmf-meta'
                     x.astype('<c8').tofile(raw)
@@ -173,9 +173,11 @@ def main():
                     expect(page.locator('.lora-sync-evidence').first).to_contain_text('Paire de chirps opposés candidate')
                     expect(page.locator('.lora-sync-word').first).to_contain_text('0x34')
                     expect(page.locator('.lora-header').first).to_contain_text('5 octets annoncés')
-                    expect(page.locator('.lora-data-symbols').first).to_contain_text('18 symboles CSS bruts candidats')
+                    expect(page.locator('.lora-header').first).to_contain_text('codage 4/8')
+                    expect(page.locator('.lora-fec-corrections').first).to_contain_text('1 bit de codeword corrigé')
+                    expect(page.locator('.lora-data-symbols').first).to_contain_text('24 symboles CSS bruts candidats')
                     assert any(c.get('sync_word',{}).get('value_hex')=='34' for c in response.json()['candidates'])
-                    assert any(c.get('data_symbols',{}).get('symbol_bins')==HELLO[8] for c in response.json()['candidates'])
+                    assert any(c.get('data_symbols',{}).get('symbol_bins')==RATE_VECTORS['8-4-1-bit-errors'] for c in response.json()['candidates'])
                     expect(page.locator('.lora-payload-text').first).to_have_text('HELLO')
                     binary=page.get_by_role('link',name='Télécharger la charge utile LoRa')
                     response=page.request.get(urljoin(page.url,binary.get_attribute('href')))

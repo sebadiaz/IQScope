@@ -608,7 +608,7 @@ evidence appear in the UI and JSON. A conventional sync-word hypothesis may be r
 A matching final quarter chirp enables at most 64 raw CSS symbol candidates,
 with explicit stop reasons; these values are not bytes.
 A candidate explicit header reports its announced length, coding rate and CRC
-flag after a five-bit check. Explicit CR4/5 SF7–10 payloads can be decoded,
+flag after a five-bit check. Explicit CR4/5–4/8 SF7–10 payloads can be decoded,
 dewhitened and checked against the LoRa PHY CRC16. CRC-valid bytes appear in the
 UI and binary export; other outputs remain candidates. Validation currently uses
 synthetic transmitter vectors, not known over-the-air packets. No LoRaWAN parsing,

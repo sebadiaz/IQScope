@@ -2,7 +2,7 @@
 
 La capacité `lora_preamble` cherche automatiquement des répétitions de chirps
 CSS dans un canal centré. Une chaîne PHY partielle décode aussi les en-têtes
-explicites et les charges utiles CR4/5, SF7–SF10, avec contrôle du CRC.
+explicites et les charges utiles CR4/5–4/8, SF7–SF10, avec contrôle du CRC.
 La relation nominale utilisée est T_sym = 2^SF / BW ; voir la note fabricant
 [Semtech AN1200.22](https://www.mouser.com/pdfdocs/an120022.pdf).
 
@@ -30,7 +30,7 @@ incertitude d'encodage SigMF est propagée dans cet artefact.
 - Une autre forme d'onde CSS répétitive peut correspondre. Les chirps opposés
   et le sync word restent des hypothèses. Un en-tête explicite peut être
   contrôlé ; une charge utile est décodée uniquement dans le périmètre
-  explicite CR4/5, SF7–SF10 décrit plus bas. Aucune identification LoRaWAN n'est effectuée.
+  explicite CR4/5–4/8, SF7–SF10 décrit plus bas. Aucune identification LoRaWAN n'est effectuée.
 
 ## Validation
 
@@ -123,7 +123,7 @@ pas directement des octets ou des caractères. Un étage séparé peut interpré
 leurs huit premiers éléments comme un en-tête explicite candidat. Les
 transformations Gray, désentrelacement et Hamming de cet en-tête sont décrites
 plus bas ; le déblanchiment, la charge utile et son CRC sont pris en charge
-dans le périmètre CR4/5, SF7–SF10 décrit en fin de document. La synchronisation fractionnaire et
+dans le périmètre CR4/5–4/8, SF7–SF10 décrit en fin de document. La synchronisation fractionnaire et
 le suivi de l'horloge restent à améliorer ; aucun contenu LoRaWAN n'est extrait.
 
 Les tests comparent les symboles récupérés aux symboles transmis par le
@@ -175,15 +175,19 @@ forcer une somme valide. La somme de cinq bits est courte : elle ne constitue
 ni une authentification ni une preuve suffisante de contenu radio.
 
 
-## Charge utile CR4/5 avec CRC de données
+## Charge utile CR4/5 à CR4/8 avec CRC de données
 
-Le module `iqscope_lora_payload` traite l'en-tête explicite, le codage **4/5**
+Le module `iqscope_lora_payload` traite l'en-tête explicite, les codages **4/5, 4/6, 4/7 et 4/8**
 et les **SF7 à SF10**, sans optimisation bas débit. Les nibbles de charge utile
 qui débordent dans le premier bloc à codage 4/8 sont récupérés après les cinq
-nibbles d'en-tête. Les blocs suivants regroupent cinq symboles et utilisent le
-désentrelacement diagonal à largeur SF. Le code 4/5 possède un bit de parité :
-un échec de parité est rejeté, sans recherche de correction destinée à faire
-passer le CRC. Les nibbles sont assemblés poids faible d'abord.
+nibbles d'en-tête. Les blocs suivants regroupent 5, 6, 7 ou 8 symboles selon le taux annoncé dans
+l'en-tête et utilisent le désentrelacement diagonal à largeur SF. Les codes
+4/6 et 4/7 sont obtenus par poncturation du code linéaire (8,4) ; le 4/5 utilise
+une parité paire. Le décodeur n'accepte qu'un mot unique à distance zéro ou un.
+Une égalité entre plusieurs mots est rejetée, sans utiliser le CRC pour choisir.
+Les 4/7 et 4/8 corrigent une erreur simple par codeword ; le 4/8 rejette deux
+erreurs. Le 4/6 a des erreurs simples ambiguës et ne garantit pas leur correction.
+Des erreurs plus nombreuses peuvent être mal corrigées ; le CRC reste nécessaire. Les nibbles sont assemblés poids faible d'abord.
 
 Le déblanchiment est généré par un LFSR de huit bits, initialisé à 0xFF, avec
 retour des bits 7,5,4,3. Une étape par octet produit notamment
@@ -219,8 +223,37 @@ validé**. La convention est confrontée aux blocs de référence
 [gr-lora_sdr](https://github.com/tapparelj/gr-lora_sdr), sans les embarquer.
 
 Les limites de synchronisation et les 64 symboles bruts restent applicables.
-Avec CRC présent, ce budget permet au plus 36/42/48/54 octets annoncés en
-SF7/8/9/10 respectivement. Les CR4/6, 4/7, 4/8, SF11/SF12 pour la charge utile,
-l'en-tête implicite et les paquets plus longs restent non pris en charge.
+Avec CRC présent et codage 4/5, ce budget permet au plus 36/42/48/54 octets annoncés en
+SF7/8/9/10 respectivement. Les SF11/SF12 pour la charge utile, l'en-tête implicite et les paquets plus longs restent non pris en charge.
 Un CRC PHY valide prouve une cohérence, pas l'identité ni la confidentialité.
 Aucun parsing, déchiffrement ou authentification LoRaWAN n'est effectué.
+
+
+### Extension aux quatre taux de codage
+
+Les vecteurs figés `tests/lora_coding_vectors.json` couvrent les trois taux
+supplémentaires avec SF7/SF8/SF9/SF10, ainsi qu'une erreur corrigible, deux erreurs
+non corrigibles en 4/8 et un paquet sans CRC. Ils sont construits côté émission,
+sans appeler les fonctions du décodeur. Les tests IQ couvrent les trois nouveaux
+taux et l'inversion ; Chromium vérifie qu'une séquence 4/8 contenant une erreur
+de codeword retrouve `HELLO`, affiche une correction et exporte les octets exacts.
+Cela ne remplace toujours pas une capture d'un émetteur indépendant.
+
+Le rapport conserve `corrected_payload_codeword_bits` et
+`corrected_spillover_bits`. L'interface affiche les corrections dans les données
+si elles sont non nulles ; ce nombre n'est pas une mesure du taux d'erreur radio.
+Les trames sans CRC ou à CRC invalide ne sont pas comptées comme validées.
+
+Le nombre de symboles requis est 8 + (4+CR) * ceil((2*(L+2)−(SF−7))/SF)
+avec CRC présent, CR l'indice de codage (1 à 4) et L octets de charge utile. La limite de 64 symboles reste
+inchangée ; elle impose ces longueurs maximales théoriques :
+
+| Codage | SF7 | SF8 | SF9 | SF10 |
+| --- | ---: | ---: | ---: | ---: |
+| 4/5 | 36 | 42 | 48 | 54 |
+| 4/6 | 29 | 34 | 39 | 44 |
+| 4/7 | 26 | 30 | 35 | 39 |
+| 4/8 | 22 | 26 | 30 | 34 |
+
+Les contraintes de synchronisation, de centrage et de durée peuvent réduire
+ces limites pratiques. Aucun seuil n'est abaissé pour forcer un CRC valide.

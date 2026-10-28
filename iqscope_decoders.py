@@ -18,7 +18,7 @@ class Capability:
 
 
 CAPABILITIES = (
-    Capability('lora_preamble', 'LoRa PHY (partial)', 'centered BW125/250/500kHz SF7–12 preamble/header; CR4/5 SF7–10 payload, at most 64 symbols', 'header 5-bit checksum and supported payload CRC16; no LoRaWAN interpretation or authenticity'),
+    Capability('lora_preamble', 'LoRa PHY (partial)', 'centered BW125/250/500kHz SF7–12 preamble/header; CR4/5–4/8 SF7–10 payload, at most 64 symbols', 'header 5-bit checksum and supported payload CRC16; no LoRaWAN interpretation or authenticity'),
     Capability('analog_fm', 'FM', 'mono audio candidate, 75 us de-emphasis', 'unvalidated'),
     Capability('analog_am', 'AM', 'envelope audio candidate, carrier-present AM only', 'unvalidated'),
     Capability('ofdm_cp', 'Cyclic-prefix / OFDM evidence', 'bounded periodic guard correlation; integer useful/guard lengths; no protocol classification or payload', 'heuristic structural evidence only; no CRC'),
