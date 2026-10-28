@@ -50,7 +50,7 @@ def run(result):
     from iqscope_lora import detect_lora_preamble
     root=Path('corpus-cache/loraiq-batch')
     root.mkdir(parents=True,exist_ok=True)
-    with RangeReader(BASE+'/files/sigmfs.zip?download=1&iqscope=batch',budget=64*1024*1024) as remote:
+    with RangeReader(BASE+'/files/sigmfs.zip?download=1&iqscope=batch',budget=224*1024*1024) as remote:
         if remote.size!=71002741525:
             raise ValueError('Archive size changed')
         with zipfile.ZipFile(remote) as archive:
@@ -71,7 +71,7 @@ def run(result):
                 result['observations'].append(entry)
                 stem=reference_stem(row)
                 meta_bytes=member(stem+'.sigmf-meta',65536)
-                data=member(stem+'.sigmf-data',8*1024*1024)
+                data=member(stem+'.sigmf-data',32*1024*1024)
                 meta=json.loads(meta_bytes)
                 if hashlib.sha512(data).hexdigest()!=meta['global'].get('core:sha512'):
                     raise ValueError('Publisher SigMF SHA512 mismatch: '+stem)

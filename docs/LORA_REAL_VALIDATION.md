@@ -106,7 +106,7 @@ d’échantillonnage. Les octets attendus sont comparés après le décodage. Le
 rapport conserve les échecs, les éventuelles autres trames à CRC valide, les
 empreintes des sources et les résultats détaillés. Les erreurs de transport ou
 d’intégrité échouent en CI ; un échec de décodage reste un résultat du benchmark.
-Le budget réseau de l’archive, index compris, est de 64 Mio. Seul le rapport JSON
+Le budget réseau de l’archive, index compris, est de 224 Mio, avec au plus 32 Mio par membre IQ. Seul le rapport JSON
 est publié en artifact par `loraiq-batch.yml`, sans les fichiers IQ.
 
 Cet échantillon réduit ne constitue ni une courbe de sensibilité, ni une mesure
