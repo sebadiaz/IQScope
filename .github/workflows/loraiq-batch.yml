@@ -1,0 +1,26 @@
+name: LoRaIQ SNR strata benchmark
+on:
+  push:
+    paths:
+      - scripts/loraiq_batch.py
+      - scripts/loraiq_reference.py
+      - iqscope_lora*.py
+      - .github/workflows/loraiq-batch.yml
+permissions:
+  contents: read
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install .
+      - run: python scripts/loraiq_batch.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: loraiq-snr-strata
+          path: corpus-cache/loraiq-batch/observation.json

@@ -91,3 +91,23 @@ Il ne contient pas les IQ source. L'attribution et la licence sont conservées
 dans le rapport. Les 170 tests Python et le contrôle Chromium passent au même
 état de code ; aucun changement d'algorithme n'a été nécessaire pour cette
 référence radio.
+
+
+## Validation sur plusieurs captures
+
+`scripts/loraiq_batch.py` sélectionne le premier membre distinct de chacune des
+six tranches SNR : moins de 0, 0–5, 5–10, 10–15, 15–20 et au moins 20 dB.
+La sélection utilise uniquement le préfixe CSV de 128 Kio déjà épinglé, SF7,
+125 kHz et le codage 4/5. Les tranches absentes restent absentes ; aucun fichier
+n’est remplacé après un échec de décodage.
+
+Chaque membre complet est présenté au détecteur avec sa seule fréquence
+d’échantillonnage. Les octets attendus sont comparés après le décodage. Le
+rapport conserve les échecs, les éventuelles autres trames à CRC valide, les
+empreintes des sources et les résultats détaillés. Les erreurs de transport ou
+d’intégrité échouent en CI ; un échec de décodage reste un résultat du benchmark.
+Le budget réseau de l’archive, index compris, est de 64 Mio. Seul le rapport JSON
+est publié en artifact par `loraiq-batch.yml`, sans les fichiers IQ.
+
+Cet échantillon réduit ne constitue ni une courbe de sensibilité, ni une mesure
+de performance représentative du jeu de données complet.
