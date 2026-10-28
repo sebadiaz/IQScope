@@ -2,6 +2,7 @@
 from fractions import Fraction
 import numpy as np
 from scipy import signal
+from iqscope_lora_header import decode_explicit_header
 
 
 def _opposite_chirp_pair(y, chirp, polarity, run_end, bandwidth):
@@ -204,6 +205,7 @@ def detect_lora_preamble(x, fs):
                 strength = float(np.median(concentration[best_start:best_start+best_count]))
                 pair = _opposite_chirp_pair(y, chirp, polarity, (best_start+best_count)*length, bandwidth)
                 sync = _sync_word_candidate(y, chirp, polarity, int(peaks[best_start]), pair, bandwidth)
+                data = _data_symbol_candidates(y, chirp, polarity, sync, bandwidth)
                 candidates.append({'parameters': {'bandwidth_hz': bandwidth, 'spreading_factor': sf,
                     'symbol_seconds': length/bandwidth, 'chirp_polarity': polarity},
                     'time_seconds': best_start*length/bandwidth,
@@ -211,7 +213,8 @@ def detect_lora_preamble(x, fs):
                                  'dechirped_peak_bin': int(peaks[best_start]), 'required_chirps': 6},
                     'synchronization': pair,
                     'sync_word': sync,
-                    'data_symbols': _data_symbol_candidates(y, chirp, polarity, sync, bandwidth),
+                    'data_symbols': data,
+                    'explicit_header': decode_explicit_header(data.get('symbol_bins',[]),sf),
                     'score': strength, 'score_kind': 'heuristic_not_probability',
                     'validation_scope': 'CSS preamble, optional sync word and raw symbol hypotheses; no validated packet, header, CRC, payload bytes or LoRaWAN identification'})
     candidates.sort(key=lambda item: item['score'], reverse=True)

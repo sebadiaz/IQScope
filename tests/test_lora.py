@@ -180,3 +180,14 @@ class LoRaPreambleTests(unittest.TestCase):
             self.assertEqual(data['symbol_bins'],expected[:len(data['symbol_bins'])])
             if len(data['symbol_bins'])<len(expected):
                 self.assertIn(data['stop_reason'],('insufficient_spectral_concentration','unstable_phase_estimate'))
+
+    def test_explicit_header_from_synthetic_iq(self):
+        from test_lora_header import HEADER_SF7, HEADER_SF8
+        for sf,bins in ((7,HEADER_SF7),(8,HEADER_SF8)):
+            x,fs=synchronized_preamble(sf=sf,offset=0,cfo_bins=0,data_symbols=bins)
+            result=detect_lora_preamble(x,fs)
+            candidate=next(c for c in result['candidates'] if c['parameters']['spreading_factor']==sf and c['parameters']['bandwidth_hz']==125000)
+            header=candidate['explicit_header']
+            self.assertEqual(header['status'],'header_checksum_valid',header)
+            self.assertEqual(header['payload_length_bytes'],17)
+            self.assertNotIn('frames',result)

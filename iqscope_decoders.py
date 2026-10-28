@@ -18,7 +18,7 @@ class Capability:
 
 
 CAPABILITIES = (
-    Capability('lora_preamble', 'LoRa-compatible CSS evidence', 'centered BW125/250/500kHz SF7–12 chirps, candidate sync word and raw symbols; no packet decoding', 'heuristic evidence and candidate sync word; no header, CRC or payload'),
+    Capability('lora_preamble', 'LoRa-compatible CSS evidence', 'centered BW125/250/500kHz SF7–12 chirps, candidate sync word and raw symbols; no packet decoding', 'heuristic evidence and candidate sync word; candidate explicit header check only; no payload CRC or bytes'),
     Capability('analog_fm', 'FM', 'mono audio candidate, 75 us de-emphasis', 'unvalidated'),
     Capability('analog_am', 'AM', 'envelope audio candidate, carrier-present AM only', 'unvalidated'),
     Capability('ofdm_cp', 'Cyclic-prefix / OFDM evidence', 'bounded periodic guard correlation; integer useful/guard lengths; no protocol classification or payload', 'heuristic structural evidence only; no CRC'),

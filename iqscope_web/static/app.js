@@ -277,6 +277,11 @@ function showReport(report, jobId) {
         if(['insufficient_spectral_concentration','unstable_phase_estimate'].includes(candidate.data_symbols.stop_reason))card.append(element('p','Lecture arrêtée sur un symbole insuffisamment fiable ; la séquence peut être incomplète.','hint'));
         if(candidate.data_symbols.symbol_budget_reached)card.append(element('p','Limite de 64 symboles atteinte ; la séquence peut être incomplète.','hint'));
       }
+      if(candidate.explicit_header?.status==='header_checksum_valid'){
+        const h=candidate.explicit_header;
+        card.append(element('p',`En-tête explicite candidat : ${h.payload_length_bytes} octets annoncés · codage ${h.coding_rate} · CRC de données ${h.payload_crc_present?'annoncé':'absent'}.`,'lora-header'));
+        card.append(element('p','Somme d’en-tête de 5 bits vérifiée ; contenu et CRC de données non validés.','hint'));
+      }
       if(candidate.sync_word?.status==='ambiguous_sync_word')card.append(element('p','Sync word ambigu : aucune valeur sélectionnée.','hint'));
       card.append(element('p','Indice CSS uniquement : synchronisation de paquet, en-tête, CRC et contenu non décodés.','hint'));
       frameList.append(card);

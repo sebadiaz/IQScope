@@ -607,6 +607,7 @@ and SF7–12, with both chirp directions. Candidate parameters and repeated-chir
 evidence appear in the UI and JSON. A conventional sync-word hypothesis may be reported after opposite chirps.
 A matching final quarter chirp enables at most 64 raw CSS symbol candidates,
 with explicit stop reasons; these values are not bytes.
-This is not packet decoding: no verified boundary, header, coding-rate recovery,
-CRC, payload or LoRaWAN identification.
+A candidate explicit header can report its announced length, coding rate and
+payload-CRC flag after a five-bit header check. This is not packet validation:
+no verified payload CRC, payload bytes or LoRaWAN identification.
 See [scope, budgets and validation](docs/LORA_PREAMBLE.md).

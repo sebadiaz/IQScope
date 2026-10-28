@@ -27,8 +27,9 @@ incertitude d'encodage SigMF est propagée dans cet artefact.
 - SF5/SF6, autres largeurs, dérive d'horloge, faibles signaux, collisions et
   préambules très courts ne sont pas couverts par cette première version.
 - Une autre forme d'onde CSS répétitive peut correspondre. Les chirps opposés
-  et le sync word restent des hypothèses. L'en-tête, le codage, le CRC et la
-  charge utile ne sont pas décodés. Aucune identification LoRaWAN n'est effectuée.
+  et le sync word restent des hypothèses. Un en-tête explicite peut être
+  contrôlé ; le codage de charge utile, le CRC de données et le contenu ne
+  sont pas décodés. Aucune identification LoRaWAN n'est effectuée.
 
 ## Validation
 
@@ -39,8 +40,8 @@ propagation d'une hypothèse d'encodage non vérifiée. Ces tests ne remplacent 
 une validation avec un émetteur indépendant et un paquet connu.
 
 Les prochaines étapes sont la synchronisation fine du paquet,
-puis l'en-tête et la chaîne de décodage jusqu'au CRC. Cette version constitue
-uniquement le premier étage de cette chaîne.
+puis la chaîne de décodage de charge utile jusqu'au CRC. L'en-tête explicite
+candidat est décrit plus bas ; il ne valide pas le paquet complet.
 
 ## Première preuve de synchronisation
 
@@ -88,7 +89,8 @@ Le champ `sync_word` indique `sync_word_candidate`, `no_consistent_sync_word`,
 valeurs restent compatibles, aucune n'est sélectionnée. L'interface affiche
 l'hexadécimal candidat sans inférer un réseau, LoRaWAN ou l'identité d'un
 émetteur. La frontière estimée n'est pas une synchronisation fine validée :
-le quart de chirp, l'horloge, l'en-tête et le CRC restent à traiter.
+le quart de chirp et l'en-tête sont examinés par les étages suivants ;
+le suivi fin de l'horloge et le CRC de données restent à traiter.
 
 Validation synthétique : plusieurs valeurs (dont 0x34, 0x12, 0x00 et 0xAB),
 SF7/SF8/SF9/SF12, inversion, bruit, délais différents et décalages fréquentiels
@@ -115,9 +117,11 @@ bloc insuffisant ou instable. Les sorties indiquent une incertitude d'un bin ;
 elle ne constitue pas une garantie statistique sur une capture réelle.
 
 L'interface affiche le nombre de symboles et un aperçu. Ces nombres ne sont
-pas des octets, ni des caractères, ni des champs d'en-tête. La transformation
-Gray, le désentrelacement, le décodage correcteur, le déblanchiment, l'en-tête et
-le CRC ne sont pas implémentés à ce stade. La synchronisation fractionnaire et
+pas directement des octets ou des caractères. Un étage séparé peut interpréter
+leurs huit premiers éléments comme un en-tête explicite candidat. Les
+transformations Gray, désentrelacement et Hamming de cet en-tête sont décrites
+plus bas ; le déblanchiment, le décodage de charge utile et son CRC restent
+à implémenter. La synchronisation fractionnaire et
 le suivi de l'horloge restent à améliorer ; aucun contenu LoRaWAN n'est extrait.
 
 Les tests comparent les symboles récupérés aux symboles transmis par le
@@ -132,3 +136,38 @@ spectrale insuffisante et phase instable. Les cas de bruit et de décalage les
 plus exigeants peuvent ne restituer qu'un préfixe de la séquence transmise ;
 les tests comparent ce préfixe à la référence sans inventer les symboles rejetés.
 Ce comportement n'est pas un décodage complet du paquet.
+
+
+## Premier décodage d'en-tête explicite
+
+Le champ `explicit_header` traite les huit premiers symboles bruts candidats,
+avec SF7 à SF12 et en-tête explicite seulement. Il retire le décalage de bin
+nominal +1, applique la réduction de débit par quatre et la transformation Gray,
+puis inverse l'entrelacement diagonal. Les cinq premiers codewords sont décodés
+par recherche de distance dans le code linéaire Hamming (8,4). Seul un codeword
+unique à distance zéro ou un est accepté ; deux erreurs par codeword sont
+rejetées. Des erreurs plus nombreuses ne sont pas toutes détectables.
+
+La longueur annoncée (1 à 255), le taux de codage 4/5 à 4/8, le drapeau CRC et
+les bits réservés sont contrôlés. Une somme linéaire de cinq bits porte sur les
+trois premiers nibbles. Seul son succès donne `header_checksum_valid`.
+**Ce statut valide la cohérence de l'en-tête candidat, pas le paquet : le CRC
+de données, les octets de charge utile et l'identité de l'émetteur ne sont pas
+vérifiés.** Les trames validées restent à zéro pour cette chaîne.
+
+Les vecteurs numériques figés décrivent une longueur 17, un codage 4/5 et un
+CRC de données annoncé, avec somme d'en-tête 0x1B et nibbles 1,1,3,1,B :
+SF7 [85,49,1,13,109,29,89,73] ; SF8 [85,49,1,13,221,61,73,233].
+Ils ont été construits côté émission à partir des équations de code et
+d'entrelacement ; ce ne sont pas des captures d'un émetteur indépendant.
+Les tests vérifient également une somme incorrecte, une erreur corrigée, toutes
+les erreurs simples et doubles des 16 codewords, et la chaîne IQ synthétique.
+La convention est confrontée à la
+[référence gr-lora_sdr](https://github.com/tapparelj/gr-lora_sdr), sans embarquer
+cette bibliothèque.
+
+L'en-tête implicite, les paquets de longueur nulle, les SF5/SF6 et la correction
+d'horloge ne sont pas pris en charge. Une erreur de synchronisation ou de symbole
+peut empêcher la lecture. Il n'y a pas de recherche combinatoire destinée à
+forcer une somme valide. La somme de cinq bits est courte : elle ne constitue
+ni une authentification ni une preuve suffisante de contenu radio.

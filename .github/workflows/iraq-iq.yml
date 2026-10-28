@@ -5,6 +5,8 @@ on:
       - scripts/iraq_iq_probe.py
       - iqscope_ofdm.py
       - iqscope_lora.py
+      - iqscope_lora_header.py
+      - tests/test_lora_header.py
       - tests/test_ofdm.py
       - .github/workflows/iraq-iq.yml
 permissions:
