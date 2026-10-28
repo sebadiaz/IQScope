@@ -605,6 +605,8 @@ radio decoder or prediction model is added for these CSV features.
 Automatic centered-channel CSS preamble search is available for BW125/250/500 kHz
 and SF7–12, with both chirp directions. Candidate parameters and repeated-chirp
 evidence appear in the UI and JSON. A conventional sync-word hypothesis may be reported after opposite chirps.
+A matching final quarter chirp enables at most 64 raw CSS symbol candidates,
+with explicit stop reasons; these values are not bytes.
 This is not packet decoding: no verified boundary, header, coding-rate recovery,
 CRC, payload or LoRaWAN identification.
 See [scope, budgets and validation](docs/LORA_PREAMBLE.md).

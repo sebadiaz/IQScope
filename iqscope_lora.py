@@ -76,8 +76,77 @@ def _sync_word_candidate(y, chirp, polarity, preamble_bin, pair, bandwidth):
     return {'status':'sync_word_candidate', 'value_hex':f"{best['word']:02X}",
             'relative_symbol_bins':best['symbols'], 'symbol_bin_errors':best['errors'],
             'opposite_chirp_start_seconds':best['boundary']/bandwidth,
+            'opposite_chirp_start_chip':best['boundary'],
             'minimum_three_bin_energy_fraction':best['strength'],
             'scope':'Conventional two-nibble sync-word hypothesis only; no network identity, quarter-chirp, header, CRC or payload validation'}
+
+
+def _fractional_tone_bin(values, peak):
+    """Median adjacent phase after removing the coarse FFT bin; tolerate wrap outliers."""
+    length = len(values)
+    products = values[1:]*values[:-1].conj()*np.exp(-2j*np.pi*peak/length)
+    residual = float(np.median(np.angle(products)))*length/(2*np.pi)
+    return (peak+residual)%length if abs(residual)<=1.5 else None
+
+
+def _data_symbol_candidates(y, chirp, polarity, sync, bandwidth):
+    """Require a matching final quarter chirp before bounded raw CSS symbols."""
+    if sync['status'] != 'sync_word_candidate':
+        return {'status':'not_available_without_sync_word'}
+    length = len(chirp)
+    quarter = length//4
+    up = chirp if polarity == 1 else chirp.conj()
+    down = up.conj()
+    best = None
+    # Small integer timing refinements; fractional timing/clock tracking is not solved.
+    for boundary in range(sync['opposite_chirp_start_chip']-2,sync['opposite_chirp_start_chip']+3):
+        end = boundary+2*length+quarter
+        if boundary < 3*length or end > len(y):
+            continue
+        reference = y[boundary-3*length:boundary-2*length]
+        reference_power = abs(np.fft.fft(reference*up.conj()))**2
+        reference_bin = int(np.argmax(reference_power))
+        reference_tone = _fractional_tone_bin(reference*up.conj(), reference_bin)
+        if reference_tone is None:
+            continue
+        down_power = abs(np.fft.fft(y[boundary:boundary+length]*down.conj()))**2
+        down_bin = int(np.argmax(down_power))
+        n = np.arange(quarter)
+        expected = down[:quarter]*np.exp(2j*np.pi*down_bin*n/length)
+        observed = y[boundary+2*length:end]
+        energy = float(np.sum(abs(observed)**2))
+        correlation = float(abs(np.vdot(expected,observed))**2/max(quarter*energy,1e-30))
+        if correlation < .8:
+            continue
+        if best is None or correlation > best['correlation']:
+            best = {'boundary':boundary,'start':end,'reference_bin':reference_bin,'reference_tone':reference_tone,'correlation':correlation}
+    if best is None:
+        return {'status':'no_consistent_final_quarter_chirp'}
+    count = min(64,(len(y)-best['start'])//length)
+    symbols, strengths, fft_symbols = [],[],[]
+    stop_reason = 'symbol_budget' if count==64 else 'source_exhausted'
+    for index in range(count):
+        start = best['start']+index*length
+        power = abs(np.fft.fft(y[start:start+length]*up.conj()))**2
+        peak = int(np.argmax(power))
+        strength = float(sum(power[(peak+offset)%length] for offset in (-1,0,1))/max(float(sum(power)),1e-30))
+        if strength < .65:
+            stop_reason = 'insufficient_spectral_concentration'
+            break
+        tone = _fractional_tone_bin(y[start:start+length]*up.conj(),peak)
+        if tone is None:
+            stop_reason = 'unstable_phase_estimate'
+            break
+        fft_symbols.append((polarity*(peak-best['reference_bin']))%length)
+        symbols.append(int(round(polarity*(tone-best['reference_tone'])))%length)
+        strengths.append(strength)
+    return {'status':'raw_css_symbol_candidates' if symbols else 'quarter_chirp_candidate_no_symbols',
+            'quarter_chirp_correlation':best['correlation'],
+            'candidate_data_start_seconds':best['start']/bandwidth,
+            'symbol_bins':symbols, 'fft_peak_symbol_bins':fft_symbols, 'symbol_energy_fractions':strengths,
+            'symbol_bin_uncertainty':1, 'symbol_budget':64,
+            'symbol_budget_reached':len(symbols)==64, 'stop_reason':stop_reason,
+            'scope':'Raw relative CSS bins only; timing remains a hypothesis. No Gray mapping, deinterleaving, error correction, whitening, header, CRC or payload bytes decoded'}
 
 
 def detect_lora_preamble(x, fs):
@@ -134,15 +203,17 @@ def detect_lora_preamble(x, fs):
                     continue
                 strength = float(np.median(concentration[best_start:best_start+best_count]))
                 pair = _opposite_chirp_pair(y, chirp, polarity, (best_start+best_count)*length, bandwidth)
+                sync = _sync_word_candidate(y, chirp, polarity, int(peaks[best_start]), pair, bandwidth)
                 candidates.append({'parameters': {'bandwidth_hz': bandwidth, 'spreading_factor': sf,
                     'symbol_seconds': length/bandwidth, 'chirp_polarity': polarity},
                     'time_seconds': best_start*length/bandwidth,
                     'evidence': {'repeated_chirps': best_count, 'median_three_bin_energy_fraction': strength,
                                  'dechirped_peak_bin': int(peaks[best_start]), 'required_chirps': 6},
                     'synchronization': pair,
-                    'sync_word': _sync_word_candidate(y, chirp, polarity, int(peaks[best_start]), pair, bandwidth),
+                    'sync_word': sync,
+                    'data_symbols': _data_symbol_candidates(y, chirp, polarity, sync, bandwidth),
                     'score': strength, 'score_kind': 'heuristic_not_probability',
-                    'validation_scope': 'Repeated CSS chirps and optional conventional sync-word hypothesis; no validated packet, header, CRC, payload or LoRaWAN identification'})
+                    'validation_scope': 'CSS preamble, optional sync word and raw symbol hypotheses; no validated packet, header, CRC, payload bytes or LoRaWAN identification'})
     candidates.sort(key=lambda item: item['score'], reverse=True)
     return dict(base, status='repeated_chirp_candidate' if candidates else 'no_consistent_candidate',
                 candidates=candidates[:6], trials=trials, analyzed_seconds=len(x)/fs, search_windows=search_windows,

@@ -155,7 +155,7 @@ def main():
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
                 with tempfile.TemporaryDirectory() as directory:
                     from test_lora import synchronized_preamble
-                    x,fs = synchronized_preamble()
+                    x,fs = synchronized_preamble(data_symbols=[1,17,63,127,128,255,0])
                     raw = Path(directory)/'lora.sigmf-data'
                     meta = Path(directory)/'lora.sigmf-meta'
                     x.astype('<c8').tofile(raw)
@@ -171,7 +171,9 @@ def main():
                     assert 'frames' not in response.json()
                     expect(page.locator('.lora-sync-evidence').first).to_contain_text('Paire de chirps opposés candidate')
                     expect(page.locator('.lora-sync-word').first).to_contain_text('0x34')
+                    expect(page.locator('.lora-data-symbols').first).to_contain_text('7 symboles CSS bruts candidats')
                     assert any(c.get('sync_word',{}).get('value_hex')=='34' for c in response.json()['candidates'])
+                    assert any(c.get('data_symbols',{}).get('symbol_bins')==[1,17,63,127,128,255,0] for c in response.json()['candidates'])
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
                 with tempfile.TemporaryDirectory() as directory:
                     from test_cw import fixture as audio_fixture, TEXT as AUDIO_TEXT

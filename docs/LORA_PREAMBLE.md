@@ -94,3 +94,41 @@ Validation synthétique : plusieurs valeurs (dont 0x34, 0x12, 0x00 et 0xAB),
 SF7/SF8/SF9/SF12, inversion, bruit, délais différents et décalages fréquentiels
 de quelques bins. Des symboles hors convention sont rejetés. Aucun paquet réel
 connu n'est encore validé ; le résultat n'est pas compté comme une trame.
+
+## Quart de chirp final et symboles bruts
+
+Après un sync word candidat, le détecteur vérifie le quart de chirp descendant
+attendu après les deux chirps opposés. Il essaie cinq alignements entiers dans
+un voisinage de deux chips autour de la frontière estimée. La corrélation
+normalisée au carré du quart doit atteindre 0,8, après compensation du bin
+fréquentiel mesuré sur un chirp opposé. Sans correspondance, aucun symbole de
+données n'est extrait.
+
+La fenêtre qui suit fournit au plus 64 symboles CSS consécutifs. Chaque bloc
+est déchirpé ; au moins 65 % de son énergie FFT doit rester dans trois bins
+voisins. Une estimation locale par la médiane des phases adjacentes affine le
+bin grossier, avec un résidu limité à 1,5 bin. La référence est un chirp du
+préambule, et la polarité est normalisée. Les bins relatifs arrondis sont
+exportés dans `data_symbols.symbol_bins` ; les valeurs issues du seul pic FFT
+restent disponibles dans `fft_peak_symbol_bins`. L'extraction s'arrête au premier
+bloc insuffisant ou instable. Les sorties indiquent une incertitude d'un bin ;
+elle ne constitue pas une garantie statistique sur une capture réelle.
+
+L'interface affiche le nombre de symboles et un aperçu. Ces nombres ne sont
+pas des octets, ni des caractères, ni des champs d'en-tête. La transformation
+Gray, le désentrelacement, le décodage correcteur, le déblanchiment, l'en-tête et
+le CRC ne sont pas implémentés à ce stade. La synchronisation fractionnaire et
+le suivi de l'horloge restent à améliorer ; aucun contenu LoRaWAN n'est extrait.
+
+Les tests comparent les symboles récupérés aux symboles transmis par le
+générateur synthétique, avec SF7/SF8/SF10, inversion, bruit, délais et décalages
+fréquentiels. Un quart absent interdit la sortie de symboles ; un test impose
+la limite de 64 symboles. Chromium vérifie le téléchargement d'une séquence
+connue en conservant le compteur de trames validées à zéro. Aucun paquet radio
+réel connu n'est encore validé par cette chaîne.
+
+Le champ `stop_reason` distingue fin de source, budget atteint, concentration
+spectrale insuffisante et phase instable. Les cas de bruit et de décalage les
+plus exigeants peuvent ne restituer qu'un préfixe de la séquence transmise ;
+les tests comparent ce préfixe à la référence sans inventer les symboles rejetés.
+Ce comportement n'est pas un décodage complet du paquet.

@@ -271,6 +271,12 @@ function showReport(report, jobId) {
       card.append(element('p',`SF${p.spreading_factor} · largeur ${p.bandwidth_hz/1000} kHz · ${candidate.evidence.repeated_chirps} chirps répétés`));
       if(candidate.synchronization?.status==='opposite_chirp_pair_candidate')card.append(element('p',`Paire de chirps opposés candidate vers ${candidate.synchronization.time_seconds.toFixed(6)} s ; limite de paquet et sync word non validés.`,'lora-sync-evidence'));
       if(candidate.sync_word?.status==='sync_word_candidate')card.append(element('p',`Sync word candidat : 0x${candidate.sync_word.value_hex} ; aucun réseau ni paquet authentifié.`,'lora-sync-word'));
+      if(candidate.data_symbols?.status==='raw_css_symbol_candidates'){
+        card.append(element('p',`${candidate.data_symbols.symbol_bins.length} symboles CSS bruts candidats ; aucun octet ni CRC décodé.`,'lora-data-symbols'));
+        card.append(element('code',candidate.data_symbols.symbol_bins.slice(0,16).join(', ')));
+        if(['insufficient_spectral_concentration','unstable_phase_estimate'].includes(candidate.data_symbols.stop_reason))card.append(element('p','Lecture arrêtée sur un symbole insuffisamment fiable ; la séquence peut être incomplète.','hint'));
+        if(candidate.data_symbols.symbol_budget_reached)card.append(element('p','Limite de 64 symboles atteinte ; la séquence peut être incomplète.','hint'));
+      }
       if(candidate.sync_word?.status==='ambiguous_sync_word')card.append(element('p','Sync word ambigu : aucune valeur sélectionnée.','hint'));
       card.append(element('p','Indice CSS uniquement : synchronisation de paquet, en-tête, CRC et contenu non décodés.','hint'));
       frameList.append(card);
