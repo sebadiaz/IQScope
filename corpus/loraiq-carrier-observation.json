@@ -1194,7 +1194,7 @@
     "Only SF7/BW125k/CR4/5; unoccupied SNR strata omitted. Full archive hash not verified.",
     "Decoder misses are benchmark outcomes; transport/integrity errors fail the job."
   ],
-  "validation_environment": "Local managed workspace, 2026-10-29; CI rerun follows publication",
+  "validation_environment": "Local managed workspace and GitHub Actions, 2026-10-29; additional main-pipeline export comparison performed locally",
   "baseline_commit": "7a5f760ba53f2f03e3d4e343fa2eb691719e7957",
   "baseline_matched_count": 1,
   "same_six_sources_and_annotations_verified": true,
@@ -1208,5 +1208,17 @@
     "exact_crc_payload_matches": 10,
     "tested_phases": 16,
     "other_crc_payloads": []
+  },
+  "ci_validation": {
+    "tested_commit": "6be3acfffc4809af4deec4ab34e1fee7b2a27c04",
+    "benchmark_url": "https://github.com/sebadiaz/IQScope/actions/runs/40922387931",
+    "tests_url": "https://github.com/sebadiaz/IQScope/actions/runs/40922388023",
+    "independent_reference_url": "https://github.com/sebadiaz/IQScope/actions/runs/40922387924",
+    "all_successful": true,
+    "same_source_hashes_and_decode_outcomes_as_local": true,
+    "matched_count": 2,
+    "missed_count": 4,
+    "unit_tests": 175,
+    "chromium_passed": true
   }
 }

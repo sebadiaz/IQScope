@@ -177,3 +177,11 @@ espacées de 1/16 chip. Dix variantes conservent le contenu exact avec CRC ;
 six s’abstiennent. Ce résultat confirme que la compensation de fréquence
 fractionnaire ne résout pas tous les décalages temporels fractionnaires.
 Il ne compte pas comme 16 nouvelles captures radio.
+
+
+La [CI du benchmark 40922387931](https://github.com/sebadiaz/IQScope/actions/runs/40922387931)
+a reproduit les **2/6 correspondances exactes** sur les mêmes annotations et
+empreintes sources, ainsi que les 10/16 variantes de phase du fichier court.
+Les [175 tests sur Python 3.10, 3.12 et 3.13, Chromium et autres corpus](https://github.com/sebadiaz/IQScope/actions/runs/40922388023)
+passent, de même que la [régression indépendante avec export](https://github.com/sebadiaz/IQScope/actions/runs/40922387924).
+Ces contrôles portent sur le commit `6be3acfffc4809af4deec4ab34e1fee7b2a27c04`.
