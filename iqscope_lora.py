@@ -151,6 +151,27 @@ def _data_symbol_candidates(y, chirp, polarity, sync, bandwidth):
             'scope':'Raw relative CSS bins only; timing remains a hypothesis. No Gray mapping, deinterleaving, error correction, whitening, header, CRC or payload bytes decoded'}
 
 
+
+def _correct_fractional_carrier(y, start_block, run_blocks, length, bandwidth):
+    """Estimate carrier phase advance from repeated preamble, modulo one FFT bin."""
+    blocks = min(run_blocks, 8)
+    segment = y[start_block*length:(start_block+blocks)*length].reshape(blocks,length)
+    first, second = segment[:-1], segment[1:]
+    product = np.sum(second*first.conj())
+    energy = float(np.sqrt(np.sum(abs(first)**2)*np.sum(abs(second)**2)))
+    coherence = float(np.clip(abs(product)/max(energy,1e-30),0,1))
+    evidence = {'scope':'Preamble repetition only; fractional carrier offset modulo BW/2**SF, not RF center or integer CFO',
+                'preamble_blocks':blocks,'lag_samples':length,'coherence':coherence}
+    if coherence < .8:
+        return y, dict(evidence,status='insufficient_preamble_coherence')
+    offset = float(np.angle(product)/(2*np.pi))
+    # The detector needs at most the preamble, delimiter and 64 data symbols.
+    limit = min(len(y),(start_block+run_blocks+72)*length)
+    corrected = y[:limit]*np.exp(-2j*np.pi*offset*np.arange(limit)/length)
+    return corrected, dict(evidence,status='fractional_carrier_corrected',
+                           fractional_bin_offset=offset,offset_hz=offset*bandwidth/length)
+
+
 def detect_lora_preamble(x, fs):
     base = {'decoder': 'lora_preamble', 'family': 'LoRa-compatible CSS preamble', 'candidates': []}
     if not np.isfinite(fs) or not 125000 <= fs <= 2400000 or len(x) < 1024:
@@ -204,14 +225,19 @@ def detect_lora_preamble(x, fs):
                 if best_count < 6:
                     continue
                 strength = float(np.median(concentration[best_start:best_start+best_count]))
-                pair = _opposite_chirp_pair(y, chirp, polarity, (best_start+best_count)*length, bandwidth)
-                sync = _sync_word_candidate(y, chirp, polarity, int(peaks[best_start]), pair, bandwidth)
-                data = _data_symbol_candidates(y, chirp, polarity, sync, bandwidth)
+                aligned, carrier = _correct_fractional_carrier(y,best_start,best_count,length,bandwidth)
+                reference = aligned[best_start*length:(best_start+1)*length]
+                template = chirp if polarity == 1 else chirp.conj()
+                corrected_bin = int(np.argmax(abs(np.fft.fft(reference*template.conj()))**2))
+                pair = _opposite_chirp_pair(aligned, chirp, polarity, (best_start+best_count)*length, bandwidth)
+                sync = _sync_word_candidate(aligned, chirp, polarity, corrected_bin, pair, bandwidth)
+                data = _data_symbol_candidates(aligned, chirp, polarity, sync, bandwidth)
                 candidates.append({'parameters': {'bandwidth_hz': bandwidth, 'spreading_factor': sf,
                     'symbol_seconds': length/bandwidth, 'chirp_polarity': polarity},
                     'time_seconds': best_start*length/bandwidth,
                     'evidence': {'repeated_chirps': best_count, 'median_three_bin_energy_fraction': strength,
                                  'dechirped_peak_bin': int(peaks[best_start]), 'required_chirps': 6},
+                    'carrier_tracking': carrier,
                     'synchronization': pair,
                     'sync_word': sync,
                     'data_symbols': data,
@@ -233,7 +259,7 @@ def detect_lora_preamble(x, fs):
                 candidates=candidates[:6], trials=trials, analyzed_seconds=len(x)/fs, search_windows=search_windows,
                 **({'frames':frames} if frames else {}),
                 sample_budget_reached=limit < original,
-                limitations=['Centered single-channel search only; no RF center or carrier-offset estimation.',
+                limitations=['Centered single-channel search only; fractional CFO from preamble repetition, no integer CFO or RF center estimation.',
                     'BW 125/250/500 kHz, SF7–SF12, both chirp directions; six stable concentrated FFT peaks required.',
                     'First second only; at most 256 symbols per BW/SF. Late/short/weak bursts, clock drift and off-center channels may be missed.',
                     'Other CSS waveforms can match preamble evidence. Header checksum and supported payload CRC are checked separately; all other stages remain candidates. Payload: explicit CR4/5–4/8, SF7–SF10 only.'])

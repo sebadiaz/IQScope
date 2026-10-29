@@ -4,6 +4,7 @@ on:
     paths:
       - scripts/loraiq_batch.py
       - scripts/loraiq_reference.py
+      - scripts/loraiq_timing_probe.py
       - iqscope_lora*.py
       - .github/workflows/loraiq-batch.yml
 permissions:
@@ -19,8 +20,11 @@ jobs:
           python-version: '3.12'
       - run: pip install .
       - run: python scripts/loraiq_batch.py
+      - run: python scripts/loraiq_timing_probe.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: loraiq-snr-strata
-          path: corpus-cache/loraiq-batch/observation.json
+          path: |
+            corpus-cache/loraiq-batch/observation.json
+            corpus-cache/loraiq-batch/timing-probe.json

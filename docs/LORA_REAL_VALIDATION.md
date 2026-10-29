@@ -140,3 +140,40 @@ synchronisation et une extraction incomplète même à bon SNR ; il ne permet pa
 de fixer un seuil de sensibilité. Le détecteur conserve ses limites temporelles
 internes sur les fichiers longs. Aucun seuil n’a été assoupli pour ce benchmark.
 Les 171 tests Python et Chromium passent au même état de code.
+
+
+## Correction fractionnaire de porteuse : comparaison sur les mêmes IQ
+
+La rotation de phase entre chirps répétés estime une correction fractionnaire
+modulo un bin FFT, sans annotation CFO, fenêtre guidée, contenu attendu ou
+recherche pilotée par le CRC. La méthode et ses limites sont décrites dans
+[la spécification LoRa](LORA_PREAMBLE.md#correction-fractionnaire-de-porteuse-après-détection).
+
+Le 29 octobre 2026, l’exécution locale sur **les six mêmes membres**, avec
+annotations et empreintes SHA-256 identiques à la référence précédente, donne
+**2 correspondances exactes sur 6**, contre 1/6 avant correction :
+
+- Le membre `rrh2/2`, SNR annoté 19,7319 dB, restitue maintenant ses 23 symboles
+  et le contenu `0000002`, CRC reçu et calculé `0xE656`. La correction estimée
+  vaut −0,280899 bin, soit −274,315 Hz modulo un bin ; ce n’est pas une mesure
+  du CFO entier ni de la fréquence RF. Son export binaire via le moteur
+  principal a aussi été comparé aux sept octets attendus.
+- Le membre `rrh4/2`, SNR annoté 20,3859 dB, conserve `0000001`, CRC `0xE655`.
+- À 10,2641 dB, le sync word est désormais candidat, mais le quart de chirp ne
+  permet pas d’extraire des symboles. Les trois cas de SNR inférieur restent
+  sans préambule retenu. Aucune autre charge utile à CRC valide n’est produite.
+
+Le [rapport détaillé](../corpus/loraiq-carrier-observation.json) conserve les
+résultats complets, la comparaison des sources et l’empreinte du décodeur local.
+Les SHA-512 publiés et CRC ZIP sont vérifiés. Le budget réseau et la sélection
+restent ceux du benchmark précédent. Ce petit ensemble corrélé reste insuffisant
+pour estimer un taux d’erreur ou une sensibilité. La correction n’abaisse aucun
+seuil de concentration, quart de chirp, en-tête ou CRC. Les 175 tests Python
+passent localement, avec 32/32 variantes synthétiques contre 25/32 auparavant.
+
+
+Le diagnostic temporel séparé décale ce même fichier court sur 16 phases
+espacées de 1/16 chip. Dix variantes conservent le contenu exact avec CRC ;
+six s’abstiennent. Ce résultat confirme que la compensation de fréquence
+fractionnaire ne résout pas tous les décalages temporels fractionnaires.
+Il ne compte pas comme 16 nouvelles captures radio.

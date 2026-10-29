@@ -264,3 +264,52 @@ Une trame LoRaIQ SF7/BW125 kHz/CR4/5 a été décodée automatiquement avec CRC
 et octets identiques à l'annotation publiée. Voir [méthode, intégrité et
 limites de cette validation](LORA_REAL_VALIDATION.md). Ce premier résultat
 positif ne valide pas l'ensemble des paramètres ou des conditions radio.
+
+
+## Correction fractionnaire de porteuse après détection
+
+Après les six chirps stables, le récepteur estime la rotation de phase entre
+répétitions du préambule, séparées de `N = 2**SF` échantillons au débit de chips.
+Pour les paires de blocs adjacents, il calcule :
+
+`C = sum(y[n+N] * conj(y[n]))`
+
+`offset_bins = arg(C) / (2*pi)`
+
+`offset_hz = offset_bins * BW / N`
+
+Cette estimation est modulo un bin FFT ; elle ne fournit ni le décalage entier,
+ni une fréquence RF vérifiée. Elle utilise au plus huit blocs du préambule,
+indépendamment de la polarité des chirps. La cohérence normalisée doit atteindre
+0,8. Sinon, aucune compensation n’est appliquée. Une exponentielle complexe
+retire la rotation fractionnaire avant la recherche des chirps inversés, du
+sync word, du quart de chirp et des symboles. Le bin de référence est recalculé
+après compensation. L’étape garde au plus la fin du préambule plus 72 symboles,
+suffisants pour le délimiteur et les 64 symboles de données autorisés.
+
+Le champ JSON `carrier_tracking` conserve la cohérence, le nombre de blocs,
+la correction appliquée en bins et en hertz, ou l’abstention. L’estimation ne
+consulte ni les octets attendus, ni un CRC pour choisir la correction. Les
+seuils de concentration spectrale, de quart de chirp, d’en-tête et de CRC
+restent identiques. La détection initiale du préambule reste inchangée : cette
+correction ne récupère donc pas un préambule déjà rejeté et ne règle pas le
+suivi de l’horloge ou la synchronisation temporelle fractionnaire.
+
+### Validation locale de la correction
+
+`tests/test_lora_carrier.py` compare un vecteur TX figé `HELLO` aux octets
+récupérés sur 32 variantes SF7 : deux polarités, CFO de 0 / 0,45 / 3,3 / 7,1
+bins, quatre phases d’échantillonnage espacées de 1/8 chip et bruit complexe
+fixé par une graine. L’ancien code récupérait 25/32 cas ; la compensation en
+récupère 32/32, avec les octets exacts et le CRC valide. Ce petit ensemble
+synthétique sert à la régression, pas à mesurer un taux d’erreur radio.
+
+Les tests vérifient séparément l’estimation du CFO modulo un bin sur les deux
+polarités, l’abstention sur bruit incohérent et zéros, ainsi que le rejet d’un
+CRC faux malgré la compensation. Les 175 tests Python passent localement.
+La validation locale sur les six mêmes membres LoRaIQ retrouve 2/6 contenus
+exacts, contre 1/6 avant correction. Le nouveau paquet à 19,7319 dB donne
+`0000002`, CRC 0xE656, et son export binaire par le moteur principal est vérifié.
+Voir [le rapport de validation radio](LORA_REAL_VALIDATION.md). Le diagnostic
+`scripts/loraiq_timing_probe.py` balaie aussi 16 phases sur ce membre court ;
+ces variantes d’un même enregistrement ne sont pas de nouvelles captures.
