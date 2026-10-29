@@ -109,8 +109,9 @@ données n'est extrait.
 
 La fenêtre qui suit fournit au plus 64 symboles CSS consécutifs. Chaque bloc
 est déchirpé ; au moins 65 % de son énergie FFT doit rester dans trois bins
-voisins. Une estimation locale par la médiane des phases adjacentes affine le
-bin grossier, avec un résidu limité à 1,5 bin. La référence est un chirp du
+voisins. Après un raffinement temporel fiable, le pic d’une FFT suréchantillonnée
+par huit est interpolé ; sinon, la médiane des phases adjacentes affine le bin
+grossier. Le résidu doit rester à moins de 1,5 bin du pic FFT initial. La référence est un chirp du
 préambule, et la polarité est normalisée. Les bins relatifs arrondis sont
 exportés dans `data_symbols.symbol_bins` ; les valeurs issues du seul pic FFT
 restent disponibles dans `fft_peak_symbol_bins`. L'extraction s'arrête au premier
@@ -313,3 +314,56 @@ exacts, contre 1/6 avant correction. Le nouveau paquet à 19,7319 dB donne
 Voir [le rapport de validation radio](LORA_REAL_VALIDATION.md). Le diagnostic
 `scripts/loraiq_timing_probe.py` balaie aussi 16 phases sur ce membre court ;
 ces variantes d’un même enregistrement ne sont pas de nouvelles captures.
+
+
+## Raffinement temporel par le préambule
+
+Après la correction fractionnaire de porteuse, les candidats SF7–SF10 disposant
+d’au moins deux échantillons par chip peuvent rechercher huit phases de lecture,
+espacées de 1/8 chip. La sélection n’utilise que les huit premiers chirps stables
+au maximum : pour chaque phase, le score est la médiane de la fraction d’énergie
+contenue dans le bin FFT dominant après compensation de porteuse. Le maximum
+doit atteindre 0,65 dans **un seul bin**. Un préambule initialement rejeté n’est
+pas récupéré par cette étape.
+
+Une seule phase est choisie avant la lecture du sync word et des données. Ni
+l’en-tête, ni le CRC, ni une charge utile attendue ne servent à sélectionner
+une phase ou à en essayer une autre après un échec. Les cas non applicables ou
+insuffisamment concentrés conservent le chemin précédent.
+
+L’interpolation conserve un filtre de canal de coupure BW/2 pour éviter de replier
+les autres fréquences. Le cas où le débit d’entrée vaut déjà huit fois BW filtre
+explicitement le signal, car `resample_poly` saute le filtrage au rapport 1:1.
+Les filtres restent limités à 65 537 coefficients et les données interpolées à
+3 000 000 échantillons. Seul le préfixe nécessaire à la fin du préambule plus
+72 symboles et un chip de marge est interpolé, dans la limite de la première
+seconde déjà retenue. Le budget des symboles utiles reste de 64.
+
+Après ce raffinement, la mesure fréquentielle utilise une FFT complétée par des
+zéros jusqu’à 8N, puis une interpolation parabolique du pic et de ses deux voisins.
+Le pic doit rester à moins de 1,5 bin du maximum FFT grossier. L’ancienne médiane
+des phases adjacentes reste utilisée lorsque le raffinement n’est pas appliqué.
+Le nouveau champ `timing_tracking` expose les huit scores, la phase choisie,
+le décalage de grille en chips, les budgets et l’éventuelle abstention.
+Les temps des chirps inversés, du sync word et du début des données incluent
+le décalage de grille ; les indices entiers de chip se rapportent à cette grille.
+
+Cette étape améliore un décalage temporel local ; elle ne suit pas la dérive
+d’horloge sur une longue transmission et ne constitue pas un synchroniseur LoRa
+universel. Elle reste bornée aux mêmes BW, SF et modes déjà pris en charge.
+
+### Validation du raffinement
+
+Les cinq tests de `tests/test_lora_timing.py` vérifient la mesure fréquentielle
+près d’un repli FFT, la sélection identique pour deux charges utiles dont une
+corrompue, le filtrage d’un fort signal hors canal au rapport 1:1, l’abstention
+sur budget de filtre et les octets exacts sur SF7–SF10, les deux polarités et
+différents décalages fractionnaires. La suite complète comprend 180 tests.
+
+Sur les six mêmes IQ LoRaIQ, vérifiés contre les mêmes empreintes, la validation
+locale passe de 2 à **3 contenus exacts sur 6**. Le cas à 10,2641 dB restitue
+`0000000`, CRC `0xE654`. Les trois exports binaires du moteur principal sont
+vérifiés contre les octets annotés. Sur les 16 variantes temporelles du fichier
+à 19,7319 dB, les 16 contenus sont exacts, contre 10/16 avant cette étape.
+Ces variantes d’un seul enregistrement ne sont pas 16 captures indépendantes.
+Voir [la validation radio et ses limites](LORA_REAL_VALIDATION.md).

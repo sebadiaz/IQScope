@@ -25,6 +25,7 @@ def main():
             phases.append({'input_shift_chips':phase*125000/(fs*8),'status':trial['status'],
                 'frames':trial.get('frames',[]),
                 'candidates':[{'parameters':c['parameters'],'sync_word':c['sync_word'],
+                    'carrier_tracking':c.get('carrier_tracking'),'timing_tracking':c.get('timing_tracking'),
                     'data_symbols':c['data_symbols'],'explicit_header':c['explicit_header'],
                     'payload':c['payload']} for c in trial['candidates']]})
         results.append({'source_member':observation['annotation']['sigmf_file'],

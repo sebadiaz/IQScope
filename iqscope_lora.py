@@ -91,11 +91,26 @@ def _fractional_tone_bin(values, peak):
     return (peak+residual)%length if abs(residual)<=1.5 else None
 
 
-def _data_symbol_candidates(y, chirp, polarity, sync, bandwidth):
+def _interpolated_tone_bin(values, peak):
+    """Interpolate a matched-tone FFT peak; reject peaks far from the coarse bin."""
+    length = len(values)
+    oversampling = 8
+    power = abs(np.fft.fft(values,oversampling*length))**2
+    best = int(np.argmax(power))
+    left,center,right = (float(power[(best+offset)%len(power)]) for offset in (-1,0,1))
+    curvature = left-2*center+right
+    delta = .5*(left-right)/curvature if curvature < 0 else 0.0
+    tone = ((best+float(np.clip(delta,-.5,.5)))/oversampling)%length
+    residual = (tone-peak+length/2)%length-length/2
+    return tone if abs(residual)<=1.5 else None
+
+
+def _data_symbol_candidates(y, chirp, polarity, sync, bandwidth, refined_timing=False):
     """Require a matching final quarter chirp before bounded raw CSS symbols."""
     if sync['status'] != 'sync_word_candidate':
         return {'status':'not_available_without_sync_word'}
     length = len(chirp)
+    estimate_tone = _interpolated_tone_bin if refined_timing else _fractional_tone_bin
     quarter = length//4
     up = chirp if polarity == 1 else chirp.conj()
     down = up.conj()
@@ -108,7 +123,7 @@ def _data_symbol_candidates(y, chirp, polarity, sync, bandwidth):
         reference = y[boundary-3*length:boundary-2*length]
         reference_power = abs(np.fft.fft(reference*up.conj()))**2
         reference_bin = int(np.argmax(reference_power))
-        reference_tone = _fractional_tone_bin(reference*up.conj(), reference_bin)
+        reference_tone = estimate_tone(reference*up.conj(), reference_bin)
         if reference_tone is None:
             continue
         down_power = abs(np.fft.fft(y[boundary:boundary+length]*down.conj()))**2
@@ -135,7 +150,7 @@ def _data_symbol_candidates(y, chirp, polarity, sync, bandwidth):
         if strength < .65:
             stop_reason = 'insufficient_spectral_concentration'
             break
-        tone = _fractional_tone_bin(y[start:start+length]*up.conj(),peak)
+        tone = estimate_tone(y[start:start+length]*up.conj(),peak)
         if tone is None:
             stop_reason = 'unstable_phase_estimate'
             break
@@ -143,6 +158,7 @@ def _data_symbol_candidates(y, chirp, polarity, sync, bandwidth):
         symbols.append(int(round(polarity*(tone-best['reference_tone'])))%length)
         strengths.append(strength)
     return {'status':'raw_css_symbol_candidates' if symbols else 'quarter_chirp_candidate_no_symbols',
+            'tone_estimator':'matched_fft_8x' if refined_timing else 'adjacent_phase_median',
             'quarter_chirp_correlation':best['correlation'],
             'candidate_data_start_seconds':best['start']/bandwidth,
             'symbol_bins':symbols, 'fft_peak_symbol_bins':fft_symbols, 'symbol_energy_fractions':strengths,
@@ -170,6 +186,59 @@ def _correct_fractional_carrier(y, start_block, run_blocks, length, bandwidth):
     corrected = y[:limit]*np.exp(-2j*np.pi*offset*np.arange(limit)/length)
     return corrected, dict(evidence,status='fractional_carrier_corrected',
                            fractional_bin_offset=offset,offset_hz=offset*bandwidth/length)
+
+
+
+def _refine_fractional_timing(x, fs, ratio, bandwidth, length, start, count,
+                              chirp, polarity, aligned, carrier):
+    """Pick one of eight sample grids by preamble concentration, before data decoding."""
+    evidence = {'scope':'Preamble-only sample phase selection; no header, payload, CRC or reference bytes used',
+                'phase_budget':8,'interpolated_sample_budget':3000000,
+                'sample_grid_offset_chips':0.0}
+    if length>1024 or fs<2*bandwidth or carrier['status']!='fractional_carrier_corrected':
+        return aligned,carrier,dict(evidence,status='not_applicable')
+    # Preserve the original channel filter cutoff at BW/2 when upsampling.
+    from math import gcd
+    divisor = gcd(8*ratio.numerator,ratio.denominator)
+    cutoff_inverse = 8*ratio.denominator//divisor
+    taps = 20*cutoff_inverse+1
+    if taps>65537:
+        return aligned,carrier,dict(evidence,status='resampler_filter_budget')
+    window = signal.firwin(taps,1/cutoff_inverse,window=('kaiser',5))
+    chips = (start+count+72)*length+1
+    input_count = min(len(x),int(np.ceil(chips*fs/bandwidth)))
+    if int(np.ceil(input_count*8*ratio.numerator/ratio.denominator))>3000000:
+        return aligned,carrier,dict(evidence,status='resampler_sample_budget')
+    if 8*ratio.numerator==ratio.denominator:
+        # resample_poly returns an unfiltered copy at a 1:1 rate.
+        high = signal.fftconvolve(x[:input_count],window,mode='same')
+    else:
+        high = signal.resample_poly(x[:input_count],8*ratio.numerator,ratio.denominator,window=window)
+    blocks = min(count,8)
+    n = np.arange(blocks*length)
+    correction = np.exp(-2j*np.pi*carrier['fractional_bin_offset']*n/length)
+    template = chirp if polarity==1 else chirp.conj()
+    scores = []
+    for phase in range(8):
+        grid = high[phase::8]
+        segment = grid[start*length:(start+blocks)*length]
+        if len(segment)!=blocks*length:
+            scores.append(0.0)
+            continue
+        matrix = (segment*correction).reshape(blocks,length)
+        power = abs(np.fft.fft(matrix*template.conj(),axis=1))**2
+        scores.append(float(np.median(power.max(axis=1)/np.maximum(power.sum(axis=1),1e-30))))
+    phase = int(np.argmax(scores))
+    evidence.update(phase_scores=scores,preamble_blocks=blocks,input_samples=input_count,
+                    interpolated_samples=len(high),filter_taps=taps,
+                    maximum_single_bin_energy_fraction=scores[phase])
+    if scores[phase]<.65:
+        return aligned,carrier,dict(evidence,status='insufficient_preamble_concentration')
+    refined,new_carrier = _correct_fractional_carrier(high[phase::8],start,count,length,bandwidth)
+    if new_carrier['status']!='fractional_carrier_corrected':
+        return aligned,carrier,dict(evidence,status='insufficient_refined_carrier_coherence')
+    return refined,new_carrier,dict(evidence,status='fractional_timing_refined',
+                                selected_phase=phase,sample_grid_offset_chips=phase/8)
 
 
 def detect_lora_preamble(x, fs):
@@ -226,18 +295,28 @@ def detect_lora_preamble(x, fs):
                     continue
                 strength = float(np.median(concentration[best_start:best_start+best_count]))
                 aligned, carrier = _correct_fractional_carrier(y,best_start,best_count,length,bandwidth)
+                aligned, carrier, timing = _refine_fractional_timing(
+                    x,fs,ratio,bandwidth,length,best_start,best_count,chirp,polarity,aligned,carrier)
                 reference = aligned[best_start*length:(best_start+1)*length]
                 template = chirp if polarity == 1 else chirp.conj()
                 corrected_bin = int(np.argmax(abs(np.fft.fft(reference*template.conj()))**2))
                 pair = _opposite_chirp_pair(aligned, chirp, polarity, (best_start+best_count)*length, bandwidth)
                 sync = _sync_word_candidate(aligned, chirp, polarity, corrected_bin, pair, bandwidth)
-                data = _data_symbol_candidates(aligned, chirp, polarity, sync, bandwidth)
+                refined = timing['status']=='fractional_timing_refined'
+                data = _data_symbol_candidates(aligned,chirp,polarity,sync,bandwidth,refined_timing=refined)
+                offset = timing['sample_grid_offset_chips']/bandwidth
+                for item,key in ((pair,'time_seconds'),(sync,'opposite_chirp_start_seconds'),
+                                 (data,'candidate_data_start_seconds')):
+                    if key in item:
+                        item[key] += offset
+                        item['sample_grid_offset_chips'] = timing['sample_grid_offset_chips']
                 candidates.append({'parameters': {'bandwidth_hz': bandwidth, 'spreading_factor': sf,
                     'symbol_seconds': length/bandwidth, 'chirp_polarity': polarity},
                     'time_seconds': best_start*length/bandwidth,
                     'evidence': {'repeated_chirps': best_count, 'median_three_bin_energy_fraction': strength,
                                  'dechirped_peak_bin': int(peaks[best_start]), 'required_chirps': 6},
                     'carrier_tracking': carrier,
+                    'timing_tracking': timing,
                     'synchronization': pair,
                     'sync_word': sync,
                     'data_symbols': data,
@@ -261,5 +340,5 @@ def detect_lora_preamble(x, fs):
                 sample_budget_reached=limit < original,
                 limitations=['Centered single-channel search only; fractional CFO from preamble repetition, no integer CFO or RF center estimation.',
                     'BW 125/250/500 kHz, SF7–SF12, both chirp directions; six stable concentrated FFT peaks required.',
-                    'First second only; at most 256 symbols per BW/SF. Late/short/weak bursts, clock drift and off-center channels may be missed.',
+                    'First second only; at most 256 symbols per BW/SF. Eight-phase preamble timing refinement for SF7-10 with >=2 samples/chip, bounded filters; no clock drift tracking. Late/short/weak bursts and off-center channels may be missed.',
                     'Other CSS waveforms can match preamble evidence. Header checksum and supported payload CRC are checked separately; all other stages remain candidates. Payload: explicit CR4/5–4/8, SF7–SF10 only.'])

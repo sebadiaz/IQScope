@@ -185,3 +185,34 @@ empreintes sources, ainsi que les 10/16 variantes de phase du fichier court.
 Les [175 tests sur Python 3.10, 3.12 et 3.13, Chromium et autres corpus](https://github.com/sebadiaz/IQScope/actions/runs/40922388023)
 passent, de même que la [régression indépendante avec export](https://github.com/sebadiaz/IQScope/actions/runs/40922387924).
 Ces contrôles portent sur le commit `6be3acfffc4809af4deec4ab34e1fee7b2a27c04`.
+
+
+## Raffinement temporel : trois contenus exacts sur les mêmes six captures
+
+L’alignement utilise huit phases au pas de 1/8 chip, sélectionnées d’après les
+chirps du préambule, avec filtrage du canal et interpolation fréquentielle du
+pic FFT. La sélection est terminée avant de décoder l’en-tête ou les données ;
+elle n’est pas pilotée par un CRC ou par les annotations de contenu.
+
+Le 29 octobre 2026, l’analyse locale des **six mêmes sources et annotations**,
+avec empreintes SHA-256 identiques et SHA-512 publiés vérifiés, donne :
+
+| SNR annoté | Contenu exact avec CRC |
+| --- | --- |
+| −1,0897 / 3,7885 / 7,1515 dB | Aucun préambule retenu |
+| 10,2641 dB | `0000000`, CRC `0xE654` |
+| 19,7319 dB | `0000002`, CRC `0xE656` |
+| 20,3859 dB | `0000001`, CRC `0xE655` |
+
+Bilan : **3/6**, contre 2/6 avec la seule correction fractionnaire de porteuse.
+Aucune autre charge utile à CRC valide n’est produite. Les trois exports binaires
+via le moteur principal sont comparés aux octets annotés. Le
+[rapport détaillé](../corpus/loraiq-timing-observation.json) conserve les résultats,
+les scores de sélection, les empreintes sources et celle du décodeur.
+
+Le diagnostic sur 16 décalages au pas de 1/16 chip du membre `rrh2/2` retrouve
+16 fois les octets exacts, contre 10/16 précédemment. Ce sont des transformations
+d’un seul signal, pas des captures supplémentaires. La sélection du corpus et
+les seuils de quart de chirp, d’en-tête et de CRC restent inchangés.
+Ce petit jeu corrélé ne mesure pas une sensibilité et ne valide ni les collisions,
+ni la dérive d’horloge, ni d’autres SF ou codages sur radio.
