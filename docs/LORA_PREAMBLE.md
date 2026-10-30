@@ -367,3 +367,55 @@ vérifiés contre les octets annotés. Sur les 16 variantes temporelles du fichi
 à 19,7319 dB, les 16 contenus sont exacts, contre 10/16 avant cette étape.
 Ces variantes d’un seul enregistrement ne sont pas 16 captures indépendantes.
 Voir [la validation radio et ses limites](LORA_REAL_VALIDATION.md).
+
+
+## Découverte cohérente de préambules faibles
+
+Si aucun groupe ne satisfait la voie initiale à six chirps individuellement
+concentrés, une voie de secours examine des fenêtres de six pics FFT stables,
+tous à au plus un bin du premier, sur le même intervalle déjà borné. La cohérence
+de répétition normalisée au retard N doit atteindre 0,3. Sa phase fournit un
+CFO fractionnaire ; les six chirps sont corrigés en phase puis moyennés avant
+la FFT de déchirpage. Au moins 65 % de l’énergie de cette moyenne doit être
+concentrée dans trois bins voisins. C’est une mesure sur un signal combiné,
+pas un abaissement du critère de concentration des chirps individuels.
+
+Le budget est de 32 combinaisons admissibles par BW/SF/polarité. Le rapport
+`coherent_searches` conserve les compteurs et les budgets atteints. La sortie
+`evidence.discovery` distingue la voie individuelle de la moyenne cohérente,
+avec le début de fenêtre, la cohérence et les concentrations brute et combinée.
+Le score reste une heuristique, pas une probabilité ni une validation de paquet.
+
+Cette voie autorise aussi l’estimation de porteuse sur une cohérence brute de
+0,3, uniquement après validation de la moyenne cohérente. La voie initiale
+conserve son seuil de 0,8. Le rapport expose `required_coherence` afin de rendre
+cette distinction visible. Aucune annotation de SF, BW, CFO, temps ou contenu
+n’est fournie au détecteur.
+
+Pour ces seuls candidats faibles, une seconde voie peut proposer une paire de
+chirps inversés si les pics des deux chirps sont voisins, chaque concentration
+individuelle atteint 0,65, leur cohérence atteint 0,5 et leur moyenne contient
+au moins 0,8 de l’énergie dans trois bins. La paire individuelle au seuil de
+0,8 reste prioritaire. Les deux chirps sont nécessaires ; un seul ne suffit pas.
+Le quart de chirp et les vérifications d’en-tête, FEC et CRC restent inchangés.
+
+### Résultats et limites
+
+Sur les mêmes sources LoRaIQ, les membres annotés à −1,0897 et 7,1515 dB donnent
+maintenant des préambules SF7/BW125 kHz candidats. Leurs concentrations combinées
+atteignent respectivement environ 0,737 et 0,876, contre environ 0,417 et 0,407
+sur les chirps bruts des fenêtres retenues. À 7,1515 dB, une paire inversée et
+le sync word candidat `0x96` sont proposés, mais le quart de chirp n’est pas
+suffisant : aucun contenu n’est validé. À −1,0897 dB, la paire n’est pas retenue.
+
+Le nombre de contenus exacts reste donc **3/6**. Le membre annoté à 3,7885 dB
+contient sa trame de référence à 1,019092 s, hors de l’intervalle SF7 examiné
+(0,262144 s dans la première seconde). Un candidat plus tôt dans ce fichier
+ne valide pas cette trame annotée. Voir [le rapport indépendant](LORA_REAL_VALIDATION.md).
+
+Les six tests de `tests/test_lora_coherent.py` couvrent les préambules faibles
+synthétiques SF7/SF8/SF10, les deux polarités, une phase incohérente, le budget,
+la nécessité des deux chirps inversés, les abstentions sur bruit et forme d’onde
+périodique large bande, et l’export de candidats sans charge utile binaire.
+La suite locale contient 186 tests. Ces observations limitées ne mesurent pas
+un taux de détection ou de fausse alarme sur une population radio.

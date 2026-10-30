@@ -6,7 +6,7 @@ from iqscope_lora_header import decode_explicit_header
 from iqscope_lora_payload import decode_payload
 
 
-def _opposite_chirp_pair(y, chirp, polarity, run_end, bandwidth):
+def _opposite_chirp_pair(y, chirp, polarity, run_end, bandwidth, coherent_fallback=False):
     """Look for two concentrated opposite chirps; not a packet-boundary solution."""
     length = len(chirp)
     template = chirp.conj() if polarity == 1 else chirp
@@ -14,6 +14,7 @@ def _opposite_chirp_pair(y, chirp, polarity, run_end, bandwidth):
     first = max(0, run_end-length)
     last = min(len(y)-2*length, run_end+4*length)
     best = None
+    coherent_best = None
     for start in range(first,last+1,step):
         matrix = y[start:start+2*length].reshape(2,length)
         power = abs(np.fft.fft(matrix*template.conj(),axis=1))**2
@@ -21,6 +22,21 @@ def _opposite_chirp_pair(y, chirp, polarity, run_end, bandwidth):
         fraction = sum(power[np.arange(2),(peaks+offset)%length] for offset in (-1,0,1))/np.maximum(power.sum(axis=1),1e-30)
         separation = min((int(peaks[0])-int(peaks[1]))%length,(int(peaks[1])-int(peaks[0]))%length)
         strength = float(min(fraction))
+        if coherent_fallback and separation<=1 and strength>=.65:
+            product = np.sum(matrix[1]*matrix[0].conj())
+            energy = float(np.sqrt(np.sum(abs(matrix[0])**2)*np.sum(abs(matrix[1])**2)))
+            coherence = float(np.clip(abs(product)/max(energy,1e-30),0,1))
+            combined = np.mean(matrix,axis=0)
+            combined_power = abs(np.fft.fft(combined*template.conj()))**2
+            combined_peak = int(np.argmax(combined_power))
+            combined_fraction = float(sum(combined_power[(combined_peak+offset)%length] for offset in (-1,0,1))/max(float(combined_power.sum()),1e-30))
+            if coherence>=.5 and combined_fraction>=.8 and (coherent_best is None or combined_fraction>coherent_best['combined_three_bin_energy_fraction']):
+                coherent_best = {'status':'opposite_chirp_pair_candidate','time_seconds':start/bandwidth,
+                    'sample_start_at_chip_rate':start,'search_step_chips':step,
+                    'method':'coherent_opposite_pair','minimum_three_bin_energy_fraction':strength,
+                    'combined_three_bin_energy_fraction':combined_fraction,'pair_coherence':coherence,
+                    'dechirped_peak_bins':[int(value) for value in peaks],
+                    'scope':'Two coherent opposite chirps only; each >=0.65 three-bin fraction, pair coherence >=0.5 and combined >=0.8. No sync word, header, CRC or content validated.'}
         if strength < .8 or separation > 1:
             continue
         if best is None or strength > best['minimum_three_bin_energy_fraction']:
@@ -29,7 +45,7 @@ def _opposite_chirp_pair(y, chirp, polarity, run_end, bandwidth):
                     'minimum_three_bin_energy_fraction':strength,
                     'dechirped_peak_bins':[int(value) for value in peaks],
                     'scope':'Two opposite-direction chirps only; sync word, quarter chirp, exact boundary and payload not validated'}
-    return best or {'status':'no_consistent_opposite_pair'}
+    return best or coherent_best or {'status':'no_consistent_opposite_pair'}
 
 
 def _sync_word_candidate(y, chirp, polarity, preamble_bin, pair, bandwidth):
@@ -168,7 +184,55 @@ def _data_symbol_candidates(y, chirp, polarity, sync, bandwidth, refined_timing=
 
 
 
-def _correct_fractional_carrier(y, start_block, run_blocks, length, bandwidth):
+
+def _coherent_preamble_run(matrix, peaks, concentration, chirp, polarity):
+    """Fallback: six stable coarse peaks plus a phase-aligned chirp average."""
+    length = len(chirp)
+    template = chirp if polarity==1 else chirp.conj()
+    positions = np.arange(6*length).reshape(6,length)
+    checked = 0
+    best = None
+    budget_reached = False
+    for start in range(len(matrix)-5):
+        bins = peaks[start:start+6]
+        distances = (bins-int(bins[0])+length//2)%length-length//2
+        if max(abs(distances))>1:
+            continue
+        if checked==32:
+            budget_reached = True
+            break
+        checked += 1
+        segment = matrix[start:start+6]
+        first,second = segment[:-1],segment[1:]
+        product = np.sum(second*first.conj())
+        energy = float(np.sqrt(np.sum(abs(first)**2)*np.sum(abs(second)**2)))
+        coherence = float(np.clip(abs(product)/max(energy,1e-30),0,1))
+        if coherence<.3:
+            continue
+        offset = float(np.angle(product)/(2*np.pi))
+        combined = np.mean(segment*np.exp(-2j*np.pi*offset*positions/length),axis=0)
+        power = abs(np.fft.fft(combined*template.conj()))**2
+        peak = int(np.argmax(power))
+        strength = float(sum(power[(peak+delta)%length] for delta in (-1,0,1))/max(float(power.sum()),1e-30))
+        if strength<.65 or (best is not None and strength<=best['strength']):
+            continue
+        left,right = start,start+6
+        reference = int(bins[0])
+        while left>0 and abs((int(peaks[left-1])-reference+length//2)%length-length//2)<=1:
+            left -= 1
+        while right<len(matrix) and abs((int(peaks[right])-reference+length//2)%length-length//2)<=1:
+            right += 1
+        best = {'start':left,'count':right-left,'strength':strength,
+                'evidence':{'method':'six_chirp_coherent_average','combination_start_block':start,
+                    'combined_chirps':6,'combined_three_bin_energy_fraction':strength,
+                    'raw_median_three_bin_energy_fraction':float(np.median(concentration[start:start+6])),
+                    'preamble_lag_coherence':coherence,'fractional_bin_offset':offset,
+                    'required_lag_coherence':.3,'required_combined_three_bin_energy_fraction':.65,
+                    'scope':'Preamble repetition hypothesis only; no sync word, header, payload, CRC or reference used'}}
+    return best,{'checked_windows':checked,'window_budget':32,'budget_reached':budget_reached}
+
+
+def _correct_fractional_carrier(y, start_block, run_blocks, length, bandwidth, minimum_coherence=.8):
     """Estimate carrier phase advance from repeated preamble, modulo one FFT bin."""
     blocks = min(run_blocks, 8)
     segment = y[start_block*length:(start_block+blocks)*length].reshape(blocks,length)
@@ -177,8 +241,9 @@ def _correct_fractional_carrier(y, start_block, run_blocks, length, bandwidth):
     energy = float(np.sqrt(np.sum(abs(first)**2)*np.sum(abs(second)**2)))
     coherence = float(np.clip(abs(product)/max(energy,1e-30),0,1))
     evidence = {'scope':'Preamble repetition only; fractional carrier offset modulo BW/2**SF, not RF center or integer CFO',
-                'preamble_blocks':blocks,'lag_samples':length,'coherence':coherence}
-    if coherence < .8:
+                'preamble_blocks':blocks,'lag_samples':length,'coherence':coherence,
+                'required_coherence':minimum_coherence}
+    if coherence < minimum_coherence:
         return y, dict(evidence,status='insufficient_preamble_coherence')
     offset = float(np.angle(product)/(2*np.pi))
     # The detector needs at most the preamble, delimiter and 64 data symbols.
@@ -234,7 +299,8 @@ def _refine_fractional_timing(x, fs, ratio, bandwidth, length, start, count,
                     maximum_single_bin_energy_fraction=scores[phase])
     if scores[phase]<.65:
         return aligned,carrier,dict(evidence,status='insufficient_preamble_concentration')
-    refined,new_carrier = _correct_fractional_carrier(high[phase::8],start,count,length,bandwidth)
+    refined,new_carrier = _correct_fractional_carrier(
+        high[phase::8],start,count,length,bandwidth,carrier.get('required_coherence',.8))
     if new_carrier['status']!='fractional_carrier_corrected':
         return aligned,carrier,dict(evidence,status='insufficient_refined_carrier_coherence')
     return refined,new_carrier,dict(evidence,status='fractional_timing_refined',
@@ -253,6 +319,7 @@ def detect_lora_preamble(x, fs):
     candidates = []
     trials = 0
     search_windows = []
+    coherent_searches = []
     for bandwidth in (125000, 250000, 500000):
         if fs < bandwidth:
             continue
@@ -291,16 +358,28 @@ def detect_lora_preamble(x, fs):
                     count = index-run_start+1
                     if count > best_count:
                         best_start, best_count = run_start, count
+                discovery = {'method':'individual_chirp_concentration'}
+                minimum_coherence = .8
                 if best_count < 6:
-                    continue
-                strength = float(np.median(concentration[best_start:best_start+best_count]))
-                aligned, carrier = _correct_fractional_carrier(y,best_start,best_count,length,bandwidth)
+                    weak,search = _coherent_preamble_run(matrix,peaks,concentration,chirp,polarity)
+                    coherent_searches.append(dict(search,bandwidth_hz=bandwidth,spreading_factor=sf,chirp_polarity=polarity))
+                    if weak is None:
+                        continue
+                    best_start,best_count = weak['start'],weak['count']
+                    strength = weak['strength']
+                    discovery = weak['evidence']
+                    minimum_coherence = .3
+                else:
+                    strength = float(np.median(concentration[best_start:best_start+best_count]))
+                aligned, carrier = _correct_fractional_carrier(
+                    y,best_start,best_count,length,bandwidth,minimum_coherence)
                 aligned, carrier, timing = _refine_fractional_timing(
                     x,fs,ratio,bandwidth,length,best_start,best_count,chirp,polarity,aligned,carrier)
                 reference = aligned[best_start*length:(best_start+1)*length]
                 template = chirp if polarity == 1 else chirp.conj()
                 corrected_bin = int(np.argmax(abs(np.fft.fft(reference*template.conj()))**2))
-                pair = _opposite_chirp_pair(aligned, chirp, polarity, (best_start+best_count)*length, bandwidth)
+                pair = _opposite_chirp_pair(aligned,chirp,polarity,(best_start+best_count)*length,bandwidth,
+                    coherent_fallback=discovery['method']=='six_chirp_coherent_average')
                 sync = _sync_word_candidate(aligned, chirp, polarity, corrected_bin, pair, bandwidth)
                 refined = timing['status']=='fractional_timing_refined'
                 data = _data_symbol_candidates(aligned,chirp,polarity,sync,bandwidth,refined_timing=refined)
@@ -313,7 +392,8 @@ def detect_lora_preamble(x, fs):
                 candidates.append({'parameters': {'bandwidth_hz': bandwidth, 'spreading_factor': sf,
                     'symbol_seconds': length/bandwidth, 'chirp_polarity': polarity},
                     'time_seconds': best_start*length/bandwidth,
-                    'evidence': {'repeated_chirps': best_count, 'median_three_bin_energy_fraction': strength,
+                    'evidence': {'repeated_chirps': best_count, 'median_three_bin_energy_fraction': float(np.median(concentration[best_start:best_start+best_count])),
+                                 'discovery': discovery,
                                  'dechirped_peak_bin': int(peaks[best_start]), 'required_chirps': 6},
                     'carrier_tracking': carrier,
                     'timing_tracking': timing,
@@ -336,9 +416,10 @@ def detect_lora_preamble(x, fs):
         frames.append({**payload,'time_seconds':time,'parameters':candidate['parameters'],'sync_word':candidate['sync_word'].get('value_hex')})
     return dict(base, status='crc_valid_payload' if frames else ('repeated_chirp_candidate' if candidates else 'no_consistent_candidate'),
                 candidates=candidates[:6], trials=trials, analyzed_seconds=len(x)/fs, search_windows=search_windows,
+                coherent_searches=coherent_searches,
                 **({'frames':frames} if frames else {}),
                 sample_budget_reached=limit < original,
                 limitations=['Centered single-channel search only; fractional CFO from preamble repetition, no integer CFO or RF center estimation.',
-                    'BW 125/250/500 kHz, SF7–SF12, both chirp directions; six stable concentrated FFT peaks required.',
+                    'BW 125/250/500 kHz, SF7–SF12, both chirp directions; six stable FFT peaks and either individual concentration or a coherent six-chirp average required.',
                     'First second only; at most 256 symbols per BW/SF. Eight-phase preamble timing refinement for SF7-10 with >=2 samples/chip, bounded filters; no clock drift tracking. Late/short/weak bursts and off-center channels may be missed.',
                     'Other CSS waveforms can match preamble evidence. Header checksum and supported payload CRC are checked separately; all other stages remain candidates. Payload: explicit CR4/5–4/8, SF7–SF10 only.'])

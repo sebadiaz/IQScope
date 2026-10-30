@@ -4,6 +4,10 @@ Source : Joachim Tapparel et Andreas Burg, EPFL,
 [LoRaIQ, Zenodo 20341802](https://zenodo.org/records/20341802),
 DOI `10.5281/zenodo.20341802`, licence **CC BY 4.0**.
 
+État actuel confirmé en CI : **3 contenus exacts sur les mêmes 6 captures**,
+et **16/16 variantes temporelles** du membre testé, après correction de porteuse
+et raffinement temporel. Les détails et limites figurent en fin de document.
+
 ## Résultat observé
 
 Le [contrôle 40748859994](https://github.com/sebadiaz/IQScope/actions/runs/40748859994)
@@ -216,3 +220,38 @@ d’un seul signal, pas des captures supplémentaires. La sélection du corpus e
 les seuils de quart de chirp, d’en-tête et de CRC restent inchangés.
 Ce petit jeu corrélé ne mesure pas une sensibilité et ne valide ni les collisions,
 ni la dérive d’horloge, ni d’autres SF ou codages sur radio.
+
+
+La [CI 40936242866](https://github.com/sebadiaz/IQScope/actions/runs/40936242866)
+a reproduit **3/6 contenus exacts** sur les mêmes sources et **16/16 variantes
+temporelles exactes**. Les [180 tests Python sur trois versions, Chromium et
+les autres corpus](https://github.com/sebadiaz/IQScope/actions/runs/40936242897)
+passent, ainsi que la [référence indépendante avec export](https://github.com/sebadiaz/IQScope/actions/runs/40936242905).
+Ces contrôles portent sur le commit `714fd90286a586e7f10a565f73aa64564bf114ca`.
+
+
+## Préambules faibles : indices supplémentaires, toujours trois contenus validés
+
+La [découverte par moyenne cohérente](LORA_PREAMBLE.md#découverte-cohérente-de-préambules-faibles)
+combine six chirps répétés après estimation de leur rotation de phase, avec un
+budget explicite. Sur les mêmes fichiers et empreintes, le 30 octobre 2026 :
+
+- À −1,0897 dB, un préambule SF7/BW125 kHz candidat apparaît ; la paire inversée
+  n’est pas retenue et aucun contenu n’est décodé.
+- À 7,1515 dB, un préambule, une paire inversée et le sync word candidat `0x96`
+  apparaissent ; le quart de chirp reste insuffisant. Le sync word n’est toujours
+  pas comparé à une référence publiée et aucun contenu n’est validé.
+- Les trois contenus déjà validés restent exacts, et leurs exports binaires
+  sont de nouveau comparés aux annotations. **Le bilan de contenu reste 3/6.**
+
+Le [rapport détaillé](../corpus/loraiq-coherent-observation.json) conserve les
+mesures brutes et combinées, les critères des deux voies, les budgets et les
+résultats. Les SHA-256 des sources restent identiques ; leurs SHA-512 publiés
+sont vérifiés. Les 186 tests Python passent localement.
+
+Le cas à 3,7885 dB nécessite une distinction de couverture : la référence
+annotée commence à **1,019092 s**, alors que SF7/BW125 kHz n’examine ici que
+0,262144 s au début de la première seconde. Le fichier produit maintenant un
+candidat antérieur ; il ne prouve pas la reconnaissance de cette trame annotée.
+Ce cas ne peut pas être attribué uniquement au SNR. Aucune fenêtre temporelle
+annotée n’a été donnée au détecteur pour le récupérer.

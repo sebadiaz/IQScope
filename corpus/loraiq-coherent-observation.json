@@ -1,0 +1,2705 @@
+{
+  "source": "https://zenodo.org/records/20341802",
+  "doi": "10.5281/zenodo.20341802",
+  "license": {
+    "id": "cc-by-4.0"
+  },
+  "creators": [
+    "Tapparel, Joachim",
+    "Burg, Andreas"
+  ],
+  "selection_rule": "First distinct member per SNR stratum [-inf,0),[0,5),[5,10),[10,15),[15,20),[20,inf); SF7/BW125k/CR1 only",
+  "csv_prefix_sha256": "96122f6ae2f1ff6b3ea8601a4d1e3336abab94e35cb6313a01fe5a16d6d135cf",
+  "rows_in_prefix": 518,
+  "baseline_commit": "714fd90286a586e7f10a565f73aa64564bf114ca",
+  "baseline_matched_count": 3,
+  "observations": [
+    {
+      "stratum": "[-inf,0) dB",
+      "annotation": {
+        "sf": "7",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "125000",
+        "payload_base64": "MDAwMDAwMA==",
+        "rrh_idx": "1",
+        "rx_sample_rate": "250000",
+        "cfo": "7.016",
+        "snr": "-1.0897",
+        "sigmf_file": "./sigmfs/25_01_17-13_40/rrh1/1",
+        "sigmf_file_offset": "7730.0",
+        "sigmf_file_n_samples": "9024"
+      },
+      "data_sha256": "3c59fa48b65aae5129d583ded3f0696249c9271314ade8e582c53cf4ebc1f957",
+      "meta_sha256": "901637cf927356ee20934aa5e7fb53d2ac44f66650c36c739babd4eed08200f8",
+      "expected_payload_hex": "30303030303030",
+      "trial": {
+        "decoder": "lora_preamble",
+        "family": "LoRa-compatible CSS preamble",
+        "candidates": [
+          {
+            "parameters": {
+              "bandwidth_hz": 125000,
+              "spreading_factor": 7,
+              "symbol_seconds": 0.001024,
+              "chirp_polarity": 1
+            },
+            "time_seconds": 0.03072,
+            "evidence": {
+              "repeated_chirps": 8,
+              "median_three_bin_energy_fraction": 0.41138872422426886,
+              "discovery": {
+                "method": "six_chirp_coherent_average",
+                "combination_start_block": 30,
+                "combined_chirps": 6,
+                "combined_three_bin_energy_fraction": 0.7373159723702123,
+                "raw_median_three_bin_energy_fraction": 0.41669713328757757,
+                "preamble_lag_coherence": 0.4876975018940227,
+                "fractional_bin_offset": 0.018362686269503777,
+                "required_lag_coherence": 0.3,
+                "required_combined_three_bin_energy_fraction": 0.65,
+                "scope": "Preamble repetition hypothesis only; no sync word, header, payload, CRC or reference used"
+              },
+              "dechirped_peak_bin": 110,
+              "required_chirps": 6
+            },
+            "carrier_tracking": {
+              "scope": "Preamble repetition only; fractional carrier offset modulo BW/2**SF, not RF center or integer CFO",
+              "preamble_blocks": 8,
+              "lag_samples": 128,
+              "coherence": 0.4526761677239599,
+              "required_coherence": 0.3,
+              "status": "fractional_carrier_corrected",
+              "fractional_bin_offset": 0.02058643931693826,
+              "offset_hz": 20.10394464544752
+            },
+            "timing_tracking": {
+              "scope": "Preamble-only sample phase selection; no header, payload, CRC or reference bytes used",
+              "phase_budget": 8,
+              "interpolated_sample_budget": 3000000,
+              "sample_grid_offset_chips": 0.0,
+              "phase_scores": [
+                0.22859534935640974,
+                0.28716289111283455,
+                0.33282912267556997,
+                0.36034253986844345,
+                0.3621463035797483,
+                0.32913095967731515,
+                0.2800215914564204,
+                0.2219334850293347
+              ],
+              "preamble_blocks": 8,
+              "input_samples": 28162,
+              "interpolated_samples": 112648,
+              "filter_taps": 161,
+              "maximum_single_bin_energy_fraction": 0.3621463035797483,
+              "status": "insufficient_preamble_concentration"
+            },
+            "synchronization": {
+              "status": "no_consistent_opposite_pair"
+            },
+            "sync_word": {
+              "status": "not_available_without_opposite_pair"
+            },
+            "data_symbols": {
+              "status": "not_available_without_sync_word"
+            },
+            "explicit_header": {
+              "scope": "Explicit-header hypothesis only; no payload CRC, bytes or emitter identity validated",
+              "status": "insufficient_symbols",
+              "required_symbols": 8
+            },
+            "payload": {
+              "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+              "status": "no_valid_explicit_header"
+            },
+            "score": 0.7373159723702123,
+            "score_kind": "heuristic_not_probability",
+            "validation_scope": "Bounded LoRa PHY trial; only explicit header checks and supported payload CRC results are validated. No LoRaWAN identity or authentication."
+          }
+        ],
+        "status": "repeated_chirp_candidate",
+        "trials": 24,
+        "analyzed_seconds": 1.0,
+        "search_windows": [
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.262144,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 8,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.524288,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 9,
+            "symbol_blocks": 244,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 10,
+            "symbol_blocks": 122,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 11,
+            "symbol_blocks": 61,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 12,
+            "symbol_blocks": 30,
+            "examined_seconds": 0.98304,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 7,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.131072,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 8,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.262144,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 9,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.524288,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "symbol_blocks": 244,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 11,
+            "symbol_blocks": 122,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 12,
+            "symbol_blocks": 61,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          }
+        ],
+        "coherent_searches": [
+          {
+            "checked_windows": 3,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 8,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 8,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 9,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 9,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 10,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 10,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 11,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 11,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 12,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 12,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 7,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 7,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 8,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 8,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 9,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 9,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 11,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 11,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 12,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 12,
+            "chirp_polarity": -1
+          }
+        ],
+        "sample_budget_reached": true,
+        "limitations": [
+          "Centered single-channel search only; fractional CFO from preamble repetition, no integer CFO or RF center estimation.",
+          "BW 125/250/500 kHz, SF7\u2013SF12, both chirp directions; six stable FFT peaks and either individual concentration or a coherent six-chirp average required.",
+          "First second only; at most 256 symbols per BW/SF. Eight-phase preamble timing refinement for SF7-10 with >=2 samples/chip, bounded filters; no clock drift tracking. Late/short/weak bursts and off-center channels may be missed.",
+          "Other CSS waveforms can match preamble evidence. Header checksum and supported payload CRC are checked separately; all other stages remain candidates. Payload: explicit CR4/5\u20134/8, SF7\u2013SF10 only."
+        ]
+      },
+      "input_samples": 2017726,
+      "sample_rate_hz": 250000.0,
+      "publisher_sha512_verified": true,
+      "oracle_parameters_applied": [],
+      "payload_matches_reference": false,
+      "crc_valid_other_payloads": [],
+      "annotated_reference_start_in_scanned_interval": true,
+      "reference_coverage_scope": "Post-decode diagnostic using annotation only; no annotation window supplied to detector"
+    },
+    {
+      "stratum": "[0,5) dB",
+      "annotation": {
+        "sf": "7",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "125000",
+        "payload_base64": "MDAwMDAwMg==",
+        "rrh_idx": "3",
+        "rx_sample_rate": "250000",
+        "cfo": "7.6228",
+        "snr": "3.7885",
+        "sigmf_file": "./sigmfs/25_01_17-13_40/rrh3/2",
+        "sigmf_file_offset": "254773.0",
+        "sigmf_file_n_samples": "9024"
+      },
+      "data_sha256": "908fdaedcf94f999acec0c230450142375b00221354eb5ca87807e6f1b3d502e",
+      "meta_sha256": "eefb6ab08a46d03ac7299280342b460857d04ad996433a81a5b70b8203501be2",
+      "expected_payload_hex": "30303030303032",
+      "trial": {
+        "decoder": "lora_preamble",
+        "family": "LoRa-compatible CSS preamble",
+        "candidates": [
+          {
+            "parameters": {
+              "bandwidth_hz": 125000,
+              "spreading_factor": 7,
+              "symbol_seconds": 0.001024,
+              "chirp_polarity": 1
+            },
+            "time_seconds": 0.018432,
+            "evidence": {
+              "repeated_chirps": 8,
+              "median_three_bin_energy_fraction": 0.3474138082176312,
+              "discovery": {
+                "method": "six_chirp_coherent_average",
+                "combination_start_block": 18,
+                "combined_chirps": 6,
+                "combined_three_bin_energy_fraction": 0.7351196552069645,
+                "raw_median_three_bin_energy_fraction": 0.326341358603213,
+                "preamble_lag_coherence": 0.37699534968108256,
+                "fractional_bin_offset": -0.3817946195838085,
+                "required_lag_coherence": 0.3,
+                "required_combined_three_bin_energy_fraction": 0.65,
+                "scope": "Preamble repetition hypothesis only; no sync word, header, payload, CRC or reference used"
+              },
+              "dechirped_peak_bin": 81,
+              "required_chirps": 6
+            },
+            "carrier_tracking": {
+              "scope": "Preamble repetition only; fractional carrier offset modulo BW/2**SF, not RF center or integer CFO",
+              "preamble_blocks": 8,
+              "lag_samples": 128,
+              "coherence": 0.38692046720886736,
+              "required_coherence": 0.3,
+              "status": "fractional_carrier_corrected",
+              "fractional_bin_offset": -0.3746975980490065,
+              "offset_hz": -365.9156230947329
+            },
+            "timing_tracking": {
+              "scope": "Preamble-only sample phase selection; no header, payload, CRC or reference bytes used",
+              "phase_budget": 8,
+              "interpolated_sample_budget": 3000000,
+              "sample_grid_offset_chips": 0.0,
+              "phase_scores": [
+                0.3075286127358759,
+                0.2613346383919106,
+                0.19321987262103668,
+                0.16265772319223074,
+                0.18126542245262905,
+                0.2526206585668436,
+                0.31050460042393324,
+                0.3380955249886348
+              ],
+              "preamble_blocks": 8,
+              "input_samples": 25090,
+              "interpolated_samples": 100360,
+              "filter_taps": 161,
+              "maximum_single_bin_energy_fraction": 0.3380955249886348,
+              "status": "insufficient_preamble_concentration"
+            },
+            "synchronization": {
+              "status": "no_consistent_opposite_pair"
+            },
+            "sync_word": {
+              "status": "not_available_without_opposite_pair"
+            },
+            "data_symbols": {
+              "status": "not_available_without_sync_word"
+            },
+            "explicit_header": {
+              "scope": "Explicit-header hypothesis only; no payload CRC, bytes or emitter identity validated",
+              "status": "insufficient_symbols",
+              "required_symbols": 8
+            },
+            "payload": {
+              "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+              "status": "no_valid_explicit_header"
+            },
+            "score": 0.7351196552069645,
+            "score_kind": "heuristic_not_probability",
+            "validation_scope": "Bounded LoRa PHY trial; only explicit header checks and supported payload CRC results are validated. No LoRaWAN identity or authentication."
+          }
+        ],
+        "status": "repeated_chirp_candidate",
+        "trials": 24,
+        "analyzed_seconds": 1.0,
+        "search_windows": [
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.262144,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 8,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.524288,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 9,
+            "symbol_blocks": 244,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 10,
+            "symbol_blocks": 122,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 11,
+            "symbol_blocks": 61,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 12,
+            "symbol_blocks": 30,
+            "examined_seconds": 0.98304,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 7,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.131072,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 8,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.262144,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 9,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.524288,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "symbol_blocks": 244,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 11,
+            "symbol_blocks": 122,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 12,
+            "symbol_blocks": 61,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          }
+        ],
+        "coherent_searches": [
+          {
+            "checked_windows": 3,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 8,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 8,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 9,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 9,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 10,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 10,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 11,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 11,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 12,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 12,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 7,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 7,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 8,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 8,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 9,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 9,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 11,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 11,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 12,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 12,
+            "chirp_polarity": -1
+          }
+        ],
+        "sample_budget_reached": true,
+        "limitations": [
+          "Centered single-channel search only; fractional CFO from preamble repetition, no integer CFO or RF center estimation.",
+          "BW 125/250/500 kHz, SF7\u2013SF12, both chirp directions; six stable FFT peaks and either individual concentration or a coherent six-chirp average required.",
+          "First second only; at most 256 symbols per BW/SF. Eight-phase preamble timing refinement for SF7-10 with >=2 samples/chip, bounded filters; no clock drift tracking. Late/short/weak bursts and off-center channels may be missed.",
+          "Other CSS waveforms can match preamble evidence. Header checksum and supported payload CRC are checked separately; all other stages remain candidates. Payload: explicit CR4/5\u20134/8, SF7\u2013SF10 only."
+        ]
+      },
+      "input_samples": 1514630,
+      "sample_rate_hz": 250000.0,
+      "publisher_sha512_verified": true,
+      "oracle_parameters_applied": [],
+      "payload_matches_reference": false,
+      "crc_valid_other_payloads": [],
+      "annotated_reference_start_in_scanned_interval": false,
+      "reference_coverage_scope": "Post-decode diagnostic using annotation only; no annotation window supplied to detector"
+    },
+    {
+      "stratum": "[5,10) dB",
+      "annotation": {
+        "sf": "7",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "125000",
+        "payload_base64": "MDAwMDAwMA==",
+        "rrh_idx": "3",
+        "rx_sample_rate": "250000",
+        "cfo": "7.5704",
+        "snr": "7.1515",
+        "sigmf_file": "./sigmfs/25_01_17-13_40/rrh3/1",
+        "sigmf_file_offset": "7043.0",
+        "sigmf_file_n_samples": "9024"
+      },
+      "data_sha256": "2376ebc206af761889b4d541d495d784eed7c5116d27c18dae1483ad88245058",
+      "meta_sha256": "0f819f2a1ffa07176d58187494cab782522b828a9e9c2a90e510454f5ee893ba",
+      "expected_payload_hex": "30303030303030",
+      "trial": {
+        "decoder": "lora_preamble",
+        "family": "LoRa-compatible CSS preamble",
+        "candidates": [
+          {
+            "parameters": {
+              "bandwidth_hz": 125000,
+              "spreading_factor": 7,
+              "symbol_seconds": 0.001024,
+              "chirp_polarity": 1
+            },
+            "time_seconds": 0.027648,
+            "evidence": {
+              "repeated_chirps": 9,
+              "median_three_bin_energy_fraction": 0.4032656566054398,
+              "discovery": {
+                "method": "six_chirp_coherent_average",
+                "combination_start_block": 27,
+                "combined_chirps": 6,
+                "combined_three_bin_energy_fraction": 0.8758765568791753,
+                "raw_median_three_bin_energy_fraction": 0.40656518093234106,
+                "preamble_lag_coherence": 0.7635158434030235,
+                "fractional_bin_offset": -0.43231287696804965,
+                "required_lag_coherence": 0.3,
+                "required_combined_three_bin_energy_fraction": 0.65,
+                "scope": "Preamble repetition hypothesis only; no sync word, header, payload, CRC or reference used"
+              },
+              "dechirped_peak_bin": 70,
+              "required_chirps": 6
+            },
+            "carrier_tracking": {
+              "scope": "Preamble repetition only; fractional carrier offset modulo BW/2**SF, not RF center or integer CFO",
+              "preamble_blocks": 8,
+              "lag_samples": 128,
+              "coherence": 0.7770025276784999,
+              "required_coherence": 0.3,
+              "status": "fractional_carrier_corrected",
+              "fractional_bin_offset": -0.4305212290440455,
+              "offset_hz": -420.4308877383257
+            },
+            "timing_tracking": {
+              "scope": "Preamble-only sample phase selection; no header, payload, CRC or reference bytes used",
+              "phase_budget": 8,
+              "interpolated_sample_budget": 3000000,
+              "sample_grid_offset_chips": 0.625,
+              "phase_scores": [
+                0.5118101702826505,
+                0.3610406731565994,
+                0.485845194132262,
+                0.6262035530460743,
+                0.7282790848539527,
+                0.7719329876427719,
+                0.7403416561413669,
+                0.648131610431115
+              ],
+              "preamble_blocks": 8,
+              "input_samples": 18627,
+              "interpolated_samples": 74508,
+              "filter_taps": 161,
+              "maximum_single_bin_energy_fraction": 0.7719329876427719,
+              "status": "fractional_timing_refined",
+              "selected_phase": 5
+            },
+            "synchronization": {
+              "status": "opposite_chirp_pair_candidate",
+              "time_seconds": 0.038661,
+              "sample_start_at_chip_rate": 4832,
+              "search_step_chips": 4,
+              "method": "coherent_opposite_pair",
+              "minimum_three_bin_energy_fraction": 0.7155567510003538,
+              "combined_three_bin_energy_fraction": 0.8473990474870877,
+              "pair_coherence": 0.7824921120671164,
+              "dechirped_peak_bins": [
+                105,
+                105
+              ],
+              "scope": "Two coherent opposite chirps only; each >=0.65 three-bin fraction, pair coherence >=0.5 and combined >=0.8. No sync word, header, CRC or content validated.",
+              "sample_grid_offset_chips": 0.625
+            },
+            "sync_word": {
+              "status": "sync_word_candidate",
+              "value_hex": "96",
+              "relative_symbol_bins": [
+                72,
+                48
+              ],
+              "symbol_bin_errors": [
+                0,
+                0
+              ],
+              "opposite_chirp_start_seconds": 0.038412999999999996,
+              "opposite_chirp_start_chip": 4801,
+              "minimum_three_bin_energy_fraction": 0.7175520818380299,
+              "scope": "Conventional two-nibble sync-word hypothesis only; no network identity, quarter-chirp, header, CRC or payload validation",
+              "sample_grid_offset_chips": 0.625
+            },
+            "data_symbols": {
+              "status": "no_consistent_final_quarter_chirp"
+            },
+            "explicit_header": {
+              "scope": "Explicit-header hypothesis only; no payload CRC, bytes or emitter identity validated",
+              "status": "insufficient_symbols",
+              "required_symbols": 8
+            },
+            "payload": {
+              "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+              "status": "no_valid_explicit_header"
+            },
+            "score": 0.8758765568791753,
+            "score_kind": "heuristic_not_probability",
+            "validation_scope": "Bounded LoRa PHY trial; only explicit header checks and supported payload CRC results are validated. No LoRaWAN identity or authentication."
+          }
+        ],
+        "status": "repeated_chirp_candidate",
+        "trials": 18,
+        "analyzed_seconds": 0.074508,
+        "search_windows": [
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "symbol_blocks": 72,
+            "examined_seconds": 0.073728,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 8,
+            "symbol_blocks": 36,
+            "examined_seconds": 0.073728,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 9,
+            "symbol_blocks": 18,
+            "examined_seconds": 0.073728,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 10,
+            "symbol_blocks": 9,
+            "examined_seconds": 0.073728,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 7,
+            "symbol_blocks": 145,
+            "examined_seconds": 0.07424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 8,
+            "symbol_blocks": 72,
+            "examined_seconds": 0.073728,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 9,
+            "symbol_blocks": 36,
+            "examined_seconds": 0.073728,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "symbol_blocks": 18,
+            "examined_seconds": 0.073728,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 11,
+            "symbol_blocks": 9,
+            "examined_seconds": 0.073728,
+            "symbol_budget_reached": false
+          }
+        ],
+        "coherent_searches": [
+          {
+            "checked_windows": 1,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 8,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 8,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 9,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 9,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 10,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 10,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 7,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 7,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 8,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 8,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 9,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 9,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 11,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 11,
+            "chirp_polarity": -1
+          }
+        ],
+        "sample_budget_reached": false,
+        "limitations": [
+          "Centered single-channel search only; fractional CFO from preamble repetition, no integer CFO or RF center estimation.",
+          "BW 125/250/500 kHz, SF7\u2013SF12, both chirp directions; six stable FFT peaks and either individual concentration or a coherent six-chirp average required.",
+          "First second only; at most 256 symbols per BW/SF. Eight-phase preamble timing refinement for SF7-10 with >=2 samples/chip, bounded filters; no clock drift tracking. Late/short/weak bursts and off-center channels may be missed.",
+          "Other CSS waveforms can match preamble evidence. Header checksum and supported payload CRC are checked separately; all other stages remain candidates. Payload: explicit CR4/5\u20134/8, SF7\u2013SF10 only."
+        ]
+      },
+      "input_samples": 18627,
+      "sample_rate_hz": 250000.0,
+      "publisher_sha512_verified": true,
+      "oracle_parameters_applied": [],
+      "payload_matches_reference": false,
+      "crc_valid_other_payloads": [],
+      "annotated_reference_start_in_scanned_interval": true,
+      "reference_coverage_scope": "Post-decode diagnostic using annotation only; no annotation window supplied to detector"
+    },
+    {
+      "stratum": "[10,15) dB",
+      "annotation": {
+        "sf": "7",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "125000",
+        "payload_base64": "MDAwMDAwMA==",
+        "rrh_idx": "2",
+        "rx_sample_rate": "250000",
+        "cfo": "7.6724",
+        "snr": "10.2641",
+        "sigmf_file": "./sigmfs/25_01_17-13_40/rrh2/1",
+        "sigmf_file_offset": "7931.0",
+        "sigmf_file_n_samples": "9024"
+      },
+      "data_sha256": "3ae3330856923d9edfbd9a07fea563db1a0bd23da4c56e4522b632cce352b074",
+      "meta_sha256": "415cfa2c6cfd9678dd86e087dbd93a3851cb76bc13311ac33528bfedcdae9c68",
+      "expected_payload_hex": "30303030303030",
+      "trial": {
+        "decoder": "lora_preamble",
+        "family": "LoRa-compatible CSS preamble",
+        "candidates": [
+          {
+            "parameters": {
+              "bandwidth_hz": 125000,
+              "spreading_factor": 7,
+              "symbol_seconds": 0.001024,
+              "chirp_polarity": 1
+            },
+            "time_seconds": 0.031744,
+            "evidence": {
+              "repeated_chirps": 8,
+              "median_three_bin_energy_fraction": 0.8303522452396059,
+              "discovery": {
+                "method": "individual_chirp_concentration"
+              },
+              "dechirped_peak_bin": 10,
+              "required_chirps": 6
+            },
+            "carrier_tracking": {
+              "scope": "Preamble repetition only; fractional carrier offset modulo BW/2**SF, not RF center or integer CFO",
+              "preamble_blocks": 8,
+              "lag_samples": 128,
+              "coherence": 0.8929783732908724,
+              "required_coherence": 0.8,
+              "status": "fractional_carrier_corrected",
+              "fractional_bin_offset": -0.3282143367019027,
+              "offset_hz": -320.52181318545183
+            },
+            "timing_tracking": {
+              "scope": "Preamble-only sample phase selection; no header, payload, CRC or reference bytes used",
+              "phase_budget": 8,
+              "interpolated_sample_budget": 3000000,
+              "sample_grid_offset_chips": 0.625,
+              "phase_scores": [
+                0.5200376416829695,
+                0.42225305796703383,
+                0.5908845863100931,
+                0.7309735319155988,
+                0.8211346085112594,
+                0.8455983290876441,
+                0.7920837552818198,
+                0.6758297619050225
+              ],
+              "preamble_blocks": 8,
+              "input_samples": 28418,
+              "interpolated_samples": 113672,
+              "filter_taps": 161,
+              "maximum_single_bin_energy_fraction": 0.8455983290876441,
+              "status": "fractional_timing_refined",
+              "selected_phase": 5
+            },
+            "synchronization": {
+              "status": "opposite_chirp_pair_candidate",
+              "time_seconds": 0.042213,
+              "sample_start_at_chip_rate": 5276,
+              "search_step_chips": 4,
+              "minimum_three_bin_energy_fraction": 0.8670478432401304,
+              "dechirped_peak_bins": [
+                105,
+                105
+              ],
+              "scope": "Two opposite-direction chirps only; sync word, quarter chirp, exact boundary and payload not validated",
+              "sample_grid_offset_chips": 0.625
+            },
+            "sync_word": {
+              "status": "sync_word_candidate",
+              "value_hex": "96",
+              "relative_symbol_bins": [
+                72,
+                48
+              ],
+              "symbol_bin_errors": [
+                0,
+                0
+              ],
+              "opposite_chirp_start_seconds": 0.041972999999999996,
+              "opposite_chirp_start_chip": 5246,
+              "minimum_three_bin_energy_fraction": 0.8563933237325033,
+              "scope": "Conventional two-nibble sync-word hypothesis only; no network identity, quarter-chirp, header, CRC or payload validation",
+              "sample_grid_offset_chips": 0.625
+            },
+            "data_symbols": {
+              "status": "raw_css_symbol_candidates",
+              "tone_estimator": "matched_fft_8x",
+              "quarter_chirp_correlation": 0.8196182843288953,
+              "candidate_data_start_seconds": 0.044277,
+              "symbol_bins": [
+                109,
+                9,
+                125,
+                13,
+                25,
+                97,
+                1,
+                5,
+                2,
+                125,
+                75,
+                86,
+                57,
+                112,
+                33,
+                39,
+                109,
+                126,
+                61,
+                60,
+                83,
+                6,
+                115
+              ],
+              "fft_peak_symbol_bins": [
+                109,
+                9,
+                125,
+                13,
+                25,
+                97,
+                1,
+                5,
+                2,
+                125,
+                75,
+                86,
+                57,
+                112,
+                33,
+                39,
+                109,
+                126,
+                61,
+                60,
+                83,
+                6,
+                115
+              ],
+              "symbol_energy_fractions": [
+                0.847061615489328,
+                0.826079020562936,
+                0.8236974435539259,
+                0.8526779967702318,
+                0.8420530423595332,
+                0.8155529619404768,
+                0.8633825748746571,
+                0.8483144465452507,
+                0.8396426708275013,
+                0.8177010740882861,
+                0.816931177366425,
+                0.8268463340944967,
+                0.7996700433545326,
+                0.8362697932531286,
+                0.8488631838539629,
+                0.8042777617912524,
+                0.8428283605591642,
+                0.8401851926299971,
+                0.8501896919879025,
+                0.8511591575492173,
+                0.8378313995413148,
+                0.8245708740192536,
+                0.8171637236258703
+              ],
+              "symbol_bin_uncertainty": 1,
+              "symbol_budget": 64,
+              "symbol_budget_reached": false,
+              "stop_reason": "insufficient_spectral_concentration",
+              "scope": "Raw relative CSS bins only; timing remains a hypothesis. No Gray mapping, deinterleaving, error correction, whitening, header, CRC or payload bytes decoded",
+              "sample_grid_offset_chips": 0.625
+            },
+            "explicit_header": {
+              "scope": "Explicit-header hypothesis only; no payload CRC, bytes or emitter identity validated",
+              "status": "header_checksum_valid",
+              "payload_length_bytes": 7,
+              "coding_rate_index": 1,
+              "coding_rate": "4/5",
+              "payload_crc_present": true,
+              "header_checksum": 9,
+              "corrected_codeword_bits": 0,
+              "header_nibbles": [
+                0,
+                7,
+                3,
+                0,
+                9
+              ],
+              "validation": "5-bit header checksum only; payload is not decoded or validated"
+            },
+            "payload": {
+              "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+              "status": "payload_crc_valid",
+              "payload_hex": "30303030303030",
+              "payload_length_bytes": 7,
+              "received_crc": 58964,
+              "calculated_crc": 58964,
+              "coding_rate": "4/5",
+              "coding_rate_index": 1,
+              "corrected_spillover_bits": 0,
+              "corrected_payload_codeword_bits": 0,
+              "symbols_consumed": 23,
+              "validation": "Header 5-bit checksum and LoRa payload CRC16 passed; not emitter authenticity",
+              "text": "0000000"
+            },
+            "score": 0.8303522452396059,
+            "score_kind": "heuristic_not_probability",
+            "validation_scope": "Bounded LoRa PHY trial; only explicit header checks and supported payload CRC results are validated. No LoRaWAN identity or authentication."
+          }
+        ],
+        "status": "crc_valid_payload",
+        "trials": 24,
+        "analyzed_seconds": 1.0,
+        "search_windows": [
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.262144,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 8,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.524288,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 9,
+            "symbol_blocks": 244,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 10,
+            "symbol_blocks": 122,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 11,
+            "symbol_blocks": 61,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 12,
+            "symbol_blocks": 30,
+            "examined_seconds": 0.98304,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 7,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.131072,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 8,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.262144,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 9,
+            "symbol_blocks": 256,
+            "examined_seconds": 0.524288,
+            "symbol_budget_reached": true
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "symbol_blocks": 244,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 11,
+            "symbol_blocks": 122,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 12,
+            "symbol_blocks": 61,
+            "examined_seconds": 0.999424,
+            "symbol_budget_reached": false
+          }
+        ],
+        "coherent_searches": [
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 8,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 8,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 9,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 9,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 10,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 10,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 11,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 11,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 12,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 12,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 7,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 7,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 8,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 8,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 9,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 9,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 11,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 11,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 12,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 12,
+            "chirp_polarity": -1
+          }
+        ],
+        "frames": [
+          {
+            "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+            "status": "payload_crc_valid",
+            "payload_hex": "30303030303030",
+            "payload_length_bytes": 7,
+            "received_crc": 58964,
+            "calculated_crc": 58964,
+            "coding_rate": "4/5",
+            "coding_rate_index": 1,
+            "corrected_spillover_bits": 0,
+            "corrected_payload_codeword_bits": 0,
+            "symbols_consumed": 23,
+            "validation": "Header 5-bit checksum and LoRa payload CRC16 passed; not emitter authenticity",
+            "text": "0000000",
+            "time_seconds": 0.044277,
+            "parameters": {
+              "bandwidth_hz": 125000,
+              "spreading_factor": 7,
+              "symbol_seconds": 0.001024,
+              "chirp_polarity": 1
+            },
+            "sync_word": "96"
+          }
+        ],
+        "sample_budget_reached": true,
+        "limitations": [
+          "Centered single-channel search only; fractional CFO from preamble repetition, no integer CFO or RF center estimation.",
+          "BW 125/250/500 kHz, SF7\u2013SF12, both chirp directions; six stable FFT peaks and either individual concentration or a coherent six-chirp average required.",
+          "First second only; at most 256 symbols per BW/SF. Eight-phase preamble timing refinement for SF7-10 with >=2 samples/chip, bounded filters; no clock drift tracking. Late/short/weak bursts and off-center channels may be missed.",
+          "Other CSS waveforms can match preamble evidence. Header checksum and supported payload CRC are checked separately; all other stages remain candidates. Payload: explicit CR4/5\u20134/8, SF7\u2013SF10 only."
+        ]
+      },
+      "input_samples": 271140,
+      "sample_rate_hz": 250000.0,
+      "publisher_sha512_verified": true,
+      "oracle_parameters_applied": [],
+      "payload_matches_reference": true,
+      "crc_valid_other_payloads": [],
+      "annotated_reference_start_in_scanned_interval": true,
+      "reference_coverage_scope": "Post-decode diagnostic using annotation only; no annotation window supplied to detector",
+      "main_pipeline_export_verified": true
+    },
+    {
+      "stratum": "[15,20) dB",
+      "annotation": {
+        "sf": "7",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "125000",
+        "payload_base64": "MDAwMDAwMg==",
+        "rrh_idx": "2",
+        "rx_sample_rate": "250000",
+        "cfo": "7.7195",
+        "snr": "19.7319",
+        "sigmf_file": "./sigmfs/25_01_17-13_40/rrh2/2",
+        "sigmf_file_offset": "5805.0",
+        "sigmf_file_n_samples": "9024"
+      },
+      "data_sha256": "7712185f2920d225c2cdaf38f3fac10f5520fadc500673a270b3f1a5c0e4ed78",
+      "meta_sha256": "46b875e7179238851cd722bc5537e0bc0e2ca839fb71918adaa2de03300aed37",
+      "expected_payload_hex": "30303030303032",
+      "trial": {
+        "decoder": "lora_preamble",
+        "family": "LoRa-compatible CSS preamble",
+        "candidates": [
+          {
+            "parameters": {
+              "bandwidth_hz": 125000,
+              "spreading_factor": 7,
+              "symbol_seconds": 0.001024,
+              "chirp_polarity": 1
+            },
+            "time_seconds": 0.022528,
+            "evidence": {
+              "repeated_chirps": 8,
+              "median_three_bin_energy_fraction": 0.8355446565787997,
+              "discovery": {
+                "method": "individual_chirp_concentration"
+              },
+              "dechirped_peak_bin": 49,
+              "required_chirps": 6
+            },
+            "carrier_tracking": {
+              "scope": "Preamble repetition only; fractional carrier offset modulo BW/2**SF, not RF center or integer CFO",
+              "preamble_blocks": 8,
+              "lag_samples": 128,
+              "coherence": 0.9374946076573407,
+              "required_coherence": 0.8,
+              "status": "fractional_carrier_corrected",
+              "fractional_bin_offset": -0.2809468051022982,
+              "offset_hz": -274.3621143577131
+            },
+            "timing_tracking": {
+              "scope": "Preamble-only sample phase selection; no header, payload, CRC or reference bytes used",
+              "phase_budget": 8,
+              "interpolated_sample_budget": 3000000,
+              "sample_grid_offset_chips": 0.75,
+              "phase_scores": [
+                0.7151226071559309,
+                0.5441358341667981,
+                0.4902709595119858,
+                0.6693713623494273,
+                0.8183512336788497,
+                0.9075724198250594,
+                0.9171943916528221,
+                0.8482561813792953
+              ],
+              "preamble_blocks": 8,
+              "input_samples": 17389,
+              "interpolated_samples": 69556,
+              "filter_taps": 161,
+              "maximum_single_bin_energy_fraction": 0.9171943916528221,
+              "status": "fractional_timing_refined",
+              "selected_phase": 6
+            },
+            "synchronization": {
+              "status": "opposite_chirp_pair_candidate",
+              "time_seconds": 0.03351,
+              "sample_start_at_chip_rate": 4188,
+              "search_step_chips": 4,
+              "minimum_three_bin_energy_fraction": 0.937324739022833,
+              "dechirped_peak_bins": [
+                2,
+                2
+              ],
+              "scope": "Two opposite-direction chirps only; sync word, quarter chirp, exact boundary and payload not validated",
+              "sample_grid_offset_chips": 0.75
+            },
+            "sync_word": {
+              "status": "sync_word_candidate",
+              "value_hex": "96",
+              "relative_symbol_bins": [
+                72,
+                48
+              ],
+              "symbol_bin_errors": [
+                0,
+                0
+              ],
+              "opposite_chirp_start_seconds": 0.033462,
+              "opposite_chirp_start_chip": 4182,
+              "minimum_three_bin_energy_fraction": 0.9194283012013789,
+              "scope": "Conventional two-nibble sync-word hypothesis only; no network identity, quarter-chirp, header, CRC or payload validation",
+              "sample_grid_offset_chips": 0.75
+            },
+            "data_symbols": {
+              "status": "raw_css_symbol_candidates",
+              "tone_estimator": "matched_fft_8x",
+              "quarter_chirp_correlation": 0.8751236937233996,
+              "candidate_data_start_seconds": 0.035774,
+              "symbol_bins": [
+                109,
+                9,
+                125,
+                13,
+                25,
+                97,
+                1,
+                5,
+                2,
+                125,
+                75,
+                86,
+                57,
+                112,
+                64,
+                39,
+                109,
+                127,
+                61,
+                69,
+                83,
+                6,
+                126
+              ],
+              "fft_peak_symbol_bins": [
+                109,
+                9,
+                125,
+                13,
+                25,
+                97,
+                1,
+                5,
+                2,
+                125,
+                75,
+                86,
+                57,
+                112,
+                64,
+                39,
+                109,
+                127,
+                61,
+                69,
+                83,
+                6,
+                126
+              ],
+              "symbol_energy_fractions": [
+                0.9185509834654896,
+                0.9095686257590928,
+                0.9239810415409541,
+                0.9311217235615753,
+                0.9068084246997524,
+                0.9194386129644906,
+                0.9408828061136628,
+                0.936380081037569,
+                0.9212920182058274,
+                0.9093495547238118,
+                0.9306788574851218,
+                0.9126812919591482,
+                0.8932593951170422,
+                0.9058100356199184,
+                0.9206046018042977,
+                0.8961763011242125,
+                0.9286025568037876,
+                0.907656730251632,
+                0.9286622386559125,
+                0.9220779492441391,
+                0.8956949248081312,
+                0.9136429831254229,
+                0.9402095410158375
+              ],
+              "symbol_bin_uncertainty": 1,
+              "symbol_budget": 64,
+              "symbol_budget_reached": false,
+              "stop_reason": "insufficient_spectral_concentration",
+              "scope": "Raw relative CSS bins only; timing remains a hypothesis. No Gray mapping, deinterleaving, error correction, whitening, header, CRC or payload bytes decoded",
+              "sample_grid_offset_chips": 0.75
+            },
+            "explicit_header": {
+              "scope": "Explicit-header hypothesis only; no payload CRC, bytes or emitter identity validated",
+              "status": "header_checksum_valid",
+              "payload_length_bytes": 7,
+              "coding_rate_index": 1,
+              "coding_rate": "4/5",
+              "payload_crc_present": true,
+              "header_checksum": 9,
+              "corrected_codeword_bits": 0,
+              "header_nibbles": [
+                0,
+                7,
+                3,
+                0,
+                9
+              ],
+              "validation": "5-bit header checksum only; payload is not decoded or validated"
+            },
+            "payload": {
+              "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+              "status": "payload_crc_valid",
+              "payload_hex": "30303030303032",
+              "payload_length_bytes": 7,
+              "received_crc": 58966,
+              "calculated_crc": 58966,
+              "coding_rate": "4/5",
+              "coding_rate_index": 1,
+              "corrected_spillover_bits": 0,
+              "corrected_payload_codeword_bits": 0,
+              "symbols_consumed": 23,
+              "validation": "Header 5-bit checksum and LoRa payload CRC16 passed; not emitter authenticity",
+              "text": "0000002"
+            },
+            "score": 0.8355446565787997,
+            "score_kind": "heuristic_not_probability",
+            "validation_scope": "Bounded LoRa PHY trial; only explicit header checks and supported payload CRC results are validated. No LoRaWAN identity or authentication."
+          }
+        ],
+        "status": "crc_valid_payload",
+        "trials": 18,
+        "analyzed_seconds": 0.069556,
+        "search_windows": [
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "symbol_blocks": 67,
+            "examined_seconds": 0.068608,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 8,
+            "symbol_blocks": 33,
+            "examined_seconds": 0.067584,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 9,
+            "symbol_blocks": 16,
+            "examined_seconds": 0.065536,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 10,
+            "symbol_blocks": 8,
+            "examined_seconds": 0.065536,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 7,
+            "symbol_blocks": 135,
+            "examined_seconds": 0.06912,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 8,
+            "symbol_blocks": 67,
+            "examined_seconds": 0.068608,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 9,
+            "symbol_blocks": 33,
+            "examined_seconds": 0.067584,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "symbol_blocks": 16,
+            "examined_seconds": 0.065536,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 11,
+            "symbol_blocks": 8,
+            "examined_seconds": 0.065536,
+            "symbol_budget_reached": false
+          }
+        ],
+        "coherent_searches": [
+          {
+            "checked_windows": 2,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 8,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 8,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 9,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 9,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 10,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 10,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 7,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 7,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 8,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 8,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 9,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 9,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 11,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 11,
+            "chirp_polarity": -1
+          }
+        ],
+        "frames": [
+          {
+            "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+            "status": "payload_crc_valid",
+            "payload_hex": "30303030303032",
+            "payload_length_bytes": 7,
+            "received_crc": 58966,
+            "calculated_crc": 58966,
+            "coding_rate": "4/5",
+            "coding_rate_index": 1,
+            "corrected_spillover_bits": 0,
+            "corrected_payload_codeword_bits": 0,
+            "symbols_consumed": 23,
+            "validation": "Header 5-bit checksum and LoRa payload CRC16 passed; not emitter authenticity",
+            "text": "0000002",
+            "time_seconds": 0.035774,
+            "parameters": {
+              "bandwidth_hz": 125000,
+              "spreading_factor": 7,
+              "symbol_seconds": 0.001024,
+              "chirp_polarity": 1
+            },
+            "sync_word": "96"
+          }
+        ],
+        "sample_budget_reached": false,
+        "limitations": [
+          "Centered single-channel search only; fractional CFO from preamble repetition, no integer CFO or RF center estimation.",
+          "BW 125/250/500 kHz, SF7\u2013SF12, both chirp directions; six stable FFT peaks and either individual concentration or a coherent six-chirp average required.",
+          "First second only; at most 256 symbols per BW/SF. Eight-phase preamble timing refinement for SF7-10 with >=2 samples/chip, bounded filters; no clock drift tracking. Late/short/weak bursts and off-center channels may be missed.",
+          "Other CSS waveforms can match preamble evidence. Header checksum and supported payload CRC are checked separately; all other stages remain candidates. Payload: explicit CR4/5\u20134/8, SF7\u2013SF10 only."
+        ]
+      },
+      "input_samples": 17389,
+      "sample_rate_hz": 250000.0,
+      "publisher_sha512_verified": true,
+      "oracle_parameters_applied": [],
+      "payload_matches_reference": true,
+      "crc_valid_other_payloads": [],
+      "annotated_reference_start_in_scanned_interval": true,
+      "reference_coverage_scope": "Post-decode diagnostic using annotation only; no annotation window supplied to detector",
+      "main_pipeline_export_verified": true
+    },
+    {
+      "stratum": "[20,inf) dB",
+      "annotation": {
+        "sf": "7",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "125000",
+        "payload_base64": "MDAwMDAwMQ==",
+        "rrh_idx": "4",
+        "rx_sample_rate": "250000",
+        "cfo": "7.739",
+        "snr": "20.3859",
+        "sigmf_file": "./sigmfs/25_01_17-13_40/rrh4/2",
+        "sigmf_file_offset": "7842.0",
+        "sigmf_file_n_samples": "9024"
+      },
+      "data_sha256": "954c295af3fa3e129eef981915401428bf22b401d5a9d414f4a316554f1f4bc4",
+      "meta_sha256": "92c4ca429c73e128f07de282a963eede7c1534f90ba7227c228bbe861ea5034d",
+      "expected_payload_hex": "30303030303031",
+      "trial": {
+        "decoder": "lora_preamble",
+        "family": "LoRa-compatible CSS preamble",
+        "candidates": [
+          {
+            "parameters": {
+              "bandwidth_hz": 125000,
+              "spreading_factor": 7,
+              "symbol_seconds": 0.001024,
+              "chirp_polarity": 1
+            },
+            "time_seconds": 0.03072,
+            "evidence": {
+              "repeated_chirps": 8,
+              "median_three_bin_energy_fraction": 0.7854768735140176,
+              "discovery": {
+                "method": "individual_chirp_concentration"
+              },
+              "dechirped_peak_bin": 54,
+              "required_chirps": 6
+            },
+            "carrier_tracking": {
+              "scope": "Preamble repetition only; fractional carrier offset modulo BW/2**SF, not RF center or integer CFO",
+              "preamble_blocks": 8,
+              "lag_samples": 128,
+              "coherence": 0.942708344717681,
+              "required_coherence": 0.8,
+              "status": "fractional_carrier_corrected",
+              "fractional_bin_offset": -0.2604010342226951,
+              "offset_hz": -254.2978849831007
+            },
+            "timing_tracking": {
+              "scope": "Preamble-only sample phase selection; no header, payload, CRC or reference bytes used",
+              "phase_budget": 8,
+              "interpolated_sample_budget": 3000000,
+              "sample_grid_offset_chips": 0.25,
+              "phase_scores": [
+                0.7119865808897241,
+                0.8490288106971247,
+                0.9193517329711287,
+                0.9095729309437828,
+                0.8242797089466305,
+                0.67937064201488,
+                0.5022801254603209,
+                0.5360243127137114
+              ],
+              "preamble_blocks": 8,
+              "input_samples": 19426,
+              "interpolated_samples": 77704,
+              "filter_taps": 161,
+              "maximum_single_bin_energy_fraction": 0.9193517329711287,
+              "status": "fractional_timing_refined",
+              "selected_phase": 2
+            },
+            "synchronization": {
+              "status": "opposite_chirp_pair_candidate",
+              "time_seconds": 0.041698,
+              "sample_start_at_chip_rate": 5212,
+              "search_step_chips": 4,
+              "minimum_three_bin_energy_fraction": 0.9435941476991551,
+              "dechirped_peak_bins": [
+                125,
+                125
+              ],
+              "scope": "Two opposite-direction chirps only; sync word, quarter chirp, exact boundary and payload not validated",
+              "sample_grid_offset_chips": 0.25
+            },
+            "sync_word": {
+              "status": "sync_word_candidate",
+              "value_hex": "96",
+              "relative_symbol_bins": [
+                72,
+                48
+              ],
+              "symbol_bin_errors": [
+                0,
+                0
+              ],
+              "opposite_chirp_start_seconds": 0.04161,
+              "opposite_chirp_start_chip": 5201,
+              "minimum_three_bin_energy_fraction": 0.927104442951642,
+              "scope": "Conventional two-nibble sync-word hypothesis only; no network identity, quarter-chirp, header, CRC or payload validation",
+              "sample_grid_offset_chips": 0.25
+            },
+            "data_symbols": {
+              "status": "raw_css_symbol_candidates",
+              "tone_estimator": "matched_fft_8x",
+              "quarter_chirp_correlation": 0.8746071188684638,
+              "candidate_data_start_seconds": 0.043922,
+              "symbol_bins": [
+                109,
+                9,
+                125,
+                13,
+                25,
+                97,
+                1,
+                5,
+                2,
+                125,
+                75,
+                86,
+                57,
+                81,
+                33,
+                39,
+                109,
+                127,
+                62,
+                60,
+                83,
+                6,
+                126
+              ],
+              "fft_peak_symbol_bins": [
+                109,
+                9,
+                125,
+                13,
+                25,
+                97,
+                1,
+                5,
+                2,
+                125,
+                75,
+                86,
+                57,
+                81,
+                33,
+                39,
+                109,
+                127,
+                62,
+                60,
+                83,
+                6,
+                126
+              ],
+              "symbol_energy_fractions": [
+                0.9246800859920198,
+                0.9251715095419877,
+                0.9307415229137893,
+                0.9358027041314945,
+                0.9091039377727528,
+                0.9194566618621284,
+                0.9430103482991086,
+                0.9452281914091345,
+                0.9188229560080636,
+                0.9111910794366082,
+                0.9380411950010702,
+                0.9250929365235596,
+                0.9300400594516556,
+                0.9027544014862438,
+                0.9387483111593549,
+                0.9069648802772974,
+                0.9411048830968068,
+                0.9087989190608042,
+                0.9395873611670419,
+                0.926812504118064,
+                0.9060566026882027,
+                0.9204477294040456,
+                0.9486025674457378
+              ],
+              "symbol_bin_uncertainty": 1,
+              "symbol_budget": 64,
+              "symbol_budget_reached": false,
+              "stop_reason": "insufficient_spectral_concentration",
+              "scope": "Raw relative CSS bins only; timing remains a hypothesis. No Gray mapping, deinterleaving, error correction, whitening, header, CRC or payload bytes decoded",
+              "sample_grid_offset_chips": 0.25
+            },
+            "explicit_header": {
+              "scope": "Explicit-header hypothesis only; no payload CRC, bytes or emitter identity validated",
+              "status": "header_checksum_valid",
+              "payload_length_bytes": 7,
+              "coding_rate_index": 1,
+              "coding_rate": "4/5",
+              "payload_crc_present": true,
+              "header_checksum": 9,
+              "corrected_codeword_bits": 0,
+              "header_nibbles": [
+                0,
+                7,
+                3,
+                0,
+                9
+              ],
+              "validation": "5-bit header checksum only; payload is not decoded or validated"
+            },
+            "payload": {
+              "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+              "status": "payload_crc_valid",
+              "payload_hex": "30303030303031",
+              "payload_length_bytes": 7,
+              "received_crc": 58965,
+              "calculated_crc": 58965,
+              "coding_rate": "4/5",
+              "coding_rate_index": 1,
+              "corrected_spillover_bits": 0,
+              "corrected_payload_codeword_bits": 0,
+              "symbols_consumed": 23,
+              "validation": "Header 5-bit checksum and LoRa payload CRC16 passed; not emitter authenticity",
+              "text": "0000001"
+            },
+            "score": 0.7854768735140176,
+            "score_kind": "heuristic_not_probability",
+            "validation_scope": "Bounded LoRa PHY trial; only explicit header checks and supported payload CRC results are validated. No LoRaWAN identity or authentication."
+          }
+        ],
+        "status": "crc_valid_payload",
+        "trials": 18,
+        "analyzed_seconds": 0.077704,
+        "search_windows": [
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "symbol_blocks": 75,
+            "examined_seconds": 0.0768,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 8,
+            "symbol_blocks": 37,
+            "examined_seconds": 0.075776,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 9,
+            "symbol_blocks": 18,
+            "examined_seconds": 0.073728,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 10,
+            "symbol_blocks": 9,
+            "examined_seconds": 0.073728,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 7,
+            "symbol_blocks": 151,
+            "examined_seconds": 0.077312,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 8,
+            "symbol_blocks": 75,
+            "examined_seconds": 0.0768,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 9,
+            "symbol_blocks": 37,
+            "examined_seconds": 0.075776,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "symbol_blocks": 18,
+            "examined_seconds": 0.073728,
+            "symbol_budget_reached": false
+          },
+          {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 11,
+            "symbol_blocks": 9,
+            "examined_seconds": 0.073728,
+            "symbol_budget_reached": false
+          }
+        ],
+        "coherent_searches": [
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 8,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 8,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 9,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 9,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 10,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 125000,
+            "spreading_factor": 10,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 7,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 7,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 8,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 8,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 9,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 9,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "chirp_polarity": -1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 11,
+            "chirp_polarity": 1
+          },
+          {
+            "checked_windows": 0,
+            "window_budget": 32,
+            "budget_reached": false,
+            "bandwidth_hz": 250000,
+            "spreading_factor": 11,
+            "chirp_polarity": -1
+          }
+        ],
+        "frames": [
+          {
+            "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+            "status": "payload_crc_valid",
+            "payload_hex": "30303030303031",
+            "payload_length_bytes": 7,
+            "received_crc": 58965,
+            "calculated_crc": 58965,
+            "coding_rate": "4/5",
+            "coding_rate_index": 1,
+            "corrected_spillover_bits": 0,
+            "corrected_payload_codeword_bits": 0,
+            "symbols_consumed": 23,
+            "validation": "Header 5-bit checksum and LoRa payload CRC16 passed; not emitter authenticity",
+            "text": "0000001",
+            "time_seconds": 0.043922,
+            "parameters": {
+              "bandwidth_hz": 125000,
+              "spreading_factor": 7,
+              "symbol_seconds": 0.001024,
+              "chirp_polarity": 1
+            },
+            "sync_word": "96"
+          }
+        ],
+        "sample_budget_reached": false,
+        "limitations": [
+          "Centered single-channel search only; fractional CFO from preamble repetition, no integer CFO or RF center estimation.",
+          "BW 125/250/500 kHz, SF7\u2013SF12, both chirp directions; six stable FFT peaks and either individual concentration or a coherent six-chirp average required.",
+          "First second only; at most 256 symbols per BW/SF. Eight-phase preamble timing refinement for SF7-10 with >=2 samples/chip, bounded filters; no clock drift tracking. Late/short/weak bursts and off-center channels may be missed.",
+          "Other CSS waveforms can match preamble evidence. Header checksum and supported payload CRC are checked separately; all other stages remain candidates. Payload: explicit CR4/5\u20134/8, SF7\u2013SF10 only."
+        ]
+      },
+      "input_samples": 19426,
+      "sample_rate_hz": 250000.0,
+      "publisher_sha512_verified": true,
+      "oracle_parameters_applied": [],
+      "payload_matches_reference": true,
+      "crc_valid_other_payloads": [],
+      "annotated_reference_start_in_scanned_interval": true,
+      "reference_coverage_scope": "Post-decode diagnostic using annotation only; no annotation window supplied to detector",
+      "main_pipeline_export_verified": true
+    }
+  ],
+  "selected_count": 6,
+  "decoder_sha256": "8915c67ba6aa94c4d11dc831c18c1cb972417af12ba9a1dce86ba9b38e9a7238",
+  "validation_environment": "Local managed workspace on unchanged cached source members, 2026-10-30",
+  "matched_count": 3,
+  "missed_count": 3,
+  "limitations": [
+    "Three validated payloads remain; weak preamble and sync-word candidates are not decoded content.",
+    "The 3.7885 dB annotated packet starts after one second and lies outside the scanned interval; an earlier candidate cannot validate that annotation.",
+    "Same small correlated SF7/BW125k/CR4/5 sample, not a population sensitivity or error-rate estimate.",
+    "RF center and sync-word reference values remain unverified; no LoRaWAN identity, parsing or decryption."
+  ],
+  "phase_sensitivity_diagnostic": {
+    "scope": "Same existing short capture under 16 resampled delays; not additional independent captures",
+    "exact_matches": 16,
+    "tested_phases": 16
+  }
+}

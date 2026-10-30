@@ -1402,7 +1402,7 @@
     }
   ],
   "decoder_sha256": "daf32b00f61c604ab4b074a6dc8a13fc29243200e3d0c2b563a16ac4ffe1e6ce",
-  "validation_environment": "Cached original IQ, local managed workspace, 2026-10-29; same six source hashes verified",
+  "validation_environment": "Local managed workspace and GitHub Actions, 2026-10-29; all three main-pipeline exports additionally compared locally",
   "matched_count": 3,
   "missed_count": 3,
   "selected_count": 6,
@@ -1527,5 +1527,19 @@
         "maximum_single_bin_energy_fraction": 0.9227911166596643
       }
     ]
+  },
+  "ci_validation": {
+    "tested_commit": "714fd90286a586e7f10a565f73aa64564bf114ca",
+    "benchmark_url": "https://github.com/sebadiaz/IQScope/actions/runs/40936242866",
+    "tests_url": "https://github.com/sebadiaz/IQScope/actions/runs/40936242897",
+    "independent_reference_url": "https://github.com/sebadiaz/IQScope/actions/runs/40936242905",
+    "all_successful": true,
+    "same_source_hashes_and_decode_outcomes_as_local": true,
+    "matched_count": 3,
+    "missed_count": 3,
+    "phase_exact_matches": 16,
+    "phase_cases": 16,
+    "unit_tests": 180,
+    "chromium_passed": true
   }
 }
