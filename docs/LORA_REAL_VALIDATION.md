@@ -4,7 +4,7 @@ Source : Joachim Tapparel et Andreas Burg, EPFL,
 [LoRaIQ, Zenodo 20341802](https://zenodo.org/records/20341802),
 DOI `10.5281/zenodo.20341802`, licence **CC BY 4.0**.
 
-Validation locale actuelle : **4 contenus exacts sur les mêmes 6 captures**,
+Validation locale actuelle : **5 contenus exacts sur les mêmes 6 captures**,
 et **16/16 variantes temporelles** du membre testé, après correction de porteuse
 et raffinement temporel. Les détails et limites figurent en fin de document.
 
@@ -345,3 +345,27 @@ désormais les mesures des rejets de paire et de sync word. La suite du travail
 est une synchronisation adaptée au bruit, avec mesure de fiabilité et tests
 de faux positifs ; baisser isolément un seuil ne suffit pas. Ces observations
 ne prouvent pas que les IQ sont impossibles à décoder.
+
+
+## Récupération du paquet à 3,7885 dB
+
+La voie de fiabilité des pics récupère désormais la référence rrh3/2 à
+1,031647 s (début des données), soit `0000002`, CRC reçu et calculé `0xE656`.
+Le contenu est conforme à l’annotation d’un intervalle unique. Aucun temps,
+CFO, SF, largeur, taux de codage ni octet annoté n’a été fourni au détecteur.
+La phase 7/8 est choisie sur le préambule ; le score individuel est 0,597860
+mais celui du bin de la moyenne cohérente atteint 0,861291.
+
+Le nouveau [rapport local](../corpus/loraiq-matched-observation.json) compte
+**5/6 références initiales**, et 12 émissions à CRC valide dans les six
+fichiers : **11 comparaisons exactes**, aucune différence, et **une émission
+sans annotation correspondante dans le préfixe CSV disponible** (`0000005`
+vers 5,045544 s du premier fichier). Cette dernière reste vérifiée par CRC
+uniquement ; ses octets ne sont pas présentés comme validés indépendamment.
+Les captures et les émissions supplémentaires restent corrélées.
+
+La cible à −1,0897 dB n’est pas récupérée. Son meilleur bin de préambule
+moyenné atteint 0,678190, sous le minimum 0,8 de la nouvelle voie, et sa paire
+de chirps opposés demeure rejetée. Le résultat 5/6 concerne ces données de
+développement et ne mesure pas une performance sur des captures inédites.
+Les rapports précédents et leurs scores restent des résultats historiques.

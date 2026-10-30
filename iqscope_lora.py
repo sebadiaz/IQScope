@@ -6,6 +6,23 @@ from iqscope_lora_header import decode_explicit_header
 from iqscope_lora_payload import decode_payload
 
 
+def _matched_peak_evidence(power,peak):
+    """Heuristic tone reliability against robust background and competing peaks."""
+    indices=np.arange(len(power))
+    distance=(indices-int(peak)+len(power)//2)%len(power)-len(power)//2
+    background=np.asarray(power)[abs(distance)>2]
+    noise=float(np.median(background)/np.log(2)) if len(background) else 0.0
+    competitor=float(np.max(background)) if len(background) else 0.0
+    value=float(power[peak])
+    ratio=value/max(noise,1e-30)
+    dominance=value/max(competitor,1e-30)
+    accepted=value>0 and ratio>=32 and dominance>=4
+    return {'status':'reliable_matched_peak' if accepted else 'unreliable_matched_peak',
+            'peak_to_noise_floor':ratio,'peak_to_competing_peak':dominance,
+            'required_peak_to_noise_floor':32,'required_peak_to_competing_peak':4,
+            'scope':'Heuristic matched-tone evidence; colored noise and interference can violate the noise model. Not a false-alarm probability or CRC.'}
+
+
 def _opposite_chirp_pair(y, chirp, polarity, run_end, bandwidth, coherent_fallback=False):
     """Look for two concentrated opposite chirps; not a packet-boundary solution."""
     length = len(chirp)
@@ -58,7 +75,7 @@ def _opposite_chirp_pair(y, chirp, polarity, run_end, bandwidth, coherent_fallba
         'coherent_fallback_minimum_individual_fraction':.65}
 
 
-def _sync_word_candidate(y, chirp, polarity, preamble_bin, pair, bandwidth):
+def _sync_word_candidate(y, chirp, polarity, preamble_bin, pair, bandwidth, noise_fallback=False):
     """Resolve timing hypotheses from up/down bins, then read two relative CSS bins."""
     if pair['status'] != 'opposite_chirp_pair_candidate':
         return {'status':'not_available_without_opposite_pair'}
@@ -71,6 +88,7 @@ def _sync_word_candidate(y, chirp, polarity, preamble_bin, pair, bandwidth):
     tested = set()
     maximum_strength = 0.0
     energy_accepted = 0
+    matched_accepted = 0
     minimum_bin_error = None
     for half in (0,length/2):
         for cycle in range(start//length-1,start//length+2):
@@ -86,9 +104,16 @@ def _sync_word_candidate(y, chirp, polarity, preamble_bin, pair, bandwidth):
                 energy = sum(power[np.arange(3),(peaks+offset)%length] for offset in (-1,0,1))/np.maximum(power.sum(axis=1),1e-30)
                 # Use the preamble concentration criterion for shifted upchirps too.
                 maximum_strength = max(maximum_strength,float(min(energy)))
+                matched=[]
                 if min(energy)<.65:
-                    continue
-                energy_accepted += 1
+                    if not noise_fallback:
+                        continue
+                    matched=[_matched_peak_evidence(row,int(peak)) for row,peak in zip(power,peaks)]
+                    if any(item['status']!='reliable_matched_peak' for item in matched):
+                        continue
+                    matched_accepted += 1
+                else:
+                    energy_accepted += 1
                 symbols = [(polarity*(int(value)-int(peaks[0])))%length for value in peaks[1:]]
                 nibbles,errors = [],[]
                 for value in symbols:
@@ -100,13 +125,13 @@ def _sync_word_candidate(y, chirp, polarity, preamble_bin, pair, bandwidth):
                 if max(errors)>1:
                     continue
                 hypotheses.append({'word':16*nibbles[0]+nibbles[1], 'boundary':boundary,
-                                   'symbols':symbols, 'strength':float(min(energy)), 'errors':errors})
+                                   'symbols':symbols, 'strength':float(min(energy)), 'errors':errors, 'matched':matched})
     words = {item['word'] for item in hypotheses}
     if not hypotheses:
         return {'status':'no_consistent_sync_word','examined_boundaries':len(tested),
                 'maximum_minimum_three_bin_energy_fraction':maximum_strength,
                 'required_minimum_three_bin_energy_fraction':.65,
-                'energy_accepted_boundaries':energy_accepted,
+                'energy_accepted_boundaries':energy_accepted,'matched_accepted_boundaries':matched_accepted,
                 'minimum_maximum_symbol_bin_error':minimum_bin_error,
                 'maximum_allowed_symbol_bin_error':1}
     if len(words)>1:
@@ -117,6 +142,8 @@ def _sync_word_candidate(y, chirp, polarity, preamble_bin, pair, bandwidth):
             'opposite_chirp_start_seconds':best['boundary']/bandwidth,
             'opposite_chirp_start_chip':best['boundary'],
             'minimum_three_bin_energy_fraction':best['strength'],
+            'method':'matched_peak_reliability' if best['matched'] else 'three_bin_concentration',
+            **({'matched_peak_evidence':best['matched']} if best['matched'] else {}),
             'scope':'Conventional two-nibble sync-word hypothesis only; no network identity, quarter-chirp, header, CRC or payload validation'}
 
 
@@ -164,7 +191,7 @@ def _reference_quarter_evidence(reference, expected, observed):
             'scope':'Quarter template projection consistent with two preceding downchirps; heuristic evidence, not a false-alarm probability, packet CRC or emitter identity'}
 
 
-def _data_symbol_candidates(y, chirp, polarity, sync, bandwidth, refined_timing=False):
+def _data_symbol_candidates(y, chirp, polarity, sync, bandwidth, refined_timing=False, noise_fallback=False):
     """Require a matching final quarter chirp before bounded raw CSS symbols."""
     if sync['status'] != 'sync_word_candidate':
         return {'status':'not_available_without_sync_word'}
@@ -202,7 +229,7 @@ def _data_symbol_candidates(y, chirp, polarity, sync, bandwidth, refined_timing=
         if correlation>=.8:
             if best is None or correlation>best['correlation']:
                 best = candidate
-        elif correlation>=.65:
+        elif correlation>=.65 or (noise_fallback and _matched_peak_evidence(down_power,down_bin)['status']=='reliable_matched_peak'):
             evidence = _reference_quarter_evidence(
                 y[boundary:boundary+2*length].reshape(2,length),expected,observed)
             reference_attempts.append(dict(evidence,boundary_chip=boundary,template_correlation=correlation))
@@ -215,6 +242,7 @@ def _data_symbol_candidates(y, chirp, polarity, sync, bandwidth, refined_timing=
                 'reference_quarter_attempts':reference_attempts,'quarter_boundary_budget':5}
     count = min(64,(len(y)-best['start'])//length)
     symbols, strengths, fft_symbols = [],[],[]
+    matched_symbols = []
     stop_reason = 'symbol_budget' if count==64 else 'source_exhausted'
     for index in range(count):
         start = best['start']+index*length
@@ -222,8 +250,11 @@ def _data_symbol_candidates(y, chirp, polarity, sync, bandwidth, refined_timing=
         peak = int(np.argmax(power))
         strength = float(sum(power[(peak+offset)%length] for offset in (-1,0,1))/max(float(sum(power)),1e-30))
         if strength < .65:
-            stop_reason = 'insufficient_spectral_concentration'
-            break
+            reliability=_matched_peak_evidence(power,peak) if noise_fallback else None
+            if reliability is None or reliability['status']!='reliable_matched_peak':
+                stop_reason = 'insufficient_spectral_concentration'
+                break
+            matched_symbols.append(dict(reliability,symbol_index=index))
         tone = estimate_tone(y[start:start+length]*up.conj(),peak)
         if tone is None:
             stop_reason = 'unstable_phase_estimate'
@@ -238,6 +269,7 @@ def _data_symbol_candidates(y, chirp, polarity, sync, bandwidth, refined_timing=
             **({'quarter_reference_evidence':best['quarter_reference_evidence']} if 'quarter_reference_evidence' in best else {}),
             'candidate_data_start_seconds':best['start']/bandwidth,
             'symbol_bins':symbols, 'fft_peak_symbol_bins':fft_symbols, 'symbol_energy_fractions':strengths,
+            'matched_peak_symbol_evidence':matched_symbols,
             'symbol_bin_uncertainty':1, 'symbol_budget':64,
             'symbol_budget_reached':len(symbols)==64, 'stop_reason':stop_reason,
             'scope':'Raw relative CSS bins only; timing remains a hypothesis. No Gray mapping, deinterleaving, error correction, whitening, header, CRC or payload bytes decoded'}
@@ -358,7 +390,18 @@ def _refine_fractional_timing(x, fs, ratio, bandwidth, length, start, count,
                     interpolated_samples=len(high),filter_taps=taps,
                     maximum_single_bin_energy_fraction=scores[phase])
     if scores[phase]<.65:
-        return aligned,carrier,dict(evidence,status='insufficient_preamble_concentration')
+        segment=high[phase::8][start*length:(start+blocks)*length]
+        combined=np.mean((segment*correction).reshape(blocks,length),axis=0)
+        power=abs(np.fft.fft(combined*template.conj()))**2
+        peak=int(np.argmax(power))
+        fraction=float(power[peak]/max(float(power.sum()),1e-30))
+        reliability=_matched_peak_evidence(power,peak)
+        evidence.update(coherent_single_bin_energy_fraction=fraction,coherent_matched_peak=reliability)
+        if carrier.get('required_coherence',.8)>=.8 or fraction<.8 or reliability['status']!='reliable_matched_peak':
+            return aligned,carrier,dict(evidence,status='insufficient_preamble_concentration')
+        evidence['acceptance_method']='coherent_preamble_matched_peak'
+    else:
+        evidence['acceptance_method']='individual_preamble_concentration'
     refined,new_carrier = _correct_fractional_carrier(
         high[phase::8],start,count,length,bandwidth,carrier.get('required_coherence',.8))
     if new_carrier['status']!='fractional_carrier_corrected':
@@ -440,9 +483,10 @@ def _detect_lora_window(x, fs):
                 corrected_bin = int(np.argmax(abs(np.fft.fft(reference*template.conj()))**2))
                 pair = _opposite_chirp_pair(aligned,chirp,polarity,(best_start+best_count)*length,bandwidth,
                     coherent_fallback=discovery['method']=='six_chirp_coherent_average')
-                sync = _sync_word_candidate(aligned, chirp, polarity, corrected_bin, pair, bandwidth)
+                noise_fallback = timing['status']=='fractional_timing_refined' and timing.get('acceptance_method')=='coherent_preamble_matched_peak'
+                sync = _sync_word_candidate(aligned, chirp, polarity, corrected_bin, pair, bandwidth,noise_fallback=noise_fallback)
                 refined = timing['status']=='fractional_timing_refined'
-                data = _data_symbol_candidates(aligned,chirp,polarity,sync,bandwidth,refined_timing=refined)
+                data = _data_symbol_candidates(aligned,chirp,polarity,sync,bandwidth,refined_timing=refined,noise_fallback=noise_fallback)
                 offset = timing['sample_grid_offset_chips']/bandwidth
                 for item,key in ((pair,'time_seconds'),(sync,'opposite_chirp_start_seconds'),
                                  (data,'candidate_data_start_seconds')):

@@ -610,7 +610,7 @@ with explicit stop reasons; these values are not bytes.
 A candidate explicit header reports its announced length, coding rate and CRC
 flag after a five-bit check. Explicit CR4/5–4/8 SF7–10 payloads can be decoded,
 dewhitened and checked against the LoRa PHY CRC16. CRC-valid bytes appear in the
-UI and binary export; other outputs remain candidates. Validation includes synthetic transmitter vectors and four exact packet decodes among six LoRaIQ
+UI and binary export; other outputs remain candidates. Validation includes synthetic transmitter vectors and five exact packet decodes among six LoRaIQ
 SF7/CR4/5 recordings, compared with annotated bytes and payload CRC.
 See [independent radio validation and its limits](docs/LORA_REAL_VALIDATION.md). No LoRaWAN parsing,
 decryption or sender authentication is performed.
@@ -621,7 +621,13 @@ Reports expose coverage per BW/SF and file-relative timestamps; the UI warns
 when periods remain unexamined. Repeated CRC-valid payloads at distinct times
 are preserved as separate frames. This bounded search can still miss packets.
 
-Post-decode validation finds nine annotation-exact frames across those same six
-LoRaIQ files, including late emissions. The original six-target score stays 4/6;
+Earlier temporal-search validation found nine annotation-exact frames across those same six
+LoRaIQ files, including late emissions. The original six-target score was 4/6;
 additional emissions do not count as independent captures. Matching requires a
 unique annotated time interval before comparing bytes.
+
+The noise-aware matched-peak fallback now recovers the fifth original target:
+`0000002` at annotated SNR 3.7885 dB, with exact bytes and valid CRC. Current
+local results are 5/6 original targets and 11 annotation-exact emissions across
+the same six files; one further CRC-valid emission lacks an annotation in the
+bounded CSV prefix. See the historical reports and current validation details.

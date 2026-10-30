@@ -490,3 +490,39 @@ distincts restent deux trames. Le CRC demeure obligatoire pour exporter les
 octets. Le score historique des six références LoRaIQ reste 4/6 ; les paquets
 supplémentaires trouvés ailleurs ne constituent pas de nouvelles références
 indépendantes.
+
+
+### Voie de lecture à faible concentration spectrale
+
+Les seuils d’énergie totale pénalisent les symboles bruités même si leur pic
+de déchirpage reste identifiable. Une voie supplémentaire est réservée aux
+préambules découverts par combinaison cohérente. La phase reste choisie parmi
+les huit grilles par le score du préambule, avant toute lecture de l’en-tête.
+Si le score individuel est inférieur à 0,65, la moyenne des blocs corrigés
+doit concentrer au moins 0,8 de son énergie dans un bin et passer le contrôle
+de pic décrit ci-dessous. Cette voie exige toujours une correction de
+porteuse cohérente et les budgets existants.
+
+Pour un spectre de puissance déchirpé, les bins distants de plus de deux bins
+du maximum servent de fond. L’estimation du bruit est leur médiane divisée
+par `ln(2)` (modèle de bruit gaussien complexe). Le pic doit dépasser ce fond
+d’un facteur 32 et le plus fort pic concurrent d’un facteur 4. Ce sont des
+critères heuristiques : le bruit coloré, les interférences et les essais
+multiples empêchent d’en déduire une probabilité de fausse alarme.
+
+Après validation de ce préambule, les trois chirps du sync word peuvent
+satisfaire ces critères au lieu du seuil individuel de concentration 0,65.
+Les contraintes de nibbles et le refus d’un sync word ambigu restent actifs.
+La paire de chirps opposés garde ses contrôles existants. Pour le quart de
+chirp final, une corrélation inférieure à 0,65 exige un pic fiable du downchirp
+de référence et les contrôles de projection existants : cohérence des deux
+références au moins 0,5, projection/bruit au moins 16, écart complexe relatif
+au plus 0,25. Les symboles de données peuvent ensuite utiliser le même
+contrôle de pic ; l’en-tête, la correction de code et le CRC ne changent pas.
+Les mesures sont conservées dans `matched_peak_evidence`,
+`matched_peak_symbol_evidence` et `timing_tracking`.
+
+Les tests incluent quatre réalisations synthétiques avec bruit variable
+selon les parties du paquet, un mauvais CRC avec sélection temporelle
+identique, un quart manquant, des pics concurrents et du bruit blanc. Ils ne
+constituent pas une mesure de sensibilité sur une population radio.
