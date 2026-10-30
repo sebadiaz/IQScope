@@ -2688,7 +2688,7 @@
   ],
   "selected_count": 6,
   "decoder_sha256": "8915c67ba6aa94c4d11dc831c18c1cb972417af12ba9a1dce86ba9b38e9a7238",
-  "validation_environment": "Local managed workspace on unchanged cached source members, 2026-10-30",
+  "validation_environment": "Local managed workspace and GitHub Actions, 2026-10-30; three main-pipeline exports additionally compared locally",
   "matched_count": 3,
   "missed_count": 3,
   "limitations": [
@@ -2701,5 +2701,18 @@
     "scope": "Same existing short capture under 16 resampled delays; not additional independent captures",
     "exact_matches": 16,
     "tested_phases": 16
+  },
+  "ci_validation": {
+    "tested_commit": "fb17b16a9900b11fbc26455e8e628a384e3db3cb",
+    "benchmark_url": "https://github.com/sebadiaz/IQScope/actions/runs/41119145706",
+    "tests_url": "https://github.com/sebadiaz/IQScope/actions/runs/41119145606",
+    "independent_reference_url": "https://github.com/sebadiaz/IQScope/actions/runs/41119145598",
+    "all_successful": true,
+    "same_source_hashes_decode_outcomes_and_discovery_methods_as_local": true,
+    "matched_count": 3,
+    "phase_exact_matches": 16,
+    "phase_cases": 16,
+    "unit_tests": 186,
+    "chromium_passed": true
   }
 }

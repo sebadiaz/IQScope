@@ -255,3 +255,11 @@ annotée commence à **1,019092 s**, alors que SF7/BW125 kHz n’examine ici que
 candidat antérieur ; il ne prouve pas la reconnaissance de cette trame annotée.
 Ce cas ne peut pas être attribué uniquement au SNR. Aucune fenêtre temporelle
 annotée n’a été donnée au détecteur pour le récupérer.
+
+
+La [CI 41119145706](https://github.com/sebadiaz/IQScope/actions/runs/41119145706)
+a reproduit les nouveaux indices de préambule et de synchronisation, les mêmes
+**3/6 contenus exacts**, et les **16/16 variantes temporelles exactes**.
+Les [186 tests sur trois versions Python, Chromium et les autres corpus](https://github.com/sebadiaz/IQScope/actions/runs/41119145606)
+passent, de même que la [référence indépendante avec export](https://github.com/sebadiaz/IQScope/actions/runs/41119145598).
+Ces contrôles portent sur le commit `fb17b16a9900b11fbc26455e8e628a384e3db3cb`.
