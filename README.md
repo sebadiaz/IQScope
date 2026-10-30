@@ -620,3 +620,8 @@ LoRa file searches use up to eight automatically selected one-second windows.
 Reports expose coverage per BW/SF and file-relative timestamps; the UI warns
 when periods remain unexamined. Repeated CRC-valid payloads at distinct times
 are preserved as separate frames. This bounded search can still miss packets.
+
+Post-decode validation finds nine annotation-exact frames across those same six
+LoRaIQ files, including late emissions. The original six-target score stays 4/6;
+additional emissions do not count as independent captures. Matching requires a
+unique annotated time interval before comparing bytes.

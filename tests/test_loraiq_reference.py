@@ -40,3 +40,22 @@ class LoRaIQBatchTests(unittest.TestCase):
         self.assertEqual(select_batch([rows[0],rows[0]]),[('[-inf,0) dB',rows[0])])
         self.assertEqual(select_batch([dict(rows[0],sf='10')]),[])
         self.assertEqual(select_batch([dict(rows[0],snr='nan')]),[])
+
+    def test_frame_reference_uses_unique_time_interval_before_bytes(self):
+        with patch.object(sys,'path',[str(scripts)]+sys.path):
+            from loraiq_batch import compare_frames
+        row={'sf':'7','cr':'1','bandwidth':'125000','rx_sample_rate':'250000',
+             'sigmf_file':'./sigmfs/25_01_17-13_40/rrh4/2',
+             'sigmf_file_offset':'250000','sigmf_file_n_samples':'10000','payload_base64':'SEVMTE8='}
+        frame={'time_seconds':1.02,'payload_hex':'48454c4c4f','coding_rate':'4/5',
+               'parameters':{'spreading_factor':7,'bandwidth_hz':125000}}
+        stem=probe.reference_stem(row)
+        def status(rows,**changes):
+            return compare_frames([dict(frame,**changes)],rows,stem,250000)[0]['status']
+        self.assertEqual(status([row]),'exact_match')
+        self.assertEqual(status([row],payload_hex='00'),'payload_mismatch')
+        self.assertEqual(status([row,row]),'ambiguous_annotation')
+        self.assertEqual(status([row],time_seconds=1.04),'no_annotation_in_prefix')
+        self.assertEqual(status([dict(row,sf='8')]),'no_annotation_in_prefix')
+        self.assertEqual(status([dict(row,cr='2')]),'no_annotation_in_prefix')
+        self.assertEqual(status([dict(row,sigmf_file='./sigmfs/25_01_17-13_40/rrh3/2')]),'no_annotation_in_prefix')

@@ -28,6 +28,36 @@ def select_batch(rows):
     return selected
 
 
+def compare_frames(frames,rows,stem,fs):
+    """Post-decode interval matching; payload bytes never choose an annotation."""
+    comparisons=[]
+    for frame in frames:
+        parameters=frame['parameters']
+        matches=[]
+        for row in rows:
+            if reference_stem(row)!=stem:
+                continue
+            if (float(row['rx_sample_rate'])!=fs or int(row['sf'])!=parameters['spreading_factor']
+                    or float(row['bandwidth'])!=parameters['bandwidth_hz']
+                    or frame.get('coding_rate')!=f"4/{4+int(row['cr'])}"):
+                continue
+            start=float(row['sigmf_file_offset'])/fs
+            end=start+float(row['sigmf_file_n_samples'])/fs
+            if start<=frame['time_seconds']<end:
+                matches.append(row)
+        item={'time_seconds':frame['time_seconds'],'payload_hex':frame['payload_hex'],
+              'annotation_candidates':len(matches),'status':'no_annotation_in_prefix'}
+        if len(matches)>1:
+            item['status']='ambiguous_annotation'
+        elif len(matches)==1:
+            row=matches[0]
+            expected=base64.b64decode(row['payload_base64'],validate=True).hex()
+            item.update(annotation={key:row.get(key) for key in FIELDS},expected_payload_hex=expected,
+                        status='exact_match' if frame['payload_hex']==expected else 'payload_mismatch')
+        comparisons.append(item)
+    return comparisons
+
+
 def run(result):
     record=json.loads(small_get('https://zenodo.org/api/records/'+RECORD,1024*1024))
     metadata=record['metadata']
@@ -88,13 +118,16 @@ def run(result):
                 trial=detect_lora_preamble(samples,fs)
                 expected=base64.b64decode(row['payload_base64'],validate=True).hex()
                 frames=trial.get('frames',[])
+                comparisons=compare_frames(frames,rows,stem,fs)
                 entry.update(input_samples=len(samples),sample_rate_hz=fs,trial=trial,
-                    expected_payload_hex=expected,payload_matches_reference=any(f['payload_hex']==expected for f in frames),
+                    expected_payload_hex=expected,payload_matches_reference=any(c['status']=='exact_match' and c['annotation']==entry['annotation'] for c in comparisons),
                     crc_valid_other_payloads=[f['payload_hex'] for f in frames if f['payload_hex']!=expected],
-                    oracle_parameters_applied=[])
+                    oracle_parameters_applied=[],frame_reference_comparisons=comparisons)
         result['archive_bytes_transferred']=remote.received
     result['matched_count']=sum(entry['payload_matches_reference'] for entry in result['observations'])
     result['missed_count']=len(selection)-result['matched_count']
+    result['frame_reference_counts']={status:sum(c['status']==status for e in result['observations'] for c in e['frame_reference_comparisons'])
+        for status in ('exact_match','payload_mismatch','ambiguous_annotation','no_annotation_in_prefix')}
     result['limitations']=['Small bounded CSV prefix; not a representative population or sensitivity curve.',
         'Whole-member blind decoding only; no RF center verified; no guided timing/CFO correction.',
         'Only SF7/BW125k/CR4/5; unoccupied SNR strata omitted. Full archive hash not verified.',

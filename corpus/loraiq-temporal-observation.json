@@ -1,0 +1,673 @@
+{
+  "source": "https://zenodo.org/records/20341802",
+  "doi": "10.5281/zenodo.20341802",
+  "license": {
+    "id": "cc-by-4.0"
+  },
+  "creators": [
+    "Tapparel, Joachim",
+    "Burg, Andreas"
+  ],
+  "csv_prefix_sha256": "96122f6ae2f1ff6b3ea8601a4d1e3336abab94e35cb6313a01fe5a16d6d135cf",
+  "selection_rule": "First distinct member per SNR stratum [-inf,0),[0,5),[5,10),[10,15),[15,20),[20,inf); SF7/BW125k/CR1 only",
+  "decoder_commit": "152e51aec341cfd392e36307262aea50ed86ca19",
+  "comparison_stage": "Post-decode unique member/parameters/time interval; bytes never choose annotation",
+  "observations": [
+    {
+      "annotation": {
+        "sf": "7",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "125000",
+        "payload_base64": "MDAwMDAwMA==",
+        "rrh_idx": "1",
+        "rx_sample_rate": "250000",
+        "cfo": "7.016",
+        "snr": "-1.0897",
+        "sigmf_file": "./sigmfs/25_01_17-13_40/rrh1/1",
+        "sigmf_file_offset": "7730.0",
+        "sigmf_file_n_samples": "9024"
+      },
+      "data_sha256": "3c59fa48b65aae5129d583ded3f0696249c9271314ade8e582c53cf4ebc1f957",
+      "meta_sha256": "901637cf927356ee20934aa5e7fb53d2ac44f66650c36c739babd4eed08200f8",
+      "frame_reference_comparisons": [
+        {
+          "time_seconds": 7.043293,
+          "payload_hex": "30303030303037",
+          "annotation_candidates": 1,
+          "status": "exact_match",
+          "annotation": {
+            "sf": "7",
+            "cr": "1",
+            "fc": "862.5",
+            "bandwidth": "125000",
+            "payload_base64": "MDAwMDAwNw==",
+            "rrh_idx": "1",
+            "rx_sample_rate": "250000",
+            "cfo": "7.11",
+            "snr": "10.0683",
+            "sigmf_file": "./sigmfs/25_01_17-13_40/rrh1/1",
+            "sigmf_file_offset": "1757685.0",
+            "sigmf_file_n_samples": "9024"
+          },
+          "expected_payload_hex": "30303030303037"
+        }
+      ],
+      "temporal_search": {
+        "window_budget": 8,
+        "window_seconds_limit": 1,
+        "energy_sample_budget": 262144,
+        "energy_samples": 252216,
+        "energy_event_count": 9,
+        "selection_uses_annotations": false,
+        "energy_stride_samples": 8,
+        "energy_block_seconds": 0.001984,
+        "energy_status": "profiled",
+        "energy_threshold": 2.9551550600411175e-07,
+        "window_budget_reached": true,
+        "window_count": 8,
+        "windows": [
+          {
+            "start_sample": 0,
+            "end_sample": 250000,
+            "reason": "prefix",
+            "index": 0,
+            "start_seconds": 0.0,
+            "end_seconds": 1.0
+          },
+          {
+            "start_sample": 1752328,
+            "end_sample": 2002328,
+            "reason": "energy_rise",
+            "onset_sample": 1757328,
+            "energy_contrast": 4.118505016901948,
+            "index": 1,
+            "start_seconds": 7.009312,
+            "end_seconds": 8.009312
+          },
+          {
+            "start_sample": 1502344,
+            "end_sample": 1752344,
+            "reason": "energy_rise",
+            "onset_sample": 1507344,
+            "energy_contrast": 2.5450591168529932,
+            "index": 2,
+            "start_seconds": 6.009376,
+            "end_seconds": 7.009376
+          },
+          {
+            "start_sample": 504392,
+            "end_sample": 754392,
+            "reason": "energy_rise",
+            "onset_sample": 509392,
+            "energy_contrast": 2.1041066536502764,
+            "index": 3,
+            "start_seconds": 2.017568,
+            "end_seconds": 3.017568
+          },
+          {
+            "start_sample": 752888,
+            "end_sample": 1002888,
+            "reason": "energy_rise",
+            "onset_sample": 757888,
+            "energy_contrast": 2.013464172457809,
+            "index": 4,
+            "start_seconds": 3.011552,
+            "end_seconds": 4.011552
+          },
+          {
+            "start_sample": 1253352,
+            "end_sample": 1503352,
+            "reason": "energy_rise",
+            "onset_sample": 1258352,
+            "energy_contrast": 1.9928670825861894,
+            "index": 5,
+            "start_seconds": 5.013408,
+            "end_seconds": 6.013408
+          },
+          {
+            "start_sample": 1004360,
+            "end_sample": 1254360,
+            "reason": "energy_rise",
+            "onset_sample": 1009360,
+            "energy_contrast": 1.979129981461584,
+            "index": 6,
+            "start_seconds": 4.01744,
+            "end_seconds": 5.01744
+          },
+          {
+            "start_sample": 254408,
+            "end_sample": 504408,
+            "reason": "energy_rise",
+            "onset_sample": 259408,
+            "energy_contrast": 1.9565070955156996,
+            "index": 7,
+            "start_seconds": 1.017632,
+            "end_seconds": 2.017632
+          }
+        ],
+        "partial": true,
+        "source_span_seconds": 8.070904,
+        "input_union_seconds": 7.985792,
+        "processed_input_seconds": 7.999999999999999,
+        "candidate_budget": 48
+      },
+      "payload_matches_reference": false
+    },
+    {
+      "annotation": {
+        "sf": "7",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "125000",
+        "payload_base64": "MDAwMDAwMg==",
+        "rrh_idx": "3",
+        "rx_sample_rate": "250000",
+        "cfo": "7.6228",
+        "snr": "3.7885",
+        "sigmf_file": "./sigmfs/25_01_17-13_40/rrh3/2",
+        "sigmf_file_offset": "254773.0",
+        "sigmf_file_n_samples": "9024"
+      },
+      "data_sha256": "908fdaedcf94f999acec0c230450142375b00221354eb5ca87807e6f1b3d502e",
+      "meta_sha256": "eefb6ab08a46d03ac7299280342b460857d04ad996433a81a5b70b8203501be2",
+      "frame_reference_comparisons": [
+        {
+          "time_seconds": 3.0325159999999998,
+          "payload_hex": "30303030303034",
+          "annotation_candidates": 1,
+          "status": "exact_match",
+          "annotation": {
+            "sf": "7",
+            "cr": "1",
+            "fc": "862.5",
+            "bandwidth": "125000",
+            "payload_base64": "MDAwMDAwNA==",
+            "rrh_idx": "3",
+            "rx_sample_rate": "250000",
+            "cfo": "7.6297",
+            "snr": "11.1699",
+            "sigmf_file": "./sigmfs/25_01_17-13_40/rrh3/2",
+            "sigmf_file_offset": "754991.0",
+            "sigmf_file_n_samples": "9024"
+          },
+          "expected_payload_hex": "30303030303034"
+        },
+        {
+          "time_seconds": 4.026978,
+          "payload_hex": "30303030303035",
+          "annotation_candidates": 1,
+          "status": "exact_match",
+          "annotation": {
+            "sf": "7",
+            "cr": "1",
+            "fc": "862.5",
+            "bandwidth": "125000",
+            "payload_base64": "MDAwMDAwNQ==",
+            "rrh_idx": "3",
+            "rx_sample_rate": "250000",
+            "cfo": "7.6276",
+            "snr": "8.5653",
+            "sigmf_file": "./sigmfs/25_01_17-13_40/rrh3/2",
+            "sigmf_file_offset": "1003607.0",
+            "sigmf_file_n_samples": "9024"
+          },
+          "expected_payload_hex": "30303030303035"
+        },
+        {
+          "time_seconds": 5.0235,
+          "payload_hex": "30303030303036",
+          "annotation_candidates": 1,
+          "status": "exact_match",
+          "annotation": {
+            "sf": "7",
+            "cr": "1",
+            "fc": "862.5",
+            "bandwidth": "125000",
+            "payload_base64": "MDAwMDAwNg==",
+            "rrh_idx": "3",
+            "rx_sample_rate": "250000",
+            "cfo": "7.6247",
+            "snr": "11.4369",
+            "sigmf_file": "./sigmfs/25_01_17-13_40/rrh3/2",
+            "sigmf_file_offset": "1252738.0",
+            "sigmf_file_n_samples": "9024"
+          },
+          "expected_payload_hex": "30303030303036"
+        }
+      ],
+      "temporal_search": {
+        "window_budget": 8,
+        "window_seconds_limit": 1,
+        "energy_sample_budget": 262144,
+        "energy_samples": 252439,
+        "energy_event_count": 6,
+        "selection_uses_annotations": false,
+        "energy_stride_samples": 6,
+        "energy_block_seconds": 0.001992,
+        "energy_status": "profiled",
+        "energy_threshold": 3.610618143866177e-07,
+        "window_budget_reached": false,
+        "window_count": 8,
+        "windows": [
+          {
+            "start_sample": 0,
+            "end_sample": 250000,
+            "reason": "prefix",
+            "index": 0,
+            "start_seconds": 0.0,
+            "end_seconds": 1.0
+          },
+          {
+            "start_sample": 1247470,
+            "end_sample": 1497470,
+            "reason": "energy_rise",
+            "onset_sample": 1252470,
+            "energy_contrast": 5.505863103048812,
+            "index": 1,
+            "start_seconds": 4.98988,
+            "end_seconds": 5.98988
+          },
+          {
+            "start_sample": 749968,
+            "end_sample": 999968,
+            "reason": "energy_rise",
+            "onset_sample": 754968,
+            "energy_contrast": 4.410637034770805,
+            "index": 2,
+            "start_seconds": 2.999872,
+            "end_seconds": 3.999872
+          },
+          {
+            "start_sample": 998470,
+            "end_sample": 1248470,
+            "reason": "energy_rise",
+            "onset_sample": 1003470,
+            "energy_contrast": 3.1209502420206263,
+            "index": 3,
+            "start_seconds": 3.99388,
+            "end_seconds": 4.99388
+          },
+          {
+            "start_sample": 497980,
+            "end_sample": 747980,
+            "reason": "energy_rise",
+            "onset_sample": 502980,
+            "energy_contrast": 2.690783156941137,
+            "index": 4,
+            "start_seconds": 1.99192,
+            "end_seconds": 2.99192
+          },
+          {
+            "start_sample": 1497964,
+            "end_sample": 1514630,
+            "reason": "energy_rise",
+            "onset_sample": 1502964,
+            "energy_contrast": 1.894068901571649,
+            "index": 5,
+            "start_seconds": 5.991856,
+            "end_seconds": 6.05852
+          },
+          {
+            "start_sample": 249976,
+            "end_sample": 499976,
+            "reason": "energy_rise",
+            "onset_sample": 254976,
+            "energy_contrast": 1.5632960378297867,
+            "index": 6,
+            "start_seconds": 0.999904,
+            "end_seconds": 1.999904
+          },
+          {
+            "start_sample": 757315,
+            "end_sample": 1007315,
+            "reason": "distributed_probe",
+            "index": 7,
+            "start_seconds": 3.02926,
+            "end_seconds": 4.02926
+          }
+        ],
+        "partial": true,
+        "source_span_seconds": 6.05852,
+        "input_union_seconds": 6.048591999999999,
+        "processed_input_seconds": 7.066663999999999,
+        "candidate_budget": 48
+      },
+      "payload_matches_reference": false
+    },
+    {
+      "annotation": {
+        "sf": "7",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "125000",
+        "payload_base64": "MDAwMDAwMA==",
+        "rrh_idx": "3",
+        "rx_sample_rate": "250000",
+        "cfo": "7.5704",
+        "snr": "7.1515",
+        "sigmf_file": "./sigmfs/25_01_17-13_40/rrh3/1",
+        "sigmf_file_offset": "7043.0",
+        "sigmf_file_n_samples": "9024"
+      },
+      "data_sha256": "2376ebc206af761889b4d541d495d784eed7c5116d27c18dae1483ad88245058",
+      "meta_sha256": "0f819f2a1ffa07176d58187494cab782522b828a9e9c2a90e510454f5ee893ba",
+      "frame_reference_comparisons": [
+        {
+          "time_seconds": 0.040725,
+          "payload_hex": "30303030303030",
+          "annotation_candidates": 1,
+          "status": "exact_match",
+          "annotation": {
+            "sf": "7",
+            "cr": "1",
+            "fc": "862.5",
+            "bandwidth": "125000",
+            "payload_base64": "MDAwMDAwMA==",
+            "rrh_idx": "3",
+            "rx_sample_rate": "250000",
+            "cfo": "7.5704",
+            "snr": "7.1515",
+            "sigmf_file": "./sigmfs/25_01_17-13_40/rrh3/1",
+            "sigmf_file_offset": "7043.0",
+            "sigmf_file_n_samples": "9024"
+          },
+          "expected_payload_hex": "30303030303030"
+        }
+      ],
+      "temporal_search": {
+        "window_budget": 8,
+        "window_seconds_limit": 1,
+        "energy_sample_budget": 262144,
+        "energy_samples": 0,
+        "energy_event_count": 0,
+        "selection_uses_annotations": false,
+        "energy_status": "not_needed",
+        "window_budget_reached": false,
+        "window_count": 1,
+        "windows": [
+          {
+            "start_sample": 0,
+            "end_sample": 18627,
+            "reason": "prefix",
+            "index": 0,
+            "start_seconds": 0.0,
+            "end_seconds": 0.074508
+          }
+        ],
+        "partial": false,
+        "source_span_seconds": 0.074508,
+        "input_union_seconds": 0.074508,
+        "processed_input_seconds": 0.074508,
+        "candidate_budget": 48
+      },
+      "payload_matches_reference": true
+    },
+    {
+      "annotation": {
+        "sf": "7",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "125000",
+        "payload_base64": "MDAwMDAwMA==",
+        "rrh_idx": "2",
+        "rx_sample_rate": "250000",
+        "cfo": "7.6724",
+        "snr": "10.2641",
+        "sigmf_file": "./sigmfs/25_01_17-13_40/rrh2/1",
+        "sigmf_file_offset": "7931.0",
+        "sigmf_file_n_samples": "9024"
+      },
+      "data_sha256": "3ae3330856923d9edfbd9a07fea563db1a0bd23da4c56e4522b632cce352b074",
+      "meta_sha256": "415cfa2c6cfd9678dd86e087dbd93a3851cb76bc13311ac33528bfedcdae9c68",
+      "frame_reference_comparisons": [
+        {
+          "time_seconds": 0.044277,
+          "payload_hex": "30303030303030",
+          "annotation_candidates": 1,
+          "status": "exact_match",
+          "annotation": {
+            "sf": "7",
+            "cr": "1",
+            "fc": "862.5",
+            "bandwidth": "125000",
+            "payload_base64": "MDAwMDAwMA==",
+            "rrh_idx": "2",
+            "rx_sample_rate": "250000",
+            "cfo": "7.6724",
+            "snr": "10.2641",
+            "sigmf_file": "./sigmfs/25_01_17-13_40/rrh2/1",
+            "sigmf_file_offset": "7931.0",
+            "sigmf_file_n_samples": "9024"
+          },
+          "expected_payload_hex": "30303030303030"
+        },
+        {
+          "time_seconds": 1.050777,
+          "payload_hex": "30303030303031",
+          "annotation_candidates": 1,
+          "status": "exact_match",
+          "annotation": {
+            "sf": "7",
+            "cr": "1",
+            "fc": "862.5",
+            "bandwidth": "125000",
+            "payload_base64": "MDAwMDAwMQ==",
+            "rrh_idx": "2",
+            "rx_sample_rate": "250000",
+            "cfo": "7.7278",
+            "snr": "15.0889",
+            "sigmf_file": "./sigmfs/25_01_17-13_40/rrh2/1",
+            "sigmf_file_offset": "259556.0",
+            "sigmf_file_n_samples": "9024"
+          },
+          "expected_payload_hex": "30303030303031"
+        }
+      ],
+      "temporal_search": {
+        "window_budget": 8,
+        "window_seconds_limit": 1,
+        "energy_sample_budget": 262144,
+        "energy_samples": 135570,
+        "energy_event_count": 2,
+        "selection_uses_annotations": false,
+        "energy_stride_samples": 2,
+        "energy_block_seconds": 0.002,
+        "energy_status": "profiled",
+        "energy_threshold": 2.2376114481416654e-06,
+        "window_budget_reached": false,
+        "window_count": 4,
+        "windows": [
+          {
+            "start_sample": 0,
+            "end_sample": 250000,
+            "reason": "prefix",
+            "index": 0,
+            "start_seconds": 0.0,
+            "end_seconds": 1.0
+          },
+          {
+            "start_sample": 254500,
+            "end_sample": 271140,
+            "reason": "energy_rise",
+            "onset_sample": 259500,
+            "energy_contrast": 10.770039636937572,
+            "index": 1,
+            "start_seconds": 1.018,
+            "end_seconds": 1.08456
+          },
+          {
+            "start_sample": 135570,
+            "end_sample": 271140,
+            "reason": "distributed_probe",
+            "index": 2,
+            "start_seconds": 0.54228,
+            "end_seconds": 1.08456
+          },
+          {
+            "start_sample": 238372,
+            "end_sample": 271140,
+            "reason": "distributed_probe",
+            "index": 3,
+            "start_seconds": 0.953488,
+            "end_seconds": 1.08456
+          }
+        ],
+        "partial": true,
+        "source_span_seconds": 1.08456,
+        "input_union_seconds": 1.08456,
+        "processed_input_seconds": 1.739912,
+        "candidate_budget": 48
+      },
+      "payload_matches_reference": true
+    },
+    {
+      "annotation": {
+        "sf": "7",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "125000",
+        "payload_base64": "MDAwMDAwMg==",
+        "rrh_idx": "2",
+        "rx_sample_rate": "250000",
+        "cfo": "7.7195",
+        "snr": "19.7319",
+        "sigmf_file": "./sigmfs/25_01_17-13_40/rrh2/2",
+        "sigmf_file_offset": "5805.0",
+        "sigmf_file_n_samples": "9024"
+      },
+      "data_sha256": "7712185f2920d225c2cdaf38f3fac10f5520fadc500673a270b3f1a5c0e4ed78",
+      "meta_sha256": "46b875e7179238851cd722bc5537e0bc0e2ca839fb71918adaa2de03300aed37",
+      "frame_reference_comparisons": [
+        {
+          "time_seconds": 0.035774,
+          "payload_hex": "30303030303032",
+          "annotation_candidates": 1,
+          "status": "exact_match",
+          "annotation": {
+            "sf": "7",
+            "cr": "1",
+            "fc": "862.5",
+            "bandwidth": "125000",
+            "payload_base64": "MDAwMDAwMg==",
+            "rrh_idx": "2",
+            "rx_sample_rate": "250000",
+            "cfo": "7.7195",
+            "snr": "19.7319",
+            "sigmf_file": "./sigmfs/25_01_17-13_40/rrh2/2",
+            "sigmf_file_offset": "5805.0",
+            "sigmf_file_n_samples": "9024"
+          },
+          "expected_payload_hex": "30303030303032"
+        }
+      ],
+      "temporal_search": {
+        "window_budget": 8,
+        "window_seconds_limit": 1,
+        "energy_sample_budget": 262144,
+        "energy_samples": 0,
+        "energy_event_count": 0,
+        "selection_uses_annotations": false,
+        "energy_status": "not_needed",
+        "window_budget_reached": false,
+        "window_count": 1,
+        "windows": [
+          {
+            "start_sample": 0,
+            "end_sample": 17389,
+            "reason": "prefix",
+            "index": 0,
+            "start_seconds": 0.0,
+            "end_seconds": 0.069556
+          }
+        ],
+        "partial": false,
+        "source_span_seconds": 0.069556,
+        "input_union_seconds": 0.069556,
+        "processed_input_seconds": 0.069556,
+        "candidate_budget": 48
+      },
+      "payload_matches_reference": true
+    },
+    {
+      "annotation": {
+        "sf": "7",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "125000",
+        "payload_base64": "MDAwMDAwMQ==",
+        "rrh_idx": "4",
+        "rx_sample_rate": "250000",
+        "cfo": "7.739",
+        "snr": "20.3859",
+        "sigmf_file": "./sigmfs/25_01_17-13_40/rrh4/2",
+        "sigmf_file_offset": "7842.0",
+        "sigmf_file_n_samples": "9024"
+      },
+      "data_sha256": "954c295af3fa3e129eef981915401428bf22b401d5a9d414f4a316554f1f4bc4",
+      "meta_sha256": "92c4ca429c73e128f07de282a963eede7c1534f90ba7227c228bbe861ea5034d",
+      "frame_reference_comparisons": [
+        {
+          "time_seconds": 0.043922,
+          "payload_hex": "30303030303031",
+          "annotation_candidates": 1,
+          "status": "exact_match",
+          "annotation": {
+            "sf": "7",
+            "cr": "1",
+            "fc": "862.5",
+            "bandwidth": "125000",
+            "payload_base64": "MDAwMDAwMQ==",
+            "rrh_idx": "4",
+            "rx_sample_rate": "250000",
+            "cfo": "7.739",
+            "snr": "20.3859",
+            "sigmf_file": "./sigmfs/25_01_17-13_40/rrh4/2",
+            "sigmf_file_offset": "7842.0",
+            "sigmf_file_n_samples": "9024"
+          },
+          "expected_payload_hex": "30303030303031"
+        }
+      ],
+      "temporal_search": {
+        "window_budget": 8,
+        "window_seconds_limit": 1,
+        "energy_sample_budget": 262144,
+        "energy_samples": 0,
+        "energy_event_count": 0,
+        "selection_uses_annotations": false,
+        "energy_status": "not_needed",
+        "window_budget_reached": false,
+        "window_count": 1,
+        "windows": [
+          {
+            "start_sample": 0,
+            "end_sample": 19426,
+            "reason": "prefix",
+            "index": 0,
+            "start_seconds": 0.0,
+            "end_seconds": 0.077704
+          }
+        ],
+        "partial": false,
+        "source_span_seconds": 0.077704,
+        "input_union_seconds": 0.077704,
+        "processed_input_seconds": 0.077704,
+        "candidate_budget": 48
+      },
+      "payload_matches_reference": true
+    }
+  ],
+  "matched_count": 4,
+  "frame_reference_counts": {
+    "exact_match": 9,
+    "payload_mismatch": 0,
+    "ambiguous_annotation": 0,
+    "no_annotation_in_prefix": 0
+  },
+  "limitations": [
+    "Six correlated recordings from one session; not held-out or representative.",
+    "Annotations limited to the pinned CSV prefix; absent/ambiguous intervals remain unverified.",
+    "Additional frames are not additional independent recordings. RF center unverified; source hashes checked against previous integrity validation."
+  ]
+}

@@ -292,3 +292,30 @@ selon le résultat du CRC.
 Ces six enregistrements ont servi au diagnostic et à la mise au point des
 corrections. Ils constituent un petit corpus de développement corrélé, pas un
 jeu de test réservé ni une mesure de généralisation à l’ensemble des signaux.
+
+
+## Paquets tardifs et comparaison temporelle
+
+La recherche temporelle du commit `152e51a` produit **9 trames dont les octets
+sont exactement conformes aux annotations**, dans les mêmes six fichiers.
+Le score des six paquets sélectionnés initialement reste **4/6**. Les cinq
+autres trames ne sont pas cinq captures indépendantes.
+
+Exemples : `0000007` vers 7,043293 s dans le premier fichier ; `0000004`,
+`0000005`, `0000006` vers 3,032516, 4,026978 et 5,023500 s dans le second.
+Le [rapport reproductible](../corpus/loraiq-temporal-observation.json) conserve
+les annotations, temps, fenêtres et empreintes des sources. Le préfixe CSV
+vérifié reste limité à 128 Kio.
+
+Après le décodage aveugle, une trame doit appartenir à un intervalle annoté
+unique du même membre SigMF, avec les mêmes fréquence d’échantillonnage, SF,
+largeur et taux de codage. Les octets sont comparés seulement ensuite. Une
+absence d’annotation dans ce préfixe ou un chevauchement ambigu reste non
+vérifié ; un contenu différent est un échec explicite. Le score des six
+références exige désormais également cette correspondance temporelle.
+Aucune annotation ne sert à sélectionner une fenêtre ou régler le décodeur.
+
+La CI du commit `152e51a` est verte :
+[tests Python et Chromium](https://github.com/sebadiaz/IQScope/actions/runs/41133736684),
+[benchmark LoRaIQ](https://github.com/sebadiaz/IQScope/actions/runs/41133736646).
+Ces contrôles précèdent l’ajout de cette comparaison temporelle au benchmark.
