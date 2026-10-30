@@ -266,6 +266,7 @@ function showReport(report, jobId) {
   }
   for(const trial of report.wideband_trials || []){
     if(trial.decoder!=='lora_preamble')continue;
+    if(trial.temporal_search?.partial)frameList.append(element('p','Recherche LoRa partielle dans le fichier ; les périodes examinées figurent dans le rapport.','hint lora-search-coverage'));
     for(const candidate of trial.candidates || []){
       const card=element('div',undefined,'frame lora-candidate');const p=candidate.parameters;
       card.append(element('h3','Chirps répétés compatibles avec un préambule LoRa'));

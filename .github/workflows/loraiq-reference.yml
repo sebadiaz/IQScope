@@ -4,6 +4,7 @@ on:
     paths:
       - scripts/loraiq_reference.py
       - iqscope_lora.py
+      - iqscope_lora_search.py
       - iqscope_lora_header.py
       - iqscope_lora_payload.py
       - .github/workflows/loraiq-reference.yml

@@ -615,3 +615,8 @@ SF7/CR4/5 recordings, compared with annotated bytes and payload CRC.
 See [independent radio validation and its limits](docs/LORA_REAL_VALIDATION.md). No LoRaWAN parsing,
 decryption or sender authentication is performed.
 See [scope, budgets and validation](docs/LORA_PREAMBLE.md).
+
+LoRa file searches use up to eight automatically selected one-second windows.
+Reports expose coverage per BW/SF and file-relative timestamps; the UI warns
+when periods remain unexamined. Repeated CRC-valid payloads at distinct times
+are preserved as separate frames. This bounded search can still miss packets.

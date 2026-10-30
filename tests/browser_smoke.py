@@ -157,6 +157,8 @@ def main():
                     from test_lora import synchronized_preamble
                     from test_lora_payload import RATE_VECTORS
                     x,fs = synchronized_preamble(offset=0,cfo_bins=0,data_symbols=RATE_VECTORS['8-4-1-bit-errors'])
+                    import numpy as np
+                    x = np.r_[np.zeros(int(1.1*fs),dtype=complex),x]
                     raw = Path(directory)/'lora.sigmf-data'
                     meta = Path(directory)/'lora.sigmf-meta'
                     x.astype('<c8').tofile(raw)
@@ -170,6 +172,9 @@ def main():
                     response = page.request.get(urljoin(page.url,link.get_attribute('href')))
                     assert response.ok and response.json()['candidates']
                     assert len(response.json()['frames'])==1
+                    assert response.json()['frames'][0]['time_seconds']>1
+                    assert response.json()['temporal_search']['window_count']>1
+                    expect(page.locator('.lora-search-coverage')).to_contain_text('Recherche LoRa partielle')
                     expect(page.locator('.lora-sync-evidence').first).to_contain_text('Paire de chirps opposés candidate')
                     expect(page.locator('.lora-sync-word').first).to_contain_text('0x34')
                     expect(page.locator('.lora-header').first).to_contain_text('5 octets annoncés')

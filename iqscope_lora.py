@@ -346,7 +346,7 @@ def _refine_fractional_timing(x, fs, ratio, bandwidth, length, start, count,
                                 selected_phase=phase,sample_grid_offset_chips=phase/8)
 
 
-def detect_lora_preamble(x, fs):
+def _detect_lora_window(x, fs):
     base = {'decoder': 'lora_preamble', 'family': 'LoRa-compatible CSS preamble', 'candidates': []}
     if not np.isfinite(fs) or not 125000 <= fs <= 2400000 or len(x) < 1024:
         return dict(base, status='not_applicable')
@@ -462,3 +462,11 @@ def detect_lora_preamble(x, fs):
                     'BW 125/250/500 kHz, SF7–SF12, both chirp directions; six stable FFT peaks and either individual concentration or a coherent six-chirp average required.',
                     'First second only; at most 256 symbols per BW/SF. Eight-phase preamble timing refinement for SF7-10 with >=2 samples/chip, bounded filters; no clock drift tracking. Late/short/weak bursts and off-center channels may be missed.',
                     'Other CSS waveforms can match preamble evidence. Header checksum and supported payload CRC are checked separately; all other stages remain candidates. Payload: explicit CR4/5–4/8, SF7–SF10 only.'])
+
+
+def detect_lora_preamble(x, fs):
+    """Discover bounded temporal windows without annotation or payload oracles."""
+    if not np.isfinite(fs) or not 125000<=fs<=2400000 or len(x)<1024:
+        return _detect_lora_window(x,fs)
+    from iqscope_lora_search import scan_lora_windows
+    return scan_lora_windows(x,fs,_detect_lora_window)

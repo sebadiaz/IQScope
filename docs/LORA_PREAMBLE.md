@@ -20,7 +20,7 @@ incertitude d'encodage SigMF est propagée dans cet artefact.
 
 ## Limites
 
-- Source entre 125 kéch/s et 2,4 Méch/s ; première seconde seulement.
+- Source entre 125 kéch/s et 2,4 Méch/s ; jusqu’à huit fenêtres d’une seconde sélectionnées automatiquement.
 - Canal supposé centré ; pas de balayage des fréquences ni d'estimation fiable
   de porteuse. Une capture large bande avec LoRa décentré peut être manquée.
 - Au plus 256 blocs par couple BW/SF ; `search_windows` donne la durée réellement
@@ -468,3 +468,25 @@ de phase et d’amplitude du contrôle complémentaire, et 128 réalisations de 
 avec des références cohérentes ou incohérentes. Les 192 tests Python passent
 localement. Les tests négatifs de la voie complémentaire ne changent pas le
 périmètre de la voie principale. Voir [la validation radio](LORA_REAL_VALIDATION.md).
+
+
+### Recherche temporelle bornée
+
+Le détecteur examine le début du fichier, des remontées d’énergie et des sondes
+réparties. Le profil d’énergie utilise au plus 262144 échantillons répartis dans
+la source ; aucune annotation ni valeur de charge utile ne guide la sélection.
+Chaque fenêtre conserve la limite de 256 symboles par configuration BW/SF.
+`temporal_search` décrit les fenêtres ; `search_coverage` donne leur union par
+configuration, les intervalles non examinés et la fraction couverte. Cette
+recherche peut manquer des paquets, notamment sous un signal plus puissant.
+L’interface signale une couverture partielle lorsqu’un intervalle non examiné
+peut contenir six symboles de préambule.
+
+Les temps des candidats et des trames sont relatifs au début du fichier. Les
+indices de chips restent relatifs à la fenêtre indiquée par
+`analysis_window_index` et `analysis_window_start_sample`. Les observations
+redondantes sont fusionnées ; deux émissions du même contenu à des instants
+distincts restent deux trames. Le CRC demeure obligatoire pour exporter les
+octets. Le score historique des six références LoRaIQ reste 4/6 ; les paquets
+supplémentaires trouvés ailleurs ne constituent pas de nouvelles références
+indépendantes.

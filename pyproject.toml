@@ -16,7 +16,7 @@ test = ["httpx>=0.27,<1"]
 iqscope = "iqscope:main"
 
 [tool.setuptools]
-py-modules = ["iqscope", "iqscope_decoders", "iqscope_formats", "iqscope_datasets", "iqscope_rtty", "iqscope_cw", "iqscope_fsk", "iqscope_fsk4", "iqscope_ax25", "iqscope_audio", "iqscope_recordings", "iqscope_afsk", "iqscope_ofdm", "iqscope_lora", "iqscope_lora_header", "iqscope_lora_payload"]
+py-modules = ["iqscope", "iqscope_decoders", "iqscope_formats", "iqscope_datasets", "iqscope_rtty", "iqscope_cw", "iqscope_fsk", "iqscope_fsk4", "iqscope_ax25", "iqscope_audio", "iqscope_recordings", "iqscope_afsk", "iqscope_ofdm", "iqscope_lora", "iqscope_lora_header", "iqscope_lora_payload", "iqscope_lora_search"]
 packages = ["iqscope_web"]
 
 [tool.setuptools.package-data]
