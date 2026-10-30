@@ -610,7 +610,7 @@ with explicit stop reasons; these values are not bytes.
 A candidate explicit header reports its announced length, coding rate and CRC
 flag after a five-bit check. Explicit CR4/5–4/8 SF7–10 payloads can be decoded,
 dewhitened and checked against the LoRa PHY CRC16. CRC-valid bytes appear in the
-UI and binary export; other outputs remain candidates. Validation includes synthetic transmitter vectors and five exact packet decodes among six LoRaIQ
+UI and binary export; other outputs remain candidates. Validation includes synthetic transmitter vectors and six exact packet decodes among six LoRaIQ
 SF7/CR4/5 recordings, compared with annotated bytes and payload CRC.
 See [independent radio validation and its limits](docs/LORA_REAL_VALIDATION.md). No LoRaWAN parsing,
 decryption or sender authentication is performed.
@@ -627,7 +627,14 @@ additional emissions do not count as independent captures. Matching requires a
 unique annotated time interval before comparing bytes.
 
 The noise-aware matched-peak fallback now recovers the fifth original target:
-`0000002` at annotated SNR 3.7885 dB, with exact bytes and valid CRC. Current
-local results are 5/6 original targets and 11 annotation-exact emissions across
+`0000002` at annotated SNR 3.7885 dB, with exact bytes and valid CRC. That earlier
+local validation produced 5/6 original targets and 11 annotation-exact emissions across
 the same six files; one further CRC-valid emission lacks an annotation in the
 bounded CSV prefix. See the historical reports and current validation details.
+
+Current local validation recovers all **6/6 original LoRaIQ targets** and 13
+annotation-exact emissions across the same six recordings (one further emission
+is CRC-valid without an annotation in the available prefix). The weakest target
+uses one boundary inferred from the sync word: its final quarter chirp remains
+unconfirmed, explicitly flagged in the UI, frame and JSON. These development
+recordings do not establish general sensitivity or held-out performance.

@@ -129,7 +129,7 @@ le suivi de l'horloge restent à améliorer ; aucun contenu LoRaWAN n'est extrai
 
 Les tests comparent les symboles récupérés aux symboles transmis par le
 générateur synthétique, avec SF7/SF8/SF10, inversion, bruit, délais et décalages
-fréquentiels. Un quart absent interdit la sortie de symboles ; un test impose
+fréquentiels. Dans la voie initiale, un quart absent interdit la sortie de symboles ; un test impose
 la limite de 64 symboles. L'interface distingue ces symboles candidats des octets dont le CRC de données
 a été vérifié ; seuls ces derniers contribuent au compteur de trames validées. Une référence radio indépendante est maintenant comparée au niveau de la
 charge utile et de son CRC ; voir [la validation indépendante](LORA_REAL_VALIDATION.md).
@@ -499,8 +499,8 @@ de déchirpage reste identifiable. Une voie supplémentaire est réservée aux
 préambules découverts par combinaison cohérente. La phase reste choisie parmi
 les huit grilles par le score du préambule, avant toute lecture de l’en-tête.
 Si le score individuel est inférieur à 0,65, la moyenne des blocs corrigés
-doit concentrer au moins 0,8 de son énergie dans un bin et passer le contrôle
-de pic décrit ci-dessous. Cette voie exige toujours une correction de
+doit passer le contrôle de pic décrit ci-dessous. Sa fraction d’énergie dans
+le bin dominant est rapportée ; elle ne constitue plus un seuil supplémentaire. Cette voie exige toujours une correction de
 porteuse cohérente et les budgets existants.
 
 Pour un spectre de puissance déchirpé, les bins distants de plus de deux bins
@@ -513,7 +513,7 @@ multiples empêchent d’en déduire une probabilité de fausse alarme.
 Après validation de ce préambule, les trois chirps du sync word peuvent
 satisfaire ces critères au lieu du seuil individuel de concentration 0,65.
 Les contraintes de nibbles et le refus d’un sync word ambigu restent actifs.
-La paire de chirps opposés garde ses contrôles existants. Pour le quart de
+La paire de chirps opposés utilise les contrôles décrits ci-dessous. Pour le quart de
 chirp final, une corrélation inférieure à 0,65 exige un pic fiable du downchirp
 de référence et les contrôles de projection existants : cohérence des deux
 références au moins 0,5, projection/bruit au moins 16, écart complexe relatif
@@ -526,3 +526,29 @@ Les tests incluent quatre réalisations synthétiques avec bruit variable
 selon les parties du paquet, un mauvais CRC avec sélection temporelle
 identique, un quart manquant, des pics concurrents et du bruit blanc. Ils ne
 constituent pas une mesure de sensibilité sur une population radio.
+
+
+### Paire bruitée et limite de données inférée
+
+La voie de préambule cohérent peut aussi chercher deux chirps opposés dont
+les pics individuels et le pic moyen passent les critères 32/4 ci-dessus.
+Les bins doivent être distants d’au plus un bin et la cohérence temporelle
+des deux chirps d’au moins 0,3. Les voies précédentes gardent leur priorité.
+Cette sélection est indépendante des octets, de l’en-tête et du CRC.
+
+Si les contrôles du quart final échouent, cette voie peut inférer **une seule**
+limite à 2,25 symboles après la frontière du sync word unique. Elle exige un
+sync word issu de pics fiables, un préambule raffiné, une référence de fréquence
+fiable, un premier symbole de données fiable et au moins huit symboles
+disponibles. Elle ne décode pas les cinq positions du quart pour retenir celle
+dont le CRC passe. L’en-tête et le CRC vérifient ensuite les octets à cette
+position unique. Un CRC faux ne provoque aucune autre tentative de position.
+
+Dans ce cas, `quarter_chirp_method` / `boundary_method` valent
+`inferred_from_sync_word`, `quarter_chirp_validated` vaut `false` et
+`inferred_boundary_evidence.boundary_hypotheses_decoded` vaut 1. Ce drapeau
+accompagne la trame exportée et le JSON ; l’interface affiche « quart de chirp
+non confirmé ». Le quart n’est pas présenté comme détecté, même si les données
+sont conformes au CRC. Cette distinction permet aussi de restituer un paquet
+synthétique dont le quart a été remplacé par du bruit, sans prétendre que sa
+synchronisation physique est entièrement validée.

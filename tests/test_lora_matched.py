@@ -45,8 +45,9 @@ class LoRaMatchedTests(unittest.TestCase):
     def test_missing_quarter_remains_unvalidated(self):
         x,fs=fixture(missing=True)
         result=detect_lora_preamble(x,fs)
-        self.assertNotIn('frames',result)
-        self.assertEqual(candidate(result)['data_symbols']['status'],'no_consistent_final_quarter_chirp')
+        self.assertEqual(result['frames'][0]['payload_hex'],b'HELLO'.hex())
+        self.assertFalse(result['frames'][0]['quarter_chirp_validated'])
+        self.assertEqual(candidate(result)['data_symbols']['quarter_chirp_method'],'inferred_from_sync_word')
 
     def test_white_noise_and_competing_peaks_fail_reliability(self):
         for length in (128,1024):

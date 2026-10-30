@@ -23,7 +23,7 @@ def _matched_peak_evidence(power,peak):
             'scope':'Heuristic matched-tone evidence; colored noise and interference can violate the noise model. Not a false-alarm probability or CRC.'}
 
 
-def _opposite_chirp_pair(y, chirp, polarity, run_end, bandwidth, coherent_fallback=False):
+def _opposite_chirp_pair(y, chirp, polarity, run_end, bandwidth, coherent_fallback=False, matched_fallback=False):
     """Look for two concentrated opposite chirps; not a packet-boundary solution."""
     length = len(chirp)
     template = chirp.conj() if polarity == 1 else chirp
@@ -32,6 +32,7 @@ def _opposite_chirp_pair(y, chirp, polarity, run_end, bandwidth, coherent_fallba
     last = min(len(y)-2*length, run_end+4*length)
     best = None
     coherent_best = None
+    matched_best = None
     maximum_compatible_strength = 0.0
     examined_pairs = 0
     for start in range(first,last+1,step):
@@ -59,6 +60,26 @@ def _opposite_chirp_pair(y, chirp, polarity, run_end, bandwidth, coherent_fallba
                     'combined_three_bin_energy_fraction':combined_fraction,'pair_coherence':coherence,
                     'dechirped_peak_bins':[int(value) for value in peaks],
                     'scope':'Two coherent opposite chirps only; each >=0.65 three-bin fraction, pair coherence >=0.5 and combined >=0.8. No sync word, header, CRC or content validated.'}
+        if matched_fallback and separation<=1:
+            reliability=[_matched_peak_evidence(row,int(peak)) for row,peak in zip(power,peaks)]
+            if all(item['status']=='reliable_matched_peak' for item in reliability):
+                product=np.sum(matrix[1]*matrix[0].conj())
+                energy=float(np.sqrt(np.sum(abs(matrix[0])**2)*np.sum(abs(matrix[1])**2)))
+                coherence=float(np.clip(abs(product)/max(energy,1e-30),0,1))
+                combined=np.mean(matrix,axis=0)
+                combined_power=abs(np.fft.fft(combined*template.conj()))**2
+                combined_peak=int(np.argmax(combined_power))
+                combined_evidence=_matched_peak_evidence(combined_power,combined_peak)
+                if coherence>=.3 and combined_evidence['status']=='reliable_matched_peak':
+                    score=combined_evidence['peak_to_competing_peak']
+                    if matched_best is None or score>matched_best['combined_peak_evidence']['peak_to_competing_peak']:
+                        matched_best={'status':'opposite_chirp_pair_candidate','time_seconds':start/bandwidth,
+                            'sample_start_at_chip_rate':start,'search_step_chips':step,
+                            'method':'matched_opposite_pair','minimum_three_bin_energy_fraction':strength,
+                            'pair_coherence':coherence,'required_pair_coherence':.3,
+                            'individual_peak_evidence':reliability,'combined_peak_evidence':combined_evidence,
+                            'dechirped_peak_bins':[int(value) for value in peaks],
+                            'scope':'Two coherent opposite chirps with reliable individual and combined peaks; no quarter chirp, header or CRC used.'}
         if strength < .8 or separation > 1:
             continue
         if best is None or strength > best['minimum_three_bin_energy_fraction']:
@@ -67,7 +88,7 @@ def _opposite_chirp_pair(y, chirp, polarity, run_end, bandwidth, coherent_fallba
                     'minimum_three_bin_energy_fraction':strength,
                     'dechirped_peak_bins':[int(value) for value in peaks],
                     'scope':'Two opposite-direction chirps only; sync word, quarter chirp, exact boundary and payload not validated'}
-    return best or coherent_best or {'status':'no_consistent_opposite_pair',
+    return best or coherent_best or matched_best or {'status':'no_consistent_opposite_pair',
         'examined_pairs':examined_pairs,
         'maximum_bin_compatible_minimum_three_bin_fraction':maximum_compatible_strength,
         'required_individual_fraction':.8,
@@ -192,7 +213,7 @@ def _reference_quarter_evidence(reference, expected, observed):
 
 
 def _data_symbol_candidates(y, chirp, polarity, sync, bandwidth, refined_timing=False, noise_fallback=False):
-    """Require a matching final quarter chirp before bounded raw CSS symbols."""
+    """Read bounded symbols after quarter evidence or one explicitly inferred boundary."""
     if sync['status'] != 'sync_word_candidate':
         return {'status':'not_available_without_sync_word'}
     length = len(chirp)
@@ -236,6 +257,29 @@ def _data_symbol_candidates(y, chirp, polarity, sync, bandwidth, refined_timing=
             if evidence['status']=='reference_consistent_quarter' and (reference_best is None or correlation>reference_best['correlation']):
                 reference_best = dict(candidate,quarter_method='reference_consistent_projection',quarter_reference_evidence=evidence)
     best = best or reference_best
+    if best is None and noise_fallback and refined_timing and sync.get('method')=='matched_peak_reliability':
+        # A single boundary inferred from the independently selected sync word.
+        # Do not try all quarter positions and select a header/CRC that passes.
+        boundary=sync['opposite_chirp_start_chip']
+        end=boundary+2*length+quarter
+        if boundary>=3*length and end+8*length<=len(y):
+            reference=y[boundary-3*length:boundary-2*length]*up.conj()
+            reference_power=abs(np.fft.fft(reference))**2
+            reference_bin=int(np.argmax(reference_power))
+            reference_tone=estimate_tone(reference,reference_bin)
+            first_power=abs(np.fft.fft(y[end:end+length]*up.conj()))**2
+            first_evidence=_matched_peak_evidence(first_power,int(np.argmax(first_power)))
+            if (reference_tone is not None and _matched_peak_evidence(reference_power,reference_bin)['status']=='reliable_matched_peak'
+                    and first_evidence['status']=='reliable_matched_peak'):
+                down_power=abs(np.fft.fft(y[boundary:boundary+length]*down.conj()))**2
+                down_bin=int(np.argmax(down_power))
+                expected=down[:quarter]*np.exp(2j*np.pi*down_bin*np.arange(quarter)/length)
+                observed=y[boundary+2*length:end]
+                correlation=float(abs(np.vdot(expected,observed))**2/max(quarter*float(np.sum(abs(observed)**2)),1e-30))
+                best={'boundary':boundary,'start':end,'reference_bin':reference_bin,
+                      'reference_tone':reference_tone,'correlation':correlation,
+                      'quarter_method':'inferred_from_sync_word',
+                      'first_data_peak_evidence':first_evidence}
     if best is None:
         return {'status':'no_consistent_final_quarter_chirp',
                 'maximum_quarter_chirp_correlation':maximum_correlation,
@@ -266,6 +310,11 @@ def _data_symbol_candidates(y, chirp, polarity, sync, bandwidth, refined_timing=
             'tone_estimator':'matched_fft_8x' if refined_timing else 'adjacent_phase_median',
             'quarter_chirp_correlation':best['correlation'],
             'quarter_chirp_method':best['quarter_method'],
+            'quarter_chirp_validated':best['quarter_method']!='inferred_from_sync_word',
+            **({'inferred_boundary_evidence':{'sync_word_boundary_chip':best['boundary'],
+                'boundary_hypotheses_decoded':1,'first_data_peak':best['first_data_peak_evidence'],
+                'scope':'Known 2.25-symbol offset from a unique sync-word boundary; quarter chirp unconfirmed. No header, CRC or reference used to choose the boundary.'}}
+                if best['quarter_method']=='inferred_from_sync_word' else {}),
             **({'quarter_reference_evidence':best['quarter_reference_evidence']} if 'quarter_reference_evidence' in best else {}),
             'candidate_data_start_seconds':best['start']/bandwidth,
             'symbol_bins':symbols, 'fft_peak_symbol_bins':fft_symbols, 'symbol_energy_fractions':strengths,
@@ -397,7 +446,7 @@ def _refine_fractional_timing(x, fs, ratio, bandwidth, length, start, count,
         fraction=float(power[peak]/max(float(power.sum()),1e-30))
         reliability=_matched_peak_evidence(power,peak)
         evidence.update(coherent_single_bin_energy_fraction=fraction,coherent_matched_peak=reliability)
-        if carrier.get('required_coherence',.8)>=.8 or fraction<.8 or reliability['status']!='reliable_matched_peak':
+        if carrier.get('required_coherence',.8)>=.8 or reliability['status']!='reliable_matched_peak':
             return aligned,carrier,dict(evidence,status='insufficient_preamble_concentration')
         evidence['acceptance_method']='coherent_preamble_matched_peak'
     else:
@@ -481,9 +530,9 @@ def _detect_lora_window(x, fs):
                 reference = aligned[best_start*length:(best_start+1)*length]
                 template = chirp if polarity == 1 else chirp.conj()
                 corrected_bin = int(np.argmax(abs(np.fft.fft(reference*template.conj()))**2))
-                pair = _opposite_chirp_pair(aligned,chirp,polarity,(best_start+best_count)*length,bandwidth,
-                    coherent_fallback=discovery['method']=='six_chirp_coherent_average')
                 noise_fallback = timing['status']=='fractional_timing_refined' and timing.get('acceptance_method')=='coherent_preamble_matched_peak'
+                pair = _opposite_chirp_pair(aligned,chirp,polarity,(best_start+best_count)*length,bandwidth,
+                    coherent_fallback=discovery['method']=='six_chirp_coherent_average',matched_fallback=noise_fallback)
                 sync = _sync_word_candidate(aligned, chirp, polarity, corrected_bin, pair, bandwidth,noise_fallback=noise_fallback)
                 refined = timing['status']=='fractional_timing_refined'
                 data = _data_symbol_candidates(aligned,chirp,polarity,sync,bandwidth,refined_timing=refined,noise_fallback=noise_fallback)
@@ -517,7 +566,9 @@ def _detect_lora_window(x, fs):
         time=candidate['data_symbols']['candidate_data_start_seconds']
         if any(frame['payload_hex']==payload['payload_hex'] and abs(frame['time_seconds']-time)<candidate['parameters']['symbol_seconds'] for frame in frames):
             continue
-        frames.append({**payload,'time_seconds':time,'parameters':candidate['parameters'],'sync_word':candidate['sync_word'].get('value_hex')})
+        frames.append({**payload,'time_seconds':time,'parameters':candidate['parameters'],'sync_word':candidate['sync_word'].get('value_hex'),
+                       'quarter_chirp_validated':candidate['data_symbols'].get('quarter_chirp_validated',True),
+                       'boundary_method':candidate['data_symbols'].get('quarter_chirp_method')})
     return dict(base, status='crc_valid_payload' if frames else ('repeated_chirp_candidate' if candidates else 'no_consistent_candidate'),
                 candidates=candidates[:6], trials=trials, analyzed_seconds=len(x)/fs, search_windows=search_windows,
                 coherent_searches=coherent_searches,

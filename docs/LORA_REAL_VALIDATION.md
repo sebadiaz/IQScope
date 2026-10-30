@@ -4,7 +4,7 @@ Source : Joachim Tapparel et Andreas Burg, EPFL,
 [LoRaIQ, Zenodo 20341802](https://zenodo.org/records/20341802),
 DOI `10.5281/zenodo.20341802`, licence **CC BY 4.0**.
 
-Validation locale actuelle : **5 contenus exacts sur les mêmes 6 captures**,
+Validation locale actuelle : **6 contenus exacts sur les mêmes 6 captures**,
 et **16/16 variantes temporelles** du membre testé, après correction de porteuse
 et raffinement temporel. Les détails et limites figurent en fin de document.
 
@@ -364,8 +364,32 @@ vers 5,045544 s du premier fichier). Cette dernière reste vérifiée par CRC
 uniquement ; ses octets ne sont pas présentés comme validés indépendamment.
 Les captures et les émissions supplémentaires restent corrélées.
 
-La cible à −1,0897 dB n’est pas récupérée. Son meilleur bin de préambule
+Lors de cette validation à 5/6, la cible à −1,0897 dB n’était pas récupérée. Son meilleur bin de préambule
 moyenné atteint 0,678190, sous le minimum 0,8 de la nouvelle voie, et sa paire
 de chirps opposés demeure rejetée. Le résultat 5/6 concerne ces données de
 développement et ne mesure pas une performance sur des captures inédites.
 Les rapports précédents et leurs scores restent des résultats historiques.
+
+
+## Sixième contenu : limite inférée, quart non confirmé
+
+Le [rapport local actuel](../corpus/loraiq-inferred-observation.json) récupère
+**6/6 références initiales**, dont `0000000` du membre rrh1/1 à SNR annoté
+−1,0897 dB. Les données commencent vers 0,043476 s, avec en-tête valide,
+CRC reçu et calculé `0xE654`, et octets identiques à l’annotation d’un intervalle
+unique. Les temps et octets annotés ne sont consultés qu’après détection.
+
+Le préambule moyenné présente un pic/bruit de 515,47 et un pic/concurrent de
+49,995, malgré une fraction d’énergie de 0,678190. Deux chirps opposés sont
+retenus par leurs pics et leur cohérence. Le sync word candidat donne une
+frontière unique ; le quart final reste insuffisamment confirmé. Une lecture
+unique à l’offset physique nominal de 2,25 symboles restitue les octets et leur
+CRC. Le rapport et l’UI signalent donc **quart de chirp non confirmé**. Les
+contrôles du quart n’ont pas été artificiellement marqués comme réussis.
+
+Au total : **14 émissions à CRC valide**, **13 comparaisons exactes**, aucune
+différence d’octets, aucune association ambiguë, et une émission sans annotation
+dans le préfixe CSV (`0000005` vers 5,045544 s de rrh1/1). Le CRC seul ne
+valide pas indépendamment cette dernière. Ces résultats restent six fichiers
+corrélés d’une session, utilisés pour développer le décodeur : ni données
+inédites de validation, ni garantie générale à −1 dB.

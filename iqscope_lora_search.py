@@ -129,6 +129,8 @@ def scan_lora_windows(x,fs,detect_window):
             continue
         frames.append(dict(payload,time_seconds=time,parameters=candidate['parameters'],
                            sync_word=candidate['sync_word'].get('value_hex'),
+                           quarter_chirp_validated=candidate['data_symbols'].get('quarter_chirp_validated',True),
+                           boundary_method=candidate['data_symbols'].get('quarter_chirp_method'),
                            analysis_window_index=candidate['analysis_window_index']))
     frames.sort(key=lambda frame:frame['time_seconds'])
     span=len(x)/fs;coverage=[]
@@ -148,7 +150,8 @@ def scan_lora_windows(x,fs,detect_window):
                   candidate_budget=6*WINDOW_BUDGET)
     limitations=next((r['limitations'][:] for r in results if 'limitations' in r),[])
     limitations=[text for text in limitations if not text.startswith('First second only;')]
-    limitations.extend(['At most eight one-second input windows selected from prefix, bounded energy profiling and distributed probes; no guarantee of complete file coverage.',
+    limitations.extend(['CRC-valid payloads can use a single sync-word-inferred boundary with an unconfirmed quarter chirp; see quarter_chirp_validated and boundary_method in each frame.',
+        'At most eight one-second input windows selected from prefix, bounded energy profiling and distributed probes; no guarantee of complete file coverage.',
         'At most 256 symbols per BW/SF/window; coverage is reported separately per configuration. Unsearched periods can contain signals.',
         'Eight-phase local timing refinement requires SF7-10 and >=2 samples/chip; clock drift is not tracked. Chip indices remain relative to their analysis window.'])
     applicable=any(r['status']!='not_applicable' for r in results)

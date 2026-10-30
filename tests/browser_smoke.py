@@ -189,6 +189,22 @@ def main():
                     assert response.ok and response.body()==b'HELLO'
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
                 with tempfile.TemporaryDirectory() as directory:
+                    from test_lora_matched import fixture as inferred_fixture
+                    x,fs=inferred_fixture(missing=True)
+                    raw=Path(directory)/'inferred.sigmf-data'
+                    meta=Path(directory)/'inferred.sigmf-meta'
+                    x.astype('<c8').tofile(raw)
+                    meta.write_text(json.dumps({'global':{'core:datatype':'cf32_le','core:sample_rate':fs}}))
+                    page.locator('#iq-file').set_input_files(str(raw))
+                    page.locator('#meta-file').set_input_files(str(meta))
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('.lora-inferred-boundary')).to_contain_text('quart de chirp non confirmé',timeout=30000)
+                    expect(page.locator('.lora-payload-text')).to_have_text('HELLO')
+                    link=page.get_by_role('link',name='Télécharger le rapport LoRa')
+                    response=page.request.get(urljoin(page.url,link.get_attribute('href')))
+                    assert response.ok and response.json()['frames'][0]['quarter_chirp_validated'] is False
+                expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                with tempfile.TemporaryDirectory() as directory:
                     from test_cw import fixture as audio_fixture, TEXT as AUDIO_TEXT
                     from scipy.io import wavfile
                     x,fs = audio_fixture()
