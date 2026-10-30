@@ -1,0 +1,274 @@
+{
+  "baseline_decoder_commit": "f4071ffa35bcdf977f124ae781f7194bdb9e770e",
+  "scope": "Local diagnostics of the two fixed reference misses; annotations used only after blind detection to associate candidates.",
+  "source": "https://zenodo.org/records/20341802",
+  "doi": "10.5281/zenodo.20341802",
+  "license": {
+    "id": "cc-by-4.0"
+  },
+  "creators": [
+    "Tapparel, Joachim",
+    "Burg, Andreas"
+  ],
+  "detector_sha256": "c9ffff699a73644fc3983992a811d4e2bec38801c9015afe0bb464150b3693ae",
+  "observations": [
+    {
+      "source_index": 0,
+      "annotation": {
+        "sf": "7",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "125000",
+        "payload_base64": "MDAwMDAwMA==",
+        "rrh_idx": "1",
+        "rx_sample_rate": "250000",
+        "cfo": "7.016",
+        "snr": "-1.0897",
+        "sigmf_file": "./sigmfs/25_01_17-13_40/rrh1/1",
+        "sigmf_file_offset": "7730.0",
+        "sigmf_file_n_samples": "9024"
+      },
+      "data_sha256": "3c59fa48b65aae5129d583ded3f0696249c9271314ade8e582c53cf4ebc1f957",
+      "meta_sha256": "901637cf927356ee20934aa5e7fb53d2ac44f66650c36c739babd4eed08200f8",
+      "candidates_near_annotation": [
+        {
+          "parameters": {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "symbol_seconds": 0.001024,
+            "chirp_polarity": 1
+          },
+          "time_seconds": 0.03072,
+          "evidence": {
+            "repeated_chirps": 8,
+            "median_three_bin_energy_fraction": 0.41138872422426886,
+            "discovery": {
+              "method": "six_chirp_coherent_average",
+              "combination_start_block": 30,
+              "combined_chirps": 6,
+              "combined_three_bin_energy_fraction": 0.7373159723702123,
+              "raw_median_three_bin_energy_fraction": 0.41669713328757757,
+              "preamble_lag_coherence": 0.4876975018940227,
+              "fractional_bin_offset": 0.018362686269503777,
+              "required_lag_coherence": 0.3,
+              "required_combined_three_bin_energy_fraction": 0.65,
+              "scope": "Preamble repetition hypothesis only; no sync word, header, payload, CRC or reference used"
+            },
+            "dechirped_peak_bin": 110,
+            "required_chirps": 6
+          },
+          "carrier_tracking": {
+            "scope": "Preamble repetition only; fractional carrier offset modulo BW/2**SF, not RF center or integer CFO",
+            "preamble_blocks": 8,
+            "lag_samples": 128,
+            "coherence": 0.4526761677239599,
+            "required_coherence": 0.3,
+            "status": "fractional_carrier_corrected",
+            "fractional_bin_offset": 0.02058643931693826,
+            "offset_hz": 20.10394464544752
+          },
+          "timing_tracking": {
+            "scope": "Preamble-only sample phase selection; no header, payload, CRC or reference bytes used",
+            "phase_budget": 8,
+            "interpolated_sample_budget": 3000000,
+            "sample_grid_offset_chips": 0.0,
+            "phase_scores": [
+              0.22859534935640974,
+              0.28716289111283455,
+              0.33282912267556997,
+              0.36034253986844345,
+              0.3621463035797483,
+              0.32913095967731515,
+              0.2800215914564204,
+              0.2219334850293347
+            ],
+            "preamble_blocks": 8,
+            "input_samples": 28162,
+            "interpolated_samples": 112648,
+            "filter_taps": 161,
+            "maximum_single_bin_energy_fraction": 0.3621463035797483,
+            "status": "insufficient_preamble_concentration"
+          },
+          "synchronization": {
+            "status": "no_consistent_opposite_pair",
+            "examined_pairs": 161,
+            "maximum_bin_compatible_minimum_three_bin_fraction": 0.41092021135377926,
+            "required_individual_fraction": 0.8,
+            "coherent_fallback_enabled": true,
+            "coherent_fallback_minimum_individual_fraction": 0.65
+          },
+          "sync_word": {
+            "status": "not_available_without_opposite_pair"
+          },
+          "data_symbols": {
+            "status": "not_available_without_sync_word"
+          },
+          "explicit_header": {
+            "scope": "Explicit-header hypothesis only; no payload CRC, bytes or emitter identity validated",
+            "status": "insufficient_symbols",
+            "required_symbols": 8
+          },
+          "payload": {
+            "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+            "status": "no_valid_explicit_header"
+          },
+          "score": 0.7373159723702123,
+          "score_kind": "heuristic_not_probability",
+          "validation_scope": "Bounded LoRa PHY trial; only explicit header checks and supported payload CRC results are validated. No LoRaWAN identity or authentication.",
+          "analysis_window_index": 0,
+          "analysis_window_start_sample": 0,
+          "analysis_window_start_seconds": 0.0
+        }
+      ]
+    },
+    {
+      "source_index": 1,
+      "annotation": {
+        "sf": "7",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "125000",
+        "payload_base64": "MDAwMDAwMg==",
+        "rrh_idx": "3",
+        "rx_sample_rate": "250000",
+        "cfo": "7.6228",
+        "snr": "3.7885",
+        "sigmf_file": "./sigmfs/25_01_17-13_40/rrh3/2",
+        "sigmf_file_offset": "254773.0",
+        "sigmf_file_n_samples": "9024"
+      },
+      "data_sha256": "908fdaedcf94f999acec0c230450142375b00221354eb5ca87807e6f1b3d502e",
+      "meta_sha256": "eefb6ab08a46d03ac7299280342b460857d04ad996433a81a5b70b8203501be2",
+      "candidates_near_annotation": [
+        {
+          "parameters": {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "symbol_seconds": 0.001024,
+            "chirp_polarity": 1
+          },
+          "time_seconds": 1.018336,
+          "evidence": {
+            "repeated_chirps": 9,
+            "median_three_bin_energy_fraction": 0.5208826189735876,
+            "discovery": {
+              "method": "six_chirp_coherent_average",
+              "combination_start_block": 21,
+              "combined_chirps": 6,
+              "combined_three_bin_energy_fraction": 0.8763413497328629,
+              "raw_median_three_bin_energy_fraction": 0.5317844779708596,
+              "preamble_lag_coherence": 0.6085288628348456,
+              "fractional_bin_offset": -0.3770759754230992,
+              "required_lag_coherence": 0.3,
+              "required_combined_three_bin_energy_fraction": 0.65,
+              "scope": "Preamble repetition hypothesis only; no sync word, header, payload, CRC or reference used"
+            },
+            "dechirped_peak_bin": 41,
+            "required_chirps": 6
+          },
+          "carrier_tracking": {
+            "scope": "Preamble repetition only; fractional carrier offset modulo BW/2**SF, not RF center or integer CFO",
+            "preamble_blocks": 8,
+            "lag_samples": 128,
+            "coherence": 0.5984431107688517,
+            "required_coherence": 0.3,
+            "status": "fractional_carrier_corrected",
+            "fractional_bin_offset": -0.377383361564378,
+            "offset_hz": -368.5384390277129
+          },
+          "timing_tracking": {
+            "scope": "Preamble-only sample phase selection; no header, payload, CRC or reference bytes used",
+            "phase_budget": 8,
+            "interpolated_sample_budget": 3000000,
+            "sample_grid_offset_chips": 0.0,
+            "phase_scores": [
+              0.5588462875616592,
+              0.4782761534941864,
+              0.3750924812551292,
+              0.2886266838664717,
+              0.40560693020248817,
+              0.5110321842267213,
+              0.5825622473104209,
+              0.5978604727441175
+            ],
+            "preamble_blocks": 8,
+            "input_samples": 25346,
+            "interpolated_samples": 101384,
+            "filter_taps": 161,
+            "maximum_single_bin_energy_fraction": 0.5978604727441175,
+            "status": "insufficient_preamble_concentration"
+          },
+          "synchronization": {
+            "status": "opposite_chirp_pair_candidate",
+            "time_seconds": 1.0296,
+            "sample_start_at_chip_rate": 3712,
+            "search_step_chips": 4,
+            "method": "coherent_opposite_pair",
+            "minimum_three_bin_energy_fraction": 0.6831649990433669,
+            "combined_three_bin_energy_fraction": 0.814808248902265,
+            "pair_coherence": 0.7122600982123714,
+            "dechirped_peak_bins": [
+              103,
+              103
+            ],
+            "scope": "Two coherent opposite chirps only; each >=0.65 three-bin fraction, pair coherence >=0.5 and combined >=0.8. No sync word, header, CRC or content validated.",
+            "sample_grid_offset_chips": 0.0
+          },
+          "sync_word": {
+            "status": "no_consistent_sync_word",
+            "examined_boundaries": 6,
+            "maximum_minimum_three_bin_energy_fraction": 0.6344111044808284,
+            "required_minimum_three_bin_energy_fraction": 0.65,
+            "energy_accepted_boundaries": 0,
+            "minimum_maximum_symbol_bin_error": null,
+            "maximum_allowed_symbol_bin_error": 1
+          },
+          "data_symbols": {
+            "status": "not_available_without_sync_word"
+          },
+          "explicit_header": {
+            "scope": "Explicit-header hypothesis only; no payload CRC, bytes or emitter identity validated",
+            "status": "insufficient_symbols",
+            "required_symbols": 8
+          },
+          "payload": {
+            "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+            "status": "no_valid_explicit_header"
+          },
+          "score": 0.8763413497328629,
+          "score_kind": "heuristic_not_probability",
+          "validation_scope": "Bounded LoRa PHY trial; only explicit header checks and supported payload CRC results are validated. No LoRaWAN identity or authentication.",
+          "analysis_window_index": 6,
+          "analysis_window_start_sample": 249976,
+          "analysis_window_start_seconds": 0.999904
+        }
+      ]
+    }
+  ],
+  "experiments": [
+    {
+      "change": "Diagnostic process only: bypass timing concentration rejection, choose the same preamble-only maximum phase.",
+      "results": {
+        "source_0": "No consistent opposite pair after selecting phase 4/8.",
+        "source_1": "No consistent sync word after selecting phase 7/8."
+      },
+      "production_change_applied": false
+    },
+    {
+      "change": "Diagnostic process only: sync-word energy threshold 0.60 instead of 0.65, original timing policy retained.",
+      "source_index": 1,
+      "sync_word_candidate": "96",
+      "minimum_three_bin_energy_fraction": 0.6344111044808284,
+      "next_stage": "no_consistent_final_quarter_chirp",
+      "maximum_quarter_chirp_correlation": 0.6328225980750803,
+      "payload_crc_valid": false,
+      "production_change_applied": false
+    }
+  ],
+  "limitations": [
+    "Gate failures describe the current detector, not the information-theoretic decodability of the recordings.",
+    "SNR values are publisher annotations, not independent estimates.",
+    "No payload recovery established for either target; no CRC-guided parameter or threshold search applied in production.",
+    "Source hashes refer to the previously integrity-verified local cache."
+  ]
+}

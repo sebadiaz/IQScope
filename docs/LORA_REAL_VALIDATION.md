@@ -319,3 +319,29 @@ La CI du commit `152e51a` est verte :
 [tests Python et Chromium](https://github.com/sebadiaz/IQScope/actions/runs/41133736684),
 [benchmark LoRaIQ](https://github.com/sebadiaz/IQScope/actions/runs/41133736646).
 Ces contrôles précèdent l’ajout de cette comparaison temporelle au benchmark.
+
+
+## Diagnostic des deux références encore manquées
+
+Les deux préambules sont détectés, mais aucun en-tête n’est lu : il ne s’agit
+pas encore d’un échec de CRC des données. Le
+[rapport de diagnostic](../corpus/loraiq-miss-diagnostic.json) conserve les
+mesures et les expériences locales.
+
+| Référence (SNR annoté) | Premier blocage après le préambule | Mesure |
+| --- | --- | --- |
+| rrh1/1, −1,0897 dB, vers 0,03092 s | Paire de chirps opposés | Meilleure concentration minimale compatible : 0,410920 ; minimum 0,65 pour la voie cohérente |
+| rrh3/2, 3,7885 dB, vers 1,019092 s | Sync word | Meilleure concentration minimale des trois chirps : 0,634411 ; seuil 0,65 ; aucune limite candidate acceptée |
+
+Le raffinement temporel est également refusé : ses meilleurs scores valent
+0,362146 et 0,597860, sous le seuil de 0,65. Une expérience isolée acceptant
+la phase choisie par le préambule malgré ce rejet conserve les mêmes blocages
+suivants. Pour rrh3/2, accepter expérimentalement le sync word à partir de 0,60
+donne un candidat `96`, puis un rejet du quart de chirp final (corrélation
+maximale 0,632823). Aucune de ces expériences ne récupère les données.
+
+Les seuils de production sont conservés. Les rapports du détecteur exposent
+désormais les mesures des rejets de paire et de sync word. La suite du travail
+est une synchronisation adaptée au bruit, avec mesure de fiabilité et tests
+de faux positifs ; baisser isolément un seuil ne suffit pas. Ces observations
+ne prouvent pas que les IQ sont impossibles à décoder.

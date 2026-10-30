@@ -15,6 +15,8 @@ def _opposite_chirp_pair(y, chirp, polarity, run_end, bandwidth, coherent_fallba
     last = min(len(y)-2*length, run_end+4*length)
     best = None
     coherent_best = None
+    maximum_compatible_strength = 0.0
+    examined_pairs = 0
     for start in range(first,last+1,step):
         matrix = y[start:start+2*length].reshape(2,length)
         power = abs(np.fft.fft(matrix*template.conj(),axis=1))**2
@@ -22,6 +24,9 @@ def _opposite_chirp_pair(y, chirp, polarity, run_end, bandwidth, coherent_fallba
         fraction = sum(power[np.arange(2),(peaks+offset)%length] for offset in (-1,0,1))/np.maximum(power.sum(axis=1),1e-30)
         separation = min((int(peaks[0])-int(peaks[1]))%length,(int(peaks[1])-int(peaks[0]))%length)
         strength = float(min(fraction))
+        examined_pairs += 1
+        if separation<=1:
+            maximum_compatible_strength = max(maximum_compatible_strength,strength)
         if coherent_fallback and separation<=1 and strength>=.65:
             product = np.sum(matrix[1]*matrix[0].conj())
             energy = float(np.sqrt(np.sum(abs(matrix[0])**2)*np.sum(abs(matrix[1])**2)))
@@ -45,7 +50,12 @@ def _opposite_chirp_pair(y, chirp, polarity, run_end, bandwidth, coherent_fallba
                     'minimum_three_bin_energy_fraction':strength,
                     'dechirped_peak_bins':[int(value) for value in peaks],
                     'scope':'Two opposite-direction chirps only; sync word, quarter chirp, exact boundary and payload not validated'}
-    return best or coherent_best or {'status':'no_consistent_opposite_pair'}
+    return best or coherent_best or {'status':'no_consistent_opposite_pair',
+        'examined_pairs':examined_pairs,
+        'maximum_bin_compatible_minimum_three_bin_fraction':maximum_compatible_strength,
+        'required_individual_fraction':.8,
+        'coherent_fallback_enabled':coherent_fallback,
+        'coherent_fallback_minimum_individual_fraction':.65}
 
 
 def _sync_word_candidate(y, chirp, polarity, preamble_bin, pair, bandwidth):
@@ -59,6 +69,9 @@ def _sync_word_candidate(y, chirp, polarity, preamble_bin, pair, bandwidth):
     template = chirp if polarity == 1 else chirp.conj()
     hypotheses = []
     tested = set()
+    maximum_strength = 0.0
+    energy_accepted = 0
+    minimum_bin_error = None
     for half in (0,length/2):
         for cycle in range(start//length-1,start//length+2):
             center = round(cycle*length+phase+half)
@@ -72,8 +85,10 @@ def _sync_word_candidate(y, chirp, polarity, preamble_bin, pair, bandwidth):
                 peaks = np.argmax(power,axis=1)
                 energy = sum(power[np.arange(3),(peaks+offset)%length] for offset in (-1,0,1))/np.maximum(power.sum(axis=1),1e-30)
                 # Use the preamble concentration criterion for shifted upchirps too.
+                maximum_strength = max(maximum_strength,float(min(energy)))
                 if min(energy)<.65:
                     continue
+                energy_accepted += 1
                 symbols = [(polarity*(int(value)-int(peaks[0])))%length for value in peaks[1:]]
                 nibbles,errors = [],[]
                 for value in symbols:
@@ -81,13 +96,19 @@ def _sync_word_candidate(y, chirp, polarity, preamble_bin, pair, bandwidth):
                     nibble = int(np.argmin(distances))
                     nibbles.append(nibble)
                     errors.append(distances[nibble])
+                minimum_bin_error = max(errors) if minimum_bin_error is None else min(minimum_bin_error,max(errors))
                 if max(errors)>1:
                     continue
                 hypotheses.append({'word':16*nibbles[0]+nibbles[1], 'boundary':boundary,
                                    'symbols':symbols, 'strength':float(min(energy)), 'errors':errors})
     words = {item['word'] for item in hypotheses}
     if not hypotheses:
-        return {'status':'no_consistent_sync_word'}
+        return {'status':'no_consistent_sync_word','examined_boundaries':len(tested),
+                'maximum_minimum_three_bin_energy_fraction':maximum_strength,
+                'required_minimum_three_bin_energy_fraction':.65,
+                'energy_accepted_boundaries':energy_accepted,
+                'minimum_maximum_symbol_bin_error':minimum_bin_error,
+                'maximum_allowed_symbol_bin_error':1}
     if len(words)>1:
         return {'status':'ambiguous_sync_word', 'word_hypotheses_hex':[f'{word:02X}' for word in sorted(words)]}
     best = max(hypotheses,key=lambda item:item['strength'])
