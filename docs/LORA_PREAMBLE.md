@@ -103,9 +103,10 @@ de quelques bins. Des symboles hors convention sont rejetés. Ce champ seul ne v
 Après un sync word candidat, le détecteur vérifie le quart de chirp descendant
 attendu après les deux chirps opposés. Il essaie cinq alignements entiers dans
 un voisinage de deux chips autour de la frontière estimée. La corrélation
-normalisée au carré du quart doit atteindre 0,8, après compensation du bin
-fréquentiel mesuré sur un chirp opposé. Sans correspondance, aucun symbole de
-données n'est extrait.
+normalisée au carré du quart doit atteindre 0,8 dans la voie principale, après
+compensation du bin fréquentiel mesuré sur un chirp opposé. Une voie complémentaire
+compare aussi les préfixes des deux chirps précédents ; ses critères sont décrits
+en fin de document. Sans correspondance, aucun symbole de données n’est extrait.
 
 La fenêtre qui suit fournit au plus 64 symboles CSS consécutifs. Chaque bloc
 est déchirpé ; au moins 65 % de son énergie FFT doit rester dans trois bins
@@ -419,3 +420,51 @@ la nécessité des deux chirps inversés, les abstentions sur bruit et forme d�
 périodique large bande, et l’export de candidats sans charge utile binaire.
 La suite locale contient 186 tests. Ces observations limitées ne mesurent pas
 un taux de détection ou de fausse alarme sur une population radio.
+
+
+## Quart de chirp bruité : comparaison à deux références précédentes
+
+La voie principale de corrélation normalisée au carré ≥ 0,8 garde la priorité.
+Si aucune des cinq frontières entières examinées ne la satisfait, une voie
+complémentaire peut retenir une corrélation ≥ 0,65, uniquement avec un accord
+d’amplitude et de phase avec les deux chirps inversés précédents.
+
+Pour le modèle de quart `t` de longueur Q, les deux chirps précédents `r0`, `r1`
+de longueur N et le quart observé `q`, le récepteur calcule :
+
+- `a_ref = (vdot(t, r0[:Q]) + vdot(t, r1[:Q])) / (2*Q)` ;
+- `a_q = vdot(t, q) / Q` ;
+- `noise = mean(abs(r0-r1)**2) / 2` ;
+- `S = Q * abs(a_q)**2 / noise` ;
+- `D = abs(a_q-a_ref)**2 / abs(a_ref)**2`.
+
+Les divisions sont protégées contre une énergie nulle. La cohérence normalisée
+entre `r0` et `r1` doit atteindre 0,5 ; `S` doit atteindre 16 et `D` rester au
+plus à 0,25. Le dernier critère impose simultanément un accord d’amplitude et
+de phase complexe. L’estimation du bruit à partir de la différence suppose que
+les deux chirps sont répétables ; ces critères restent des heuristiques, sans
+probabilité de fausse alarme calibrée sur un bruit radio quelconque.
+
+La meilleure corrélation parmi les frontières admissibles est choisie avant
+la lecture de l’en-tête et des données. Aucun CRC ou contenu attendu ne guide
+ce choix, et aucune autre frontière n’est essayée après un échec de décodage.
+Les seuils des symboles de données, l’en-tête, la FEC et le CRC ne changent pas.
+Les sorties exposent `quarter_chirp_method` et `quarter_reference_evidence`.
+Un rejet conserve la corrélation maximale et au plus cinq essais de référence.
+
+### Résultats et validation du quart
+
+Le membre LoRaIQ à 7,1515 dB passe maintenant avec une corrélation de quart
+d’environ 0,741, une cohérence de référence de 0,763, `S` d’environ 69,17 et
+`D` d’environ 0,0724. Il restitue `0000000`, avec en-tête et CRC `0xE654` valides,
+sans correction FEC des octets. Son export binaire est vérifié contre les
+annotations. Le bilan local sur les mêmes sources passe ainsi à **4/6**.
+Les 16 variantes temporelles du membre à 19,7319 dB restent exactes.
+
+Les six tests de `tests/test_lora_quarter.py` vérifient les octets exacts malgré
+un quart bruité sous 0,8, un CRC faux avec la même frontière choisie, la priorité
+de la voie initiale, l’absence de quart avec diagnostic borné, les incohérences
+de phase et d’amplitude du contrôle complémentaire, et 128 réalisations de bruit
+avec des références cohérentes ou incohérentes. Les 192 tests Python passent
+localement. Les tests négatifs de la voie complémentaire ne changent pas le
+périmètre de la voie principale. Voir [la validation radio](LORA_REAL_VALIDATION.md).

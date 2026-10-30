@@ -4,7 +4,7 @@ Source : Joachim Tapparel et Andreas Burg, EPFL,
 [LoRaIQ, Zenodo 20341802](https://zenodo.org/records/20341802),
 DOI `10.5281/zenodo.20341802`, licence **CC BY 4.0**.
 
-État actuel confirmé en CI : **3 contenus exacts sur les mêmes 6 captures**,
+Validation locale actuelle : **4 contenus exacts sur les mêmes 6 captures**,
 et **16/16 variantes temporelles** du membre testé, après correction de porteuse
 et raffinement temporel. Les détails et limites figurent en fin de document.
 
@@ -263,3 +263,32 @@ a reproduit les nouveaux indices de préambule et de synchronisation, les mêmes
 Les [186 tests sur trois versions Python, Chromium et les autres corpus](https://github.com/sebadiaz/IQScope/actions/runs/41119145606)
 passent, de même que la [référence indépendante avec export](https://github.com/sebadiaz/IQScope/actions/runs/41119145598).
 Ces contrôles portent sur le commit `fb17b16a9900b11fbc26455e8e628a384e3db3cb`.
+
+
+## Quart de chirp comparé aux références : quatre contenus exacts
+
+La [voie complémentaire de contrôle du quart](LORA_PREAMBLE.md#quart-de-chirp-bruité--comparaison-à-deux-références-précédentes)
+compare sa projection complexe aux préfixes des deux chirps inversés précédents.
+Elle ne remplace pas la voie principale à corrélation ≥ 0,8. Pour une corrélation
+≥ 0,65, elle exige aussi une cohérence de référence ≥ 0,5, une statistique de
+projection sur bruit ≥ 16 et un écart complexe relatif au carré ≤ 0,25.
+Ces valeurs ne sont pas une probabilité de confiance ou de fausse alarme.
+
+Le 30 octobre 2026, les mêmes sources, annotations et empreintes donnent **4/6
+contenus exacts**, contre 3/6 précédemment. Le membre `rrh3/1`, à 7,1515 dB,
+restitue maintenant `0000000`, CRC reçu et calculé `0xE654`, sans correction FEC.
+Son quart a une corrélation de 0,7413 ; l’accord aux références permet de le
+retenir. Le [rapport détaillé](../corpus/loraiq-quarter-observation.json) conserve
+les mesures, critères, empreintes et résultats de chaque membre.
+
+Les quatre exports du moteur principal sont comparés aux octets annotés, avec
+attribution et bande de base explicites. Les 192 tests passent localement ; les
+16 variantes temporelles restent exactes. Le cas à −1,0897 dB reste sans contenu
+validé, et la trame annotée à 3,7885 dB reste hors de la fenêtre examinée.
+Aucune fenêtre ou donnée attendue n’est fournie au décodeur ; la comparaison
+aux annotations intervient après décodage. Les frontières ne sont pas choisies
+selon le résultat du CRC.
+
+Ces six enregistrements ont servi au diagnostic et à la mise au point des
+corrections. Ils constituent un petit corpus de développement corrélé, pas un
+jeu de test réservé ni une mesure de généralisation à l’ensemble des signaux.

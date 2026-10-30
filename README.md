@@ -610,7 +610,7 @@ with explicit stop reasons; these values are not bytes.
 A candidate explicit header reports its announced length, coding rate and CRC
 flag after a five-bit check. Explicit CR4/5–4/8 SF7–10 payloads can be decoded,
 dewhitened and checked against the LoRa PHY CRC16. CRC-valid bytes appear in the
-UI and binary export; other outputs remain candidates. Validation includes synthetic transmitter vectors and three exact packet decodes among six LoRaIQ
+UI and binary export; other outputs remain candidates. Validation includes synthetic transmitter vectors and four exact packet decodes among six LoRaIQ
 SF7/CR4/5 recordings, compared with annotated bytes and payload CRC.
 See [independent radio validation and its limits](docs/LORA_REAL_VALIDATION.md). No LoRaWAN parsing,
 decryption or sender authentication is performed.

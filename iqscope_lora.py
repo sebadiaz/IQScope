@@ -121,6 +121,28 @@ def _interpolated_tone_bin(values, peak):
     return tone if abs(residual)<=1.5 else None
 
 
+
+def _reference_quarter_evidence(reference, expected, observed):
+    """Compare a noisy quarter with the same prefixes of two preceding downchirps."""
+    quarter = len(expected)
+    amplitudes = [np.vdot(expected,row[:quarter])/quarter for row in reference]
+    amplitude = sum(amplitudes)/2
+    measured = np.vdot(expected,observed)/quarter
+    product = np.sum(reference[1]*reference[0].conj())
+    energy = float(np.sqrt(np.sum(abs(reference[0])**2)*np.sum(abs(reference[1])**2)))
+    coherence = float(np.clip(abs(product)/max(energy,1e-30),0,1))
+    noise = float(np.mean(abs(reference[0]-reference[1])**2)/2)
+    projection_snr = float(quarter*abs(measured)**2/max(noise,1e-30))
+    mismatch = float(abs(measured-amplitude)**2/max(abs(amplitude)**2,1e-30))
+    accepted = coherence>=.5 and projection_snr>=16 and mismatch<=.25
+    return {'status':'reference_consistent_quarter' if accepted else 'reference_quarter_rejected',
+            'reference_coherence':coherence,'noise_power_estimate':noise,
+            'projection_snr':projection_snr,'complex_amplitude_mismatch':mismatch,
+            'required_reference_coherence':.5,'required_projection_snr':16,
+            'maximum_complex_amplitude_mismatch':.25,
+            'scope':'Quarter template projection consistent with two preceding downchirps; heuristic evidence, not a false-alarm probability, packet CRC or emitter identity'}
+
+
 def _data_symbol_candidates(y, chirp, polarity, sync, bandwidth, refined_timing=False):
     """Require a matching final quarter chirp before bounded raw CSS symbols."""
     if sync['status'] != 'sync_word_candidate':
@@ -131,6 +153,9 @@ def _data_symbol_candidates(y, chirp, polarity, sync, bandwidth, refined_timing=
     up = chirp if polarity == 1 else chirp.conj()
     down = up.conj()
     best = None
+    reference_best = None
+    maximum_correlation = 0.0
+    reference_attempts = []
     # Small integer timing refinements; fractional timing/clock tracking is not solved.
     for boundary in range(sync['opposite_chirp_start_chip']-2,sync['opposite_chirp_start_chip']+3):
         end = boundary+2*length+quarter
@@ -149,12 +174,24 @@ def _data_symbol_candidates(y, chirp, polarity, sync, bandwidth, refined_timing=
         observed = y[boundary+2*length:end]
         energy = float(np.sum(abs(observed)**2))
         correlation = float(abs(np.vdot(expected,observed))**2/max(quarter*energy,1e-30))
-        if correlation < .8:
-            continue
-        if best is None or correlation > best['correlation']:
-            best = {'boundary':boundary,'start':end,'reference_bin':reference_bin,'reference_tone':reference_tone,'correlation':correlation}
+        maximum_correlation = max(maximum_correlation,correlation)
+        candidate = {'boundary':boundary,'start':end,'reference_bin':reference_bin,
+                     'reference_tone':reference_tone,'correlation':correlation,
+                     'quarter_method':'normalized_template_correlation'}
+        if correlation>=.8:
+            if best is None or correlation>best['correlation']:
+                best = candidate
+        elif correlation>=.65:
+            evidence = _reference_quarter_evidence(
+                y[boundary:boundary+2*length].reshape(2,length),expected,observed)
+            reference_attempts.append(dict(evidence,boundary_chip=boundary,template_correlation=correlation))
+            if evidence['status']=='reference_consistent_quarter' and (reference_best is None or correlation>reference_best['correlation']):
+                reference_best = dict(candidate,quarter_method='reference_consistent_projection',quarter_reference_evidence=evidence)
+    best = best or reference_best
     if best is None:
-        return {'status':'no_consistent_final_quarter_chirp'}
+        return {'status':'no_consistent_final_quarter_chirp',
+                'maximum_quarter_chirp_correlation':maximum_correlation,
+                'reference_quarter_attempts':reference_attempts,'quarter_boundary_budget':5}
     count = min(64,(len(y)-best['start'])//length)
     symbols, strengths, fft_symbols = [],[],[]
     stop_reason = 'symbol_budget' if count==64 else 'source_exhausted'
@@ -176,6 +213,8 @@ def _data_symbol_candidates(y, chirp, polarity, sync, bandwidth, refined_timing=
     return {'status':'raw_css_symbol_candidates' if symbols else 'quarter_chirp_candidate_no_symbols',
             'tone_estimator':'matched_fft_8x' if refined_timing else 'adjacent_phase_median',
             'quarter_chirp_correlation':best['correlation'],
+            'quarter_chirp_method':best['quarter_method'],
+            **({'quarter_reference_evidence':best['quarter_reference_evidence']} if 'quarter_reference_evidence' in best else {}),
             'candidate_data_start_seconds':best['start']/bandwidth,
             'symbol_bins':symbols, 'fft_peak_symbol_bins':fft_symbols, 'symbol_energy_fractions':strengths,
             'symbol_bin_uncertainty':1, 'symbol_budget':64,
