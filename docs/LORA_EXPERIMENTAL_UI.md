@@ -70,3 +70,34 @@ vérifie le choix de la case, la requête périodique, la bannière et le fichie
 binaire `HELLO`. Cette source de test ne fait pas partie du paquet installé
 et n’est pas activée par `iqscope serve`. Aucun essai matériel sur antenne
 n’est établi par ces tests.
+
+
+## Sessions et couverture du direct
+
+Chaque démarrage de réception crée un `session_id`. Le spectre et le statut
+le conservent. Le rapport d’un instantané expose `source_session_id`,
+`source_sample_start` et `source_sample_end` (borne de fin exclue), avec
+`source_sample_reference: received_samples_in_session`. Les données, le taux
+et la fréquence demandée sont copiés ensemble sous le verrou du récepteur.
+Un redémarrage ne peut donc pas réétiqueter un ancien instantané avec les
+paramètres de la nouvelle session.
+
+L’interface ne relance pas automatiquement le même mode sur une fenêtre
+inchangée. Un changement volontaire du mode LoRa autorise la réanalyse de
+la même fenêtre ; un appel API explicite reste également possible. Le
+waterfall est réinitialisé lorsque la session du spectre change.
+
+Après deux analyses réussies de la même session, l’interface affiche soit
+leur recouvrement, soit le nombre d’échantillons reçus non analysés entre
+leurs intervalles. Les durées utilisent le taux nominal demandé. Ces écarts
+ne mesurent pas les pertes matérielles, invisibles dans rtl_tcp. La première
+fenêtre d’une session ne permet pas de conclure sur les périodes précédentes.
+Les rapports individuels conservent les intervalles ; l’interface ne prétend
+pas dédupliquer les paquets de plusieurs fenêtres ni garantir une couverture
+continue.
+
+Le test Chromium laisse la source simulée inchangée au-delà de la période
+d’analyse pour vérifier l’absence de nouvelle tâche automatique, puis change
+le mode LoRa et vérifie la réanalyse volontaire et l’indication de
+recouvrement. Les tests API et récepteur contrôlent les bornes, la copie du
+contexte et le renouvellement de session après redémarrage.

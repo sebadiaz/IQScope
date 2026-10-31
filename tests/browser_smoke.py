@@ -270,6 +270,8 @@ def main():
                     response = page.request.get(urljoin(page.url,link.get_attribute('href')))
                     assert response.ok and len(response.json()['frames'])>=3
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                live_requests=[]
+                page.on('request',lambda request: live_requests.append(request.post_data_json) if request.url.endswith('/api/live/analyze') and request.method=='POST' else None)
                 page.get_by_role('tab',name='SDR en direct').click()
                 assert page.locator('#live-panel').is_visible()
                 assert page.locator('#live-frequency').input_value() == '100'
@@ -281,6 +283,14 @@ def main():
                 assert live_request.value.post_data_json['experimental_lora'] is True
                 expect(page.locator('.lora-experimental-mode')).to_contain_text('LoRa expérimental activé',timeout=30000)
                 expect(page.locator('.lora-payload-text')).to_have_text('HELLO',timeout=30000)
+                expect(page.locator('#live-coverage')).to_contain_text('Fenêtre analysée',timeout=30000)
+                request_count=len(live_requests)
+                page.wait_for_timeout(4500)
+                assert len(live_requests)==request_count,'Unchanged SDR window was automatically analyzed again'
+                with page.expect_request(lambda request: request.url.endswith('/api/live/analyze') and request.method=='POST' and request.post_data_json.get('experimental_lora') is False,timeout=30000):
+                    page.locator('#live-experimental-lora').uncheck()
+                expect(page.locator('.lora-experimental-mode')).to_have_count(0,timeout=30000)
+                expect(page.locator('#live-coverage')).to_contain_text('Recouvrement',timeout=30000)
                 page.locator('#auto-live').uncheck()
                 binary=page.get_by_role('link',name='Télécharger la charge utile LoRa')
                 response=page.request.get(urljoin(page.url,binary.get_attribute('href')))

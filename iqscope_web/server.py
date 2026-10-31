@@ -269,17 +269,21 @@ def create_app(root=None):
 
     @app.post('/api/live/analyze', status_code=202)
     def live_analyze(body: LiveAnalysisRequest | None = None):
-        if not service.receiver.connected:
+        context=service.receiver.snapshot_context()
+        if not context['connected']:
             raise HTTPException(409, 'SDR is not connected')
-        data, start = service.receiver.snapshot()
+        data,start=context['samples'],context['source_sample_start']
         if data is None or len(data) < 1024:
             raise HTTPException(409, 'Waiting for IQ samples')
-        fs, frequency = service.receiver.fs, service.receiver.frequency
+        fs, frequency = context['sample_rate'],context['center_frequency_hz']
         experimental_lora=body.experimental_lora if body is not None else False
 
         def process(out):
             report = analyze_samples(data, fs, frequency, out, source='rtl_tcp snapshot',experimental_lora=experimental_lora)
             report['source_sample_start'] = start
+            report['source_sample_end'] = start+len(data)
+            report['source_session_id'] = context['session_id']
+            report['source_sample_reference'] = 'received_samples_in_session'
             report['continuity_note'] = 'Independent latest-window snapshot, not lossless continuous decoding'
             (out / 'report.json').write_text(json.dumps(report, indent=2))
             return report

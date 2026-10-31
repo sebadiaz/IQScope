@@ -66,6 +66,37 @@ class LiveTests(unittest.TestCase):
         with self.assertRaises(InterruptedError):
             receive_exact(FakeSocket(b''), 12, stop)
 
+    def test_snapshot_context_keeps_samples_and_metadata_together(self):
+        receiver=LiveReceiver();receiver.fs=256000;receiver.frequency=868000000
+        source=np.ones(2048,dtype=complex);receiver.blocks.append(source)
+        receiver.buffered=len(source);receiver.total=10000;receiver.connected=True
+        context=receiver.snapshot_context()
+        session=context['session_id']
+        receiver.fs=1024000;receiver.frequency=100000000;source[:]=0
+        self.assertEqual(context['sample_rate'],256000)
+        self.assertEqual(context['center_frequency_hz'],868000000)
+        self.assertEqual(context['source_sample_start'],10000-2048)
+        self.assertTrue(np.all(context['samples']==1))
+        self.assertEqual(receiver.status()['session_id'],session)
+        self.assertEqual(receiver.spectrum()['session_id'],session)
+
+    def test_restart_changes_session_and_clears_old_window(self):
+        receiver=LiveReceiver();previous=receiver.status()['session_id']
+        receiver.blocks.append(np.ones(1024,complex));receiver.buffered=receiver.total=1024
+        with patch('iqscope_web.live.threading.Thread') as thread:
+            thread.return_value.is_alive.return_value=False
+            receiver.start(1234,100000000,256000)
+            first=receiver.status()['session_id']
+            receiver.start(1234,868000000,1024000)
+            second=receiver.status()['session_id']
+        self.assertNotEqual(previous,first)
+        self.assertNotEqual(first,second)
+        context=receiver.snapshot_context()
+        self.assertIsNone(context['samples'])
+        self.assertEqual(context['sample_rate'],1024000)
+        self.assertEqual(context['center_frequency_hz'],868000000)
+        self.assertEqual(receiver.status()['received_samples'],0)
+
 
 if __name__ == '__main__':
     unittest.main()

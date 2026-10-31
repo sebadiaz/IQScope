@@ -4,6 +4,7 @@ import socket
 import struct
 import threading
 import time
+import uuid
 
 import numpy as np
 from scipy import signal
@@ -40,17 +41,21 @@ class LiveReceiver:
         self.fs = 1_024_000
         self.frequency = 100_000_000
         self.last_data = 0
+        self.session_id = uuid.uuid4().hex
 
     def start(self, port, frequency, sample_rate):
         self.stop()
-        self.fs, self.frequency = sample_rate, frequency
-        self.blocks.clear()
-        self.buffered = self.total = 0
-        self.error = None
-        self.connected = False
+        with self.lock:
+            self.fs, self.frequency = sample_rate, frequency
+            self.blocks.clear()
+            self.buffered = self.total = 0
+            self.error = None
+            self.connected = False
+            self.last_data = 0
+            self.session_id = uuid.uuid4().hex
+            self.started = time.time()
+            self.running = True
         self.stop_event.clear()
-        self.started = time.time()
-        self.running = True
         self.thread = threading.Thread(target=self._receive, args=(port,), daemon=True)
         self.thread.start()
 
@@ -101,27 +106,34 @@ class LiveReceiver:
     def status(self):
         with self.lock:
             total, buffered = self.total, self.buffered
-        return {'running': self.running, 'connected': self.connected, 'error': self.error,
-                'sample_rate': self.fs, 'center_frequency_hz': self.frequency,
-                'received_samples': total, 'buffered_samples': buffered,
-                'window_start_sample': total-buffered, 'last_data_time': self.last_data,
-                'continuity': 'unknown: rtl_tcp provides no sample timestamps or overflow counters',
-                'analysis_mode': 'latest-window snapshots; decoding between snapshots is not guaranteed',
-                'tuning': 'requested settings; rtl_tcp provides no tuning readback'}
+            context={'running':self.running,'connected':self.connected,'error':self.error,
+                     'sample_rate':self.fs,'center_frequency_hz':self.frequency,
+                     'session_id':self.session_id,'last_data_time':self.last_data}
+        return dict(context,received_samples=total,buffered_samples=buffered,
+                window_start_sample=total-buffered,
+                continuity='unknown: rtl_tcp provides no sample timestamps or overflow counters',
+                analysis_mode='latest-window snapshots; decoding between snapshots is not guaranteed',
+                tuning='requested settings; rtl_tcp provides no tuning readback')
+
+    def snapshot_context(self):
+        with self.lock:
+            return {'samples':np.concatenate(list(self.blocks)) if self.blocks else None,
+                    'source_sample_start':self.total-self.buffered if self.blocks else 0,
+                    'sample_rate':self.fs,'center_frequency_hz':self.frequency,
+                    'session_id':self.session_id,'connected':self.connected}
 
     def snapshot(self):
-        with self.lock:
-            if not self.blocks:
-                return None, 0
-            return np.concatenate(list(self.blocks)), self.total-self.buffered
+        context=self.snapshot_context()
+        return context['samples'],context['source_sample_start']
 
     def spectrum(self):
         with self.lock:
             if not self.blocks:
                 return None
             x = self.blocks[-1].copy()
-        f, p = signal.welch(x, self.fs, nperseg=1024, return_onesided=False)
+            fs,frequency,total,session=self.fs,self.frequency,self.total,self.session_id
+        f, p = signal.welch(x, fs, nperseg=1024, return_onesided=False)
         return {'frequency_hz': np.fft.fftshift(f).tolist(),
                 'power_db': (10*np.log10(np.maximum(np.fft.fftshift(p), 1e-30))).tolist(),
-                'center_frequency_hz': self.frequency, 'sample_rate': self.fs,
-                'received_samples': self.total}
+                'center_frequency_hz': frequency, 'sample_rate': fs,
+                'received_samples': total,'session_id':session}

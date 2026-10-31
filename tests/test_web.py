@@ -248,6 +248,9 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         result = await self.wait_job(response.json()['id'])
         self.assertEqual(result['status'], 'completed', result.get('error'))
         self.assertEqual(result['result']['source_sample_start'], 20000-8192)
+        self.assertEqual(result['result']['source_sample_end'],20000)
+        self.assertEqual(result['result']['source_session_id'],receiver.session_id)
+        self.assertEqual(result['result']['source_sample_reference'],'received_samples_in_session')
         self.assertIn('snapshot', result['result']['continuity_note'])
 
     async def test_wave_and_sdriq_uploads_use_embedded_metadata(self):

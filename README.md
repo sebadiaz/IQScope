@@ -657,3 +657,8 @@ The SDR tab also offers **LoRa expérimental pour les fenêtres SDR**. It is
 independent of the file option and defaults to off. Live reports remain
 independent latest-window snapshots, with their source sample offset; this
 does not provide lossless continuous packet decoding.
+
+Live analysis now skips unchanged snapshots in the same mode. Reports carry a
+receiver-session ID and exclusive sample bounds; the UI shows overlap or
+received samples left unexamined between adjacent analyses. These counters
+do not measure hardware drops and do not imply continuous decoding.

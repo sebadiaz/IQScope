@@ -2,6 +2,7 @@
 const $ = id => document.getElementById(id);
 let audioPlot = false;
 let busy = false, liveMode = false, liveConnected = false, pollingLive = false;
+let lastLiveAnalysis = null, lastLiveSpectrumSession = null;
 let currentSpectrum = null, waterfallRows = [], selectedSignal = null, signals = [];
 let center = 0, sampleRate = 0, lastSnapshot = 0, lastLiveSample = -1, reportJob = null;
 const api = async (url, body, method = 'POST') => {
@@ -318,7 +319,7 @@ async function followJob(job) {
     await new Promise(resolve=>setTimeout(resolve,450));
     const state=await api(`/api/jobs/${job.id}`,undefined,'GET');
     if(state.status==='failed') throw new Error(state.error);
-    if(state.status==='completed') {showReport(state.result,job.id);return;}
+    if(state.status==='completed') {showReport(state.result,job.id);return state.result;}
   }
 }
 async function runFile(isDemo) {
@@ -376,7 +377,8 @@ $('connect').onclick=async()=>{
   try {
     status('Connexion au serveur rtl_tcp…','busy');
     await api('/api/live/start',{port:Number($('live-port').value),frequency_hz:Math.round(Number($('live-frequency').value)*1e6),sample_rate:Number($('live-rate').value)});
-    waterfallRows=[];signals=[];lastLiveSample=-1;lastSnapshot=0;
+    waterfallRows=[];signals=[];lastLiveSample=-1;lastSnapshot=0;lastLiveAnalysis=null;lastLiveSpectrumSession=null;
+    $('live-coverage').textContent='Aucune fenêtre SDR analysée.';
   } catch(error) {status(error.message,'error');}
 };
 $('disconnect').onclick=async()=>{try{await api('/api/live/stop');status('Réception arrêtée.');}catch(error){status(error.message,'error');}};
@@ -393,17 +395,32 @@ async function pollLive() {
     if(state.error) {status(state.error,'error');return;}
     if(!state.connected) return;
     const {spectrum}=await api('/api/live/spectrum',undefined,'GET');
-    if(spectrum && spectrum.received_samples!==lastLiveSample) {
-      lastLiveSample=spectrum.received_samples;currentSpectrum=spectrum;
+    if(spectrum && (spectrum.received_samples!==lastLiveSample || spectrum.session_id!==lastLiveSpectrumSession)) {
+      if(lastLiveSpectrumSession && spectrum.session_id!==lastLiveSpectrumSession)waterfallRows=[];
+      lastLiveSample=spectrum.received_samples;lastLiveSpectrumSession=spectrum.session_id;currentSpectrum=spectrum;
       audioPlot=false;center=spectrum.center_frequency_hz;sampleRate=spectrum.sample_rate;
       waterfallRows.unshift(spectrum.power_db);if(waterfallRows.length>180) waterfallRows.pop();
       $('waterfall-label').textContent='Direct · fenêtres reçues, plus récente en haut';
       $('source-badge').textContent='SDR · direct';updateAxes();drawSpectrum();drawWaterfall();
     }
-    if($('auto-live').checked && !busy && Date.now()-lastSnapshot>4000 && state.buffered_samples>sampleRate*.25) {
+    const experimental=$('live-experimental-lora').checked;
+    const fresh=!lastLiveAnalysis || lastLiveAnalysis.session!==state.session_id || lastLiveAnalysis.experimental!==experimental || state.received_samples>lastLiveAnalysis.end;
+    if($('auto-live').checked && fresh && !busy && Date.now()-lastSnapshot>4000 && state.buffered_samples>state.sample_rate*.25) {
       lastSnapshot=Date.now();setBusy(true);status('Réception active · analyse de la fenêtre récente…','busy');
-      api('/api/live/analyze',{experimental_lora:$('live-experimental-lora').checked}).then(followJob).then(()=>status('Réception active · dernière fenêtre analysée.','success')).catch(error=>status(error.message,'error')).finally(()=>setBusy(false));
-    } else if(!busy) status('Réception active · spectre actualisé.','success');
+      api('/api/live/analyze',{experimental_lora:experimental}).then(followJob).then(result=>{
+        const previous=lastLiveAnalysis;
+        const start=result.source_sample_start,end=result.source_sample_end,session=result.source_session_id,fs=result.sample_rate;
+        let detail='Première fenêtre de cette session.';
+        if(previous?.session===session){
+          const gap=Math.max(0,start-previous.end)/fs;
+          const overlap=Math.max(0,Math.min(previous.end,end)-start)/fs;
+          detail=gap>0 ? `${Math.max(0,start-previous.end)} échantillons reçus non analysés (${gap.toFixed(3)} s) entre ces fenêtres.` : `Recouvrement avec la précédente : ${overlap.toFixed(3)} s.`;
+        }
+        lastLiveAnalysis={session,end,experimental};
+        $('live-coverage').textContent=`Fenêtre analysée : ${((end-start)/fs).toFixed(3)} s. ${detail}`;
+        status('Réception active · dernière fenêtre analysée.','success');
+      }).catch(error=>status(error.message,'error')).finally(()=>setBusy(false));
+    } else if(!busy) status(fresh ? 'Réception active · spectre actualisé.' : 'Réception active · en attente de nouveaux échantillons.','success');
   } catch(error) {status(error.message,'error');}
   finally {pollingLive=false;}
 }
