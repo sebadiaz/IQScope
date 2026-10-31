@@ -1,0 +1,131 @@
+{
+  "seed": 20261101,
+  "trials_per_noise_family": 4096,
+  "passed_by_noise_family": {
+    "white_noise": {
+      "global": 0,
+      "global_and_local": 0,
+      "global_and_pooled_local": 0
+    },
+    "smooth_coloured_noise": {
+      "global": 1362,
+      "global_and_local": 17,
+      "global_and_pooled_local": 42
+    }
+  },
+  "counterexamples": {
+    "preamble_continuation": {
+      "noise_model": "global",
+      "status": "score_gate_passed",
+      "value_hex": "00",
+      "symbol_bin_errors": [
+        0,
+        0
+      ],
+      "peak_to_noise_floor": [
+        69.31471805599453,
+        69.31471805599453,
+        69.31471805599453
+      ],
+      "required_minimum_peak_to_noise_floor": 8,
+      "summed_peak_to_noise_floor": 207.94415416798358,
+      "required_summed_peak_to_noise_floor": 32,
+      "legal_alphabet_peak_margin": [
+        100.0,
+        100.0
+      ],
+      "relative_word_score_mass": 1.0,
+      "required_relative_word_score_mass": 0.99,
+      "scope": "Research score concentration under a simplified noise model; not a calibrated word probability or complete synchronization."
+    },
+    "preamble_continuation_local": {
+      "noise_model": "local",
+      "status": "score_gate_passed",
+      "value_hex": "00",
+      "symbol_bin_errors": [
+        0,
+        0
+      ],
+      "peak_to_noise_floor": [
+        69.31471805599453,
+        69.31471805599453,
+        69.31471805599453
+      ],
+      "required_minimum_peak_to_noise_floor": 8,
+      "summed_peak_to_noise_floor": 207.94415416798358,
+      "required_summed_peak_to_noise_floor": 32,
+      "legal_alphabet_peak_margin": [
+        100.0,
+        100.0
+      ],
+      "relative_word_score_mass": 1.0,
+      "required_relative_word_score_mass": 0.99,
+      "scope": "Research score concentration under a simplified noise model; not a calibrated word probability or complete synchronization."
+    },
+    "preamble_continuation_pooled": {
+      "noise_model": "pooled_local",
+      "status": "score_gate_passed",
+      "value_hex": "00",
+      "symbol_bin_errors": [
+        0,
+        0
+      ],
+      "peak_to_noise_floor": [
+        69.31471805599453,
+        69.31471805599453,
+        69.31471805599453
+      ],
+      "required_minimum_peak_to_noise_floor": 8,
+      "summed_peak_to_noise_floor": 207.94415416798358,
+      "required_summed_peak_to_noise_floor": 32,
+      "legal_alphabet_peak_margin": [
+        100.0,
+        100.0
+      ],
+      "relative_word_score_mass": 1.0,
+      "required_relative_word_score_mass": 0.99,
+      "scope": "Research score concentration under a simplified noise model; not a calibrated word probability or complete synchronization."
+    },
+    "equal_legal_alternatives": {
+      "noise_model": "global",
+      "status": "score_gate_rejected",
+      "value_hex": "00",
+      "symbol_bin_errors": [
+        0,
+        0
+      ],
+      "peak_to_noise_floor": [
+        69.31471805599453,
+        69.31471805599453,
+        69.31471805599453
+      ],
+      "required_minimum_peak_to_noise_floor": 8,
+      "summed_peak_to_noise_floor": 207.94415416798358,
+      "required_summed_peak_to_noise_floor": 32,
+      "legal_alphabet_peak_margin": [
+        1.0,
+        100.0
+      ],
+      "relative_word_score_mass": 0.5,
+      "required_relative_word_score_mass": 0.99,
+      "scope": "Research score concentration under a simplified noise model; not a calibrated word probability or complete synchronization."
+    }
+  },
+  "sufficient_for_production": false,
+  "limitations": [
+    "Conditional spectrum-level audit, not a false-alarm rate of the whole detector.",
+    "Exponential powers model independent complex-Gaussian FFT noise; the colored family multiplies a smooth spectral shape.",
+    "Reference peak and alphabet are selected in each trial; raw IQ acquisition, pair and CRC are not tested here.",
+    "Repeated dechirped tones can resemble an all-zero sync word; score concentration does not prove packet boundaries.",
+    "Local model uses six neighboring bins at offsets +/-2..4; it is an additional leave-peak-out check, not guaranteed whitening.",
+    "Pooled-local uses the same neighboring bins across three spectra, assuming stationary noise across the three chirps.",
+    "Thresholds are engineering hypotheses, not calibrated probabilities."
+  ],
+  "code_sha256": "84cb4a895a4ae92b223f9fa983df1da05f3b656d62fecb68b9b07c24a34fb949",
+  "model": {
+    "bins": 128,
+    "colored_shape": "1/(1+a^2-2*a*cos(2*pi*k/N))",
+    "a": 0.9,
+    "paired_draws": true
+  }
+}

@@ -11,6 +11,7 @@ import numpy as np
 import iqscope_lora as lora
 from iqscope import read_iq
 from lora_soft_probe import infer_payload
+from lora_sync_gate import evaluate_sync_spectra
 
 
 ORIGINAL_PAIR=lora._opposite_chirp_pair
@@ -70,7 +71,10 @@ def research_sync(y,chirp,polarity,preamble_bin,pair,bandwidth,**kwargs):
                 energy=sum(power[np.arange(3),(peaks+d)%length] for d in (-1,0,1))/np.maximum(power.sum(axis=1),1e-30)
                 hypotheses.append({'boundary':boundary,'word':16*nibbles[0]+nibbles[1],
                     'symbols':symbols,'errors':errors,'strength':float(min(energy)),
-                    'peaks':[lora._matched_peak_evidence(row,int(k)) for row,k in zip(power,peaks)]})
+                    'peaks':[lora._matched_peak_evidence(row,int(k)) for row,k in zip(power,peaks)],
+                    'alphabet_score_gate':evaluate_sync_spectra(power,polarity) if length<=1024 else {'status':'unsupported_sf'},
+                    'local_alphabet_score_gate':evaluate_sync_spectra(power,polarity,noise_model='local') if length<=1024 else {'status':'unsupported_sf'},
+                    'pooled_local_alphabet_score_gate':evaluate_sync_spectra(power,polarity,noise_model='pooled_local') if length<=1024 else {'status':'unsupported_sf'}})
     if not hypotheses:
         return {'status':'no_consistent_sync_word'}
     words={h['word'] for h in hypotheses}
@@ -81,7 +85,10 @@ def research_sync(y,chirp,polarity,preamble_bin,pair,bandwidth,**kwargs):
         'opposite_chirp_start_chip':best['boundary'],'opposite_chirp_start_seconds':best['boundary']/bandwidth,
         'relative_symbol_bins':best['symbols'],'symbol_bin_errors':best['errors'],
         'method':'research_ungated_sync','minimum_three_bin_energy_fraction':best['strength'],
-        'matched_peak_evidence':best['peaks'],'confidence_gates_bypassed':True}
+        'matched_peak_evidence':best['peaks'],'alphabet_score_gate':best['alphabet_score_gate'],
+        'local_alphabet_score_gate':best['local_alphabet_score_gate'],
+        'pooled_local_alphabet_score_gate':best['pooled_local_alphabet_score_gate'],
+        'confidence_gates_bypassed':True}
 
 
 def research_data(y,chirp,polarity,sync,bandwidth,**kwargs):

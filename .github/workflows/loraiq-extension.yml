@@ -4,6 +4,7 @@ on:
     paths:
       - scripts/loraiq_extension.py
       - scripts/lora_soft_probe.py
+      - scripts/lora_sync_gate.py
       - scripts/loraiq_forensic_probe.py
       - scripts/loraiq_batch.py
       - scripts/loraiq_reference.py
@@ -25,6 +26,10 @@ jobs:
       - run: python scripts/loraiq_extension.py
       - name: Research-only weak-frame analysis (confidence gates bypassed)
         run: python scripts/loraiq_forensic_probe.py --input corpus-cache/loraiq-extension/0/source.sigmf-meta
+      - name: Audit research sync scores against white and colored spectra
+        run: |
+          python scripts/lora_sync_gate.py
+          python scripts/lora_sync_gate.py --seed 20261101 --out corpus-cache/loraiq-forensic/sync-audit-second-seed.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -32,3 +37,5 @@ jobs:
           path: |
             corpus-cache/loraiq-extension/observation.json
             corpus-cache/loraiq-forensic/observation.json
+            corpus-cache/loraiq-forensic/sync-audit.json
+            corpus-cache/loraiq-forensic/sync-audit-second-seed.json

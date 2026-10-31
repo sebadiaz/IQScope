@@ -85,3 +85,11 @@ récupération développée sur ces données ne constitue pas cette validation.
 Source : Joachim Tapparel et Andreas Burg, EPFL,
 [LoRaIQ](https://zenodo.org/records/20341802), DOI 10.5281/zenodo.20341802,
 licence CC BY 4.0. Les spectres du rapport et du test sont dérivés de cette source.
+
+
+## Audit des critères de synchronisation
+
+Un [audit séparé](LORA_SYNC_AUDIT.md) compare les scores d’alphabet sous bruit
+blanc et coloré, avec deux graines et trois modèles de fond spectral. Il met
+en évidence des passages indésirables et un compromis entre sensibilité et
+rejet. Ces mesures ne rendent pas la voie expérimentale active en production.
