@@ -85,3 +85,26 @@ décodé. La recherche a été testée contre bruit blanc, tonalité, forme larg
 bande périodique, phases de chirps incohérentes et symboles CSS changeants.
 Ces cas négatifs ne constituent pas une mesure générale du taux de fausses
 alarmes en conditions radio.
+
+
+## Suivi de porteuse après déchirpage
+
+Le [rapport suivant](../corpus/loraiq-matched-carrier-observation.json) expose
+la nouvelle estimation sur les amplitudes du bin commun. Sur la cible à
+−8,8366 dB, elle permet la correction fractionnaire et la sélection temporelle
+3/8. Après ce raffinement, la concentration des amplitudes vaut 0,79922,
+avec pic/fond 81,36 et pic/concurrent 16,82 ; la cohérence brute reste faible
+(0,15513). La correction nominale vaut −0,4921875 bin, soit −480,65 Hz,
+modulo un bin ; ce n’est ni une fréquence RF ni une précision garantie.
+
+Le décodage de production reste bloqué sur la paire de chirps opposés. Une
+expérience séparée de combinaison des deux chirps donne un pic commun fort,
+mais un chirp reste sous les critères individuels. Une lecture diagnostique
+du sync word à cette hypothèse donne les nibbles candidats 9 et 6, sans erreur
+de bin, mais des rapports pic/fond d’environ 15,55, 19,12 et 9,79, sous le
+minimum 32. Ces observations ne sont pas présentées comme une synchronisation
+validée. La voie expérimentale n’est pas activée en production.
+
+Aucun nouveau contenu ni en-tête n’est validé pour cette cible. Les scores
+restent 6/6 sur les références de développement et 3/4 sur les autres sessions,
+avec les trois exports exacts conservés. Les 218 tests passent localement.

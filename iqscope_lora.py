@@ -441,6 +441,40 @@ def _correct_fractional_carrier(y, start_block, run_blocks, length, bandwidth, m
 
 
 
+def _correct_matched_carrier(y,start,count,length,bandwidth,chirp,polarity):
+    """Estimate fractional CFO on one common dechirped preamble bin, not raw noise."""
+    blocks=min(count,8)
+    evidence={'method':'matched_preamble_phase','preamble_blocks':blocks,'phase_hypotheses':384,
+              'required_phase_concentration':.65,
+              'scope':'Preamble-only fractional carrier hypothesis modulo one bin; no RF center, integer CFO, sync word, header, payload or CRC used.'}
+    if blocks<6:
+        return y,dict(evidence,status='insufficient_matched_preamble_blocks')
+    segment=y[start*length:(start+blocks)*length].reshape(blocks,length)
+    template=chirp if polarity==1 else chirp.conj()
+    transformed=np.fft.fft(segment*template.conj(),axis=1)
+    peak=int(np.argmax(np.mean(abs(transformed)**2,axis=0)))
+    amplitudes=transformed[:,peak]
+    phase_power=abs(np.fft.fft(amplitudes,384))**2
+    phase=int(np.argmax(phase_power))
+    offset=(phase/384+.5)%1-.5
+    concentration=float(phase_power[phase]/max(blocks*float(np.sum(abs(amplitudes)**2)),1e-30))
+    positions=np.arange(blocks*length).reshape(blocks,length)
+    combined=np.mean(segment*np.exp(-2j*np.pi*offset*positions/length),axis=0)
+    power=abs(np.fft.fft(combined*template.conj()))**2
+    combined_peak=int(np.argmax(power));reliability=_matched_peak_evidence(power,combined_peak)
+    first,second=segment[:-1],segment[1:]
+    raw=float(abs(np.sum(second*first.conj()))/max(float(np.sqrt(np.sum(abs(first)**2)*np.sum(abs(second)**2))),1e-30))
+    evidence.update(phase_concentration=concentration,raw_lag_coherence=raw,matched_peak_evidence=reliability,
+                    phase_bin=phase,reference_bin=peak)
+    if (concentration<.65 or reliability['status']!='reliable_matched_peak'
+            or abs((combined_peak-peak+length//2)%length-length//2)>1):
+        return y,dict(evidence,status='insufficient_matched_preamble_phase')
+    limit=min(len(y),(start+count+72)*length)
+    corrected=y[:limit]*np.exp(-2j*np.pi*offset*np.arange(limit)/length)
+    return corrected,dict(evidence,status='fractional_carrier_corrected',fractional_bin_offset=offset,
+                          offset_hz=offset*bandwidth/length)
+
+
 def _refine_fractional_timing(x, fs, ratio, bandwidth, length, start, count,
                               chirp, polarity, aligned, carrier):
     """Pick one of eight sample grids by preamble concentration, before data decoding."""
@@ -492,13 +526,16 @@ def _refine_fractional_timing(x, fs, ratio, bandwidth, length, start, count,
         fraction=float(power[peak]/max(float(power.sum()),1e-30))
         reliability=_matched_peak_evidence(power,peak)
         evidence.update(coherent_single_bin_energy_fraction=fraction,coherent_matched_peak=reliability)
-        if carrier.get('required_coherence',.8)>=.8 or reliability['status']!='reliable_matched_peak':
+        if (carrier.get('required_coherence',.8)>=.8 and carrier.get('method')!='matched_preamble_phase') or reliability['status']!='reliable_matched_peak':
             return aligned,carrier,dict(evidence,status='insufficient_preamble_concentration')
         evidence['acceptance_method']='coherent_preamble_matched_peak'
     else:
         evidence['acceptance_method']='individual_preamble_concentration'
-    refined,new_carrier = _correct_fractional_carrier(
-        high[phase::8],start,count,length,bandwidth,carrier.get('required_coherence',.8))
+    if carrier.get('method')=='matched_preamble_phase':
+        refined,new_carrier=_correct_matched_carrier(high[phase::8],start,count,length,bandwidth,chirp,polarity)
+    else:
+        refined,new_carrier = _correct_fractional_carrier(
+            high[phase::8],start,count,length,bandwidth,carrier.get('required_coherence',.8))
     if new_carrier['status']!='fractional_carrier_corrected':
         return aligned,carrier,dict(evidence,status='insufficient_refined_carrier_coherence')
     return refined,new_carrier,dict(evidence,status='fractional_timing_refined',
@@ -574,6 +611,8 @@ def _detect_lora_window(x, fs):
                     strength = float(np.median(concentration[best_start:best_start+best_count]))
                 aligned, carrier = _correct_fractional_carrier(
                     y,best_start,best_count,length,bandwidth,minimum_coherence)
+                if carrier['status']!='fractional_carrier_corrected' and discovery['method']=='phase_grid_matched_preamble':
+                    aligned,carrier=_correct_matched_carrier(y,best_start,best_count,length,bandwidth,chirp,polarity)
                 aligned, carrier, timing = _refine_fractional_timing(
                     x,fs,ratio,bandwidth,length,best_start,best_count,chirp,polarity,aligned,carrier)
                 reference = aligned[best_start*length:(best_start+1)*length]

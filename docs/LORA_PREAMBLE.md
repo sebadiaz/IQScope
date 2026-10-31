@@ -577,3 +577,26 @@ suivi de porteuse. Aucun seuil d’en-tête, de CRC ou de synchronisation n’es
 abaissé. Les fenêtres, phases ou paramètres ne sont pas choisis selon un CRC
 ou des octets attendus. Les budgets s’ajoutent à ceux des voies précédentes ;
 ils ne garantissent pas une recherche exhaustive du fichier.
+
+
+### Porteuse estimée sur les amplitudes déchirpées
+
+Après acquisition par grille de phase, un rejet du suivi brut peut déclencher
+une estimation sur le bin commun dominant de six à huit chirps. Une FFT des
+amplitudes complexes, complétée à 384 points, choisit une progression de
+phase modulo un bin. Sa concentration `max(abs(FFT(a))**2)/(K*sum(abs(a)**2))`
+doit atteindre 0,65. Après correction, le spectre moyen doit passer les
+critères 32/4 et son bin rester à au plus un bin du bin commun initial.
+
+La méthode est `matched_preamble_phase`. La cohérence brute reste exposée
+sous `raw_lag_coherence` ; elle n’est pas rebaptisée en forte cohérence. Cette
+voie utilise les amplitudes du pic pour moins intégrer le bruit hors pic.
+Elle ne donne ni fréquence RF ni CFO entier, et les 384 points n’impliquent
+pas une précision statistique de l’estimation. Le raffinement temporel
+réestime la porteuse avec la même méthode sur la grille sélectionnée.
+
+Aucun bit ni CRC n’intervient dans cette sélection. Les contrôles des chirps
+opposés, du sync word, de l’en-tête et du CRC ne sont pas abaissés. Les tests
+contrôlent notamment les offsets proches du repliement modulo un bin, les
+chirps inversés, le bruit, les phases incohérentes et l’indépendance vis-à-vis
+des données qui suivent le préambule.
