@@ -1,0 +1,1273 @@
+{
+  "scope": "Synthetic IQ, full acquisition plus experimental composite sync and block-score policy; not production acceptance.",
+  "seed": 130700,
+  "trials_per_family": 8,
+  "observations": [
+    {
+      "candidate_count": 0,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "white_noise",
+      "seed": 130700,
+      "input_samples": 12000
+    },
+    {
+      "candidate_count": 0,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "white_noise",
+      "seed": 130701,
+      "input_samples": 12000
+    },
+    {
+      "candidate_count": 0,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "white_noise",
+      "seed": 130702,
+      "input_samples": 12000
+    },
+    {
+      "candidate_count": 0,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "white_noise",
+      "seed": 130703,
+      "input_samples": 12000
+    },
+    {
+      "candidate_count": 0,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "white_noise",
+      "seed": 130704,
+      "input_samples": 12000
+    },
+    {
+      "candidate_count": 0,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "white_noise",
+      "seed": 130705,
+      "input_samples": 12000
+    },
+    {
+      "candidate_count": 0,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "white_noise",
+      "seed": 130706,
+      "input_samples": 12000
+    },
+    {
+      "candidate_count": 0,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "white_noise",
+      "seed": 130707,
+      "input_samples": 12000
+    },
+    {
+      "candidate_count": 0,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "colored_noise",
+      "seed": 131700,
+      "input_samples": 12000
+    },
+    {
+      "candidate_count": 0,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "colored_noise",
+      "seed": 131701,
+      "input_samples": 12000
+    },
+    {
+      "candidate_count": 0,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "colored_noise",
+      "seed": 131702,
+      "input_samples": 12000
+    },
+    {
+      "candidate_count": 0,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "colored_noise",
+      "seed": 131703,
+      "input_samples": 12000
+    },
+    {
+      "candidate_count": 0,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "colored_noise",
+      "seed": 131704,
+      "input_samples": 12000
+    },
+    {
+      "candidate_count": 0,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "colored_noise",
+      "seed": 131705,
+      "input_samples": 12000
+    },
+    {
+      "candidate_count": 0,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "colored_noise",
+      "seed": 131706,
+      "input_samples": 12000
+    },
+    {
+      "candidate_count": 0,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "colored_noise",
+      "seed": 131707,
+      "input_samples": 12000
+    },
+    {
+      "candidate_count": 0,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "periodic_wideband",
+      "seed": 132700,
+      "input_samples": 10240
+    },
+    {
+      "candidate_count": 0,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "periodic_wideband",
+      "seed": 132701,
+      "input_samples": 10240
+    },
+    {
+      "candidate_count": 0,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "periodic_wideband",
+      "seed": 132702,
+      "input_samples": 10240
+    },
+    {
+      "candidate_count": 0,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "periodic_wideband",
+      "seed": 132703,
+      "input_samples": 10240
+    },
+    {
+      "candidate_count": 0,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "periodic_wideband",
+      "seed": 132704,
+      "input_samples": 10240
+    },
+    {
+      "candidate_count": 0,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "periodic_wideband",
+      "seed": 132705,
+      "input_samples": 10240
+    },
+    {
+      "candidate_count": 0,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "periodic_wideband",
+      "seed": 132706,
+      "input_samples": 10240
+    },
+    {
+      "candidate_count": 0,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "periodic_wideband",
+      "seed": 132707,
+      "input_samples": 10240
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "preamble_only",
+      "seed": 133700,
+      "input_samples": 7217
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "preamble_only",
+      "seed": 133701,
+      "input_samples": 7218
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "preamble_only",
+      "seed": 133702,
+      "input_samples": 7219
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "preamble_only",
+      "seed": 133703,
+      "input_samples": 7220
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "preamble_only",
+      "seed": 133704,
+      "input_samples": 7221
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "preamble_only",
+      "seed": 133705,
+      "input_samples": 7222
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "preamble_only",
+      "seed": 133706,
+      "input_samples": 7223
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "preamble_only",
+      "seed": 133707,
+      "input_samples": 7224
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "unsupported_or_invalid_header"
+      ],
+      "accepted_research_payloads": [],
+      "family": "random_css_payload",
+      "seed": 134700,
+      "input_samples": 17534
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "unsupported_or_invalid_header"
+      ],
+      "accepted_research_payloads": [],
+      "family": "random_css_payload",
+      "seed": 134701,
+      "input_samples": 17535
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "unsupported_or_invalid_header"
+      ],
+      "accepted_research_payloads": [],
+      "family": "random_css_payload",
+      "seed": 134702,
+      "input_samples": 17489
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "unsupported_or_invalid_header"
+      ],
+      "accepted_research_payloads": [],
+      "family": "random_css_payload",
+      "seed": 134703,
+      "input_samples": 17490
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "unsupported_or_invalid_header"
+      ],
+      "accepted_research_payloads": [],
+      "family": "random_css_payload",
+      "seed": 134704,
+      "input_samples": 17491
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "unsupported_or_invalid_header"
+      ],
+      "accepted_research_payloads": [],
+      "family": "random_css_payload",
+      "seed": 134705,
+      "input_samples": 17492
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "unsupported_or_invalid_header"
+      ],
+      "accepted_research_payloads": [],
+      "family": "random_css_payload",
+      "seed": 134706,
+      "input_samples": 17493
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "unsupported_or_invalid_header"
+      ],
+      "accepted_research_payloads": [],
+      "family": "random_css_payload",
+      "seed": 134707,
+      "input_samples": 17494
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "unsupported_or_invalid_header"
+      ],
+      "accepted_research_payloads": [],
+      "family": "bad_header",
+      "seed": 135700,
+      "input_samples": 11868
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "unsupported_or_invalid_header"
+      ],
+      "accepted_research_payloads": [],
+      "family": "bad_header",
+      "seed": 135701,
+      "input_samples": 11869
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "unsupported_or_invalid_header"
+      ],
+      "accepted_research_payloads": [],
+      "family": "bad_header",
+      "seed": 135702,
+      "input_samples": 11870
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "unsupported_or_invalid_header"
+      ],
+      "accepted_research_payloads": [],
+      "family": "bad_header",
+      "seed": 135703,
+      "input_samples": 11871
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "unsupported_or_invalid_header"
+      ],
+      "accepted_research_payloads": [],
+      "family": "bad_header",
+      "seed": 135704,
+      "input_samples": 11872
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "unsupported_or_invalid_header"
+      ],
+      "accepted_research_payloads": [],
+      "family": "bad_header",
+      "seed": 135705,
+      "input_samples": 11873
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "unsupported_or_invalid_header"
+      ],
+      "accepted_research_payloads": [],
+      "family": "bad_header",
+      "seed": 135706,
+      "input_samples": 11874
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "unsupported_or_invalid_header"
+      ],
+      "accepted_research_payloads": [],
+      "family": "bad_header",
+      "seed": 135707,
+      "input_samples": 11875
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_payload_unvalidated"
+      ],
+      "accepted_research_payloads": [],
+      "family": "bad_crc",
+      "seed": 136700,
+      "input_samples": 11881
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_payload_unvalidated"
+      ],
+      "accepted_research_payloads": [],
+      "family": "bad_crc",
+      "seed": 136701,
+      "input_samples": 11882
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_payload_unvalidated"
+      ],
+      "accepted_research_payloads": [],
+      "family": "bad_crc",
+      "seed": 136702,
+      "input_samples": 11883
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_payload_unvalidated"
+      ],
+      "accepted_research_payloads": [],
+      "family": "bad_crc",
+      "seed": 136703,
+      "input_samples": 11884
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_payload_unvalidated"
+      ],
+      "accepted_research_payloads": [],
+      "family": "bad_crc",
+      "seed": 136704,
+      "input_samples": 11885
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_payload_unvalidated"
+      ],
+      "accepted_research_payloads": [],
+      "family": "bad_crc",
+      "seed": 136705,
+      "input_samples": 11886
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_payload_unvalidated"
+      ],
+      "accepted_research_payloads": [],
+      "family": "bad_crc",
+      "seed": 136706,
+      "input_samples": 11887
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_payload_unvalidated"
+      ],
+      "accepted_research_payloads": [],
+      "family": "bad_crc",
+      "seed": 136707,
+      "input_samples": 11888
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_evidence_rejected"
+      ],
+      "accepted_research_payloads": [],
+      "family": "truncated_payload",
+      "seed": 137700,
+      "input_samples": 10358
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_evidence_rejected"
+      ],
+      "accepted_research_payloads": [],
+      "family": "truncated_payload",
+      "seed": 137701,
+      "input_samples": 10359
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_evidence_rejected"
+      ],
+      "accepted_research_payloads": [],
+      "family": "truncated_payload",
+      "seed": 137702,
+      "input_samples": 10360
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_evidence_rejected"
+      ],
+      "accepted_research_payloads": [],
+      "family": "truncated_payload",
+      "seed": 137703,
+      "input_samples": 10361
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_evidence_rejected"
+      ],
+      "accepted_research_payloads": [],
+      "family": "truncated_payload",
+      "seed": 137704,
+      "input_samples": 10362
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_evidence_rejected"
+      ],
+      "accepted_research_payloads": [],
+      "family": "truncated_payload",
+      "seed": 137705,
+      "input_samples": 10363
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_evidence_rejected"
+      ],
+      "accepted_research_payloads": [],
+      "family": "truncated_payload",
+      "seed": 137706,
+      "input_samples": 10364
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_evidence_rejected"
+      ],
+      "accepted_research_payloads": [],
+      "family": "truncated_payload",
+      "seed": 137707,
+      "input_samples": 10365
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012624,
+          "sync_word": "34",
+          "quarter_chirp_validated": true
+        }
+      ],
+      "family": "valid_strong",
+      "seed": 138700,
+      "input_samples": 11860
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012628,
+          "sync_word": "34",
+          "quarter_chirp_validated": true
+        }
+      ],
+      "family": "valid_strong",
+      "seed": 138701,
+      "input_samples": 11861
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012632,
+          "sync_word": "34",
+          "quarter_chirp_validated": true
+        }
+      ],
+      "family": "valid_strong",
+      "seed": 138702,
+      "input_samples": 11862
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012636000000000001,
+          "sync_word": "34",
+          "quarter_chirp_validated": true
+        }
+      ],
+      "family": "valid_strong",
+      "seed": 138703,
+      "input_samples": 11863
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.01264,
+          "sync_word": "34",
+          "quarter_chirp_validated": true
+        }
+      ],
+      "family": "valid_strong",
+      "seed": 138704,
+      "input_samples": 11864
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012644,
+          "sync_word": "34",
+          "quarter_chirp_validated": true
+        }
+      ],
+      "family": "valid_strong",
+      "seed": 138705,
+      "input_samples": 11865
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012648,
+          "sync_word": "34",
+          "quarter_chirp_validated": true
+        }
+      ],
+      "family": "valid_strong",
+      "seed": 138706,
+      "input_samples": 11866
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012652,
+          "sync_word": "34",
+          "quarter_chirp_validated": true
+        }
+      ],
+      "family": "valid_strong",
+      "seed": 138707,
+      "input_samples": 11867
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012668,
+          "sync_word": "34",
+          "quarter_chirp_validated": true
+        }
+      ],
+      "family": "valid_weak",
+      "seed": 139700,
+      "input_samples": 11873
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012696,
+          "sync_word": "34",
+          "quarter_chirp_validated": true
+        }
+      ],
+      "family": "valid_weak",
+      "seed": 139701,
+      "input_samples": 11874
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012676,
+          "sync_word": "34",
+          "quarter_chirp_validated": true
+        }
+      ],
+      "family": "valid_weak",
+      "seed": 139702,
+      "input_samples": 11875
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.01268,
+          "sync_word": "34",
+          "quarter_chirp_validated": true
+        }
+      ],
+      "family": "valid_weak",
+      "seed": 139703,
+      "input_samples": 11876
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012684,
+          "sync_word": "34",
+          "quarter_chirp_validated": true
+        }
+      ],
+      "family": "valid_weak",
+      "seed": 139704,
+      "input_samples": 11877
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012696,
+          "sync_word": "34",
+          "quarter_chirp_validated": true
+        }
+      ],
+      "family": "valid_weak",
+      "seed": 139705,
+      "input_samples": 11878
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012692,
+          "sync_word": "34",
+          "quarter_chirp_validated": true
+        }
+      ],
+      "family": "valid_weak",
+      "seed": 139706,
+      "input_samples": 11879
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012688,
+          "sync_word": "34",
+          "quarter_chirp_validated": true
+        }
+      ],
+      "family": "valid_weak",
+      "seed": 139707,
+      "input_samples": 11880
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012728,
+          "sync_word": "00",
+          "quarter_chirp_validated": true
+        }
+      ],
+      "family": "valid_zero_sync",
+      "seed": 140700,
+      "input_samples": 11886
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012732,
+          "sync_word": "00",
+          "quarter_chirp_validated": true
+        }
+      ],
+      "family": "valid_zero_sync",
+      "seed": 140701,
+      "input_samples": 11887
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012736,
+          "sync_word": "00",
+          "quarter_chirp_validated": true
+        }
+      ],
+      "family": "valid_zero_sync",
+      "seed": 140702,
+      "input_samples": 11888
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012740000000000001,
+          "sync_word": "00",
+          "quarter_chirp_validated": true
+        }
+      ],
+      "family": "valid_zero_sync",
+      "seed": 140703,
+      "input_samples": 11889
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012744,
+          "sync_word": "00",
+          "quarter_chirp_validated": true
+        }
+      ],
+      "family": "valid_zero_sync",
+      "seed": 140704,
+      "input_samples": 11890
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012748,
+          "sync_word": "00",
+          "quarter_chirp_validated": true
+        }
+      ],
+      "family": "valid_zero_sync",
+      "seed": 140705,
+      "input_samples": 11891
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012752,
+          "sync_word": "00",
+          "quarter_chirp_validated": true
+        }
+      ],
+      "family": "valid_zero_sync",
+      "seed": 140706,
+      "input_samples": 11892
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012756,
+          "sync_word": "00",
+          "quarter_chirp_validated": true
+        }
+      ],
+      "family": "valid_zero_sync",
+      "seed": 140707,
+      "input_samples": 11893
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "missing_downchirps",
+      "seed": 141700,
+      "input_samples": 11899
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "missing_downchirps",
+      "seed": 141701,
+      "input_samples": 11900
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "missing_downchirps",
+      "seed": 141702,
+      "input_samples": 11901
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "missing_downchirps",
+      "seed": 141703,
+      "input_samples": 11902
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "missing_downchirps",
+      "seed": 141704,
+      "input_samples": 11903
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "missing_downchirps",
+      "seed": 141705,
+      "input_samples": 11857
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "missing_downchirps",
+      "seed": 141706,
+      "input_samples": 11858
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [],
+      "accepted_research_payloads": [],
+      "family": "missing_downchirps",
+      "seed": 141707,
+      "input_samples": 11859
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012644,
+          "sync_word": "34",
+          "quarter_chirp_validated": false
+        }
+      ],
+      "family": "missing_quarter",
+      "seed": 142700,
+      "input_samples": 11865
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012648,
+          "sync_word": "34",
+          "quarter_chirp_validated": false
+        }
+      ],
+      "family": "missing_quarter",
+      "seed": 142701,
+      "input_samples": 11866
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012652,
+          "sync_word": "34",
+          "quarter_chirp_validated": false
+        }
+      ],
+      "family": "missing_quarter",
+      "seed": 142702,
+      "input_samples": 11867
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012656,
+          "sync_word": "34",
+          "quarter_chirp_validated": false
+        }
+      ],
+      "family": "missing_quarter",
+      "seed": 142703,
+      "input_samples": 11868
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012660000000000001,
+          "sync_word": "34",
+          "quarter_chirp_validated": false
+        }
+      ],
+      "family": "missing_quarter",
+      "seed": 142704,
+      "input_samples": 11869
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012664,
+          "sync_word": "34",
+          "quarter_chirp_validated": false
+        }
+      ],
+      "family": "missing_quarter",
+      "seed": 142705,
+      "input_samples": 11870
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012668,
+          "sync_word": "34",
+          "quarter_chirp_validated": false
+        }
+      ],
+      "family": "missing_quarter",
+      "seed": 142706,
+      "input_samples": 11871
+    },
+    {
+      "candidate_count": 1,
+      "soft_statuses": [
+        "research_crc_valid"
+      ],
+      "accepted_research_payloads": [
+        {
+          "payload_hex": "48454c4c4f",
+          "time_seconds": 0.012672,
+          "sync_word": "34",
+          "quarter_chirp_validated": false
+        }
+      ],
+      "family": "missing_quarter",
+      "seed": 142707,
+      "input_samples": 11872
+    }
+  ],
+  "limitations": [
+    "SF7/BW125k/CR4/5 only; controlled synthetic channels, not real-radio false-alarm validation.",
+    "Every input starts with the same bounded detector; no known CFO, timing, SF, payload or expected CRC passed to it.",
+    "Correct-byte checks are post-decode controls only. No CRC-driven hypothesis retries.",
+    "Ablated delimiters are reported separately: coded payload bytes still exist in these inputs.",
+    "Research policy uses alternative confidence criteria and inferred quarter boundaries; production remains unchanged."
+  ],
+  "families": {
+    "white_noise": {
+      "trials": 8,
+      "cases_with_accepted_payload": 0,
+      "cases_with_exact_hello": 0
+    },
+    "colored_noise": {
+      "trials": 8,
+      "cases_with_accepted_payload": 0,
+      "cases_with_exact_hello": 0
+    },
+    "periodic_wideband": {
+      "trials": 8,
+      "cases_with_accepted_payload": 0,
+      "cases_with_exact_hello": 0
+    },
+    "preamble_only": {
+      "trials": 8,
+      "cases_with_accepted_payload": 0,
+      "cases_with_exact_hello": 0
+    },
+    "random_css_payload": {
+      "trials": 8,
+      "cases_with_accepted_payload": 0,
+      "cases_with_exact_hello": 0
+    },
+    "bad_header": {
+      "trials": 8,
+      "cases_with_accepted_payload": 0,
+      "cases_with_exact_hello": 0
+    },
+    "bad_crc": {
+      "trials": 8,
+      "cases_with_accepted_payload": 0,
+      "cases_with_exact_hello": 0
+    },
+    "truncated_payload": {
+      "trials": 8,
+      "cases_with_accepted_payload": 0,
+      "cases_with_exact_hello": 0
+    },
+    "valid_strong": {
+      "trials": 8,
+      "cases_with_accepted_payload": 8,
+      "cases_with_exact_hello": 8
+    },
+    "valid_weak": {
+      "trials": 8,
+      "cases_with_accepted_payload": 8,
+      "cases_with_exact_hello": 8
+    },
+    "valid_zero_sync": {
+      "trials": 8,
+      "cases_with_accepted_payload": 8,
+      "cases_with_exact_hello": 8
+    },
+    "missing_downchirps": {
+      "trials": 8,
+      "cases_with_accepted_payload": 0,
+      "cases_with_exact_hello": 0
+    },
+    "missing_quarter": {
+      "trials": 8,
+      "cases_with_accepted_payload": 8,
+      "cases_with_exact_hello": 8
+    }
+  },
+  "negative_cases_with_accepted_payload": 0,
+  "negative_case_count": 64,
+  "positive_cases_with_exact_payload": 24,
+  "positive_case_count": 24,
+  "local_validation": {
+    "unit_tests_passed": 234,
+    "production_decoder_modified": false
+  }
+}

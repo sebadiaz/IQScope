@@ -1,0 +1,1445 @@
+{
+  "scope": "Experimental guarded research policy on exposed captures; not default production or held-out score.",
+  "production_extension_score_unchanged": "3/4",
+  "observations": [
+    {
+      "annotation": {
+        "sf": "7",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "125000",
+        "payload_base64": "MDAwMDAwMA==",
+        "rrh_idx": "2",
+        "rx_sample_rate": "250000",
+        "cfo": "7.5177",
+        "snr": "-8.8366",
+        "sigmf_file": "./sigmfs/25_01_17-14_39/rrh2/1",
+        "sigmf_file_offset": "5482.0",
+        "sigmf_file_n_samples": "9024"
+      },
+      "payload_matches_selected_reference": true,
+      "reference_comparisons": [
+        {
+          "time_seconds": 0.034467000000000005,
+          "payload_hex": "30303030303030",
+          "annotation_candidates": 1,
+          "status": "exact_match",
+          "annotation": {
+            "sf": "7",
+            "cr": "1",
+            "fc": "862.5",
+            "bandwidth": "125000",
+            "payload_base64": "MDAwMDAwMA==",
+            "rrh_idx": "2",
+            "rx_sample_rate": "250000",
+            "cfo": "7.5177",
+            "snr": "-8.8366",
+            "sigmf_file": "./sigmfs/25_01_17-14_39/rrh2/1",
+            "sigmf_file_offset": "5482.0",
+            "sigmf_file_n_samples": "9024"
+          },
+          "expected_payload_hex": "30303030303030"
+        },
+        {
+          "time_seconds": 1.044203,
+          "payload_hex": "30303030303031",
+          "annotation_candidates": 1,
+          "status": "exact_match",
+          "annotation": {
+            "sf": "7",
+            "cr": "1",
+            "fc": "862.5",
+            "bandwidth": "125000",
+            "payload_base64": "MDAwMDAwMQ==",
+            "rrh_idx": "2",
+            "rx_sample_rate": "250000",
+            "cfo": "7.5779",
+            "snr": "-7.8157",
+            "sigmf_file": "./sigmfs/25_01_17-14_39/rrh2/1",
+            "sigmf_file_offset": "257912.0",
+            "sigmf_file_n_samples": "9024"
+          },
+          "expected_payload_hex": "30303030303031"
+        }
+      ],
+      "research_report": {
+        "scope": "Research only: experimental composite sync and block-score gates applied; not the automatic product.",
+        "experimental_guarded_policy_applied": true,
+        "source": "https://zenodo.org/records/20341802",
+        "doi": "10.5281/zenodo.20341802",
+        "license": "CC BY 4.0",
+        "creators": [
+          "Joachim Tapparel",
+          "Andreas Burg"
+        ],
+        "source_data_sha256": "945cd6dbd9f0cacb7624432291a09ee41641c781e99a4bc451eb3d9962fe24da",
+        "source_meta_sha256": "70f769451a384542cdeeb1869204aca5c50d44c79e26d1bca22c041a286f052b",
+        "publisher_sha512_verified": true,
+        "oracle_parameters_applied": [],
+        "quarter_chirp_validated": false,
+        "sample_rate_hz": 250000.0,
+        "observations": [
+          {
+            "parameters": {
+              "bandwidth_hz": 125000,
+              "spreading_factor": 7,
+              "symbol_seconds": 0.001024,
+              "chirp_polarity": 1
+            },
+            "analysis_window_index": 0,
+            "preamble_time_seconds": 0.022528,
+            "data_time_seconds": 0.034467000000000005,
+            "carrier_tracking": {
+              "method": "matched_preamble_phase",
+              "preamble_blocks": 6,
+              "phase_hypotheses": 384,
+              "required_phase_concentration": 0.65,
+              "scope": "Preamble-only fractional carrier hypothesis modulo one bin; no RF center, integer CFO, sync word, header, payload or CRC used.",
+              "phase_concentration": 0.7992199707181136,
+              "raw_lag_coherence": 0.15512995125369505,
+              "matched_peak_evidence": {
+                "status": "reliable_matched_peak",
+                "peak_to_noise_floor": 81.3556840508879,
+                "peak_to_competing_peak": 16.81950876713721,
+                "required_peak_to_noise_floor": 32,
+                "required_peak_to_competing_peak": 4,
+                "scope": "Heuristic matched-tone evidence; colored noise and interference can violate the noise model. Not a false-alarm probability or CRC."
+              },
+              "phase_bin": 195,
+              "reference_bin": 82,
+              "status": "fractional_carrier_corrected",
+              "fractional_bin_offset": -0.4921875,
+              "offset_hz": -480.65185546875
+            },
+            "sync_word": {
+              "status": "sync_word_candidate",
+              "value_hex": "96",
+              "opposite_chirp_start_chip": 4020,
+              "opposite_chirp_start_seconds": 0.032163000000000004,
+              "relative_symbol_bins": [
+                72,
+                48
+              ],
+              "symbol_bin_errors": [
+                0,
+                0
+              ],
+              "method": "research_composite_sync",
+              "minimum_three_bin_energy_fraction": 0.11116627662643339,
+              "matched_peak_evidence": [
+                {
+                  "status": "unreliable_matched_peak",
+                  "peak_to_noise_floor": 15.548163886020994,
+                  "peak_to_competing_peak": 2.3882745534334466,
+                  "required_peak_to_noise_floor": 32,
+                  "required_peak_to_competing_peak": 4,
+                  "scope": "Heuristic matched-tone evidence; colored noise and interference can violate the noise model. Not a false-alarm probability or CRC."
+                },
+                {
+                  "status": "unreliable_matched_peak",
+                  "peak_to_noise_floor": 19.118455711876937,
+                  "peak_to_competing_peak": 4.433275629503024,
+                  "required_peak_to_noise_floor": 32,
+                  "required_peak_to_competing_peak": 4,
+                  "scope": "Heuristic matched-tone evidence; colored noise and interference can violate the noise model. Not a false-alarm probability or CRC."
+                },
+                {
+                  "status": "unreliable_matched_peak",
+                  "peak_to_noise_floor": 9.792525442435494,
+                  "peak_to_competing_peak": 1.9370523402811597,
+                  "required_peak_to_noise_floor": 32,
+                  "required_peak_to_competing_peak": 4,
+                  "scope": "Heuristic matched-tone evidence; colored noise and interference can violate the noise model. Not a false-alarm probability or CRC."
+                }
+              ],
+              "alphabet_score_gate": {
+                "noise_model": "global",
+                "status": "score_gate_passed",
+                "value_hex": "96",
+                "symbol_bin_errors": [
+                  0,
+                  0
+                ],
+                "peak_to_noise_floor": [
+                  15.548163886020996,
+                  19.118455711876933,
+                  9.792525442435492
+                ],
+                "required_minimum_peak_to_noise_floor": 8,
+                "summed_peak_to_noise_floor": 44.459145040333425,
+                "required_summed_peak_to_noise_floor": 32,
+                "legal_alphabet_peak_margin": [
+                  4.433275629503024,
+                  2.974357509734212
+                ],
+                "relative_word_score_mass": 0.9936128429729033,
+                "required_relative_word_score_mass": 0.99,
+                "scope": "Research score concentration under a simplified noise model; not a calibrated word probability or complete synchronization."
+              },
+              "local_alphabet_score_gate": {
+                "noise_model": "local",
+                "status": "score_gate_passed",
+                "value_hex": "96",
+                "symbol_bin_errors": [
+                  0,
+                  0
+                ],
+                "peak_to_noise_floor": [
+                  22.948050250753877,
+                  58.72290462223974,
+                  24.24633445956533
+                ],
+                "required_minimum_peak_to_noise_floor": 8,
+                "summed_peak_to_noise_floor": 105.91728933255894,
+                "required_summed_peak_to_noise_floor": 32,
+                "legal_alphabet_peak_margin": [
+                  4.433275629503024,
+                  2.974357509734212
+                ],
+                "relative_word_score_mass": 0.9999997765522701,
+                "required_relative_word_score_mass": 0.99,
+                "scope": "Research score concentration under a simplified noise model; not a calibrated word probability or complete synchronization."
+              },
+              "pooled_local_alphabet_score_gate": {
+                "noise_model": "pooled_local",
+                "status": "score_gate_passed",
+                "value_hex": "96",
+                "symbol_bin_errors": [
+                  0,
+                  0
+                ],
+                "peak_to_noise_floor": [
+                  12.694526252624687,
+                  38.47965772977568,
+                  10.549031341152848
+                ],
+                "required_minimum_peak_to_noise_floor": 8,
+                "summed_peak_to_noise_floor": 61.72321532355322,
+                "required_summed_peak_to_noise_floor": 32,
+                "legal_alphabet_peak_margin": [
+                  4.433275629503024,
+                  2.974357509734212
+                ],
+                "relative_word_score_mass": 0.9963642276905496,
+                "required_relative_word_score_mass": 0.99,
+                "scope": "Research score concentration under a simplified noise model; not a calibrated word probability or complete synchronization."
+              },
+              "confidence_gates_bypassed": false,
+              "research_policy_branch": "experimental_composite_sync",
+              "sample_grid_offset_chips": 0.375
+            },
+            "symbol_bins": [
+              109,
+              9,
+              125,
+              13,
+              25,
+              97,
+              1,
+              5,
+              2,
+              125,
+              75,
+              86,
+              57,
+              112,
+              33,
+              39,
+              109,
+              126,
+              61,
+              60,
+              83,
+              6,
+              115
+            ],
+            "quarter_chirp_validated": false,
+            "boundary_method": "research_single_inferred_boundary",
+            "reference_tone_bin": 7.130711334183578,
+            "hard_payload": {
+              "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+              "status": "payload_crc_valid",
+              "payload_hex": "30303030303030",
+              "payload_length_bytes": 7,
+              "received_crc": 58964,
+              "calculated_crc": 58964,
+              "coding_rate": "4/5",
+              "coding_rate_index": 1,
+              "corrected_spillover_bits": 0,
+              "corrected_payload_codeword_bits": 0,
+              "symbols_consumed": 23,
+              "validation": "Header 5-bit checksum and LoRa payload CRC16 passed; not emitter authenticity",
+              "text": "0000000"
+            },
+            "soft_analysis": {
+              "status": "research_crc_valid",
+              "selected_symbols": [
+                109,
+                9,
+                125,
+                13,
+                25,
+                97,
+                1,
+                5,
+                2,
+                125,
+                75,
+                86,
+                57,
+                112,
+                33,
+                39,
+                109,
+                126,
+                61,
+                60,
+                83,
+                6,
+                115
+              ],
+              "blocks": [
+                {
+                  "status": "parity_already_consistent",
+                  "symbols": [
+                    2,
+                    125,
+                    75,
+                    86,
+                    57
+                  ],
+                  "candidates": [],
+                  "start_symbol_index": 8
+                },
+                {
+                  "status": "parity_already_consistent",
+                  "symbols": [
+                    112,
+                    33,
+                    39,
+                    109,
+                    126
+                  ],
+                  "candidates": [],
+                  "start_symbol_index": 13
+                },
+                {
+                  "status": "parity_already_consistent",
+                  "symbols": [
+                    61,
+                    60,
+                    83,
+                    6,
+                    115
+                  ],
+                  "candidates": [],
+                  "start_symbol_index": 18
+                }
+              ],
+              "payload": {
+                "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+                "status": "payload_crc_valid",
+                "payload_hex": "30303030303030",
+                "payload_length_bytes": 7,
+                "received_crc": 58964,
+                "calculated_crc": 58964,
+                "coding_rate": "4/5",
+                "coding_rate_index": 1,
+                "corrected_spillover_bits": 0,
+                "corrected_payload_codeword_bits": 0,
+                "symbols_consumed": 23,
+                "validation": "Header 5-bit checksum and LoRa payload CRC16 passed; not emitter authenticity",
+                "text": "0000000"
+              },
+              "spectral_evidence": {
+                "mean_spectral_scores": [
+                  12.512579017992994,
+                  13.921585773844859,
+                  12.232482393236392,
+                  13.702272917617563
+                ],
+                "minimum_required_mean_score": 8,
+                "ambiguous_block_count": 0
+              },
+              "payload_decode_calls": 1,
+              "crc_used_for_candidate_selection": false,
+              "scope": "Research only. At most five single-column erasure candidates per CR4/5 block; no header correction or CRC-guided retries."
+            }
+          },
+          {
+            "parameters": {
+              "bandwidth_hz": 125000,
+              "spreading_factor": 7,
+              "symbol_seconds": 0.001024,
+              "chirp_polarity": 1
+            },
+            "analysis_window_index": 2,
+            "preamble_time_seconds": 1.031904,
+            "data_time_seconds": 1.044203,
+            "carrier_tracking": {
+              "method": "matched_preamble_phase",
+              "preamble_blocks": 6,
+              "phase_hypotheses": 384,
+              "required_phase_concentration": 0.65,
+              "scope": "Preamble-only fractional carrier hypothesis modulo one bin; no RF center, integer CFO, sync word, header, payload or CRC used.",
+              "phase_concentration": 0.9425637480650854,
+              "raw_lag_coherence": 0.0876514411310661,
+              "matched_peak_evidence": {
+                "status": "reliable_matched_peak",
+                "peak_to_noise_floor": 120.25931754813759,
+                "peak_to_competing_peak": 18.312405946941617,
+                "required_peak_to_noise_floor": 32,
+                "required_peak_to_competing_peak": 4,
+                "scope": "Heuristic matched-tone evidence; colored noise and interference can violate the noise model. Not a false-alarm probability or CRC."
+              },
+              "phase_bin": 213,
+              "reference_bin": 40,
+              "status": "fractional_carrier_corrected",
+              "fractional_bin_offset": -0.4453125,
+              "offset_hz": -434.87548828125
+            },
+            "sync_word": {
+              "status": "sync_word_candidate",
+              "value_hex": "96",
+              "opposite_chirp_start_chip": 11873,
+              "opposite_chirp_start_seconds": 1.041899,
+              "relative_symbol_bins": [
+                72,
+                48
+              ],
+              "symbol_bin_errors": [
+                0,
+                0
+              ],
+              "method": "research_composite_sync",
+              "minimum_three_bin_energy_fraction": 0.1552288434768036,
+              "matched_peak_evidence": [
+                {
+                  "status": "unreliable_matched_peak",
+                  "peak_to_noise_floor": 28.362007519259105,
+                  "peak_to_competing_peak": 6.117241156659715,
+                  "required_peak_to_noise_floor": 32,
+                  "required_peak_to_competing_peak": 4,
+                  "scope": "Heuristic matched-tone evidence; colored noise and interference can violate the noise model. Not a false-alarm probability or CRC."
+                },
+                {
+                  "status": "unreliable_matched_peak",
+                  "peak_to_noise_floor": 15.614952241272603,
+                  "peak_to_competing_peak": 4.0422168211844225,
+                  "required_peak_to_noise_floor": 32,
+                  "required_peak_to_competing_peak": 4,
+                  "scope": "Heuristic matched-tone evidence; colored noise and interference can violate the noise model. Not a false-alarm probability or CRC."
+                },
+                {
+                  "status": "unreliable_matched_peak",
+                  "peak_to_noise_floor": 29.64889380534054,
+                  "peak_to_competing_peak": 6.027866134133506,
+                  "required_peak_to_noise_floor": 32,
+                  "required_peak_to_competing_peak": 4,
+                  "scope": "Heuristic matched-tone evidence; colored noise and interference can violate the noise model. Not a false-alarm probability or CRC."
+                }
+              ],
+              "alphabet_score_gate": {
+                "noise_model": "global",
+                "status": "score_gate_passed",
+                "value_hex": "96",
+                "symbol_bin_errors": [
+                  0,
+                  0
+                ],
+                "peak_to_noise_floor": [
+                  28.362007519259105,
+                  15.614952241272604,
+                  29.64889380534054
+                ],
+                "required_minimum_peak_to_noise_floor": 8,
+                "summed_peak_to_noise_floor": 73.62585356587225,
+                "required_summed_peak_to_noise_floor": 32,
+                "legal_alphabet_peak_margin": [
+                  4.0422168211844225,
+                  8.267838961163486
+                ],
+                "relative_word_score_mass": 0.9999822249639895,
+                "required_relative_word_score_mass": 0.99,
+                "scope": "Research score concentration under a simplified noise model; not a calibrated word probability or complete synchronization."
+              },
+              "local_alphabet_score_gate": {
+                "noise_model": "local",
+                "status": "score_gate_rejected",
+                "value_hex": "96",
+                "symbol_bin_errors": [
+                  0,
+                  0
+                ],
+                "peak_to_noise_floor": [
+                  8.266445374634694,
+                  7.86007561869935,
+                  24.531986424656175
+                ],
+                "required_minimum_peak_to_noise_floor": 8,
+                "summed_peak_to_noise_floor": 40.65850741799022,
+                "required_summed_peak_to_noise_floor": 32,
+                "legal_alphabet_peak_margin": [
+                  4.0422168211844225,
+                  8.267838961163486
+                ],
+                "relative_word_score_mass": 0.9868968389664491,
+                "required_relative_word_score_mass": 0.99,
+                "scope": "Research score concentration under a simplified noise model; not a calibrated word probability or complete synchronization."
+              },
+              "pooled_local_alphabet_score_gate": {
+                "noise_model": "pooled_local",
+                "status": "score_gate_passed",
+                "value_hex": "96",
+                "symbol_bin_errors": [
+                  0,
+                  0
+                ],
+                "peak_to_noise_floor": [
+                  18.01614648656514,
+                  12.173280466834175,
+                  22.46493401988338
+                ],
+                "required_minimum_peak_to_noise_floor": 8,
+                "summed_peak_to_noise_floor": 52.65436097328269,
+                "required_summed_peak_to_noise_floor": 32,
+                "legal_alphabet_peak_margin": [
+                  4.0422168211844225,
+                  8.267838961163486
+                ],
+                "relative_word_score_mass": 0.9996797310142524,
+                "required_relative_word_score_mass": 0.99,
+                "scope": "Research score concentration under a simplified noise model; not a calibrated word probability or complete synchronization."
+              },
+              "confidence_gates_bypassed": false,
+              "research_policy_branch": "experimental_composite_sync",
+              "sample_grid_offset_chips": 0.375
+            },
+            "symbol_bins": [
+              109,
+              9,
+              125,
+              13,
+              25,
+              97,
+              1,
+              5,
+              2,
+              125,
+              75,
+              86,
+              57,
+              81,
+              33,
+              39,
+              109,
+              127,
+              62,
+              60,
+              83,
+              6,
+              126
+            ],
+            "quarter_chirp_validated": false,
+            "boundary_method": "research_single_inferred_boundary",
+            "reference_tone_bin": 9.032680010454014,
+            "hard_payload": {
+              "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+              "status": "payload_crc_valid",
+              "payload_hex": "30303030303031",
+              "payload_length_bytes": 7,
+              "received_crc": 58965,
+              "calculated_crc": 58965,
+              "coding_rate": "4/5",
+              "coding_rate_index": 1,
+              "corrected_spillover_bits": 0,
+              "corrected_payload_codeword_bits": 0,
+              "symbols_consumed": 23,
+              "validation": "Header 5-bit checksum and LoRa payload CRC16 passed; not emitter authenticity",
+              "text": "0000001"
+            },
+            "soft_analysis": {
+              "status": "research_crc_valid",
+              "selected_symbols": [
+                109,
+                9,
+                125,
+                13,
+                25,
+                97,
+                1,
+                5,
+                2,
+                125,
+                75,
+                86,
+                57,
+                81,
+                33,
+                39,
+                109,
+                127,
+                62,
+                60,
+                83,
+                6,
+                126
+              ],
+              "blocks": [
+                {
+                  "status": "parity_already_consistent",
+                  "symbols": [
+                    2,
+                    125,
+                    75,
+                    86,
+                    57
+                  ],
+                  "candidates": [],
+                  "start_symbol_index": 8
+                },
+                {
+                  "status": "parity_already_consistent",
+                  "symbols": [
+                    81,
+                    33,
+                    39,
+                    109,
+                    127
+                  ],
+                  "candidates": [],
+                  "start_symbol_index": 13
+                },
+                {
+                  "status": "parity_already_consistent",
+                  "symbols": [
+                    62,
+                    60,
+                    83,
+                    6,
+                    126
+                  ],
+                  "candidates": [],
+                  "start_symbol_index": 18
+                }
+              ],
+              "payload": {
+                "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+                "status": "payload_crc_valid",
+                "payload_hex": "30303030303031",
+                "payload_length_bytes": 7,
+                "received_crc": 58965,
+                "calculated_crc": 58965,
+                "coding_rate": "4/5",
+                "coding_rate_index": 1,
+                "corrected_spillover_bits": 0,
+                "corrected_payload_codeword_bits": 0,
+                "symbols_consumed": 23,
+                "validation": "Header 5-bit checksum and LoRa payload CRC16 passed; not emitter authenticity",
+                "text": "0000001"
+              },
+              "spectral_evidence": {
+                "mean_spectral_scores": [
+                  22.347997989095813,
+                  17.872640398131487,
+                  27.5151901488725,
+                  27.605378215967516
+                ],
+                "minimum_required_mean_score": 8,
+                "ambiguous_block_count": 0
+              },
+              "payload_decode_calls": 1,
+              "crc_used_for_candidate_selection": false,
+              "scope": "Research only. At most five single-column erasure candidates per CR4/5 block; no header correction or CRC-guided retries."
+            }
+          }
+        ],
+        "limitations": [
+          "No annotations, expected bytes, SF, CFO or time windows supplied to the detector.",
+          "One fixed boundary per unique sync-word hypothesis; no CRC-driven timing or symbol search.",
+          "CR4/5 single-symbol-erasure model can fail on multiple errors; spectral margins are heuristic.",
+          "No production decoder thresholds changed. Source RF center unverified."
+        ]
+      }
+    },
+    {
+      "annotation": {
+        "sf": "7",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "125000",
+        "payload_base64": "MDAwMDAwMA==",
+        "rrh_idx": "1",
+        "rx_sample_rate": "250000",
+        "cfo": "6.6855",
+        "snr": "33.144",
+        "sigmf_file": "./sigmfs/25_01_15-10_17/rrh1/3",
+        "sigmf_file_offset": "4840.0",
+        "sigmf_file_n_samples": "9024"
+      },
+      "payload_matches_selected_reference": true,
+      "reference_comparisons": [
+        {
+          "time_seconds": 0.031914000000000005,
+          "payload_hex": "30303030303030",
+          "annotation_candidates": 1,
+          "status": "exact_match",
+          "annotation": {
+            "sf": "7",
+            "cr": "1",
+            "fc": "862.5",
+            "bandwidth": "125000",
+            "payload_base64": "MDAwMDAwMA==",
+            "rrh_idx": "1",
+            "rx_sample_rate": "250000",
+            "cfo": "6.6855",
+            "snr": "33.144",
+            "sigmf_file": "./sigmfs/25_01_15-10_17/rrh1/3",
+            "sigmf_file_offset": "4840.0",
+            "sigmf_file_n_samples": "9024"
+          },
+          "expected_payload_hex": "30303030303030"
+        }
+      ],
+      "research_report": {
+        "scope": "Research only: experimental composite sync and block-score gates applied; not the automatic product.",
+        "experimental_guarded_policy_applied": true,
+        "source": "https://zenodo.org/records/20341802",
+        "doi": "10.5281/zenodo.20341802",
+        "license": "CC BY 4.0",
+        "creators": [
+          "Joachim Tapparel",
+          "Andreas Burg"
+        ],
+        "source_data_sha256": "2899b292980603cd1768a9425c3b88071e0bf65b04699b1f266aba5e8b3a5cda",
+        "source_meta_sha256": "dbf3d44cb9ed3fa2fa0b1b55b63606b56749d4a71128b456c4315806a8dd6de1",
+        "publisher_sha512_verified": true,
+        "oracle_parameters_applied": [],
+        "quarter_chirp_validated": false,
+        "sample_rate_hz": 250000.0,
+        "observations": [
+          {
+            "parameters": {
+              "bandwidth_hz": 125000,
+              "spreading_factor": 7,
+              "symbol_seconds": 0.001024,
+              "chirp_polarity": 1
+            },
+            "analysis_window_index": 0,
+            "preamble_time_seconds": 0.019456,
+            "data_time_seconds": 0.031914000000000005,
+            "carrier_tracking": {
+              "scope": "Preamble repetition only; fractional carrier offset modulo BW/2**SF, not RF center or integer CFO",
+              "preamble_blocks": 8,
+              "lag_samples": 128,
+              "coherence": 0.9839387695353715,
+              "required_coherence": 0.8,
+              "status": "fractional_carrier_corrected",
+              "fractional_bin_offset": -0.3133719845947294,
+              "offset_hz": -306.02732870579047
+            },
+            "sync_word": {
+              "status": "sync_word_candidate",
+              "value_hex": "96",
+              "relative_symbol_bins": [
+                72,
+                48
+              ],
+              "symbol_bin_errors": [
+                0,
+                0
+              ],
+              "opposite_chirp_start_seconds": 0.029602,
+              "opposite_chirp_start_chip": 3700,
+              "minimum_three_bin_energy_fraction": 0.9361236673142012,
+              "method": "three_bin_concentration",
+              "scope": "Conventional two-nibble sync-word hypothesis only; no network identity, quarter-chirp, header, CRC or payload validation",
+              "confidence_gates_bypassed": false,
+              "research_policy_branch": "existing_physical_sync",
+              "sample_grid_offset_chips": 0.25
+            },
+            "symbol_bins": [
+              109,
+              9,
+              125,
+              13,
+              25,
+              97,
+              1,
+              5,
+              2,
+              125,
+              75,
+              86,
+              57,
+              112,
+              33,
+              39,
+              109,
+              126,
+              61,
+              60,
+              83,
+              6,
+              115
+            ],
+            "quarter_chirp_validated": true,
+            "boundary_method": "normalized_template_correlation",
+            "reference_tone_bin": 7.999936753511913,
+            "hard_payload": {
+              "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+              "status": "payload_crc_valid",
+              "payload_hex": "30303030303030",
+              "payload_length_bytes": 7,
+              "received_crc": 58964,
+              "calculated_crc": 58964,
+              "coding_rate": "4/5",
+              "coding_rate_index": 1,
+              "corrected_spillover_bits": 0,
+              "corrected_payload_codeword_bits": 0,
+              "symbols_consumed": 23,
+              "validation": "Header 5-bit checksum and LoRa payload CRC16 passed; not emitter authenticity",
+              "text": "0000000"
+            },
+            "soft_analysis": {
+              "status": "research_crc_valid",
+              "selected_symbols": [
+                109,
+                9,
+                125,
+                13,
+                25,
+                97,
+                1,
+                5,
+                2,
+                125,
+                75,
+                86,
+                57,
+                112,
+                33,
+                39,
+                109,
+                126,
+                61,
+                60,
+                83,
+                6,
+                115
+              ],
+              "blocks": [
+                {
+                  "status": "parity_already_consistent",
+                  "symbols": [
+                    2,
+                    125,
+                    75,
+                    86,
+                    57
+                  ],
+                  "candidates": [],
+                  "start_symbol_index": 8
+                },
+                {
+                  "status": "parity_already_consistent",
+                  "symbols": [
+                    112,
+                    33,
+                    39,
+                    109,
+                    126
+                  ],
+                  "candidates": [],
+                  "start_symbol_index": 13
+                },
+                {
+                  "status": "parity_already_consistent",
+                  "symbols": [
+                    61,
+                    60,
+                    83,
+                    6,
+                    115
+                  ],
+                  "candidates": [],
+                  "start_symbol_index": 18
+                }
+              ],
+              "payload": {
+                "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+                "status": "payload_crc_valid",
+                "payload_hex": "30303030303030",
+                "payload_length_bytes": 7,
+                "received_crc": 58964,
+                "calculated_crc": 58964,
+                "coding_rate": "4/5",
+                "coding_rate_index": 1,
+                "corrected_spillover_bits": 0,
+                "corrected_payload_codeword_bits": 0,
+                "symbols_consumed": 23,
+                "validation": "Header 5-bit checksum and LoRa payload CRC16 passed; not emitter authenticity",
+                "text": "0000000"
+              },
+              "spectral_evidence": {
+                "mean_spectral_scores": [
+                  2862.418917019817,
+                  2463.271863893751,
+                  2665.6715837957454,
+                  2778.782023790111
+                ],
+                "minimum_required_mean_score": 8,
+                "ambiguous_block_count": 0
+              },
+              "payload_decode_calls": 1,
+              "crc_used_for_candidate_selection": false,
+              "scope": "Research only. At most five single-column erasure candidates per CR4/5 block; no header correction or CRC-guided retries."
+            }
+          }
+        ],
+        "limitations": [
+          "No annotations, expected bytes, SF, CFO or time windows supplied to the detector.",
+          "One fixed boundary per unique sync-word hypothesis; no CRC-driven timing or symbol search.",
+          "CR4/5 single-symbol-erasure model can fail on multiple errors; spectral margins are heuristic.",
+          "No production decoder thresholds changed. Source RF center unverified."
+        ]
+      }
+    },
+    {
+      "annotation": {
+        "sf": "10",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "250000",
+        "payload_base64": "uAUo7be9t0JHQJdzKa4qQxpAEg==",
+        "rrh_idx": "1",
+        "rx_sample_rate": "500000",
+        "cfo": "2.0362",
+        "snr": "29.1384",
+        "sigmf_file": "./sigmfs/25_09_12-14_15/rrh1/43",
+        "sigmf_file_offset": "33796.0000005",
+        "sigmf_file_n_samples": "82432"
+      },
+      "payload_matches_selected_reference": true,
+      "reference_comparisons": [
+        {
+          "time_seconds": 0.117772,
+          "payload_hex": "b80528edb7bdb7424740977329ae2a431a4012",
+          "annotation_candidates": 1,
+          "status": "exact_match",
+          "annotation": {
+            "sf": "10",
+            "cr": "1",
+            "fc": "862.5",
+            "bandwidth": "250000",
+            "payload_base64": "uAUo7be9t0JHQJdzKa4qQxpAEg==",
+            "rrh_idx": "1",
+            "rx_sample_rate": "500000",
+            "cfo": "2.0362",
+            "snr": "29.1384",
+            "sigmf_file": "./sigmfs/25_09_12-14_15/rrh1/43",
+            "sigmf_file_offset": "33796.0000005",
+            "sigmf_file_n_samples": "82432"
+          },
+          "expected_payload_hex": "b80528edb7bdb7424740977329ae2a431a4012"
+        }
+      ],
+      "research_report": {
+        "scope": "Research only: experimental composite sync and block-score gates applied; not the automatic product.",
+        "experimental_guarded_policy_applied": true,
+        "source": "https://zenodo.org/records/20341802",
+        "doi": "10.5281/zenodo.20341802",
+        "license": "CC BY 4.0",
+        "creators": [
+          "Joachim Tapparel",
+          "Andreas Burg"
+        ],
+        "source_data_sha256": "af23a04c94b862954e5641088e6cf10b5107c7776c29afab6433285af29fc525",
+        "source_meta_sha256": "814545a858c09a07bc65c42ba6818ac7a99a0f75270a2a4708d93bda6db83482",
+        "publisher_sha512_verified": true,
+        "oracle_parameters_applied": [],
+        "quarter_chirp_validated": false,
+        "sample_rate_hz": 500000.0,
+        "observations": [
+          {
+            "parameters": {
+              "bandwidth_hz": 250000,
+              "spreading_factor": 10,
+              "symbol_seconds": 0.004096,
+              "chirp_polarity": 1
+            },
+            "analysis_window_index": 0,
+            "preamble_time_seconds": 0.069632,
+            "data_time_seconds": 0.117772,
+            "carrier_tracking": {
+              "scope": "Preamble repetition only; fractional carrier offset modulo BW/2**SF, not RF center or integer CFO",
+              "preamble_blocks": 7,
+              "lag_samples": 1024,
+              "coherence": 0.8865816006169565,
+              "required_coherence": 0.8,
+              "status": "fractional_carrier_corrected",
+              "fractional_bin_offset": 0.035049044499288466,
+              "offset_hz": 8.556895629709098
+            },
+            "sync_word": {
+              "status": "sync_word_candidate",
+              "value_hex": "12",
+              "relative_symbol_bins": [
+                8,
+                16
+              ],
+              "symbol_bin_errors": [
+                0,
+                0
+              ],
+              "opposite_chirp_start_seconds": 0.108548,
+              "opposite_chirp_start_chip": 27137,
+              "minimum_three_bin_energy_fraction": 0.9492466419381373,
+              "method": "three_bin_concentration",
+              "scope": "Conventional two-nibble sync-word hypothesis only; no network identity, quarter-chirp, header, CRC or payload validation",
+              "confidence_gates_bypassed": false,
+              "research_policy_branch": "existing_physical_sync",
+              "sample_grid_offset_chips": 0.0
+            },
+            "symbol_bins": [
+              809,
+              437,
+              65,
+              125,
+              917,
+              881,
+              273,
+              941,
+              554,
+              993,
+              686,
+              800,
+              262,
+              579,
+              799,
+              747,
+              930,
+              174,
+              92,
+              793,
+              796,
+              949,
+              123,
+              899,
+              65,
+              722,
+              663,
+              848
+            ],
+            "quarter_chirp_validated": true,
+            "boundary_method": "normalized_template_correlation",
+            "reference_tone_bin": 3.006646523043862,
+            "hard_payload": {
+              "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+              "status": "payload_crc_valid",
+              "payload_hex": "b80528edb7bdb7424740977329ae2a431a4012",
+              "payload_length_bytes": 19,
+              "received_crc": 3836,
+              "calculated_crc": 3836,
+              "coding_rate": "4/5",
+              "coding_rate_index": 1,
+              "corrected_spillover_bits": 0,
+              "corrected_payload_codeword_bits": 0,
+              "symbols_consumed": 28,
+              "validation": "Header 5-bit checksum and LoRa payload CRC16 passed; not emitter authenticity"
+            },
+            "soft_analysis": {
+              "status": "research_crc_valid",
+              "selected_symbols": [
+                809,
+                437,
+                65,
+                125,
+                917,
+                881,
+                273,
+                941,
+                554,
+                993,
+                686,
+                800,
+                262,
+                579,
+                799,
+                747,
+                930,
+                174,
+                92,
+                793,
+                796,
+                949,
+                123,
+                899,
+                65,
+                722,
+                663,
+                848
+              ],
+              "blocks": [
+                {
+                  "status": "parity_already_consistent",
+                  "symbols": [
+                    554,
+                    993,
+                    686,
+                    800,
+                    262
+                  ],
+                  "candidates": [],
+                  "start_symbol_index": 8
+                },
+                {
+                  "status": "parity_already_consistent",
+                  "symbols": [
+                    579,
+                    799,
+                    747,
+                    930,
+                    174
+                  ],
+                  "candidates": [],
+                  "start_symbol_index": 13
+                },
+                {
+                  "status": "parity_already_consistent",
+                  "symbols": [
+                    92,
+                    793,
+                    796,
+                    949,
+                    123
+                  ],
+                  "candidates": [],
+                  "start_symbol_index": 18
+                },
+                {
+                  "status": "parity_already_consistent",
+                  "symbols": [
+                    899,
+                    65,
+                    722,
+                    663,
+                    848
+                  ],
+                  "candidates": [],
+                  "start_symbol_index": 23
+                }
+              ],
+              "payload": {
+                "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+                "status": "payload_crc_valid",
+                "payload_hex": "b80528edb7bdb7424740977329ae2a431a4012",
+                "payload_length_bytes": 19,
+                "received_crc": 3836,
+                "calculated_crc": 3836,
+                "coding_rate": "4/5",
+                "coding_rate_index": 1,
+                "corrected_spillover_bits": 0,
+                "corrected_payload_codeword_bits": 0,
+                "symbols_consumed": 28,
+                "validation": "Header 5-bit checksum and LoRa payload CRC16 passed; not emitter authenticity"
+              },
+              "spectral_evidence": {
+                "mean_spectral_scores": [
+                  122079.37159235441,
+                  118058.52006222024,
+                  130457.22737008869,
+                  110046.99925681576,
+                  105917.13889686247
+                ],
+                "minimum_required_mean_score": 8,
+                "ambiguous_block_count": 0
+              },
+              "payload_decode_calls": 1,
+              "crc_used_for_candidate_selection": false,
+              "scope": "Research only. At most five single-column erasure candidates per CR4/5 block; no header correction or CRC-guided retries."
+            }
+          }
+        ],
+        "limitations": [
+          "No annotations, expected bytes, SF, CFO or time windows supplied to the detector.",
+          "One fixed boundary per unique sync-word hypothesis; no CRC-driven timing or symbol search.",
+          "CR4/5 single-symbol-erasure model can fail on multiple errors; spectral margins are heuristic.",
+          "No production decoder thresholds changed. Source RF center unverified."
+        ]
+      }
+    },
+    {
+      "annotation": {
+        "sf": "10",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "250000",
+        "payload_base64": "tAgZ5gRtckJHQGbV/gahQRpAsw==",
+        "rrh_idx": "1",
+        "rx_sample_rate": "500000",
+        "cfo": "1.8637",
+        "snr": "36.5986",
+        "sigmf_file": "./sigmfs/25_09_12-15_46/rrh1/30",
+        "sigmf_file_offset": "34927.0000005",
+        "sigmf_file_n_samples": "82432"
+      },
+      "payload_matches_selected_reference": true,
+      "reference_comparisons": [
+        {
+          "time_seconds": 0.12002600000000001,
+          "payload_hex": "b40819e6046d7242474066d5fe06a1411a40b3",
+          "annotation_candidates": 1,
+          "status": "exact_match",
+          "annotation": {
+            "sf": "10",
+            "cr": "1",
+            "fc": "862.5",
+            "bandwidth": "250000",
+            "payload_base64": "tAgZ5gRtckJHQGbV/gahQRpAsw==",
+            "rrh_idx": "1",
+            "rx_sample_rate": "500000",
+            "cfo": "1.8637",
+            "snr": "36.5986",
+            "sigmf_file": "./sigmfs/25_09_12-15_46/rrh1/30",
+            "sigmf_file_offset": "34927.0000005",
+            "sigmf_file_n_samples": "82432"
+          },
+          "expected_payload_hex": "b40819e6046d7242474066d5fe06a1411a40b3"
+        }
+      ],
+      "research_report": {
+        "scope": "Research only: experimental composite sync and block-score gates applied; not the automatic product.",
+        "experimental_guarded_policy_applied": true,
+        "source": "https://zenodo.org/records/20341802",
+        "doi": "10.5281/zenodo.20341802",
+        "license": "CC BY 4.0",
+        "creators": [
+          "Joachim Tapparel",
+          "Andreas Burg"
+        ],
+        "source_data_sha256": "628654899793ba6b543cb24e346f048ec4c885ff3124e973b39531e0afc478eb",
+        "source_meta_sha256": "cd4a16b02bb8895f61cf6309532c1d1e460a948d85ecfdf646962cd28d60441c",
+        "publisher_sha512_verified": true,
+        "oracle_parameters_applied": [],
+        "quarter_chirp_validated": false,
+        "sample_rate_hz": 500000.0,
+        "observations": [
+          {
+            "parameters": {
+              "bandwidth_hz": 250000,
+              "spreading_factor": 10,
+              "symbol_seconds": 0.004096,
+              "chirp_polarity": 1
+            },
+            "analysis_window_index": 0,
+            "preamble_time_seconds": 0.069632,
+            "data_time_seconds": 0.12002600000000001,
+            "carrier_tracking": {
+              "scope": "Preamble repetition only; fractional carrier offset modulo BW/2**SF, not RF center or integer CFO",
+              "preamble_blocks": 8,
+              "lag_samples": 1024,
+              "coherence": 0.9038896302488759,
+              "required_coherence": 0.8,
+              "status": "fractional_carrier_corrected",
+              "fractional_bin_offset": -0.12471542839103587,
+              "offset_hz": -30.448102634530244
+            },
+            "sync_word": {
+              "status": "sync_word_candidate",
+              "value_hex": "12",
+              "relative_symbol_bins": [
+                8,
+                16
+              ],
+              "symbol_bin_errors": [
+                0,
+                0
+              ],
+              "opposite_chirp_start_seconds": 0.11081,
+              "opposite_chirp_start_chip": 27702,
+              "minimum_three_bin_energy_fraction": 0.9760924707803978,
+              "method": "three_bin_concentration",
+              "scope": "Conventional two-nibble sync-word hypothesis only; no network identity, quarter-chirp, header, CRC or payload validation",
+              "confidence_gates_bypassed": false,
+              "research_policy_branch": "existing_physical_sync",
+              "sample_grid_offset_chips": 0.5
+            },
+            "symbol_bins": [
+              213,
+              437,
+              129,
+              29,
+              921,
+              881,
+              749,
+              937,
+              99,
+              965,
+              558,
+              815,
+              542,
+              835,
+              543,
+              918,
+              866,
+              163,
+              97,
+              138,
+              230,
+              191,
+              655,
+              947,
+              48,
+              687,
+              699,
+              184
+            ],
+            "quarter_chirp_validated": true,
+            "boundary_method": "normalized_template_correlation",
+            "reference_tone_bin": 1.0360536583737077,
+            "hard_payload": {
+              "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+              "status": "payload_crc_valid",
+              "payload_hex": "b40819e6046d7242474066d5fe06a1411a40b3",
+              "payload_length_bytes": 19,
+              "received_crc": 50303,
+              "calculated_crc": 50303,
+              "coding_rate": "4/5",
+              "coding_rate_index": 1,
+              "corrected_spillover_bits": 0,
+              "corrected_payload_codeword_bits": 0,
+              "symbols_consumed": 28,
+              "validation": "Header 5-bit checksum and LoRa payload CRC16 passed; not emitter authenticity"
+            },
+            "soft_analysis": {
+              "status": "research_crc_valid",
+              "selected_symbols": [
+                213,
+                437,
+                129,
+                29,
+                921,
+                881,
+                749,
+                937,
+                99,
+                965,
+                558,
+                815,
+                542,
+                835,
+                543,
+                918,
+                866,
+                163,
+                97,
+                138,
+                230,
+                191,
+                655,
+                947,
+                48,
+                687,
+                699,
+                184
+              ],
+              "blocks": [
+                {
+                  "status": "parity_already_consistent",
+                  "symbols": [
+                    99,
+                    965,
+                    558,
+                    815,
+                    542
+                  ],
+                  "candidates": [],
+                  "start_symbol_index": 8
+                },
+                {
+                  "status": "parity_already_consistent",
+                  "symbols": [
+                    835,
+                    543,
+                    918,
+                    866,
+                    163
+                  ],
+                  "candidates": [],
+                  "start_symbol_index": 13
+                },
+                {
+                  "status": "parity_already_consistent",
+                  "symbols": [
+                    97,
+                    138,
+                    230,
+                    191,
+                    655
+                  ],
+                  "candidates": [],
+                  "start_symbol_index": 18
+                },
+                {
+                  "status": "parity_already_consistent",
+                  "symbols": [
+                    947,
+                    48,
+                    687,
+                    699,
+                    184
+                  ],
+                  "candidates": [],
+                  "start_symbol_index": 23
+                }
+              ],
+              "payload": {
+                "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+                "status": "payload_crc_valid",
+                "payload_hex": "b40819e6046d7242474066d5fe06a1411a40b3",
+                "payload_length_bytes": 19,
+                "received_crc": 50303,
+                "calculated_crc": 50303,
+                "coding_rate": "4/5",
+                "coding_rate_index": 1,
+                "corrected_spillover_bits": 0,
+                "corrected_payload_codeword_bits": 0,
+                "symbols_consumed": 28,
+                "validation": "Header 5-bit checksum and LoRa payload CRC16 passed; not emitter authenticity"
+              },
+              "spectral_evidence": {
+                "mean_spectral_scores": [
+                  179965.36070395372,
+                  146863.5173433418,
+                  170648.67685140827,
+                  170448.1675053356,
+                  144570.92619519023
+                ],
+                "minimum_required_mean_score": 8,
+                "ambiguous_block_count": 0
+              },
+              "payload_decode_calls": 1,
+              "crc_used_for_candidate_selection": false,
+              "scope": "Research only. At most five single-column erasure candidates per CR4/5 block; no header correction or CRC-guided retries."
+            }
+          }
+        ],
+        "limitations": [
+          "No annotations, expected bytes, SF, CFO or time windows supplied to the detector.",
+          "One fixed boundary per unique sync-word hypothesis; no CRC-driven timing or symbol search.",
+          "CR4/5 single-symbol-erasure model can fail on multiple errors; spectral margins are heuristic.",
+          "No production decoder thresholds changed. Source RF center unverified."
+        ]
+      }
+    }
+  ],
+  "baseline_commit": "02f4b73f77a9a28cb2dea4ff5e3b054f03f9ebca",
+  "matched_count": 4,
+  "selected_count": 4,
+  "research_code_sha256": {
+    "scripts/lora_soft_probe.py": "ee10d1b5376775c914b5699789e61f666a399f1e9808008d56deb57396c3bf6a",
+    "scripts/loraiq_forensic_probe.py": "d8acbbe618e66f0ce7c702f2c7b49daf9d2b8e00b5df7176f655ac96d0d2807e",
+    "scripts/lora_sync_gate.py": "84cb4a895a4ae92b223f9fa983df1da05f3b656d62fecb68b9b07c24a34fb949"
+  }
+}

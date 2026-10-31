@@ -47,7 +47,7 @@ def infer_block(symbols,sf,scores,used_words=None):
             'scope':'One erasure hypothesis per symbol column, ranked by noise-normalized spectral loss. Heuristic; no payload bytes or CRC used.'}
 
 
-def infer_payload(symbols,sf,scores):
+def infer_payload(symbols,sf,scores,minimum_mean_score=None):
     from iqscope_lora_header import decode_explicit_header
     if type(sf) is not int or sf not in (7,8,9,10) or not 8<=len(symbols)<=64:
         raise ValueError('Expected 8-64 SF7-10 symbols')
@@ -68,10 +68,20 @@ def infer_payload(symbols,sf,scores):
         selected[start:start+5]=item['symbols']
         reports.append(dict(item,start_symbol_index=start))
         remaining-=sf
+    means=[float(np.mean([power[i,symbols[i]] for i in range(8)]))]
+    means.extend(float(np.mean([power[i,selected[i]] for i in range(start,start+5)])) for start in range(8,required,5))
+    evidence={'mean_spectral_scores':means,'minimum_required_mean_score':minimum_mean_score,
+              'ambiguous_block_count':sum(r['status']=='ambiguous_or_weak_erasure' for r in reports)}
+    if minimum_mean_score is not None:
+        if not np.isfinite(minimum_mean_score) or minimum_mean_score<=0:
+            raise ValueError('Expected a finite positive block-score threshold')
+        if min(means)<minimum_mean_score or evidence['ambiguous_block_count']:
+            return {'status':'research_evidence_rejected','selected_symbols':selected,'blocks':reports,
+                    'spectral_evidence':evidence,'payload_decode_calls':0,'crc_used_for_candidate_selection':False}
     # All spectral/parity decisions are complete before this single decode.
     from iqscope_lora_payload import decode_payload
     payload=decode_payload(selected,sf)
     return {'status':'research_crc_valid' if payload['status']=='payload_crc_valid' else 'research_payload_unvalidated',
-            'selected_symbols':selected,'blocks':reports,'payload':payload,
+            'selected_symbols':selected,'blocks':reports,'payload':payload,'spectral_evidence':evidence,
             'payload_decode_calls':1,'crc_used_for_candidate_selection':False,
             'scope':'Research only. At most five single-column erasure candidates per CR4/5 block; no header correction or CRC-guided retries.'}

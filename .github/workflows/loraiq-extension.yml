@@ -5,6 +5,8 @@ on:
       - scripts/loraiq_extension.py
       - scripts/lora_soft_probe.py
       - scripts/lora_sync_gate.py
+      - scripts/lora_iq_policy_audit.py
+      - scripts/loraiq_guarded_batch.py
       - scripts/loraiq_forensic_probe.py
       - scripts/loraiq_batch.py
       - scripts/loraiq_reference.py
@@ -30,6 +32,10 @@ jobs:
         run: |
           python scripts/lora_sync_gate.py
           python scripts/lora_sync_gate.py --seed 20261101 --out corpus-cache/loraiq-forensic/sync-audit-second-seed.json
+      - name: Experimental guarded policy on exposed members
+        run: python scripts/loraiq_guarded_batch.py
+      - name: End-to-end synthetic IQ controls for research policy
+        run: python scripts/lora_iq_policy_audit.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -39,3 +45,5 @@ jobs:
             corpus-cache/loraiq-forensic/observation.json
             corpus-cache/loraiq-forensic/sync-audit.json
             corpus-cache/loraiq-forensic/sync-audit-second-seed.json
+            corpus-cache/loraiq-forensic/guarded-batch.json
+            corpus-cache/loraiq-forensic/iq-policy-audit.json

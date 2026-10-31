@@ -93,3 +93,8 @@ Un [audit séparé](LORA_SYNC_AUDIT.md) compare les scores d’alphabet sous bru
 blanc et coloré, avec deux graines et trois modèles de fond spectral. Il met
 en évidence des passages indésirables et un compromis entre sensibilité et
 rejet. Ces mesures ne rendent pas la voie expérimentale active en production.
+
+
+Le [mode expérimental avec contrôles appliqués](LORA_GUARDED_RESEARCH.md) ajoute
+une politique composite et un audit IQ complet. Il récupère 4/4 références
+connues, sans changer le mode de production par défaut.
