@@ -652,3 +652,8 @@ checking CRC. The guarded variant is available through the opt-in experimental I
 For IQ files, enable **LoRa expérimental** in the UI, or pass
 `--experimental-lora` to `iqscope analyze`. The checkbox defaults to off and
 the report marks experimental frames. See [usage and limits](docs/LORA_EXPERIMENTAL_UI.md).
+
+The SDR tab also offers **LoRa expérimental pour les fenêtres SDR**. It is
+independent of the file option and defaults to off. Live reports remain
+independent latest-window snapshots, with their source sample offset; this
+does not provide lossless continuous packet decoding.

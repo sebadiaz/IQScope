@@ -28,6 +28,7 @@
 <label class="field">Fréquence d’échantillonnage<select id="live-rate"><option value="256000">256 kéch/s</option><option value="1024000" selected>1,024 Méch/s</option><option value="2048000">2,048 Méch/s</option><option value="2400000">2,4 Méch/s</option></select></label>
 <label class="field">Port rtl_tcp<input id="live-port" type="number" min="1024" max="65535" value="1234"></label>
 <button id="connect" class="primary">Connecter le SDR <span>→</span></button><button id="disconnect" class="secondary" disabled>Déconnecter</button>
+<label class="check"><input id="live-experimental-lora" type="checkbox"> LoRa expérimental pour les fenêtres SDR</label>
 <label class="check"><input id="auto-live" type="checkbox" checked> Analyser périodiquement la fenêtre reçue</label>
 <p class="hint">Aperçu actualisé ~4 fois/s. Le décodage analyse des fenêtres récentes : il peut manquer des paquets entre deux analyses. rtl_tcp ne fournit pas les pertes matérielles ni la fréquence effective.</p>
 </section>

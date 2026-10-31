@@ -3,7 +3,9 @@
 Pour analyser un fichier IQ, sélectionner la capture et ses métadonnées puis
 cocher **LoRa expérimental** avant « Analyser automatiquement ». L’option est
 désactivée par défaut. Elle n’apparaît pas pour les fichiers audio de récepteur.
-Le mode temps réel conserve le décodeur standard.
+Dans l’onglet SDR, une case distincte « LoRa expérimental pour les fenêtres
+SDR » applique ce mode aux instantanés reçus. Elle est également désactivée
+par défaut. Le choix est figé dans chaque tâche d’analyse.
 
 Les résultats affichent « LoRa expérimental activé ». Les contenus sont
 exportés en `.bin` uniquement après un en-tête valide et un CRC de données
@@ -23,7 +25,11 @@ conservent le décodeur et la FEC existants.
 Ajouter `"experimental_lora": true` à une requête `/api/analyses` pour une
 capture IQ. La valeur par défaut est `false`. Une combinaison avec
 `input_kind: audio` est rejetée, sans lancer une analyse silencieusement
-standard. Le téléchargement des artefacts utilise les mêmes routes que les
+standard. Pour un instantané SDR, `POST /api/live/analyze` accepte aussi
+`{"experimental_lora": true}`. Sans corps ou avec `false`, il garde le mode
+standard. Le rapport conserve `source_sample_start` et la note de continuité :
+ce sont des fenêtres récentes indépendantes, pas un décodage continu sans
+pertes. Le téléchargement des artefacts utilise les mêmes routes que les
 autres analyses.
 
 ```sh
@@ -52,3 +58,15 @@ rapport de validation. Le mode standard conserve son score 3/4 sur les
 quatre autres sessions ; l’option expérimentale les récupère 4/4 localement.
 La disponibilité de cette option ne change pas le statut expérimental de ses
 critères. Les tests du navigateur et les benchmarks sont rejoués en CI.
+
+
+## Vérification du mode SDR
+
+Le test API injecte un paquet IQ à 256 kéch/s dans le tampon du récepteur et
+vérifie les deux modes, les octets exportés et l’origine de l’instantané. Le
+parcours Chromium utilise une application de test dont le tampon contient
+ce signal simulé ; il passe par les vraies routes HTTP de l’application. Il
+vérifie le choix de la case, la requête périodique, la bannière et le fichier
+binaire `HELLO`. Cette source de test ne fait pas partie du paquet installé
+et n’est pas activée par `iqscope serve`. Aucun essai matériel sur antenne
+n’est établi par ces tests.

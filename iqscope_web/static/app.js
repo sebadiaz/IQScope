@@ -16,7 +16,7 @@ const api = async (url, body, method = 'POST') => {
 function status(text, kind = '') { $('status-text').textContent = text; $('status-dot').className = `dot ${kind}`; }
 function setBusy(value) {
   busy = value;
-  for (const id of ['analyze','demo','tab-file','tab-live','input-kind','experimental-lora']) $(id).disabled = value;
+  for (const id of ['analyze','demo','tab-file','tab-live','input-kind','experimental-lora','live-experimental-lora']) $(id).disabled = value;
 }
 function element(tag, text, className) {
   const item = document.createElement(tag);
@@ -402,7 +402,7 @@ async function pollLive() {
     }
     if($('auto-live').checked && !busy && Date.now()-lastSnapshot>4000 && state.buffered_samples>sampleRate*.25) {
       lastSnapshot=Date.now();setBusy(true);status('Réception active · analyse de la fenêtre récente…','busy');
-      api('/api/live/analyze').then(followJob).then(()=>status('Réception active · dernière fenêtre analysée.','success')).catch(error=>status(error.message,'error')).finally(()=>setBusy(false));
+      api('/api/live/analyze',{experimental_lora:$('live-experimental-lora').checked}).then(followJob).then(()=>status('Réception active · dernière fenêtre analysée.','success')).catch(error=>status(error.message,'error')).finally(()=>setBusy(false));
     } else if(!busy) status('Réception active · spectre actualisé.','success');
   } catch(error) {status(error.message,'error');}
   finally {pollingLive=false;}

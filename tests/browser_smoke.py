@@ -1,6 +1,7 @@
 """Real-browser smoke test; run separately from unit tests on a loopback-capable host."""
 from pathlib import Path
 import subprocess
+import os
 import sys
 import tempfile
 import re
@@ -13,8 +14,9 @@ from playwright.sync_api import sync_playwright, expect
 
 def main():
     port = 18765
-    process = subprocess.Popen([sys.executable, '-m', 'uvicorn', 'iqscope_web.server:create_app',
-                                '--factory', '--host', '127.0.0.1', '--port', str(port)])
+    process = subprocess.Popen([sys.executable, '-m', 'uvicorn', 'browser_live_server:create_app',
+                                '--factory', '--host', '127.0.0.1', '--port', str(port)],
+                                env={**os.environ,'PYTHONPATH':str(Path(__file__).resolve().parent)+os.pathsep+os.environ.get('PYTHONPATH','')})
     browser = None
     try:
         for _ in range(100):
@@ -271,6 +273,19 @@ def main():
                 page.get_by_role('tab',name='SDR en direct').click()
                 assert page.locator('#live-panel').is_visible()
                 assert page.locator('#live-frequency').input_value() == '100'
+                page.locator('#auto-live').uncheck()
+                expect(page.locator('#live-experimental-lora')).not_to_be_checked()
+                page.locator('#live-experimental-lora').check()
+                with page.expect_request(lambda request: request.url.endswith('/api/live/analyze') and request.method=='POST' and request.post_data_json.get('experimental_lora') is True,timeout=30000) as live_request:
+                    page.locator('#auto-live').check()
+                assert live_request.value.post_data_json['experimental_lora'] is True
+                expect(page.locator('.lora-experimental-mode')).to_contain_text('LoRa expérimental activé',timeout=30000)
+                expect(page.locator('.lora-payload-text')).to_have_text('HELLO',timeout=30000)
+                page.locator('#auto-live').uncheck()
+                binary=page.get_by_role('link',name='Télécharger la charge utile LoRa')
+                response=page.request.get(urljoin(page.url,binary.get_attribute('href')))
+                assert response.ok and response.body()==b'HELLO'
+
                 page.set_viewport_size({'width':390,'height':844})
                 assert page.evaluate('() => document.documentElement.scrollWidth <= innerWidth')
                 page.screenshot(path='browser-artifacts/mobile.png', full_page=True)

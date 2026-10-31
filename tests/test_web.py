@@ -317,6 +317,33 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(response.status_code,400)
         self.assertIn('IQ',response.json()['detail'])
 
+    async def test_live_experimental_option_exports_exact_snapshot_payload(self):
+        from scipy import signal
+        from test_lora import synchronized_preamble
+        from test_lora_payload import HELLO
+        x,fs=synchronized_preamble(sf=7,offset=0,cfo_bins=0,data_symbols=HELLO[7])
+        fs=256000
+        x=np.r_[np.zeros(int(.1*fs)),signal.resample_poly(x,128,125),np.zeros(int(.2*fs))].astype(np.complex64)
+        receiver=self.app.state.service.receiver
+        receiver.fs=fs;receiver.frequency=868000000;receiver.connected=True
+        receiver.blocks.append(x);receiver.buffered=len(x);receiver.total=100000+len(x)
+        for enabled in (True,False):
+            response=await self.client.post('/api/live/analyze',json={'experimental_lora':enabled},headers=HEADERS)
+            self.assertEqual(response.status_code,202,response.text)
+            job=await self.wait_job(response.json()['id'])
+            self.assertEqual(job['status'],'completed',job.get('error'))
+            result=job['result']
+            self.assertEqual(result['analysis_options']['experimental_lora'],enabled)
+            self.assertEqual(result['source_sample_start'],100000)
+            self.assertIn('not lossless',result['continuity_note'])
+            trial=next(t for t in result['wideband_trials'] if t['decoder']=='lora_preamble')
+            self.assertEqual(trial['mode'],'experimental_guarded' if enabled else 'standard')
+            frame=trial['frames'][0]
+            binary=await self.client.get(f"/api/jobs/{job['id']}/artifacts/{frame['artifact']}")
+            self.assertEqual(binary.content,b'HELLO')
+            saved=await self.client.get(f"/api/jobs/{job['id']}/artifacts/report.json")
+            self.assertEqual(saved.json()['analysis_options']['experimental_lora'],enabled)
+
 
 if __name__ == '__main__':
     unittest.main()
