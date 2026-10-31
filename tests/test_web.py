@@ -294,6 +294,29 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(artifact.status_code,200)
         self.assertEqual(artifact.text,TEXT)
 
+    async def test_experimental_lora_is_opt_in_and_exports_exact_bytes(self):
+        from test_lora import synchronized_preamble
+        from test_lora_payload import HELLO
+        x,fs=synchronized_preamble(sf=7,offset=0,cfo_bins=0,data_symbols=HELLO[7])
+        uploaded=await self.client.post('/api/uploads',content=x.astype('<c8').tobytes(),headers=HEADERS)
+        identifier=uploaded.json()['upload_id']
+        for enabled in (False,True):
+            response=await self.client.post('/api/analyses',json={'upload_id':identifier,'sample_rate':fs,'experimental_lora':enabled},headers=HEADERS)
+            job=await self.wait_job(response.json()['id'])
+            self.assertEqual(job['status'],'completed',job.get('error'))
+            self.assertEqual(job['result']['analysis_options']['experimental_lora'],enabled)
+            trial=next(t for t in job['result']['wideband_trials'] if t['decoder']=='lora_preamble')
+            self.assertEqual(trial['mode'],'experimental_guarded' if enabled else 'standard')
+            frame=trial['frames'][0]
+            artifact=await self.client.get(f"/api/jobs/{job['id']}/artifacts/{frame['artifact']}")
+            self.assertEqual(artifact.content,b'HELLO')
+            if enabled:self.assertTrue(frame['experimental_mode'])
+
+    async def test_experimental_lora_audio_combination_is_rejected(self):
+        response=await self.client.post('/api/analyses',json={'input_kind':'audio','experimental_lora':True},headers=HEADERS)
+        self.assertEqual(response.status_code,400)
+        self.assertIn('IQ',response.json()['detail'])
+
 
 if __name__ == '__main__':
     unittest.main()

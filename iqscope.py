@@ -124,7 +124,7 @@ def analyze_channel(x, fs, item, out, index):
     return item
 
 
-def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signals=12):
+def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signals=12, experimental_lora=False):
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
     detections, frequencies, spectrum, noise = discover(x, fs, threshold_db)
@@ -147,13 +147,18 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
     fsk4 = search_fsk4(x, fs, detections, center)
     ax25 = decode_ax25(fsk.get('candidates',[]))
     ofdm = detect_cyclic_prefix(x,fs)
-    lora = detect_lora_preamble(x,fs)
+    if experimental_lora:
+        from iqscope_lora_experimental import detect_guarded_lora
+        lora=detect_guarded_lora(x,fs)
+    else:
+        lora = detect_lora_preamble(x,fs)
+        lora['mode']='standard'
     size = min(512, len(x))
     starts = np.unique(np.linspace(0, len(x)-size, min(96, max(1, len(x)//size)), dtype=int))
     window = np.hanning(size)
     slices = np.array([x[start:start+size] * window for start in starts])
     waterfall = 10*np.log10(np.maximum(np.abs(np.fft.fftshift(np.fft.fft(slices, axis=1), axes=1))**2 / (fs*np.sum(window**2)), 1e-30))
-    report = {'schema_version': '0.2', 'source': str(source), 'sample_rate': fs,
+    report = {'schema_version': '0.2', 'analysis_options':{'experimental_lora':experimental_lora}, 'source': str(source), 'sample_rate': fs,
               'center_frequency_hz': center, 'analyzed_seconds': len(x) / fs,
               'noise_floor_db_per_hz': noise, 'capabilities': capabilities(),
               'limitations': ['Stationary spectral detector; overlapping, hopping and weak bursts may be missed.',
@@ -195,9 +200,9 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
     return report
 
 
-def analyze(path, out, sample_rate=None, seconds=10, threshold_db=9):
+def analyze(path, out, sample_rate=None, seconds=10, threshold_db=9, experimental_lora=False):
     x, fs, center = read_iq(path, sample_rate, seconds)
-    report = analyze_samples(x, fs, center, out, source=path, threshold_db=threshold_db)
+    report = analyze_samples(x, fs, center, out, source=path, threshold_db=threshold_db,experimental_lora=experimental_lora)
     path = Path(path)
     meta_path = path if path.suffix=='.sigmf-meta' else path.with_suffix('.sigmf-meta')
     if path.suffix.lower() not in ('.wav','.sdriq') and meta_path.exists():
@@ -242,6 +247,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest='command', required=True)
     scan = sub.add_parser('analyze')
+    scan.add_argument('--experimental-lora',action='store_true',help='Opt in to guarded experimental LoRa decoding')
     scan.add_argument('file')
     scan.add_argument('--out', default='results')
     scan.add_argument('--sample-rate', type=float)
@@ -311,7 +317,7 @@ def main():
         else:
             if not math.isfinite(args.seconds) or args.seconds <= 0 or not math.isfinite(args.threshold_db) or args.threshold_db <= 0:
                 raise ValueError('Seconds and threshold must be finite and positive')
-            report = analyze(args.file, args.out, args.sample_rate, args.seconds, args.threshold_db)
+            report = analyze(args.file, args.out, args.sample_rate, args.seconds, args.threshold_db,experimental_lora=args.experimental_lora)
         print(json.dumps(report, indent=2))
     except (ValueError, OSError, KeyError) as exc:
         parser.exit(2, f'Error: {exc}\n')

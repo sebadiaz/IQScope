@@ -32,6 +32,7 @@ class AnalyzeRequest(BaseModel):
     seconds: float = Field(default=10, gt=0, le=120)
     demo: bool = False
     input_kind: Literal['iq','audio'] = 'iq'
+    experimental_lora: bool = False
 
 
 class LiveRequest(BaseModel):
@@ -184,8 +185,10 @@ def create_app(root=None):
     def start_analysis(body: AnalyzeRequest):
         if not math.isfinite(body.seconds):
             raise HTTPException(400, 'Duration must be finite')
+        if body.experimental_lora and body.input_kind=='audio':
+            raise HTTPException(400,'Experimental LoRa requires IQ input')
         if body.demo:
-            return service.submit(lambda out: analyze(demo(out / 'source'), out))
+            return service.submit(lambda out: analyze(demo(out / 'source'), out,experimental_lora=body.experimental_lora))
         source = service.uploads.get(body.upload_id)
         if source is None:
             raise HTTPException(404, 'Upload not found')
@@ -220,7 +223,7 @@ def create_app(root=None):
             os.link(source, local)
             if metadata is not None:
                 local.with_suffix('.sigmf-meta').write_text(json.dumps(metadata))
-            return analyze(local, out, body.sample_rate, body.seconds)
+            return analyze(local, out, body.sample_rate, body.seconds,experimental_lora=body.experimental_lora)
         return service.submit(process)
 
     @app.get('/api/jobs/{job_id}')

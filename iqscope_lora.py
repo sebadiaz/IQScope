@@ -542,10 +542,15 @@ def _refine_fractional_timing(x, fs, ratio, bandwidth, length, start, count,
                                 selected_phase=phase,sample_grid_offset_chips=phase/8)
 
 
-def _detect_lora_window(x, fs):
+def _detect_lora_window(x, fs, policy=None):
     base = {'decoder': 'lora_preamble', 'family': 'LoRa-compatible CSS preamble', 'candidates': []}
     if not np.isfinite(fs) or not 125000 <= fs <= 2400000 or len(x) < 1024:
         return dict(base, status='not_applicable')
+    policy=policy or {}
+    pair_detector=policy.get('pair',_opposite_chirp_pair)
+    sync_detector=policy.get('sync',_sync_word_candidate)
+    data_detector=policy.get('data',_data_symbol_candidates)
+    payload_decoder=policy.get('payload',lambda data,sf:decode_payload(data.get('symbol_bins',[]),sf))
     original = len(x)
     limit = min(original, int(fs))
     x = np.asarray(x[:limit], dtype=np.complex128)
@@ -619,11 +624,11 @@ def _detect_lora_window(x, fs):
                 template = chirp if polarity == 1 else chirp.conj()
                 corrected_bin = int(np.argmax(abs(np.fft.fft(reference*template.conj()))**2))
                 noise_fallback = timing['status']=='fractional_timing_refined' and timing.get('acceptance_method')=='coherent_preamble_matched_peak'
-                pair = _opposite_chirp_pair(aligned,chirp,polarity,(best_start+best_count)*length,bandwidth,
+                pair = pair_detector(aligned,chirp,polarity,(best_start+best_count)*length,bandwidth,
                     coherent_fallback=discovery['method']=='six_chirp_coherent_average',matched_fallback=noise_fallback)
-                sync = _sync_word_candidate(aligned, chirp, polarity, corrected_bin, pair, bandwidth,noise_fallback=noise_fallback)
+                sync = sync_detector(aligned, chirp, polarity, corrected_bin, pair, bandwidth,noise_fallback=noise_fallback)
                 refined = timing['status']=='fractional_timing_refined'
-                data = _data_symbol_candidates(aligned,chirp,polarity,sync,bandwidth,refined_timing=refined,noise_fallback=noise_fallback)
+                data = data_detector(aligned,chirp,polarity,sync,bandwidth,refined_timing=refined,noise_fallback=noise_fallback)
                 offset = timing['sample_grid_offset_chips']/bandwidth
                 for item,key in ((pair,'time_seconds'),(sync,'opposite_chirp_start_seconds'),
                                  (data,'candidate_data_start_seconds')):
@@ -642,7 +647,7 @@ def _detect_lora_window(x, fs):
                     'sync_word': sync,
                     'data_symbols': data,
                     'explicit_header': decode_explicit_header(data.get('symbol_bins',[]),sf),
-                    'payload': decode_payload(data.get('symbol_bins',[]),sf),
+                    'payload': payload_decoder(data,sf),
                     'score': strength, 'score_kind': 'heuristic_not_probability',
                     'validation_scope': 'Bounded LoRa PHY trial; only explicit header checks and supported payload CRC results are validated. No LoRaWAN identity or authentication.'})
     candidates.sort(key=lambda item: item['score'], reverse=True)
@@ -668,9 +673,10 @@ def _detect_lora_window(x, fs):
                     'Other CSS waveforms can match preamble evidence. Header checksum and supported payload CRC are checked separately; all other stages remain candidates. Payload: explicit CR4/5–4/8, SF7–SF10 only.'])
 
 
-def detect_lora_preamble(x, fs):
+def detect_lora_preamble(x, fs, policy=None):
     """Discover bounded temporal windows without annotation or payload oracles."""
     if not np.isfinite(fs) or not 125000<=fs<=2400000 or len(x)<1024:
-        return _detect_lora_window(x,fs)
+        return _detect_lora_window(x,fs,policy)
     from iqscope_lora_search import scan_lora_windows
-    return scan_lora_windows(x,fs,_detect_lora_window)
+    from functools import partial
+    return scan_lora_windows(x,fs,partial(_detect_lora_window,policy=policy))

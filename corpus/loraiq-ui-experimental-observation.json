@@ -1,0 +1,368 @@
+{
+  "scope": "Opt-in experimental application pipeline on exposed captures; not a held-out sensitivity estimate.",
+  "baseline_commit": "de93222f777aeb3d006ed9e8e24c0e11a511e3db",
+  "observations": [
+    {
+      "annotation": {
+        "sf": "7",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "125000",
+        "payload_base64": "MDAwMDAwMA==",
+        "rrh_idx": "2",
+        "rx_sample_rate": "250000",
+        "cfo": "7.5177",
+        "snr": "-8.8366",
+        "sigmf_file": "./sigmfs/25_01_17-14_39/rrh2/1",
+        "sigmf_file_offset": "5482.0",
+        "sigmf_file_n_samples": "9024"
+      },
+      "data_sha256": "945cd6dbd9f0cacb7624432291a09ee41641c781e99a4bc451eb3d9962fe24da",
+      "meta_sha256": "70f769451a384542cdeeb1869204aca5c50d44c79e26d1bca22c041a286f052b",
+      "mode": "experimental_guarded",
+      "payload_matches_selected_reference": true,
+      "binary_exports_verified": 2,
+      "frame_reference_comparisons": [
+        {
+          "time_seconds": 0.034467000000000005,
+          "payload_hex": "30303030303030",
+          "annotation_candidates": 1,
+          "status": "exact_match",
+          "annotation": {
+            "sf": "7",
+            "cr": "1",
+            "fc": "862.5",
+            "bandwidth": "125000",
+            "payload_base64": "MDAwMDAwMA==",
+            "rrh_idx": "2",
+            "rx_sample_rate": "250000",
+            "cfo": "7.5177",
+            "snr": "-8.8366",
+            "sigmf_file": "./sigmfs/25_01_17-14_39/rrh2/1",
+            "sigmf_file_offset": "5482.0",
+            "sigmf_file_n_samples": "9024"
+          },
+          "expected_payload_hex": "30303030303030"
+        },
+        {
+          "time_seconds": 1.044203,
+          "payload_hex": "30303030303031",
+          "annotation_candidates": 1,
+          "status": "exact_match",
+          "annotation": {
+            "sf": "7",
+            "cr": "1",
+            "fc": "862.5",
+            "bandwidth": "125000",
+            "payload_base64": "MDAwMDAwMQ==",
+            "rrh_idx": "2",
+            "rx_sample_rate": "250000",
+            "cfo": "7.5779",
+            "snr": "-7.8157",
+            "sigmf_file": "./sigmfs/25_01_17-14_39/rrh2/1",
+            "sigmf_file_offset": "257912.0",
+            "sigmf_file_n_samples": "9024"
+          },
+          "expected_payload_hex": "30303030303031"
+        }
+      ],
+      "frames": [
+        {
+          "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+          "status": "payload_crc_valid",
+          "payload_hex": "30303030303030",
+          "payload_length_bytes": 7,
+          "received_crc": 58964,
+          "calculated_crc": 58964,
+          "coding_rate": "4/5",
+          "coding_rate_index": 1,
+          "corrected_spillover_bits": 0,
+          "corrected_payload_codeword_bits": 0,
+          "symbols_consumed": 23,
+          "validation": "Header 5-bit checksum and LoRa payload CRC16 passed; not emitter authenticity",
+          "text": "0000000",
+          "experimental_mode": true,
+          "soft_symbol_corrections": [],
+          "time_seconds": 0.034467000000000005,
+          "parameters": {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "symbol_seconds": 0.001024,
+            "chirp_polarity": 1
+          },
+          "sync_word": "96",
+          "quarter_chirp_validated": false,
+          "boundary_method": "research_single_inferred_boundary",
+          "analysis_window_index": 0,
+          "artifact": "lora-payload-1.bin"
+        },
+        {
+          "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+          "status": "payload_crc_valid",
+          "payload_hex": "30303030303031",
+          "payload_length_bytes": 7,
+          "received_crc": 58965,
+          "calculated_crc": 58965,
+          "coding_rate": "4/5",
+          "coding_rate_index": 1,
+          "corrected_spillover_bits": 0,
+          "corrected_payload_codeword_bits": 0,
+          "symbols_consumed": 23,
+          "validation": "Header 5-bit checksum and LoRa payload CRC16 passed; not emitter authenticity",
+          "text": "0000001",
+          "experimental_mode": true,
+          "soft_symbol_corrections": [],
+          "time_seconds": 1.044203,
+          "parameters": {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "symbol_seconds": 0.001024,
+            "chirp_polarity": 1
+          },
+          "sync_word": "96",
+          "quarter_chirp_validated": false,
+          "boundary_method": "research_single_inferred_boundary",
+          "analysis_window_index": 2,
+          "artifact": "lora-payload-2.bin"
+        }
+      ]
+    },
+    {
+      "annotation": {
+        "sf": "7",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "125000",
+        "payload_base64": "MDAwMDAwMA==",
+        "rrh_idx": "1",
+        "rx_sample_rate": "250000",
+        "cfo": "6.6855",
+        "snr": "33.144",
+        "sigmf_file": "./sigmfs/25_01_15-10_17/rrh1/3",
+        "sigmf_file_offset": "4840.0",
+        "sigmf_file_n_samples": "9024"
+      },
+      "data_sha256": "2899b292980603cd1768a9425c3b88071e0bf65b04699b1f266aba5e8b3a5cda",
+      "meta_sha256": "dbf3d44cb9ed3fa2fa0b1b55b63606b56749d4a71128b456c4315806a8dd6de1",
+      "mode": "experimental_guarded",
+      "payload_matches_selected_reference": true,
+      "binary_exports_verified": 1,
+      "frame_reference_comparisons": [
+        {
+          "time_seconds": 0.031914000000000005,
+          "payload_hex": "30303030303030",
+          "annotation_candidates": 1,
+          "status": "exact_match",
+          "annotation": {
+            "sf": "7",
+            "cr": "1",
+            "fc": "862.5",
+            "bandwidth": "125000",
+            "payload_base64": "MDAwMDAwMA==",
+            "rrh_idx": "1",
+            "rx_sample_rate": "250000",
+            "cfo": "6.6855",
+            "snr": "33.144",
+            "sigmf_file": "./sigmfs/25_01_15-10_17/rrh1/3",
+            "sigmf_file_offset": "4840.0",
+            "sigmf_file_n_samples": "9024"
+          },
+          "expected_payload_hex": "30303030303030"
+        }
+      ],
+      "frames": [
+        {
+          "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+          "status": "payload_crc_valid",
+          "payload_hex": "30303030303030",
+          "payload_length_bytes": 7,
+          "received_crc": 58964,
+          "calculated_crc": 58964,
+          "coding_rate": "4/5",
+          "coding_rate_index": 1,
+          "corrected_spillover_bits": 0,
+          "corrected_payload_codeword_bits": 0,
+          "symbols_consumed": 23,
+          "validation": "Header 5-bit checksum and LoRa payload CRC16 passed; not emitter authenticity",
+          "text": "0000000",
+          "experimental_mode": true,
+          "soft_symbol_corrections": [],
+          "time_seconds": 0.031914000000000005,
+          "parameters": {
+            "bandwidth_hz": 125000,
+            "spreading_factor": 7,
+            "symbol_seconds": 0.001024,
+            "chirp_polarity": 1
+          },
+          "sync_word": "96",
+          "quarter_chirp_validated": true,
+          "boundary_method": "normalized_template_correlation",
+          "analysis_window_index": 0,
+          "artifact": "lora-payload-1.bin"
+        }
+      ]
+    },
+    {
+      "annotation": {
+        "sf": "10",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "250000",
+        "payload_base64": "uAUo7be9t0JHQJdzKa4qQxpAEg==",
+        "rrh_idx": "1",
+        "rx_sample_rate": "500000",
+        "cfo": "2.0362",
+        "snr": "29.1384",
+        "sigmf_file": "./sigmfs/25_09_12-14_15/rrh1/43",
+        "sigmf_file_offset": "33796.0000005",
+        "sigmf_file_n_samples": "82432"
+      },
+      "data_sha256": "af23a04c94b862954e5641088e6cf10b5107c7776c29afab6433285af29fc525",
+      "meta_sha256": "814545a858c09a07bc65c42ba6818ac7a99a0f75270a2a4708d93bda6db83482",
+      "mode": "experimental_guarded",
+      "payload_matches_selected_reference": true,
+      "binary_exports_verified": 1,
+      "frame_reference_comparisons": [
+        {
+          "time_seconds": 0.117772,
+          "payload_hex": "b80528edb7bdb7424740977329ae2a431a4012",
+          "annotation_candidates": 1,
+          "status": "exact_match",
+          "annotation": {
+            "sf": "10",
+            "cr": "1",
+            "fc": "862.5",
+            "bandwidth": "250000",
+            "payload_base64": "uAUo7be9t0JHQJdzKa4qQxpAEg==",
+            "rrh_idx": "1",
+            "rx_sample_rate": "500000",
+            "cfo": "2.0362",
+            "snr": "29.1384",
+            "sigmf_file": "./sigmfs/25_09_12-14_15/rrh1/43",
+            "sigmf_file_offset": "33796.0000005",
+            "sigmf_file_n_samples": "82432"
+          },
+          "expected_payload_hex": "b80528edb7bdb7424740977329ae2a431a4012"
+        }
+      ],
+      "frames": [
+        {
+          "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+          "status": "payload_crc_valid",
+          "payload_hex": "b80528edb7bdb7424740977329ae2a431a4012",
+          "payload_length_bytes": 19,
+          "received_crc": 3836,
+          "calculated_crc": 3836,
+          "coding_rate": "4/5",
+          "coding_rate_index": 1,
+          "corrected_spillover_bits": 0,
+          "corrected_payload_codeword_bits": 0,
+          "symbols_consumed": 28,
+          "validation": "Header 5-bit checksum and LoRa payload CRC16 passed; not emitter authenticity",
+          "experimental_mode": true,
+          "soft_symbol_corrections": [],
+          "time_seconds": 0.117772,
+          "parameters": {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "symbol_seconds": 0.004096,
+            "chirp_polarity": 1
+          },
+          "sync_word": "12",
+          "quarter_chirp_validated": true,
+          "boundary_method": "normalized_template_correlation",
+          "analysis_window_index": 0,
+          "artifact": "lora-payload-1.bin"
+        }
+      ]
+    },
+    {
+      "annotation": {
+        "sf": "10",
+        "cr": "1",
+        "fc": "862.5",
+        "bandwidth": "250000",
+        "payload_base64": "tAgZ5gRtckJHQGbV/gahQRpAsw==",
+        "rrh_idx": "1",
+        "rx_sample_rate": "500000",
+        "cfo": "1.8637",
+        "snr": "36.5986",
+        "sigmf_file": "./sigmfs/25_09_12-15_46/rrh1/30",
+        "sigmf_file_offset": "34927.0000005",
+        "sigmf_file_n_samples": "82432"
+      },
+      "data_sha256": "628654899793ba6b543cb24e346f048ec4c885ff3124e973b39531e0afc478eb",
+      "meta_sha256": "cd4a16b02bb8895f61cf6309532c1d1e460a948d85ecfdf646962cd28d60441c",
+      "mode": "experimental_guarded",
+      "payload_matches_selected_reference": true,
+      "binary_exports_verified": 1,
+      "frame_reference_comparisons": [
+        {
+          "time_seconds": 0.12002600000000001,
+          "payload_hex": "b40819e6046d7242474066d5fe06a1411a40b3",
+          "annotation_candidates": 1,
+          "status": "exact_match",
+          "annotation": {
+            "sf": "10",
+            "cr": "1",
+            "fc": "862.5",
+            "bandwidth": "250000",
+            "payload_base64": "tAgZ5gRtckJHQGbV/gahQRpAsw==",
+            "rrh_idx": "1",
+            "rx_sample_rate": "500000",
+            "cfo": "1.8637",
+            "snr": "36.5986",
+            "sigmf_file": "./sigmfs/25_09_12-15_46/rrh1/30",
+            "sigmf_file_offset": "34927.0000005",
+            "sigmf_file_n_samples": "82432"
+          },
+          "expected_payload_hex": "b40819e6046d7242474066d5fe06a1411a40b3"
+        }
+      ],
+      "frames": [
+        {
+          "scope": "LoRa PHY bytes only; no LoRaWAN identity, authentication or decryption",
+          "status": "payload_crc_valid",
+          "payload_hex": "b40819e6046d7242474066d5fe06a1411a40b3",
+          "payload_length_bytes": 19,
+          "received_crc": 50303,
+          "calculated_crc": 50303,
+          "coding_rate": "4/5",
+          "coding_rate_index": 1,
+          "corrected_spillover_bits": 0,
+          "corrected_payload_codeword_bits": 0,
+          "symbols_consumed": 28,
+          "validation": "Header 5-bit checksum and LoRa payload CRC16 passed; not emitter authenticity",
+          "experimental_mode": true,
+          "soft_symbol_corrections": [],
+          "time_seconds": 0.12002600000000001,
+          "parameters": {
+            "bandwidth_hz": 250000,
+            "spreading_factor": 10,
+            "symbol_seconds": 0.004096,
+            "chirp_polarity": 1
+          },
+          "sync_word": "12",
+          "quarter_chirp_validated": true,
+          "boundary_method": "normalized_template_correlation",
+          "analysis_window_index": 0,
+          "artifact": "lora-payload-1.bin"
+        }
+      ]
+    }
+  ],
+  "integration": "Per-call decoder callbacks; no process-global function replacement.",
+  "matched_count": 4,
+  "validation": {
+    "unit_tests_passed": 239,
+    "browser_ci": "pending",
+    "reference_center_frequency_verified": false,
+    "stage": "local_before_ci"
+  },
+  "experimental_module_sha256": {
+    "iqscope_lora.py": "d103e70beb5126594742121a42373075a4fe8177abbc84f00a25a91c74c1bea3",
+    "iqscope_lora_experimental.py": "b113709be9c746365838477c86639a0fbb0c644ea1862318e2f32f4bebd170d4",
+    "iqscope_lora_soft.py": "ee10d1b5376775c914b5699789e61f666a399f1e9808008d56deb57396c3bf6a",
+    "iqscope_lora_sync_scores.py": "84cb4a895a4ae92b223f9fa983df1da05f3b656d62fecb68b9b07c24a34fb949"
+  }
+}

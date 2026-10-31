@@ -647,4 +647,8 @@ A frozen-decoder first pass on four previously unused LoRaIQ sessions recovers
 A separate [research-only soft-erasure probe](docs/LORA_SOFT_RESEARCH.md) recovers
 the weak target with exact annotated bytes and CRC after bypassing front-end
 confidence gates. It ranks parity erasure hypotheses by spectral evidence before
-checking CRC. This is not enabled in the product; the automatic score stays 3/4.
+checking CRC. The guarded variant is available through the opt-in experimental IQ-file mode; the standard score stays 3/4.
+
+For IQ files, enable **LoRa expérimental** in the UI, or pass
+`--experimental-lora` to `iqscope analyze`. The checkbox defaults to off and
+the report marks experimental frames. See [usage and limits](docs/LORA_EXPERIMENTAL_UI.md).

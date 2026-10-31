@@ -189,6 +189,8 @@ def main():
                     assert response.ok and response.body()==b'HELLO'
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
                 with tempfile.TemporaryDirectory() as directory:
+                    expect(page.locator('#experimental-lora')).not_to_be_checked()
+                    page.locator('#experimental-lora').check()
                     from test_lora_matched import fixture as inferred_fixture
                     x,fs=inferred_fixture(missing=True)
                     raw=Path(directory)/'inferred.sigmf-data'
@@ -198,11 +200,18 @@ def main():
                     page.locator('#iq-file').set_input_files(str(raw))
                     page.locator('#meta-file').set_input_files(str(meta))
                     page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('.lora-experimental-mode')).to_contain_text('LoRa expérimental activé',timeout=30000)
                     expect(page.locator('.lora-inferred-boundary')).to_contain_text('quart de chirp non confirmé',timeout=30000)
                     expect(page.locator('.lora-payload-text')).to_have_text('HELLO')
                     link=page.get_by_role('link',name='Télécharger le rapport LoRa')
                     response=page.request.get(urljoin(page.url,link.get_attribute('href')))
                     assert response.ok and response.json()['frames'][0]['quarter_chirp_validated'] is False
+                    assert response.json()['mode']=='experimental_guarded'
+                    assert response.json()['frames'][0]['experimental_mode'] is True
+                    payload=page.get_by_role('link',name='Télécharger la charge utile LoRa')
+                    binary=page.request.get(urljoin(page.url,payload.get_attribute('href')))
+                    assert binary.ok and binary.body()==b'HELLO'
+                    page.locator('#experimental-lora').uncheck()
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
                 with tempfile.TemporaryDirectory() as directory:
                     from test_cw import fixture as audio_fixture, TEXT as AUDIO_TEXT

@@ -16,7 +16,7 @@ const api = async (url, body, method = 'POST') => {
 function status(text, kind = '') { $('status-text').textContent = text; $('status-dot').className = `dot ${kind}`; }
 function setBusy(value) {
   busy = value;
-  for (const id of ['analyze','demo','tab-file','tab-live','input-kind']) $(id).disabled = value;
+  for (const id of ['analyze','demo','tab-file','tab-live','input-kind','experimental-lora']) $(id).disabled = value;
 }
 function element(tag, text, className) {
   const item = document.createElement(tag);
@@ -266,6 +266,7 @@ function showReport(report, jobId) {
   }
   for(const trial of report.wideband_trials || []){
     if(trial.decoder!=='lora_preamble')continue;
+    if(trial.mode==='experimental_guarded')frameList.append(element('p','LoRa expérimental activé · validation radio encore limitée.','hint lora-experimental-mode'));
     if(trial.temporal_search?.partial)frameList.append(element('p','Recherche LoRa partielle dans le fichier ; les périodes examinées figurent dans le rapport.','hint lora-search-coverage'));
     for(const candidate of trial.candidates || []){
       const card=element('div',undefined,'frame lora-candidate');const p=candidate.parameters;
@@ -273,7 +274,7 @@ function showReport(report, jobId) {
       card.append(element('p',`SF${p.spreading_factor} · largeur ${p.bandwidth_hz/1000} kHz · ${candidate.evidence.repeated_chirps} chirps répétés`));
       if(candidate.synchronization?.status==='opposite_chirp_pair_candidate')card.append(element('p',`Paire de chirps opposés candidate vers ${candidate.synchronization.time_seconds.toFixed(6)} s ; limite de paquet et sync word non validés.`,'lora-sync-evidence'));
       if(candidate.sync_word?.status==='sync_word_candidate')card.append(element('p',`Sync word candidat : 0x${candidate.sync_word.value_hex} ; aucun réseau ni paquet authentifié.`,'lora-sync-word'));
-      if(candidate.data_symbols?.status==='raw_css_symbol_candidates'){
+      if(['raw_css_symbol_candidates','research_guarded_css_symbols'].includes(candidate.data_symbols?.status)){
         card.append(element('p',`${candidate.data_symbols.symbol_bins.length} symboles CSS bruts candidats avant décodage.`,'lora-data-symbols'));
         card.append(element('code',candidate.data_symbols.symbol_bins.slice(0,16).join(', ')));
         if(['insufficient_spectral_concentration','unstable_phase_estimate'].includes(candidate.data_symbols.stop_reason))card.append(element('p','Lecture arrêtée sur un symbole insuffisamment fiable ; la séquence peut être incomplète.','hint'));
@@ -293,6 +294,7 @@ function showReport(report, jobId) {
       card.append(element('h3','LoRa · charge utile à CRC16 valide'));
       card.append(element('p',`${frame.payload_length_bytes} octets · codage ${frame.coding_rate || 'inconnu'} · somme d’en-tête et CRC de données vérifiés`));
       if(frame.quarter_chirp_validated===false)card.append(element('p','Limite des données inférée depuis la synchronisation ; quart de chirp non confirmé. En-tête et CRC de données vérifiés.','hint lora-inferred-boundary'));
+      if(frame.soft_symbol_corrections?.length)card.append(element('p',`${frame.soft_symbol_corrections.length} symbole CSS corrigé par parité et score spectral avant le contrôle du CRC.`,'lora-soft-corrections'));
       const corrections=(frame.corrected_payload_codeword_bits || 0)+(frame.corrected_spillover_bits || 0);
       if(corrections)card.append(element('p',`${corrections} bit${corrections>1?'s':''} de codeword corrigé${corrections>1?'s':''} dans les données.`,'lora-fec-corrections'));
       if(frame.text!==undefined)card.append(element('pre',frame.text,'lora-payload-text'));
@@ -324,7 +326,7 @@ async function runFile(isDemo) {
   let uploadedId=null;
   setBusy(true);status(isDemo ? 'Génération et analyse de la démo…' : 'Import de la capture…','busy');
   try {
-    let body={demo:isDemo};
+    let body={demo:isDemo,experimental_lora:$('experimental-lora').checked};
     if(!isDemo) {
       const file=$('iq-file').files[0]; if(!file) throw new Error('Choisissez un fichier IQ.');
       if(file.size>128*1024*1024) throw new Error('La limite d’import est de 128 Mio.');
@@ -333,7 +335,7 @@ async function runFile(isDemo) {
       const meta=audioInput?null:$('meta-file').files[0];
       if(meta) {if(meta.size>1024*1024) throw new Error('Métadonnées trop volumineuses.');metadata=JSON.parse(await meta.text());}
       const uploaded=await api('/api/uploads',file);uploadedId=uploaded.upload_id;
-      body={upload_id:uploaded.upload_id,input_kind:audioInput?'audio':'iq',metadata,sample_rate:Number($('file-rate').value),seconds:Number($('seconds').value)};
+      body={upload_id:uploaded.upload_id,input_kind:audioInput?'audio':'iq',metadata,sample_rate:Number($('file-rate').value),seconds:Number($('seconds').value),experimental_lora:!audioInput && $('experimental-lora').checked};
     }
     status('Détection des émissions et essais de décodage…','busy');
     const job=await api('/api/analyses',body);await followJob(job);
@@ -356,6 +358,8 @@ $('tab-file').onclick=()=>switchTab(false);$('tab-live').onclick=()=>switchTab(t
 function updateFileInput(){
   const file=$('iq-file').files[0];
   const audio=$('input-kind').value==='audio';
+  $('experimental-lora-option').hidden=audio;
+  if(audio)$('experimental-lora').checked=false;
   $('filename').textContent=file?.name || (audio?'MP3 · WAV audio':'SigMF · WAV IQ · .sdriq · .cf32');
   $('iq-file').accept=audio?'.mp3,.wav':'.sigmf-data,.cf32,.iq,.bin,.wav,.sdriq';
   const embedded=audio || /\.(wav|sdriq)$/i.test(file?.name || '');

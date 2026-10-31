@@ -2,7 +2,7 @@
 
 La recherche retrouve les positions candidates du sync word `96`, mais un
 score concentré dans l’alphabet autorisé ne suffit pas à valider la
-synchronisation. **Aucun nouveau critère n’est activé en production.** Le
+synchronisation. **Aucun nouveau critère n’est activé dans le mode standard.** Le
 score automatique des autres sessions reste 3/4 ; les deux récupérations
 expérimentales restent des résultats de recherche hors seuils.
 

@@ -63,7 +63,7 @@ class SoftErasureResearchTests(unittest.TestCase):
             with self.assertRaises(ValueError):infer_block(HELLO[7][8:13],7,scores)
         with self.assertRaises(ValueError):infer_payload([0]*65,7,np.zeros((65,128)))
 
-    def test_forensic_patches_are_restored_after_failure(self):
+    def test_forensic_policy_preserves_functions_after_failure(self):
         import hashlib,tempfile
         import iqscope_lora as lora
         with patch.object(sys,'path',[str(scripts)]+sys.path):

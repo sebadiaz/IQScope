@@ -2,7 +2,7 @@
 
 Résultats locaux : **4/4 références connues**, **24/24 contrôles synthétiques
 positifs**, **0 contenu accepté sur 64 cas synthétiques négatifs**. Les
-**234 tests passent**. Ce mode reste séparé du produit : le score automatique
+**234 tests passent**. Ce mode est disponible dans l’UI par une option désactivée par défaut : le score du mode standard
 par défaut est toujours 3/4 et le résultat historique du premier passage
 est conservé. Ces captures ont déjà servi au développement.
 
@@ -74,8 +74,10 @@ python scripts/lora_iq_policy_audit.py
 ```
 
 Le benchmark des autres sessions doit d’abord avoir récupéré les quatre
-membres. La CI publie ces rapports à part. Aucun fichier du décodeur de
-production n’est modifié et les trames brutes de l’appel patché sont retirées
+membres. La CI publie ces rapports à part. Les politiques sont isolées par appel ; les trames brutes de la voie de recherche sont retirées
 du résultat de recherche : seules les observations du mode choisi comptent.
 Une validation sur davantage de signaux radio inédits reste nécessaire avant
 une intégration par défaut.
+
+
+Voir [l’option UI et API](LORA_EXPERIMENTAL_UI.md) pour l’analyse des fichiers IQ.

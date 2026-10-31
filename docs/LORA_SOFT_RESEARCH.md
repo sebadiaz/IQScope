@@ -7,8 +7,9 @@ effectuée ensuite, confirme les octets dans un intervalle temporel unique.
 
 **Le score automatique reste 3/4.** Le script de recherche contourne les
 contrôles de confiance du sync word et des symboles ; le quart de chirp n’est
-pas confirmé. Cette expérience n’est pas activée dans le détecteur, l’UI ou
-les exports du produit. Le [rapport](../corpus/loraiq-forensic-observation.json)
+pas confirmé. Cette expérience hors seuils reste séparée du produit. Sa variante avec
+contrôles est désormais accessible par une option expérimentale, désactivée
+par défaut ; voir [l’intégration UI](LORA_EXPERIMENTAL_UI.md). Le [rapport](../corpus/loraiq-forensic-observation.json)
 conserve ces limites, les spectres dérivés, le résultat dur et l’inférence.
 
 ## Ce qui bloque la lecture dure
@@ -60,9 +61,9 @@ python scripts/loraiq_forensic_probe.py \
   --input corpus-cache/loraiq-extension/0/source.sigmf-meta
 ```
 
-Le script utilise un patch local temporaire, restauré même en cas d’exception,
-pour examiner une paire jointe, les positions autorisées du sync word et les
-symboles sans leurs seuils de confiance de production. Il refuse un sync word
+Le script transmet désormais une politique propre à chaque appel du décodeur ;
+il ne remplace plus les fonctions globales du processus. Cette isolation
+permet l’option UI sans contaminer une analyse standard concurrente. Il refuse un sync word
 ambigu et n’examine qu’une limite de données par hypothèse unique. Il ne
 modifie aucun fichier du décodeur. L’entrée est limitée à 32 Mio d’IQ et 64 Kio
 de métadonnées, avec vérification du SHA512 SigMF. Le rapport expose les SHA256
@@ -92,7 +93,7 @@ licence CC BY 4.0. Les spectres du rapport et du test sont dérivés de cette so
 Un [audit séparé](LORA_SYNC_AUDIT.md) compare les scores d’alphabet sous bruit
 blanc et coloré, avec deux graines et trois modèles de fond spectral. Il met
 en évidence des passages indésirables et un compromis entre sensibilité et
-rejet. Ces mesures ne rendent pas la voie expérimentale active en production.
+rejet. Ces mesures ne justifient pas son activation par défaut.
 
 
 Le [mode expérimental avec contrôles appliqués](LORA_GUARDED_RESEARCH.md) ajoute
