@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - scripts/loraiq_extension.py
+      - scripts/lora_soft_probe.py
+      - scripts/loraiq_forensic_probe.py
       - scripts/loraiq_batch.py
       - scripts/loraiq_reference.py
       - corpus/loraiq-extension-manifest.json
@@ -21,8 +23,12 @@ jobs:
           python-version: '3.12'
       - run: pip install .
       - run: python scripts/loraiq_extension.py
+      - name: Research-only weak-frame analysis (confidence gates bypassed)
+        run: python scripts/loraiq_forensic_probe.py --input corpus-cache/loraiq-extension/0/source.sigmf-meta
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: loraiq-unused-sessions
-          path: corpus-cache/loraiq-extension/observation.json
+          path: |
+            corpus-cache/loraiq-extension/observation.json
+            corpus-cache/loraiq-forensic/observation.json

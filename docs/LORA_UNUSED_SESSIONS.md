@@ -108,3 +108,12 @@ validée. La voie expérimentale n’est pas activée en production.
 Aucun nouveau contenu ni en-tête n’est validé pour cette cible. Les scores
 restent 6/6 sur les références de développement et 3/4 sur les autres sessions,
 avec les trois exports exacts conservés. Les 218 tests passent localement.
+
+
+## Recherche par effacement d’un symbole
+
+Une [analyse expérimentale séparée](LORA_SOFT_RESEARCH.md) récupère le contenu
+faible après contournement des seuils de synchronisation et décision d’un
+symbole par parité et score spectral, sans CRC utilisé pour choisir la
+correction. Cette récupération n’est pas intégrée au produit : le score
+automatique reste 3/4.

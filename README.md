@@ -643,3 +643,8 @@ A frozen-decoder first pass on four previously unused LoRaIQ sessions recovers
 **3/4 exact references**, including two SF10/BW250 binary payloads with verified
 19-byte exports. The −8.8 dB SF7 target remains a miss. See
 [selection, integrity checks and limitations](docs/LORA_UNUSED_SESSIONS.md).
+
+A separate [research-only soft-erasure probe](docs/LORA_SOFT_RESEARCH.md) recovers
+the weak target with exact annotated bytes and CRC after bypassing front-end
+confidence gates. It ranks parity erasure hypotheses by spectral evidence before
+checking CRC. This is not enabled in the product; the automatic score stays 3/4.
