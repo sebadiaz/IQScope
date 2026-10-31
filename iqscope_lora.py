@@ -373,6 +373,52 @@ def _coherent_preamble_run(matrix, peaks, concentration, chirp, polarity):
     return best,{'checked_windows':checked,'window_budget':32,'budget_reached':budget_reached}
 
 
+def _phase_grid_preamble_run(matrix,transformed,chirp,polarity):
+    """Bounded phase-grid acquisition when individual top bins are unstable."""
+    length=len(chirp)
+    stats={'method':'phase_grid_matched_preamble','checked_windows':0,'window_budget':32,
+           'phase_hypotheses':48,'maximum_repeated_chirps':6,'budget_reached':False}
+    # Noncoherent screening ranks windows before the more expensive phase bank.
+    eligible=[]
+    for start in range(len(matrix)-5):
+        pooled=np.mean(abs(transformed[start:start+6])**2,axis=0)
+        peak=int(np.argmax(pooled))
+        evidence=_matched_peak_evidence(pooled,peak)
+        if evidence['peak_to_noise_floor']>=4 and evidence['peak_to_competing_peak']>=1.5:
+            eligible.append((evidence['peak_to_noise_floor'],start))
+    eligible.sort(key=lambda item:(-item[0],item[1]))
+    stats.update(eligible_windows=len(eligible),budget_reached=len(eligible)>32)
+    best=None
+    template=chirp if polarity==1 else chirp.conj()
+    positions=np.arange(6*length).reshape(6,length)
+    for _,start in eligible[:32]:
+        stats['checked_windows']+=1
+        joint=abs(np.fft.fft(transformed[start:start+6],48,axis=0))**2
+        phase,coarse=np.unravel_index(np.argmax(joint),joint.shape)
+        offset=(float(phase)/48+.5)%1-.5
+        corrected=matrix[start:start+6]*np.exp(-2j*np.pi*offset*positions/length)
+        combined=np.mean(corrected,axis=0)
+        power=abs(np.fft.fft(combined*template.conj()))**2
+        peak=int(np.argmax(power))
+        evidence=_matched_peak_evidence(power,peak)
+        amplitudes=np.fft.fft(corrected*template.conj(),axis=1)[:,peak]
+        phase_concentration=float(abs(np.sum(amplitudes))**2/max(6*float(np.sum(abs(amplitudes)**2)),1e-30))
+        if phase_concentration<.65:
+            continue
+        if abs((peak-int(coarse)+length//2)%length-length//2)>1 or evidence['status']!='reliable_matched_peak':
+            continue
+        strength=float(sum(power[(peak+delta)%length] for delta in (-1,0,1))/max(float(power.sum()),1e-30))
+        if best is None or evidence['peak_to_noise_floor']>best['evidence']['matched_peak_evidence']['peak_to_noise_floor']:
+            best={'start':start,'count':6,'strength':strength,
+                  'evidence':{'method':'phase_grid_matched_preamble','combination_start_block':start,
+                      'combined_chirps':6,'combined_three_bin_energy_fraction':strength,
+                      'phase_hypotheses':48,'phase_bin':int(phase),'fractional_bin_hypothesis':offset,
+                      'matched_amplitude_phase_concentration':phase_concentration,'required_matched_amplitude_phase_concentration':.65,
+                      'matched_peak_evidence':evidence,
+                      'scope':'Preamble acquisition only; individual top bins need not agree. Phase-grid hypothesis is not validated carrier correction, timing, sync word or content.'}}
+    return best,stats
+
+
 def _correct_fractional_carrier(y, start_block, run_blocks, length, bandwidth, minimum_coherence=.8):
     """Estimate carrier phase advance from repeated preamble, modulo one FFT bin."""
     blocks = min(run_blocks, 8)
@@ -515,6 +561,9 @@ def _detect_lora_window(x, fs):
                 if best_count < 6:
                     weak,search = _coherent_preamble_run(matrix,peaks,concentration,chirp,polarity)
                     coherent_searches.append(dict(search,bandwidth_hz=bandwidth,spreading_factor=sf,chirp_polarity=polarity))
+                    if weak is None and sf<=10:
+                        weak,phase_search=_phase_grid_preamble_run(matrix,transformed,chirp,polarity)
+                        coherent_searches.append(dict(phase_search,bandwidth_hz=bandwidth,spreading_factor=sf,chirp_polarity=polarity))
                     if weak is None:
                         continue
                     best_start,best_count = weak['start'],weak['count']
@@ -575,7 +624,7 @@ def _detect_lora_window(x, fs):
                 **({'frames':frames} if frames else {}),
                 sample_budget_reached=limit < original,
                 limitations=['Centered single-channel search only; fractional CFO from preamble repetition, no integer CFO or RF center estimation.',
-                    'BW 125/250/500 kHz, SF7–SF12, both chirp directions; six stable FFT peaks and either individual concentration or a coherent six-chirp average required.',
+                    'BW 125/250/500 kHz, SF7–SF12, both chirp directions; six chirps with stable individual peaks or a bounded coherent matched-phase search required.',
                     'First second only; at most 256 symbols per BW/SF. Eight-phase preamble timing refinement for SF7-10 with >=2 samples/chip, bounded filters; no clock drift tracking. Late/short/weak bursts and off-center channels may be missed.',
                     'Other CSS waveforms can match preamble evidence. Header checksum and supported payload CRC are checked separately; all other stages remain candidates. Payload: explicit CR4/5–4/8, SF7–SF10 only.'])
 

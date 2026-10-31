@@ -62,3 +62,26 @@ Source : Joachim Tapparel et Andreas Burg, EPFL,
 [LoRaIQ](https://zenodo.org/records/20341802), DOI 10.5281/zenodo.20341802,
 licence CC BY 4.0. Reproduction : `python scripts/loraiq_extension.py` depuis
 la racine du dépôt après installation des dépendances.
+
+
+## Suivi après exposition : acquisition du signal faible
+
+La CI du premier passage est verte :
+[210 tests et Chromium](https://github.com/sebadiaz/IQScope/actions/runs/41184294436),
+[benchmark des autres sessions](https://github.com/sebadiaz/IQScope/actions/runs/41184294465).
+
+Après ce premier passage, une recherche conjointe bornée de phase sur six
+chirps trouve un candidat près de 0,022528 s dans le fichier à −8,8366 dB.
+Le [rapport de suivi](../corpus/loraiq-acquisition-observation.json) est marqué
+`follow_up_on_exposed_captures` ; le résultat historique n’est pas remplacé.
+Le pic combiné présente un rapport pic/fond de 119 et pic/concurrent de 16,25,
+avec concentration des amplitudes dans la progression de phase de 0,92645.
+Le suivi de porteuse reste rejeté : cohérence 0,15327, minimum 0,3. Aucun
+en-tête ni contenu n’est validé pour cette cible.
+
+Le score des références reste **3/4** et les trois exports binaires existants
+restent exacts. Il s’agit d’un progrès de détection, pas d’un nouveau paquet
+décodé. La recherche a été testée contre bruit blanc, tonalité, forme large
+bande périodique, phases de chirps incohérentes et symboles CSS changeants.
+Ces cas négatifs ne constituent pas une mesure générale du taux de fausses
+alarmes en conditions radio.

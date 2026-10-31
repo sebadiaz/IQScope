@@ -552,3 +552,28 @@ non confirmé ». Le quart n’est pas présenté comme détecté, même si les 
 sont conformes au CRC. Cette distinction permet aussi de restituer un paquet
 synthétique dont le quart a été remplacé par du bruit, sans prétendre que sa
 synchronisation physique est entièrement validée.
+
+
+### Acquisition conjointe lorsque les pics individuels changent
+
+Si les deux voies précédentes échouent, SF7–SF10 disposent d’une recherche
+conjointe sur six chirps. Les fenêtres sont présélectionnées par la moyenne
+non cohérente des spectres : pic/fond au moins 4 et pic/concurrent au moins
+1,5. Au plus 32 fenêtres classées par pic/fond sont examinées par configuration
+et polarité. Une FFT sur l’axe des six chirps, complétée à 48 points, propose
+une progression de phase. Après correction de cette hypothèse, le spectre
+moyen doit passer les critères de fiabilité 32/4 existants.
+
+La concentration des amplitudes complexes déchirpées dans cette progression,
+`abs(sum(a))**2 / (6*sum(abs(a)**2))`, doit atteindre 0,65. Ce contrôle rejette
+notamment les symboles CSS changeants qui peuvent produire un maximum après
+la recherche de phase. Le bin retenu après correction doit rester à au plus
+un bin de celui du maximum conjoint. La méthode rapportée est
+`phase_grid_matched_preamble`, avec les budgets et mesures.
+
+Cette voie constitue une preuve de préambule uniquement. Son hypothèse de
+fréquence n’est pas utilisée pour contourner le contrôle de cohérence du
+suivi de porteuse. Aucun seuil d’en-tête, de CRC ou de synchronisation n’est
+abaissé. Les fenêtres, phases ou paramètres ne sont pas choisis selon un CRC
+ou des octets attendus. Les budgets s’ajoutent à ceux des voies précédentes ;
+ils ne garantissent pas une recherche exhaustive du fichier.
