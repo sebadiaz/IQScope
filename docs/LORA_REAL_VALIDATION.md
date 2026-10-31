@@ -393,3 +393,12 @@ dans le préfixe CSV (`0000005` vers 5,045544 s de rrh1/1). Le CRC seul ne
 valide pas indépendamment cette dernière. Ces résultats restent six fichiers
 corrélés d’une session, utilisés pour développer le décodeur : ni données
 inédites de validation, ni garantie générale à −1 dB.
+
+
+## Première évaluation hors session de développement
+
+Le décodeur `793e04f` a été conservé sans modification pour sélectionner puis
+examiner quatre références d’autres sessions : **3/4 exactes**, dont deux
+charges utiles binaires SF10/BW250 avec exports de 19 octets vérifiés. La
+cible SF7 à −8,8 dB reste manquée. Ce score est distinct des six références
+de développement. Voir la [méthode et les résultats complets](LORA_UNUSED_SESSIONS.md).

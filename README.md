@@ -638,3 +638,8 @@ is CRC-valid without an annotation in the available prefix). The weakest target
 uses one boundary inferred from the sync word: its final quarter chirp remains
 unconfirmed, explicitly flagged in the UI, frame and JSON. These development
 recordings do not establish general sensitivity or held-out performance.
+
+A frozen-decoder first pass on four previously unused LoRaIQ sessions recovers
+**3/4 exact references**, including two SF10/BW250 binary payloads with verified
+19-byte exports. The −8.8 dB SF7 target remains a miss. See
+[selection, integrity checks and limitations](docs/LORA_UNUSED_SESSIONS.md).

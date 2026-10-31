@@ -1,0 +1,28 @@
+name: LoRaIQ unused-session benchmark
+on:
+  push:
+    paths:
+      - scripts/loraiq_extension.py
+      - scripts/loraiq_batch.py
+      - scripts/loraiq_reference.py
+      - corpus/loraiq-extension-manifest.json
+      - iqscope_lora*.py
+      - .github/workflows/loraiq-extension.yml
+permissions:
+  contents: read
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install .
+      - run: python scripts/loraiq_extension.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: loraiq-unused-sessions
+          path: corpus-cache/loraiq-extension/observation.json

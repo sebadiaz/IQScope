@@ -1,0 +1,72 @@
+{
+  "source": "https://zenodo.org/records/20341802",
+  "frozen_decoder_commit": "793e04f8e494c2e18f73f1b467144c32ea20cb0f",
+  "selection_rule": "Publisher CSV order: first two distinct sessions for SF7/BW125k/CR1 and SF10/BW250k/CR1, excluding development session 25_01_17-13_40; first row in each selected session/configuration, no SNR or payload selection.",
+  "csv_size": 28253049,
+  "csv_sha256": "f261a911a96c6e79b23272a21091b97e51719ef1c1033116d900862afde65fd3",
+  "csv_publisher_checksum": "md5:0a225350d1c3b01ff9168bdcd3915b05",
+  "selected_annotations": [
+    {
+      "sf": "7",
+      "cr": "1",
+      "fc": "862.5",
+      "bandwidth": "125000",
+      "payload_base64": "MDAwMDAwMA==",
+      "rrh_idx": "2",
+      "rx_sample_rate": "250000",
+      "cfo": "7.5177",
+      "snr": "-8.8366",
+      "sigmf_file": "./sigmfs/25_01_17-14_39/rrh2/1",
+      "sigmf_file_offset": "5482.0",
+      "sigmf_file_n_samples": "9024"
+    },
+    {
+      "sf": "7",
+      "cr": "1",
+      "fc": "862.5",
+      "bandwidth": "125000",
+      "payload_base64": "MDAwMDAwMA==",
+      "rrh_idx": "1",
+      "rx_sample_rate": "250000",
+      "cfo": "6.6855",
+      "snr": "33.144",
+      "sigmf_file": "./sigmfs/25_01_15-10_17/rrh1/3",
+      "sigmf_file_offset": "4840.0",
+      "sigmf_file_n_samples": "9024"
+    },
+    {
+      "sf": "10",
+      "cr": "1",
+      "fc": "862.5",
+      "bandwidth": "250000",
+      "payload_base64": "uAUo7be9t0JHQJdzKa4qQxpAEg==",
+      "rrh_idx": "1",
+      "rx_sample_rate": "500000",
+      "cfo": "2.0362",
+      "snr": "29.1384",
+      "sigmf_file": "./sigmfs/25_09_12-14_15/rrh1/43",
+      "sigmf_file_offset": "33796.0000005",
+      "sigmf_file_n_samples": "82432"
+    },
+    {
+      "sf": "10",
+      "cr": "1",
+      "fc": "862.5",
+      "bandwidth": "250000",
+      "payload_base64": "tAgZ5gRtckJHQGbV/gahQRpAsw==",
+      "rrh_idx": "1",
+      "rx_sample_rate": "500000",
+      "cfo": "1.8637",
+      "snr": "36.5986",
+      "sigmf_file": "./sigmfs/25_09_12-15_46/rrh1/30",
+      "sigmf_file_offset": "34927.0000005",
+      "sigmf_file_n_samples": "82432"
+    }
+  ],
+  "decoder_file_sha256": {
+    "iqscope_lora.py": "2813b0a6b3df83fb566a562e020cfb820772179cdb4c2af5561044faaa3b2c59",
+    "iqscope_lora_search.py": "1a40f052c582f50137f30ee25cc0bb51e56c1023ec41271fc06daa001efe0e11",
+    "iqscope_lora_header.py": "21d810c0644aae1edff317ac51bda2fba2384f2ce41c9ab806314a5096697359",
+    "iqscope_lora_payload.py": "2bded85149ee03d78442d067e9a44c8cd63aac04658b43abdf54a9f7e150bd12"
+  }
+}
