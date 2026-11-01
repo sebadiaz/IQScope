@@ -3,6 +3,7 @@ const $ = id => document.getElementById(id);
 let audioPlot = false;
 let busy = false, liveMode = false, liveConnected = false, pollingLive = false;
 let lastLiveAnalysis = null, lastLiveSpectrumSession = null;
+let currentLiveSession=null,liveHistorySession=null,liveHistoryRevision=-1;
 let currentSpectrum = null, waterfallRows = [], selectedSignal = null, signals = [];
 let center = 0, sampleRate = 0, lastSnapshot = 0, lastLiveSample = -1, reportJob = null;
 const api = async (url, body, method = 'POST') => {
@@ -379,15 +380,40 @@ $('connect').onclick=async()=>{
     await api('/api/live/start',{port:Number($('live-port').value),frequency_hz:Math.round(Number($('live-frequency').value)*1e6),sample_rate:Number($('live-rate').value)});
     waterfallRows=[];signals=[];lastLiveSample=-1;lastSnapshot=0;lastLiveAnalysis=null;lastLiveSpectrumSession=null;
     $('live-coverage').textContent='Aucune fenêtre SDR analysée.';
+    currentLiveSession=null;liveHistorySession=null;liveHistoryRevision=-1;
+    $('live-packet-list').replaceChildren();$('live-history-summary').textContent='Aucun événement estimé conservé.';
   } catch(error) {status(error.message,'error');}
 };
 $('disconnect').onclick=async()=>{try{await api('/api/live/stop');status('Réception arrêtée.');}catch(error){status(error.message,'error');}};
+async function refreshLiveHistory(expectedSession){
+  if(expectedSession!==currentLiveSession)return;
+  const history=await api('/api/live/frames',undefined,'GET');
+  if(history.session_id!==expectedSession || currentLiveSession!==expectedSession)return;
+  if(liveHistorySession===history.session_id && liveHistoryRevision>=history.revision)return;
+  liveHistorySession=history.session_id;liveHistoryRevision=history.revision;
+  const events=history.events || [],shown=events.slice(0,12);
+  $('live-history-summary').textContent=`${events.length} événements estimés conservés · ${shown.length} affichés · ${history.evicted_events} anciens écartés.`;
+  const list=$('live-packet-list');list.replaceChildren();
+  for(const event of shown){
+    const card=element('div',undefined,'frame live-packet');card.dataset.eventId=event.id;
+    card.append(element('p',`t ≈ ${event.time_seconds_estimate.toFixed(6)} s dans la session reçue · SF${event.parameters.spreading_factor} · ${event.parameters.bandwidth_hz/1000} kHz`));
+    card.append(element('pre',event.text===undefined?event.payload_hex:event.text,'live-packet-text'));
+    card.append(element('p',`${event.observation_count} observation${event.observation_count>1?'s':''} · ${event.modes.map(m=>m==='experimental_guarded'?'expérimental':'standard').join(', ')}`,'live-packet-observations'));
+    if(!event.quarter_chirp_confirmed_in_any_observation)card.append(element('p','Quart de chirp non confirmé.','hint'));
+    const link=element('a','Télécharger ce paquet LoRa');
+    const binary=event.payload_hex.match(/../g).map(hex=>String.fromCharCode(parseInt(hex,16))).join('');
+    link.href=`data:application/octet-stream;base64,${btoa(binary)}`;link.download=`lora-live-${event.id}.bin`;
+    card.append(link);list.append(card);
+  }
+}
+
 async function pollLive() {
   if(!liveMode || pollingLive) return;
   pollingLive=true;
   try {
     const state=await api('/api/live/status',undefined,'GET');
-    liveConnected=state.connected;
+    liveConnected=state.connected;currentLiveSession=state.session_id;
+    if(liveHistorySession!==state.session_id || liveHistoryRevision!==state.history_revision)await refreshLiveHistory(state.session_id);
     $('connect').disabled=state.running;$('disconnect').disabled=!state.running;
     for(const id of ['live-port','live-rate','live-frequency']) $(id).disabled=state.running;
     $('live-dot').style.background=state.connected ? '#64e5c1' : '#64748b';
@@ -407,7 +433,7 @@ async function pollLive() {
     const fresh=!lastLiveAnalysis || lastLiveAnalysis.session!==state.session_id || lastLiveAnalysis.experimental!==experimental || state.received_samples>lastLiveAnalysis.end;
     if($('auto-live').checked && fresh && !busy && Date.now()-lastSnapshot>4000 && state.buffered_samples>state.sample_rate*.25) {
       lastSnapshot=Date.now();setBusy(true);status('Réception active · analyse de la fenêtre récente…','busy');
-      api('/api/live/analyze',{experimental_lora:experimental}).then(followJob).then(result=>{
+      api('/api/live/analyze',{experimental_lora:experimental}).then(followJob).then(async result=>{
         const previous=lastLiveAnalysis;
         const start=result.source_sample_start,end=result.source_sample_end,session=result.source_session_id,fs=result.sample_rate;
         let detail='Première fenêtre de cette session.';
@@ -418,6 +444,7 @@ async function pollLive() {
         }
         lastLiveAnalysis={session,end,experimental};
         $('live-coverage').textContent=`Fenêtre analysée : ${((end-start)/fs).toFixed(3)} s. ${detail}`;
+        await refreshLiveHistory(session);
         status('Réception active · dernière fenêtre analysée.','success');
       }).catch(error=>status(error.message,'error')).finally(()=>setBusy(false));
     } else if(!busy) status(fresh ? 'Réception active · spectre actualisé.' : 'Réception active · en attente de nouveaux échantillons.','success');

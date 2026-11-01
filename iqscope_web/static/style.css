@@ -15,3 +15,5 @@ dialog{max-height:85vh;overflow:auto}#dataset-dialog{max-width:680px;width:92vw}
 .recording{margin-top:1rem;padding-top:1rem;border-top:1px solid #26384b}.recording-provenance{padding:1rem;border:1px solid #26384b;border-radius:10px;overflow-wrap:anywhere}.recording-provenance a{display:inline-block;margin:.4rem .7rem .4rem 0}
 
 .experimental-option input{width:auto;margin-right:.5rem}.experimental-option small{display:block;color:#a8b5c6;line-height:1.5}
+
+.live-history{margin-top:1rem;border-top:1px solid var(--line);padding-top:.75rem}.live-history h3{font-size:12px}.live-packet-text{white-space:pre-wrap;overflow-wrap:anywhere;max-height:5rem;overflow:auto;font-size:11px}.live-history a{font-size:11px;color:var(--accent)}

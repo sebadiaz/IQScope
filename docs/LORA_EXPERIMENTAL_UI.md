@@ -92,12 +92,57 @@ leur recouvrement, soit le nombre d’échantillons reçus non analysés entre
 leurs intervalles. Les durées utilisent le taux nominal demandé. Ces écarts
 ne mesurent pas les pertes matérielles, invisibles dans rtl_tcp. La première
 fenêtre d’une session ne permet pas de conclure sur les périodes précédentes.
-Les rapports individuels conservent les intervalles ; l’interface ne prétend
-pas dédupliquer les paquets de plusieurs fenêtres ni garantir une couverture
-continue.
+Les rapports individuels conservent les intervalles. L’historique LoRa décrit
+ci-dessous regroupe des observations par une heuristique ; il ne constitue
+pas une archive continue.
 
 Le test Chromium laisse la source simulée inchangée au-delà de la période
 d’analyse pour vérifier l’absence de nouvelle tâche automatique, puis change
 le mode LoRa et vérifie la réanalyse volontaire et l’indication de
 recouvrement. Les tests API et récepteur contrôlent les bornes, la copie du
 contexte et le renouvellement de session après redémarrage.
+
+
+## Historique LoRa du direct
+
+Le panneau SDR conserve au plus **128 événements estimés**, en mémoire,
+pour la session courante. Les **12 plus récents** sont affichés. Chaque entrée
+conserve les octets à CRC valide, le nombre d’observations et les modes qui
+les ont obtenus. Un lien télécharge les octets du paquet ; le JSON permet
+d’exporter les 128 entrées retenues. Aucune copie d’IQ brut n’est ajoutée.
+
+Deux observations sont regroupées si elles ont les mêmes octets, paramètres
+PHY et taux de codage, et si leurs débuts estimés sont à au plus un symbole
+du premier début retenu. L’ancre temporelle ne dérive pas à chaque fusion.
+Deux émissions identiques à des instants distincts restent donc séparées.
+La position correspond au début estimé des symboles de données, dans le
+compteur d’échantillons reçus de la session ; ce n’est pas une heure RF
+matérielle ni le début exact du préambule.
+
+Cette règle est une estimation d’événement, pas une identité d’émetteur. Des
+émetteurs identiques qui se recouvrent peuvent rester indiscernables. Seules
+les entrées encore conservées sont comparées ; la limite de rétention ne
+garantit pas un décompte unique de toute la session. Le CRC n’authentifie pas
+l’émetteur. Les paquets ADS-B/AX.25 continuent d’apparaître dans leurs résultats
+d’analyse ; ce nouvel historique concerne LoRa uniquement.
+
+`GET /api/live/frames` retourne la session, une révision, les événements, la
+capacité et le nombre d’anciennes entrées écartées. Le statut SDR expose
+`history_revision` pour éviter de recharger la liste sans changement. Les
+trames du rapport d’analyse reçoivent un `live_event_id` ; le rapport inclut
+un `live_history_summary`. Les octets restent disponibles dans l’historique
+indépendamment de la rétention des tâches d’analyse. L’interface ne crée pas
+de fichiers supplémentaires sur le serveur pour les téléchargements du
+paquet retenu : elle restitue les octets conservés dans l’entrée.
+
+Un nouveau démarrage SDR réinitialise l’historique. Un changement du mode
+LoRa ne le réinitialise pas : le même événement peut porter les deux modes
+et plusieurs observations. Une analyse ancienne qui se termine après un
+redémarrage garde son rapport mais n’entre pas dans le nouvel historique.
+L’arrêt de réception laisse l’historique consultable jusqu’au prochain
+démarrage. Les entrées sont volatiles ; télécharger le JSON pour les garder.
+
+Les tests vérifient le regroupement de fenêtres et modes, les répétitions à
+des instants distincts, le rejet des CRC invalides et des positions hors
+fenêtre, les sessions et la rétention. Chromium vérifie une seule entrée
+pour les réanalyses standard/expérimentale et télécharge ses octets `HELLO`.

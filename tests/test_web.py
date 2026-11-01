@@ -346,6 +346,15 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(binary.content,b'HELLO')
             saved=await self.client.get(f"/api/jobs/{job['id']}/artifacts/report.json")
             self.assertEqual(saved.json()['analysis_options']['experimental_lora'],enabled)
+            history=(await self.client.get('/api/live/frames')).json()
+            self.assertEqual(history['session_id'],receiver.session_id)
+            self.assertEqual(len(history['events']),1)
+            event=history['events'][0]
+            self.assertEqual(event['payload_hex'],b'HELLO'.hex())
+            self.assertEqual(event['id'],frame['live_event_id'])
+            self.assertEqual(event['observation_count'],1 if enabled else 2)
+            self.assertEqual(result['live_history_summary']['merged_observations'],0 if enabled else 1)
+
 
 
 if __name__ == '__main__':

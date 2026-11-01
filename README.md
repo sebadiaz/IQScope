@@ -662,3 +662,9 @@ Live analysis now skips unchanged snapshots in the same mode. Reports carry a
 receiver-session ID and exclusive sample bounds; the UI shows overlap or
 received samples left unexamined between adjacent analyses. These counters
 do not measure hardware drops and do not imply continuous decoding.
+
+The SDR panel retains a bounded LoRa CRC history: up to 128 estimated events,
+with the latest 12 shown, observation counts and binary/JSON downloads.
+Grouping across overlapping windows is heuristic; identical bytes at distinct
+times remain separate. History resets with the receiver session and is not
+a persistent or lossless archive.

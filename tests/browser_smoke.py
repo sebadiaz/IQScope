@@ -30,7 +30,7 @@ def main():
             raise RuntimeError('Web server did not start')
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
-            page = browser.new_page(viewport={'width':1280, 'height':1000})
+            page = browser.new_page(viewport={'width':1280, 'height':1000},accept_downloads=True)
             errors = []
             page.on('pageerror', lambda error: errors.append(str(error)))
             try:
@@ -295,6 +295,19 @@ def main():
                 binary=page.get_by_role('link',name='Télécharger la charge utile LoRa')
                 response=page.request.get(urljoin(page.url,binary.get_attribute('href')))
                 assert response.ok and response.body()==b'HELLO'
+
+                expect(page.locator('#live-packet-list .live-packet')).to_have_count(1,timeout=30000)
+                expect(page.locator('.live-packet-observations')).to_contain_text('standard')
+                expect(page.locator('.live-packet-observations')).to_contain_text('expérimental')
+                history=page.request.get(urljoin(page.url,'/api/live/frames')).json()
+                assert len(history['events'])==1 and history['events'][0]['observation_count']>=2
+                assert history['events'][0]['payload_hex']==b'HELLO'.hex()
+                with page.expect_download() as packet_download:
+                    page.get_by_role('link',name='Télécharger ce paquet LoRa').click()
+                with tempfile.TemporaryDirectory() as download_directory:
+                    target=Path(download_directory)/'history-payload.bin'
+                    packet_download.value.save_as(str(target))
+                    assert target.read_bytes()==b'HELLO'
 
                 page.set_viewport_size({'width':390,'height':844})
                 assert page.evaluate('() => document.documentElement.scrollWidth <= innerWidth')

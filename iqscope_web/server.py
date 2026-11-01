@@ -17,6 +17,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from iqscope import analyze, analyze_samples, demo
+from iqscope_web.live_history import LiveLoRaHistory
 from iqscope_decoders import capabilities
 from iqscope_audio import analyze_audio
 from iqscope_recordings import recordings, import_vksdr
@@ -55,6 +56,7 @@ class AnalysisService:
         self.lock = threading.Lock()
         self.pool = ThreadPoolExecutor(max_workers=1)
         self.receiver = LiveReceiver()
+        self.live_history=LiveLoRaHistory(self.receiver.session_id)
 
     def submit(self, function):
         with self.lock:
@@ -252,6 +254,7 @@ def create_app(root=None):
         if body.sample_rate not in (256000, 1024000, 2048000, 2400000):
             raise HTTPException(400, 'Supported rates: 256000, 1024000, 2048000, 2400000')
         service.receiver.start(body.port, body.frequency_hz, body.sample_rate)
+        service.live_history.reset(service.receiver.session_id)
         return service.receiver.status()
 
     @app.post('/api/live/stop')
@@ -261,7 +264,11 @@ def create_app(root=None):
 
     @app.get('/api/live/status')
     def live_status():
-        return service.receiver.status()
+        return dict(service.receiver.status(),history_revision=service.live_history.version())
+
+    @app.get('/api/live/frames')
+    def live_frames():
+        return service.live_history.snapshot()
 
     @app.get('/api/live/spectrum')
     def live_spectrum():
@@ -285,6 +292,10 @@ def create_app(root=None):
             report['source_session_id'] = context['session_id']
             report['source_sample_reference'] = 'received_samples_in_session'
             report['continuity_note'] = 'Independent latest-window snapshot, not lossless continuous decoding'
+            lora=next(t for t in report['wideband_trials'] if t['decoder']=='lora_preamble')
+            report['live_history_summary']=service.live_history.observe(context['session_id'],lora.get('frames',[]),fs,start,start+len(data),lora.get('mode','standard'))
+            if report.get('lora_artifact'):
+                (out/report['lora_artifact']).write_text(json.dumps(lora,indent=2))
             (out / 'report.json').write_text(json.dumps(report, indent=2))
             return report
         return service.submit(process)

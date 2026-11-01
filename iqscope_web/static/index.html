@@ -31,6 +31,7 @@
 <label class="check"><input id="live-experimental-lora" type="checkbox"> LoRa expérimental pour les fenêtres SDR</label>
 <label class="check"><input id="auto-live" type="checkbox" checked> Analyser périodiquement la fenêtre reçue</label>
 <p id="live-coverage" class="hint">Aucune fenêtre SDR analysée.</p>
+<section class="live-history"><h3>Historique LoRa à CRC valide</h3><p id="live-history-summary" class="hint">Aucun événement estimé conservé.</p><div id="live-packet-list"></div><a href="/api/live/frames" download="iqscope-live-lora-history.json">Télécharger l’historique JSON</a></section>
 <p class="hint">Aperçu actualisé ~4 fois/s. Le décodage analyse des fenêtres récentes : il peut manquer des paquets entre deux analyses. rtl_tcp ne fournit pas les pertes matérielles ni la fréquence effective.</p>
 </section>
 <div class="source-footer"><span>11 capacités disponibles</span><button id="capabilities" class="text-button">Voir les capacités ↗</button><button id="datasets" class="text-button">Explorer les jeux de données ↗</button></div>
