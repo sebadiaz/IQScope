@@ -670,3 +670,5 @@ times remain separate. History resets with the receiver session and is not
 a persistent or lossless archive.
 
 Les capteurs OOK/FSK peuvent utiliser automatiquement un **rtl_433 externe facultatif**, avec essais sur des canaux détectés, valeurs numériques dans l’interface et export JSON. Références réelles vérifiées : Fineoffset WH2 (OOK) et WH25 (FSK) ; l’intégrité annoncée par rtl_433 reste explicitement externe. Voir [installation, fonctionnement et limites](docs/RTL433.md).
+
+La première chaîne **BPSK/QPSK automatique** fournit une constellation et des symboles/bits candidats exportables. Elle vise les impulsions rectangulaires et reste validée sur références synthétiques ; aucun protocole ni CRC PSK n’est identifié. Voir [fonctionnement et limites PSK](docs/PSK.md).

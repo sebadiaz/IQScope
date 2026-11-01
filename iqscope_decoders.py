@@ -18,6 +18,7 @@ class Capability:
 
 
 CAPABILITIES = (
+    Capability('psk_generic', 'BPSK / QPSK', 'rectangular stationary PSK; blind carrier/phase/clock, narrowband or four spectral trials', 'phase clusters and timing only; ambiguous rotation/mapping, no protocol or CRC'),
     Capability('rtl433', 'OOK / FSK sensors', 'optional external rtl_433 on PATH; default device set, bounded automatic channel trials', 'external integrity claims only; no independent IQScope CRC'),
     Capability('lora_preamble', 'LoRa PHY (partial)', 'centered BW125/250/500kHz SF7–12 preamble/header; CR4/5–4/8 SF7–10 payload, at most 64 symbols', 'header 5-bit checksum and supported payload CRC16; no LoRaWAN interpretation or authenticity'),
     Capability('analog_fm', 'FM', 'mono audio candidate, 75 us de-emphasis', 'unvalidated'),

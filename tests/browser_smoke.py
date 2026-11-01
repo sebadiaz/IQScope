@@ -90,6 +90,32 @@ def main():
                             if expected_model=='Fineoffset-WH25':
                                 assert downloaded['messages'][0]['fields']['pressure_hPa']==1001.1
                             assert downloaded['messages'][0]['independently_validated'] is False
+                # PSK uses synthetic references: no claim of real-radio validation.
+                from test_psk import fixture as psk_fixture, equivalent as psk_equivalent
+                for order in (2,4):
+                    import numpy as np
+                    import json
+                    x,fs,expected=psk_fixture(order)
+                    with tempfile.TemporaryDirectory() as directory:
+                        data=Path(directory)/'psk.sigmf-data'
+                        meta=data.with_suffix('.sigmf-meta')
+                        x.astype('<c8').tofile(data)
+                        meta.write_text(json.dumps({'global':{'core:datatype':'cf32_le','core:sample_rate':fs}}))
+                        page.locator('#iq-file').set_input_files(str(data))
+                        page.locator('#meta-file').set_input_files(str(meta))
+                        page.get_by_role('button',name='Analyser automatiquement').click()
+                        card=page.locator('.psk-candidate').first
+                        modulation='BPSK' if order==2 else 'QPSK'
+                        expect(card).to_contain_text(f'{modulation} · symboles candidats, sans CRC',timeout=30000)
+                        expect(card).to_contain_text('Protocole non identifié')
+                        expect(card.locator('canvas')).to_be_visible()
+                        expect(card.locator('.psk-bits')).to_have_text(re.compile('^[01]+$'))
+                        with page.expect_download() as event:
+                            page.get_by_role('link',name='Télécharger le rapport PSK',exact=True).click()
+                        decoded=json.loads(Path(event.value.path()).read_text())['candidates'][0]
+                        assert psk_equivalent(decoded['symbols'],expected,order)
+                        assert decoded['evidence']['checksum']=='not_checked'
+                        assert page.locator('#metric-frames').inner_text()=='0'
                 Path('browser-artifacts').mkdir(exist_ok=True)
                 page.screenshot(path='browser-artifacts/desktop.png', full_page=True)
                 # Exercise actual candidate text display through the same import UI.
@@ -368,6 +394,32 @@ def main():
                         downloaded=json.loads(Path(event.value.path()).read_text())
                         assert downloaded['messages'][0]['fields']['temperature_C']==24.6
                         assert downloaded['messages'][0]['independently_validated'] is False
+                # PSK uses synthetic references: no claim of real-radio validation.
+                from test_psk import fixture as psk_fixture, equivalent as psk_equivalent
+                for order in (2,4):
+                    import numpy as np
+                    import json
+                    x,fs,expected=psk_fixture(order)
+                    with tempfile.TemporaryDirectory() as directory:
+                        data=Path(directory)/'psk.sigmf-data'
+                        meta=data.with_suffix('.sigmf-meta')
+                        x.astype('<c8').tofile(data)
+                        meta.write_text(json.dumps({'global':{'core:datatype':'cf32_le','core:sample_rate':fs}}))
+                        page.locator('#iq-file').set_input_files(str(data))
+                        page.locator('#meta-file').set_input_files(str(meta))
+                        page.get_by_role('button',name='Analyser automatiquement').click()
+                        card=page.locator('.psk-candidate').first
+                        modulation='BPSK' if order==2 else 'QPSK'
+                        expect(card).to_contain_text(f'{modulation} · symboles candidats, sans CRC',timeout=30000)
+                        expect(card).to_contain_text('Protocole non identifié')
+                        expect(card.locator('canvas')).to_be_visible()
+                        expect(card.locator('.psk-bits')).to_have_text(re.compile('^[01]+$'))
+                        with page.expect_download() as event:
+                            page.get_by_role('link',name='Télécharger le rapport PSK',exact=True).click()
+                        decoded=json.loads(Path(event.value.path()).read_text())['candidates'][0]
+                        assert psk_equivalent(decoded['symbols'],expected,order)
+                        assert decoded['evidence']['checksum']=='not_checked'
+                        assert page.locator('#metric-frames').inner_text()=='0'
                 Path('browser-artifacts').mkdir(exist_ok=True)
                 page.screenshot(path='browser-artifacts/failure.png',full_page=True)
                 raise

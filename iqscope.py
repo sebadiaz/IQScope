@@ -13,6 +13,7 @@ from iqscope_rtty import search_rtty
 from iqscope_cw import search_cw
 from iqscope_fsk import search_fsk
 from iqscope_fsk4 import search_fsk4
+from iqscope_psk import search_psk
 from iqscope_ax25 import decode_ax25
 from iqscope_ofdm import detect_cyclic_prefix
 from iqscope_lora import detect_lora_preamble
@@ -150,6 +151,7 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
     cw = search_cw(x, fs, center)
     fsk = search_fsk(x, fs, detections, center)
     fsk4 = search_fsk4(x, fs, detections, center)
+    psk = search_psk(x, fs, detections, center)
     ax25 = decode_ax25(fsk.get('candidates',[]))
     ofdm = detect_cyclic_prefix(x,fs)
     if experimental_lora:
@@ -169,7 +171,7 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
               'limitations': ['Stationary spectral detector; overlapping, hopping and weak bursts may be missed.',
                              'AM/FM audio are unvalidated candidates. ADS-B, AX.25 UI and supported LoRa PHY frames have CRC checks; RTTY/CW text candidates have timing or framing evidence only.',
                              'At most 12 spectral bands receive audio trials; other detections remain visible.'],
-              'signals': results, 'wideband_trials': [digital, rtty, cw, fsk, fsk4, ax25, ofdm, lora, rtl433],
+              'signals': results, 'wideband_trials': [digital, rtty, cw, fsk, fsk4, ax25, ofdm, lora, rtl433, psk],
               'spectrum': {'frequency_hz': frequencies.tolist(), 'power_db': spectrum.tolist()},
               'waterfall': {'power_db': waterfall.tolist(), 'time_seconds': (starts/fs).tolist(),
                             'sampled_windows': True}}
@@ -177,7 +179,7 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
         (out / 'rtty-candidate.txt').write_text(rtty['candidates'][0]['text'], encoding='utf-8')
     if cw.get('candidates'):
         (out / 'cw-candidate.txt').write_text(cw['candidates'][0]['text'], encoding='utf-8')
-    for trial,family_prefix in ((fsk,'fsk'),(fsk4,'fsk4')):
+    for trial,family_prefix in ((fsk,'fsk'),(fsk4,'fsk4'),(psk,'psk')):
         for index,candidate in enumerate(trial.get('candidates',[])):
             prefix = family_prefix if index==0 else f'{family_prefix}-{index+1}'
             bit_name,packed_name = prefix+'-bits.txt',prefix+'-packed.bin'
@@ -189,6 +191,9 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
                 symbol_name = prefix+'-symbols.txt'
                 (out / symbol_name).write_text(candidate['symbols'],encoding='ascii')
                 candidate['artifacts']['symbols'] = symbol_name
+    if psk['candidates']:
+        psk['artifact'] = 'psk-candidates.json'
+        (out / psk['artifact']).write_text(json.dumps(psk, indent=2), encoding='utf-8')
     for index,frame in enumerate(lora.get('frames',[]),1):
         name=f'lora-payload-{index}.bin'
         (out/name).write_bytes(bytes.fromhex(frame['payload_hex']))

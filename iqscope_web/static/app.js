@@ -98,6 +98,17 @@ function updateAxes() {
   $('center-label').textContent=center ? `Centre ${formatFrequency(center)}` : 'Fréquences relatives à la capture';
   $('rate-label').textContent=`${(sampleRate/1e6).toFixed(3)} Méch/s`;
 }
+function drawPskConstellation(canvas, data) {
+  const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height,scale=Math.min(w,h)/2.8;
+  ctx.fillStyle='#101b2c';ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle='#506078';ctx.beginPath();
+  ctx.moveTo(0,h/2);ctx.lineTo(w,h/2);ctx.moveTo(w/2,0);ctx.lineTo(w/2,h);ctx.stroke();
+  ctx.fillStyle='#f1f5fa';ctx.font='12px sans-serif';ctx.fillText('I',w-16,h/2-8);ctx.fillText('Q',w/2+8,16);
+  ctx.fillStyle='#61d6bb';
+  for(let i=0;i<data.i.length;i++){
+    ctx.beginPath();ctx.arc(w/2+data.i[i]*scale,h/2-data.q[i]*scale,2,0,2*Math.PI);ctx.fill();
+  }
+}
 function showReport(report, jobId) {
   audioPlot=report.source_kind==='receiver_audio';
   reportJob=jobId; center=report.center_frequency_hz;sampleRate=report.sample_rate;
@@ -151,6 +162,27 @@ function showReport(report, jobId) {
     details.append(content);list.append(details);
   }
   const frameList=$('frame-list');frameList.replaceChildren();
+  for(const trial of report.wideband_trials || []) {
+    if(trial.decoder!=='psk_generic')continue;
+    for(const candidate of trial.candidates || []) {
+      const card=element('div',undefined,'frame psk-candidate');
+      card.append(element('h3',`${candidate.modulation} · symboles candidats, sans CRC`));
+      card.append(element('p',`${candidate.parameters.baud.toFixed(2)} bauds · ${candidate.symbol_count} symboles · correction porteuse ${candidate.parameters.carrier_offset_hz.toFixed(2)} Hz`));
+      if(candidate.channel)card.append(element('p',`Offset du canal : ${candidate.channel.offset_hz.toFixed(1)} Hz`));
+      card.append(element('p','Rotation, conjugaison I/Q, correspondance bits/symboles et alignement des octets inconnus. Protocole non identifié.','hint'));
+      const canvas=element('canvas');canvas.width=360;canvas.height=260;
+      canvas.style.width='100%';canvas.style.maxWidth='360px';canvas.setAttribute('aria-label',`Constellation ${candidate.modulation} normalisée`);canvas.setAttribute('role','img');
+      card.append(canvas);drawPskConstellation(canvas,candidate.constellation);
+      card.append(element('p','Constellation après correction : amplitude normalisée, au plus 512 symboles échantillonnés.','hint'));
+      card.append(element('pre',candidate.bits.slice(0,256),'psk-bits'));
+      for(const [kind,name] of Object.entries(candidate.artifacts || {})) {
+        const link=element('a',`Télécharger PSK · ${kind}`);link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(name)}`;link.download=name;card.append(link);
+      }
+      frameList.append(card);
+    }
+    if(trial.artifact){const link=element('a','Télécharger le rapport PSK');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
+  }
+
   for(const trial of report.wideband_trials || []) {
     if(trial.decoder!=='rtl433')continue;
     frameList.append(element('h3',`Capteurs OOK / FSK · ${trial.messages.length} message(s)`));
