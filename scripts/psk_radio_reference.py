@@ -50,7 +50,9 @@ def main():
             payload_hashes.append(digest_payload)
         if name=='picsat':
             if not any(c['modulation']=='BPSK' and 1190<c['parameters']['baud']<1210 for c in psk['candidates']):
-                raise AssertionError('PicSat recorded BPSK structural regression; no golden bits asserted')
+                raise AssertionError('PicSat recorded BPSK structural regression')
+            if len(frames)!=1 or hashes!={'2c95b8abea7c459f8ca46c6315375036017b3d93d5f4f47f3e76a1eae61674f7'}:
+                raise AssertionError('PicSat CRC-valid payload regression')
         if name=='pwsat2':
             expected=sorted([*PAYLOAD_HASHES,'597d97bdef95e92a99b2f9bc3c2237d4f1dc3124837785b2a7a1061081e8b561'])
             if len(frames)!=4 or sorted(payload_hashes)!=expected:

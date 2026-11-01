@@ -87,7 +87,9 @@ def _decode_rectangular(x, fs, max_seconds=3, max_bits=50000):
     return dict(result,status='no_consistent_candidate')
 
 
-def decode_psk(x, fs, max_seconds=3, max_bits=50000):
+def decode_psk(x, fs, max_seconds=3, max_bits=50000, quality_start_seconds=0):
+    if not math.isfinite(quality_start_seconds) or quality_start_seconds<0:
+        raise ValueError('PSK quality start must be finite and nonnegative')
     result=_decode_rectangular(x,fs,max_seconds,max_bits)
     result['limitations'][0]='Stationary rectangular or bounded RRC BPSK/QPSK trials; not OQPSK, differential PSK or QAM.'
     result['limitations'].append('RRC: strongest envelope clock line only, >=100 examined symbols, rolloff trials .2/.35/.5; feed-forward window fit, not continuous tracking.')
@@ -99,7 +101,7 @@ def decode_psk(x, fs, max_seconds=3, max_bits=50000):
     if not np.all(np.isfinite(source)):
         return result
     from iqscope_psk_rrc import recover_rrc
-    candidate=recover_rrc(source,fs,max_bits)
+    candidate=recover_rrc(source,fs,max_bits,quality_start_seconds=quality_start_seconds)
     result['rrc_search']={'rolloff_trials':[.2,.35,.5], 'minimum_examined_symbols':100,
                           'validation':'structural EVM only; no protocol or CRC'}
     if candidate is not None:

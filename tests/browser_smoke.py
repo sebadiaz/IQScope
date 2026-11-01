@@ -351,14 +351,19 @@ def main():
                 if os.environ.get('IQSCOPE_TEST_PSK_RADIO')=='1':
                     page.locator('#iq-file').set_input_files(str(Path('corpus-cache/psk-radio/picsat.wav').resolve()))
                     page.get_by_role('button',name='Analyser automatiquement').click()
-                    expect(page.locator('.psk-ax25-unresolved')).to_be_visible(timeout=30000)
+                    expect(page.locator('.psk-context-recovery')).to_be_visible(timeout=30000)
+                    expect(page.locator('.ax25-addresses').first).to_contain_text('PICSAT-2')
                     expect(page.locator('.psk-candidate')).to_have_count(1)
-                    expect(page.locator('#metric-frames')).to_have_text('0')
-                    expect(page.get_by_role('link',name='Télécharger la charge utile AX.25 BPSK',exact=True)).to_have_count(0)
+                    expect(page.locator('#metric-frames')).to_have_text('1')
+                    with page.expect_download() as payload_event:
+                        page.get_by_role('link',name='Télécharger la charge utile AX.25 BPSK',exact=True).click()
+                    payload=Path(payload_event.value.path()).read_bytes()
+                    assert len(payload)==114
+                    assert hashlib.sha256(payload).hexdigest()=='2c95b8abea7c459f8ca46c6315375036017b3d93d5f4f47f3e76a1eae61674f7'
                     with page.expect_download() as event:
                         page.get_by_role('link',name='Télécharger le rapport AX.25 BPSK',exact=True).click()
                     diagnostic=json.loads(Path(event.value.path()).read_text())
-                    assert not diagnostic['frames']
+                    assert len(diagnostic['frames'])==1 and diagnostic['frames'][0]['fcs_valid']
                     assert diagnostic['length_rejected']>0
                     assert diagnostic['crc_rejected']==0
                 live_requests=[]

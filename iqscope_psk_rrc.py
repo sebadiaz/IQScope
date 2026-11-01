@@ -33,10 +33,10 @@ def _line(values, fs, lower, upper, minimum_fraction):
     return float(fit.x),fraction
 
 
-def _recover_rrc(x, fs, max_bits=50000, gain_control=False):
+def _recover_rrc(x, fs, max_bits=50000, gain_control=False, quality_start_seconds=0):
     # Source is already bounded by decode_psk. Downsample after carrier
     # correction only if an estimated baud supports a narrower front end.
-    if len(x)<1024:
+    if len(x)<1024 or quality_start_seconds>=len(x)/fs-.1:
         return None
     power=float(np.mean(abs(x)**2))
     if power<1e-20:
@@ -74,7 +74,7 @@ def _recover_rrc(x, fs, max_bits=50000, gain_control=False):
                 length=max(3,int(round(64*period))|1)
                 gain=np.sqrt(np.maximum(ndimage.uniform_filter1d(abs(filtered)**2,size=length,mode='reflect'),1e-20))
                 reference=float(np.median(gain))
-                if reference<1e-12 or np.mean(gain<reference*.25)>.02:
+                if reference<1e-12 or np.mean(gain[int(quality_start_seconds*rate):]<reference*.25)>.02:
                     continue
                 gain=np.clip(gain,reference*.25,reference*4)
                 filtered=filtered/gain
@@ -88,15 +88,19 @@ def _recover_rrc(x, fs, max_bits=50000, gain_control=False):
             # Fit on <=2048 centers spread across the examined duration.
             chosen=np.unique(np.linspace(0,len(numbers)-1,min(2048,len(numbers)),dtype=int))
             fit_numbers=numbers[chosen]
+            fit_numbers=fit_numbers[first+fit_numbers*period>=quality_start_seconds*rate]
+            if len(fit_numbers)<64:
+                continue
             def evaluate(parameters, all_symbols=False):
                 trial_baud,phase=parameters
                 centers=first+(fit_numbers if not all_symbols else numbers)*rate/trial_baud+phase*period
                 values=np.interp(centers,np.arange(len(filtered)),filtered.real)+1j*np.interp(centers,np.arange(len(filtered)),filtered.imag)
-                values=values/max(np.sqrt(np.mean(abs(values)**2)),1e-15)
-                origin=np.angle(np.mean(values**order))/order
+                quality=centers>=quality_start_seconds*rate
+                values=values/max(np.sqrt(np.mean(abs(values[quality])**2)),1e-15)
+                origin=np.angle(np.mean(values[quality]**order))/order
                 values*=np.exp(-1j*origin)
                 labels=np.mod(np.rint(np.angle(values)*order/(2*np.pi)).astype(int),order)
-                evm=float(np.sqrt(np.mean(abs(values-np.exp(2j*np.pi*labels/order))**2)))
+                evm=float(np.sqrt(np.mean(abs(values[quality]-np.exp(2j*np.pi*labels[quality]/order))**2)))
                 return evm,values,labels,centers,origin
             phases=np.arange(24)/24
             initial=min(phases,key=lambda p:evaluate((baud,p))[0])
@@ -105,11 +109,12 @@ def _recover_rrc(x, fs, max_bits=50000, gain_control=False):
                                   bounds=((max(30,baud-width),min(9600,fs/8,baud+width)),(0,1)),
                                   options={'maxiter':12,'maxfev':160,'xtol':1e-6,'ftol':1e-6})
             evm,values,labels,centers,origin=evaluate(fit.x,True)
-            if evm>.16 or min(np.mean(labels==k) for k in range(order))<.12:
+            quality=centers>=quality_start_seconds*rate
+            if evm>.16 or min(np.mean(labels[quality]==k) for k in range(order))<.12:
                 continue
             # Require consistency in both halves, not only a favorable subset.
             target=np.exp(2j*np.pi*labels/order)
-            if max(np.sqrt(np.mean(abs(a-b)**2)) for a,b in zip(np.array_split(values,2),np.array_split(target,2)))>.18:
+            if max(np.sqrt(np.mean(abs(a-b)**2)) for a,b in zip(np.array_split(values[quality],2),np.array_split(target[quality],2)))>.18:
                 continue
             count=min(len(labels),max_bits//(1 if order==2 else 2))
             if count<64:
@@ -130,6 +135,7 @@ def _recover_rrc(x, fs, max_bits=50000, gain_control=False):
                                   'timing_recovery':'cyclic envelope line plus bounded feed-forward EVM fit',
                                   'symbol_mapping':'counterclockwise phase ranks; natural binary, rotation and conjugation unresolved'},
                     'evidence':{'power_coherence':carrier_fraction,'power_measure':'FFT peak energy fraction before frequency refinement',
+                                'quality_start_seconds':quality_start_seconds,
                                 'clock_line_energy_fraction':clock_fraction,'symbol_evm_rms':evm,
                                 'local_gain_p10_p90':gain_summary,
                                 'checksum':'not_checked','protocol':'unknown'},
@@ -139,8 +145,8 @@ def _recover_rrc(x, fs, max_bits=50000, gain_control=False):
     return None
 
 
-def recover_rrc(x, fs, max_bits=50000):
-    candidate=_recover_rrc(x,fs,max_bits)
+def recover_rrc(x, fs, max_bits=50000, quality_start_seconds=0):
+    candidate=_recover_rrc(x,fs,max_bits,quality_start_seconds=quality_start_seconds)
     if candidate is not None or len(x)<1024:
         return candidate
     power=float(np.mean(abs(x)**2))
@@ -170,9 +176,9 @@ def recover_rrc(x, fs, max_bits=50000):
         tracked=np.interp(time,carrier_time,phase)
         corrected=source*np.exp(-1j*(2*np.pi*coarse*time+tracked)/order)
         guard=max(1,int(np.ceil(.03*fs)))
-        candidate=_recover_rrc(corrected[:-guard],fs,max_bits)
+        candidate=_recover_rrc(corrected[:-guard],fs,max_bits,quality_start_seconds=quality_start_seconds)
         if candidate is None:
-            candidate=_recover_rrc(corrected[:-guard],fs,max_bits,gain_control=True)
+            candidate=_recover_rrc(corrected[:-guard],fs,max_bits,gain_control=True,quality_start_seconds=quality_start_seconds)
         if candidate is None or candidate['modulation']!=('BPSK' if order==2 else 'QPSK'):
             continue
         # Tracked phase is a numerical estimate, not a protocol reference.

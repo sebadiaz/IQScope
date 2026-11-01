@@ -2,6 +2,7 @@
 import numpy as np
 from scipy import signal, ndimage
 from iqscope_psk import decode_psk
+from iqscope_ax25 import decode_psk_ax25
 
 
 def search_audio_psk(audio, fs):
@@ -31,17 +32,29 @@ def search_audio_psk(audio, fs):
             'limitations':['Mono receiver audio converted by Hilbert transform and interpolated 2x; no original RF IQ or RF frequency.',
                             'At most four energy bursts, three seconds each; trim 20 ms from burst starts; carrier tracking discards a 30 ms ending guard.',
                             'Energy threshold is 20 dB over the 30th percentile; weak bursts and overlapping signals may be missed.',
+                            'At most one 100 ms leading-context retry per candidate window without valid AX.25; replacement requires valid FCS and UI structure.',
                             'Constant low-SNR or long signals may fail. No continuity of carrier tracking between windows.']}
     for start,end in windows[:4]:
         trial=decode_psk(analytic[start*2:end*2],rate)
         result['windows_examined'].append({'source_sample_start':start,'source_sample_end':end,
                                            'source_sample_rate':fs,'status':trial['status']})
+        candidate_start=start
+        if trial['candidates'] and not decode_psk_ax25(trial['candidates'])['frames'] and start>0:
+            padded=max(0,start-round(.1*fs))
+            prefix=(start-padded)/fs
+            retry=decode_psk(analytic[padded*2:end*2],rate,max_seconds=3+prefix,quality_start_seconds=prefix)
+            accepted=bool(decode_psk_ax25(retry['candidates'])['frames'])
+            result['windows_examined'][-1]['context_retry']={'source_sample_start':padded,'quality_start_source_sample':start,
+                                                          'accepted_by_ax25_crc':accepted}
+            if accepted:
+                trial=retry
+                candidate_start=padded
         for candidate in trial['candidates']:
-            candidate['parameters']['first_symbol_center_seconds']+=start/fs
+            candidate['parameters']['first_symbol_center_seconds']+=candidate_start/fs
             candidate['channel']={'audio_frequency_hz':candidate['parameters']['carrier_offset_hz'],
                                   'sample_rate':rate,'frequency_reference':'audio_hz'}
-            candidate['source_window']={'source_sample_start':start,'source_sample_end':end,
-                                        'source_sample_rate':fs,'end_exclusive':True}
+            candidate['source_window']={'source_sample_start':candidate_start,'source_sample_end':end,
+                                        'source_sample_rate':fs,'end_exclusive':True,'quality_start_source_sample':start}
             result['candidates'].append(candidate)
     result['status']='timing_consistent_candidate' if result['candidates'] else 'no_consistent_candidate'
     return result
