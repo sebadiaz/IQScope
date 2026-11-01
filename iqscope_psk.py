@@ -1,11 +1,11 @@
-"""Conservative blind rectangular BPSK/QPSK trials; no protocol validation."""
+"""Conservative blind rectangular/RRC BPSK/QPSK trials; no protocol validation."""
 import math
 import numpy as np
 from scipy import signal, optimize
 from iqscope_fsk import recover_clock
 
 
-def decode_psk(x, fs, max_seconds=3, max_bits=50000):
+def _decode_rectangular(x, fs, max_seconds=3, max_bits=50000):
     result = {'decoder':'psk_generic','family':'BPSK / QPSK','candidates':[],
               'validation_scope':'phase clusters and symbol timing only; no protocol, CRC or authenticity',
               'limitations':['Rectangular, stationary single-carrier BPSK/QPSK only; not RRC-shaped PSK, OQPSK or QAM.',
@@ -85,6 +85,26 @@ def decode_psk(x, fs, max_seconds=3, max_bits=50000):
         result['candidates']=[candidate]
         return dict(result,status='timing_consistent_candidate')
     return dict(result,status='no_consistent_candidate')
+
+
+def decode_psk(x, fs, max_seconds=3, max_bits=50000):
+    result=_decode_rectangular(x,fs,max_seconds,max_bits)
+    result['limitations'][0]='Stationary rectangular or bounded RRC BPSK/QPSK trials; not OQPSK, differential PSK or QAM.'
+    result['limitations'].append('RRC: strongest envelope clock line only, >=100 examined symbols, rolloff trials .2/.35/.5; feed-forward window fit, not continuous tracking.')
+    if result['candidates'] or result['status']=='not_applicable':
+        for candidate in result['candidates']:
+            candidate['parameters']['pulse_shape']='rectangular_trial'
+        return result
+    source=np.asarray(x[:min(len(x),int(fs*max_seconds),288000)],dtype=np.complex128)
+    if not np.all(np.isfinite(source)):
+        return result
+    from iqscope_psk_rrc import recover_rrc
+    candidate=recover_rrc(source,fs,max_bits)
+    result['rrc_search']={'rolloff_trials':[.2,.35,.5], 'minimum_examined_symbols':100,
+                          'validation':'structural EVM only; no protocol or CRC'}
+    if candidate is not None:
+        result.update(candidates=[candidate],status='timing_consistent_candidate')
+    return result
 
 
 def search_psk(x, fs, bands, center_hz=0, max_channels=4):

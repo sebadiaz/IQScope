@@ -92,10 +92,14 @@ def main():
                             assert downloaded['messages'][0]['independently_validated'] is False
                 # PSK uses synthetic references: no claim of real-radio validation.
                 from test_psk import fixture as psk_fixture, equivalent as psk_equivalent
-                for order in (2,4):
+                from test_psk_rrc import fixture as psk_rrc_fixture
+                for order,shape in [(2,'rectangular_trial'),(4,'rectangular_trial'),(2,'rrc_trial'),(4,'rrc_trial')]:
                     import numpy as np
                     import json
-                    x,fs,expected=psk_fixture(order)
+                    if shape=='rrc_trial':
+                        x,fs,expected,_=psk_rrc_fixture(order,clock_ppm=175)
+                    else:
+                        x,fs,expected=psk_fixture(order)
                     with tempfile.TemporaryDirectory() as directory:
                         data=Path(directory)/'psk.sigmf-data'
                         meta=data.with_suffix('.sigmf-meta')
@@ -109,12 +113,14 @@ def main():
                         expect(card).to_contain_text(f'{modulation} · symboles candidats, sans CRC',timeout=30000)
                         expect(card).to_contain_text('Protocole non identifié')
                         expect(card.locator('canvas')).to_be_visible()
+                        expect(card.locator('.psk-pulse-shape')).to_contain_text('RRC' if shape=='rrc_trial' else 'rectangulaires')
                         expect(card.locator('.psk-bits')).to_have_text(re.compile('^[01]+$'))
                         with page.expect_download() as event:
                             page.get_by_role('link',name='Télécharger le rapport PSK',exact=True).click()
                         decoded=json.loads(Path(event.value.path()).read_text())['candidates'][0]
                         assert psk_equivalent(decoded['symbols'],expected,order)
                         assert decoded['evidence']['checksum']=='not_checked'
+                        assert decoded['parameters']['pulse_shape']==shape
                         assert page.locator('#metric-frames').inner_text()=='0'
                 Path('browser-artifacts').mkdir(exist_ok=True)
                 page.screenshot(path='browser-artifacts/desktop.png', full_page=True)
@@ -370,56 +376,6 @@ def main():
                 page.screenshot(path='browser-artifacts/mobile.png', full_page=True)
                 assert not errors, errors
             except BaseException:
-                reference=Path('corpus-cache/rtl433-reference/gfile001.cu8')
-                if os.environ.get('IQSCOPE_TEST_RTL433')=='1':
-                    import numpy as np
-                    import json
-                    raw=np.fromfile(reference,dtype='u1').astype(np.float32)
-                    x=((raw[::2]-127.5)+1j*(raw[1::2]-127.5))/127.5
-                    with tempfile.TemporaryDirectory() as directory:
-                        data=Path(directory)/'sensor.sigmf-data'
-                        meta=data.with_suffix('.sigmf-meta')
-                        x.astype('<c8').tofile(data)
-                        meta.write_text(json.dumps({'global':{'core:datatype':'cf32_le','core:sample_rate':250000}}))
-                        page.locator('#iq-file').set_input_files(str(data))
-                        page.locator('#meta-file').set_input_files(str(meta))
-                        page.get_by_role('button',name='Analyser automatiquement').click()
-                        card=page.locator('.rtl433-message').first
-                        expect(card).to_contain_text('Fineoffset-WH2',timeout=30000)
-                        expect(card).to_contain_text('24.6')
-                        expect(card).to_contain_text('33')
-                        expect(card).to_contain_text('Non revérifiée par IQScope')
-                        with page.expect_download() as event:
-                            page.get_by_role('link',name='Télécharger les valeurs des capteurs (JSON)').click()
-                        downloaded=json.loads(Path(event.value.path()).read_text())
-                        assert downloaded['messages'][0]['fields']['temperature_C']==24.6
-                        assert downloaded['messages'][0]['independently_validated'] is False
-                # PSK uses synthetic references: no claim of real-radio validation.
-                from test_psk import fixture as psk_fixture, equivalent as psk_equivalent
-                for order in (2,4):
-                    import numpy as np
-                    import json
-                    x,fs,expected=psk_fixture(order)
-                    with tempfile.TemporaryDirectory() as directory:
-                        data=Path(directory)/'psk.sigmf-data'
-                        meta=data.with_suffix('.sigmf-meta')
-                        x.astype('<c8').tofile(data)
-                        meta.write_text(json.dumps({'global':{'core:datatype':'cf32_le','core:sample_rate':fs}}))
-                        page.locator('#iq-file').set_input_files(str(data))
-                        page.locator('#meta-file').set_input_files(str(meta))
-                        page.get_by_role('button',name='Analyser automatiquement').click()
-                        card=page.locator('.psk-candidate').first
-                        modulation='BPSK' if order==2 else 'QPSK'
-                        expect(card).to_contain_text(f'{modulation} · symboles candidats, sans CRC',timeout=30000)
-                        expect(card).to_contain_text('Protocole non identifié')
-                        expect(card.locator('canvas')).to_be_visible()
-                        expect(card.locator('.psk-bits')).to_have_text(re.compile('^[01]+$'))
-                        with page.expect_download() as event:
-                            page.get_by_role('link',name='Télécharger le rapport PSK',exact=True).click()
-                        decoded=json.loads(Path(event.value.path()).read_text())['candidates'][0]
-                        assert psk_equivalent(decoded['symbols'],expected,order)
-                        assert decoded['evidence']['checksum']=='not_checked'
-                        assert page.locator('#metric-frames').inner_text()=='0'
                 Path('browser-artifacts').mkdir(exist_ok=True)
                 page.screenshot(path='browser-artifacts/failure.png',full_page=True)
                 raise

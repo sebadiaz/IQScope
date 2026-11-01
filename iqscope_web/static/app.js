@@ -169,6 +169,8 @@ function showReport(report, jobId) {
       card.append(element('h3',`${candidate.modulation} · symboles candidats, sans CRC`));
       card.append(element('p',`${candidate.parameters.baud.toFixed(2)} bauds · ${candidate.symbol_count} symboles · correction porteuse ${candidate.parameters.carrier_offset_hz.toFixed(2)} Hz`));
       if(candidate.channel)card.append(element('p',`Offset du canal : ${candidate.channel.offset_hz.toFixed(1)} Hz`));
+      if(candidate.parameters.pulse_shape==='rrc_trial')card.append(element('p',`Filtre adapté RRC essayé · α=${candidate.parameters.rrc_rolloff_trial} · erreur symbole RMS ${(100*candidate.evidence.symbol_evm_rms).toFixed(1)} %`,'hint psk-pulse-shape'));
+      else card.append(element('p','Impulsions rectangulaires · récupération par transitions','hint psk-pulse-shape'));
       card.append(element('p','Rotation, conjugaison I/Q, correspondance bits/symboles et alignement des octets inconnus. Protocole non identifié.','hint'));
       const canvas=element('canvas');canvas.width=360;canvas.height=260;
       canvas.style.width='100%';canvas.style.maxWidth='360px';canvas.setAttribute('aria-label',`Constellation ${candidate.modulation} normalisée`);canvas.setAttribute('role','img');
