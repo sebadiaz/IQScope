@@ -2,9 +2,7 @@
 
 Version : 0.1 — 25 octobre 2026. Statut : architecture cible proposée, exigences et critères de validation. Ce document ne décrit pas des fonctionnalités déjà réalisées sauf dans la section 2.
 
-
-
-Complément de périmètre : [Protocoles propriétaires, documentation partielle et rétro-ingénierie](PROTOCOLES_NON_DOCUMENTES.md). Une documentation officielle publique n'est pas requise : le catalogue inclut aussi les formats reconstitués par la communauté et les protocoles inconnus étudiés à partir de captures. Les preuves et la provenance sont conservées par règle et par champ.
+Complément de périmètre : [Protocoles propriétaires, documentation partielle et rétro-ingénierie](PROTOCOLES_NON_DOCUMENTES.md). Une documentation officielle publique n’est pas requise ; les preuves et la provenance restent nécessaires.
 
 ## Sommaire
 
@@ -1048,3 +1046,7 @@ limitations: []
 Ajouter un type de ticket « famille manquante » demandant nom ou exemple, source documentaire et résultat souhaité. Le triage détermine : nouvelle forme d'onde, nouveau framing, nouveau parseur, codec, variante d'un mode existant ou simple adaptation d'entrée.
 
 Tenir une matrice domaine × couche × implémentation × corpus. Une famille sans documentation exploitable reste dans la recherche ; une famille documentée sans capture devient une tâche de corpus ; une solution mature sans adaptateur devient une tâche d'intégration. Cette séparation permet d'élargir réellement la couverture sans annoncer des centaines de faux supports.
+
+### État : première intégration rtl_433 et extraction bornée de canaux
+
+L’adaptateur facultatif `iqscope_rtl433` exécute les décodeurs standard de rtl_433 sur quatre essais au plus, après mélange/décimation antirepliement avec traçabilité des échantillons source (`iqscope_channels`). Fichier et instantanés SDR utilisent cette voie automatiquement si l’exécutable est présent. Les valeurs sont affichées/exportées en JSON sans les confondre avec les CRC vérifiés par IQScope. Référence OOK WH2 réelle, essai dérivé à deux fréquences, silence négatif et navigateur en CI : voir [RTL433.md](RTL433.md). La validation de captures FSK, le suivi continu des porteuses et la couverture de tous les modèles restent à réaliser.

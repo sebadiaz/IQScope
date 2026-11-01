@@ -60,6 +60,30 @@ def main():
                     page.get_by_role('button',name='Analyser automatiquement').click()
                     expect(page.locator("#status-text")).to_have_text(re.compile("^Analyse terminée"), timeout=30000)
                     assert page.locator('#metric-signals').inner_text() == '2'
+                reference=Path('corpus-cache/rtl433-reference/gfile001.cu8')
+                if os.environ.get('IQSCOPE_TEST_RTL433')=='1':
+                    import numpy as np
+                    import json
+                    raw=np.fromfile(reference,dtype='u1').astype(np.float32)
+                    x=((raw[::2]-127.5)+1j*(raw[1::2]-127.5))/127.5
+                    with tempfile.TemporaryDirectory() as directory:
+                        data=Path(directory)/'sensor.sigmf-data'
+                        meta=data.with_suffix('.sigmf-meta')
+                        x.astype('<c8').tofile(data)
+                        meta.write_text(json.dumps({'global':{'core:datatype':'cf32_le','core:sample_rate':250000}}))
+                        page.locator('#iq-file').set_input_files(str(data))
+                        page.locator('#meta-file').set_input_files(str(meta))
+                        page.get_by_role('button',name='Analyser automatiquement').click()
+                        card=page.locator('.rtl433-message').first
+                        expect(card).to_contain_text('Fineoffset-WH2',timeout=30000)
+                        expect(card).to_contain_text('24.6')
+                        expect(card).to_contain_text('33')
+                        expect(card).to_contain_text('Non revérifiée par IQScope')
+                        with page.expect_download() as event:
+                            page.get_by_role('link',name='Télécharger les valeurs des capteurs (JSON)').click()
+                        downloaded=json.loads(Path(event.value.path()).read_text())
+                        assert downloaded['messages'][0]['fields']['temperature_C']==24.6
+                        assert downloaded['messages'][0]['independently_validated'] is False
                 Path('browser-artifacts').mkdir(exist_ok=True)
                 page.screenshot(path='browser-artifacts/desktop.png', full_page=True)
                 # Exercise actual candidate text display through the same import UI.
@@ -314,6 +338,30 @@ def main():
                 page.screenshot(path='browser-artifacts/mobile.png', full_page=True)
                 assert not errors, errors
             except BaseException:
+                reference=Path('corpus-cache/rtl433-reference/gfile001.cu8')
+                if os.environ.get('IQSCOPE_TEST_RTL433')=='1':
+                    import numpy as np
+                    import json
+                    raw=np.fromfile(reference,dtype='u1').astype(np.float32)
+                    x=((raw[::2]-127.5)+1j*(raw[1::2]-127.5))/127.5
+                    with tempfile.TemporaryDirectory() as directory:
+                        data=Path(directory)/'sensor.sigmf-data'
+                        meta=data.with_suffix('.sigmf-meta')
+                        x.astype('<c8').tofile(data)
+                        meta.write_text(json.dumps({'global':{'core:datatype':'cf32_le','core:sample_rate':250000}}))
+                        page.locator('#iq-file').set_input_files(str(data))
+                        page.locator('#meta-file').set_input_files(str(meta))
+                        page.get_by_role('button',name='Analyser automatiquement').click()
+                        card=page.locator('.rtl433-message').first
+                        expect(card).to_contain_text('Fineoffset-WH2',timeout=30000)
+                        expect(card).to_contain_text('24.6')
+                        expect(card).to_contain_text('33')
+                        expect(card).to_contain_text('Non revérifiée par IQScope')
+                        with page.expect_download() as event:
+                            page.get_by_role('link',name='Télécharger les valeurs des capteurs (JSON)').click()
+                        downloaded=json.loads(Path(event.value.path()).read_text())
+                        assert downloaded['messages'][0]['fields']['temperature_C']==24.6
+                        assert downloaded['messages'][0]['independently_validated'] is False
                 Path('browser-artifacts').mkdir(exist_ok=True)
                 page.screenshot(path='browser-artifacts/failure.png',full_page=True)
                 raise

@@ -8,6 +8,7 @@ import numpy as np
 from scipy import ndimage, signal
 from iqscope_decoders import analog_trials, capabilities, decode_adsb
 from iqscope_formats import read_wave_iq, read_sdriq
+from iqscope_rtl433 import search_rtl433
 from iqscope_rtty import search_rtty
 from iqscope_cw import search_cw
 from iqscope_fsk import search_fsk
@@ -140,6 +141,10 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
         else:
             item.update(status='budget_deferred', hypotheses=[], decoder_trials=[], validated_content=None)
         results.append(item)
+    rtl433 = search_rtl433(x, fs, detections, center)
+    if rtl433['messages']:
+        (out / 'rtl433-messages.json').write_text(json.dumps(rtl433, indent=2), encoding='utf-8')
+        rtl433['artifact'] = 'rtl433-messages.json'
     digital = decode_adsb(x, fs)
     rtty = search_rtty(x, fs, center)
     cw = search_cw(x, fs, center)
@@ -164,7 +169,7 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
               'limitations': ['Stationary spectral detector; overlapping, hopping and weak bursts may be missed.',
                              'AM/FM audio are unvalidated candidates. ADS-B, AX.25 UI and supported LoRa PHY frames have CRC checks; RTTY/CW text candidates have timing or framing evidence only.',
                              'At most 12 spectral bands receive audio trials; other detections remain visible.'],
-              'signals': results, 'wideband_trials': [digital, rtty, cw, fsk, fsk4, ax25, ofdm, lora],
+              'signals': results, 'wideband_trials': [digital, rtty, cw, fsk, fsk4, ax25, ofdm, lora, rtl433],
               'spectrum': {'frequency_hz': frequencies.tolist(), 'power_db': spectrum.tolist()},
               'waterfall': {'power_db': waterfall.tolist(), 'time_seconds': (starts/fs).tolist(),
                             'sampled_windows': True}}

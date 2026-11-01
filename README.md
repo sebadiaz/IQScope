@@ -668,3 +668,5 @@ with the latest 12 shown, observation counts and binary/JSON downloads.
 Grouping across overlapping windows is heuristic; identical bytes at distinct
 times remain separate. History resets with the receiver session and is not
 a persistent or lossless archive.
+
+Les capteurs OOK/FSK peuvent utiliser automatiquement un **rtl_433 externe facultatif**, avec essais sur des canaux détectés, valeurs numériques dans l’interface et export JSON. Référence réelle vérifiée : Fineoffset WH2 (OOK) ; l’intégrité annoncée par rtl_433 reste explicitement externe. Voir [installation, fonctionnement et limites](docs/RTL433.md).

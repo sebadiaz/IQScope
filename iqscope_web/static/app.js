@@ -151,6 +151,20 @@ function showReport(report, jobId) {
     details.append(content);list.append(details);
   }
   const frameList=$('frame-list');frameList.replaceChildren();
+  for(const trial of report.wideband_trials || []) {
+    if(trial.decoder!=='rtl433')continue;
+    frameList.append(element('h3',`Capteurs OOK / FSK · ${trial.messages.length} message(s)`));
+    frameList.append(element('p',trial.status==='unavailable'?'rtl_433 absent : installer le programme pour activer ce décodeur facultatif.':`rtl_433 · ${trial.channels_examined.length} canaux examinés · ${trial.status}`,'hint rtl433-status'));
+    for(const message of trial.messages) {
+      const card=element('div',undefined,'frame rtl433-message');
+      card.append(element('h3',message.fields.model));
+      card.append(element('p',`Canal ${message.channel_index+1} · intégrité annoncée par rtl_433 : ${message.integrity_reported_by_decoder || 'non précisée'}. Non revérifiée par IQScope.`,'hint'));
+      card.append(element('pre',JSON.stringify(message.fields,null,2)));
+      frameList.append(card);
+    }
+    if(trial.artifact){const link=element('a','Télécharger les valeurs des capteurs (JSON)');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
+  }
+
   if(audioPlot){
     frameList.append(element('h3','Audio de récepteur · Morse, RTTY et AX.25'));
     frameList.append(element('p','Fréquences audio uniquement. Morse/RTTY : textes candidats sans CRC. AX.25 : structure et CRC vérifiés.','hint'));

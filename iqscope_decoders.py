@@ -18,6 +18,7 @@ class Capability:
 
 
 CAPABILITIES = (
+    Capability('rtl433', 'OOK / FSK sensors', 'optional external rtl_433 on PATH; default device set, bounded automatic channel trials', 'external integrity claims only; no independent IQScope CRC'),
     Capability('lora_preamble', 'LoRa PHY (partial)', 'centered BW125/250/500kHz SF7–12 preamble/header; CR4/5–4/8 SF7–10 payload, at most 64 symbols', 'header 5-bit checksum and supported payload CRC16; no LoRaWAN interpretation or authenticity'),
     Capability('analog_fm', 'FM', 'mono audio candidate, 75 us de-emphasis', 'unvalidated'),
     Capability('analog_am', 'AM', 'envelope audio candidate, carrier-present AM only', 'unvalidated'),
