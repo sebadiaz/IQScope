@@ -21,16 +21,19 @@ L’énergie est mesurée par blocs de 10 ms. Les intervalles dépassant de 20 d
 
 Après les essais RRC à fréquence constante, une voie BPSK supplémentaire suit la phase de la puissance seconde : mélange autour d’une raie estimée, filtrage/décimation sous l’horloge symbole, puis dépliage de phase et correction. Le suivi reste local à chaque fenêtre. Un garde final de 30 ms écarte les erreurs de bord du suivi. Les seuils EVM précédents restent inchangés : 16 % globalement et 18 % dans chaque moitié. Cette nouvelle voie de suivi vise **BPSK**, pas la poursuite de porteuse QPSK variable.
 
+Si les essais à gain commun échouent après le suivi de phase BPSK, un nouvel essai corrige lentement le gain après le filtre adapté, en moyennant l’énergie sur 64 symboles. La correction est bornée entre un quart et quatre fois le gain médian, et les fades profonds trop fréquents font rejeter l’essai. Cette moyenne préserve les variations rapides entre symboles : elle ne normalise pas chaque symbole individuellement. Les seuils EVM restent identiques. Le rapport et l’interface indiquent cette correction lorsqu’elle est utilisée. Sur la salve intermédiaire, l’EVM passe d’environ 20 % à 8,8 %.
+
 La fréquence indiquée après suivi résume l’estimation par sa médiane ; l’intervalle p10–p90 est également enregistré. Le filtre RRC affiché reste un essai accepté, sans certification du filtre émetteur. Des sauts de branche et des erreurs de bits restent possibles sans contrôle de trame.
 
 ## Résultats actuels
 
-Sur PW-Sat2, la recherche trouve trois salves. Deux donnent des candidats BPSK, vers **1196,26 bauds**, puis deux trames AX.25 UI à FCS valide. La troisième salve reste sans candidat accepté. Les adresses décodées contiennent `PWSAT2` ; cela ne prouve pas l’identité de l’émetteur.
+Sur PW-Sat2, les trois salves donnent désormais des candidats BPSK, vers **1196,26 bauds**, puis **quatre trames AX.25 UI à FCS valide**, correspondant à trois charges utiles distinctes. La salve intermédiaire contient deux transmissions du même contenu, conservées avec leurs horodatages distincts. Les adresses décodées contiennent `PWSAT2` ; cela ne prouve pas l’identité de l’émetteur.
 
 | Charge utile | Taille | SHA-256 de régression |
 | --- | ---: | --- |
 | première trame | 180 octets | `4171091c943892f60041564c49e595dc1888a0c19fcc19914b904cf31d92b86c` |
-| seconde trame | 230 octets | `6565ab6859ecad80f3415ff1cd000238e44c64df9e63aaf13274ae22b3156137` |
+| trames intermédiaires (deux transmissions) | 180 octets | `597d97bdef95e92a99b2f9bc3c2237d4f1dc3124837785b2a7a1061081e8b561` |
+| dernière trame | 230 octets | `6565ab6859ecad80f3415ff1cd000238e44c64df9e63aaf13274ae22b3156137` |
 
 Ces empreintes sont des références de régression issues du premier décodage à CRC valide pendant le développement ; elles ne sont pas des octets attendus fournis indépendamment par l’auteur de l’enregistrement. Le contrôle d’intégrité repose sur le FCS et la structure AX.25 UI. Les octets sont exportés sans interprétation de télémétrie, reconstruction d’image ou authentification.
 
@@ -44,6 +47,6 @@ Le rapport distingue les symboles PSK candidats des trames validées. Seules ces
 
 ## Vérification reproductible
 
-`python scripts/psk_radio_reference.py` télécharge les deux fichiers avec bornes de taille et SHA-256, utilise l’import audio réel, vérifie les deux trames PW-Sat2 et leurs exports, et enregistre les résultats AO-73, les fenêtres examinées et la provenance. Les WAV restent dans `corpus-cache/`, sans inclusion dans le paquet ni dans les artefacts CI.
+`python scripts/psk_radio_reference.py` télécharge les deux fichiers avec bornes de taille et SHA-256, utilise l’import audio réel, vérifie les quatre trames PW-Sat2 et leurs exports, et enregistre les résultats AO-73, les fenêtres examinées et la provenance. Les WAV restent dans `corpus-cache/`, sans inclusion dans le paquet ni dans les artefacts CI.
 
-Chromium importe PW-Sat2 par l’interface en mode audio, vérifie les deux trames, l’absence de fréquence RF et le téléchargement exact de 180 octets. Les tests synthétiques vérifient séparément le suivi BPSK variable, la détection de salve, le désembrouillage par un émetteur à registre indépendant et le rejet d’une trame corrompue. Ce corpus sert au développement : une évaluation indépendante plus large reste à constituer.
+Chromium importe PW-Sat2 par l’interface en mode audio, vérifie les quatre trames, l’absence de fréquence RF et le téléchargement exact de 180 octets. Les tests synthétiques vérifient séparément le suivi BPSK variable, la détection de salve, le désembrouillage par un émetteur à registre indépendant et le rejet d’une trame corrompue. Ce corpus sert au développement : une évaluation indépendante plus large reste à constituer.

@@ -17,6 +17,7 @@ RECORDINGS={
 # decode, not independently supplied ground truth from the recording author.
 PAYLOAD_HASHES={
     '4171091c943892f60041564c49e595dc1888a0c19fcc19914b904cf31d92b86c',
+    '597d97bdef95e92a99b2f9bc3c2237d4f1dc3124837785b2a7a1061081e8b561',
     '6565ab6859ecad80f3415ff1cd000238e44c64df9e63aaf13274ae22b3156137'}
 
 
@@ -35,6 +36,7 @@ def main():
         psk=next(t for t in report['wideband_trials'] if t['decoder']=='psk_generic')
         frames=next(t for t in report['wideband_trials'] if t.get('frontend')=='bpsk_g3ruh')['frames']
         hashes=set()
+        payload_hashes=[]
         for frame in frames:
             raw=bytes.fromhex(frame['hex'])
             if crc_x25(raw[:-2])!=int.from_bytes(raw[-2:],'little'):
@@ -42,9 +44,12 @@ def main():
             payload=bytes.fromhex(frame['fields']['payload_hex'])
             if (out/frame['payload_artifact']).read_bytes()!=payload:
                 raise AssertionError('Payload export changed bytes')
-            hashes.add(hashlib.sha256(payload).hexdigest())
+            digest_payload=hashlib.sha256(payload).hexdigest()
+            hashes.add(digest_payload)
+            payload_hashes.append(digest_payload)
         if name=='pwsat2':
-            if len(frames)!=2 or hashes!=PAYLOAD_HASHES:
+            expected=sorted([*PAYLOAD_HASHES,'597d97bdef95e92a99b2f9bc3c2237d4f1dc3124837785b2a7a1061081e8b561'])
+            if len(frames)!=4 or sorted(payload_hashes)!=expected:
                 raise AssertionError('PW-Sat2 recorded payload regression')
             if any(f['fields']['source']['callsign']!='PWSAT2' for f in frames):
                 raise AssertionError('Unexpected AX.25 source address')

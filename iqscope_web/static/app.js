@@ -170,6 +170,7 @@ function showReport(report, jobId) {
       card.append(element('h3',`${candidate.modulation} · symboles candidats, sans CRC`));
       card.append(element('p',`${candidate.parameters.baud.toFixed(2)} bauds · ${candidate.symbol_count} symboles · correction porteuse ${candidate.parameters.carrier_offset_hz.toFixed(2)} Hz`));
       if(candidate.channel)card.append(element('p',candidate.channel.audio_frequency_hz!==undefined?`Fréquence audio : ${candidate.channel.audio_frequency_hz.toFixed(1)} Hz`:`Offset du canal : ${candidate.channel.offset_hz.toFixed(1)} Hz`));
+      if(candidate.parameters.amplitude_recovery==='local_rms_64_symbols')card.append(element('p','Correction lente du gain · moyenne sur 64 symboles','hint psk-gain-recovery'));
       if(candidate.parameters.carrier_recovery)card.append(element('p','Suivi de phase BPSK dans cette fenêtre ; pas de continuité entre fenêtres.','hint'));
       if(candidate.parameters.pulse_shape==='rrc_trial')card.append(element('p',`Filtre adapté RRC essayé · α=${candidate.parameters.rrc_rolloff_trial} · erreur symbole RMS ${(100*candidate.evidence.symbol_evm_rms).toFixed(1)} %`,'hint psk-pulse-shape'));
       else card.append(element('p','Impulsions rectangulaires · récupération par transitions','hint psk-pulse-shape'));

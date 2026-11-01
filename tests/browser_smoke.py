@@ -338,9 +338,10 @@ def main():
                     page.locator('#seconds').fill('20')
                     page.locator('#iq-file').set_input_files(str(Path('corpus-cache/psk-radio/pwsat2.wav').resolve()))
                     page.get_by_role('button',name='Analyser automatiquement').click()
-                    expect(page.locator('.psk-ax25-integrity')).to_have_count(2,timeout=30000)
+                    expect(page.locator('.psk-ax25-integrity')).to_have_count(4,timeout=30000)
+                    expect(page.locator('.psk-gain-recovery')).to_have_count(1)
                     expect(page.locator('.ax25-addresses').first).to_contain_text('PWSAT2')
-                    expect(page.locator('#metric-frames')).to_have_text('2')
+                    expect(page.locator('#metric-frames')).to_have_text('4')
                     expect(page.locator('#center-label')).to_contain_text('aucune fréquence RF')
                     with page.expect_download() as event:
                         page.get_by_role('link',name='Télécharger la charge utile AX.25 BPSK',exact=True).first.click()

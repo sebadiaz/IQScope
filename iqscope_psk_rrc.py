@@ -1,6 +1,6 @@
 """Bounded feed-forward RRC PSK recovery; structural candidates, no protocol."""
 import numpy as np
-from scipy import signal, optimize
+from scipy import signal, optimize, ndimage
 
 
 def rrc_taps(samples_per_symbol, rolloff, span=10):
@@ -33,7 +33,7 @@ def _line(values, fs, lower, upper, minimum_fraction):
     return float(fit.x),fraction
 
 
-def _recover_rrc(x, fs, max_bits=50000):
+def _recover_rrc(x, fs, max_bits=50000, gain_control=False):
     # Source is already bounded by decode_psk. Downsample after carrier
     # correction only if an estimated baud supports a narrower front end.
     if len(x)<1024:
@@ -68,6 +68,17 @@ def _recover_rrc(x, fs, max_bits=50000):
         for rolloff in (.2,.35,.5):
             taps=rrc_taps(period,rolloff)
             filtered=signal.fftconvolve(y,taps,mode='same')
+            gain_summary=None
+            if gain_control:
+                # Average many symbols: preserve symbol-to-symbol amplitudes.
+                length=max(3,int(round(64*period))|1)
+                gain=np.sqrt(np.maximum(ndimage.uniform_filter1d(abs(filtered)**2,size=length,mode='reflect'),1e-20))
+                reference=float(np.median(gain))
+                if reference<1e-12 or np.mean(gain<reference*.25)>.02:
+                    continue
+                gain=np.clip(gain,reference*.25,reference*4)
+                filtered=filtered/gain
+                gain_summary=np.percentile(gain,[10,90]).tolist()
             margin=6*period
             first=margin
             last=len(y)-margin
@@ -113,15 +124,17 @@ def _recover_rrc(x, fs, max_bits=50000):
                     'packed_padding_bits':(-len(bits))%8,
                     'byte_alignment':'arbitrary first recovered symbol; MSB-first packing, zero-padded final byte',
                     'parameters':{'baud':float(fit.x[0]),'carrier_offset_hz':frequency/order,
+                                  'amplitude_recovery':'local_rms_64_symbols' if gain_control else 'common_rms',
                                   'phase_origin_radians':float(origin),'first_symbol_center_seconds':float(centers[0]/rate),
                                   'pulse_shape':'rrc_trial','rrc_rolloff_trial':rolloff,'matched_filter_span_symbols':10,
                                   'timing_recovery':'cyclic envelope line plus bounded feed-forward EVM fit',
                                   'symbol_mapping':'counterclockwise phase ranks; natural binary, rotation and conjugation unresolved'},
                     'evidence':{'power_coherence':carrier_fraction,'power_measure':'FFT peak energy fraction before frequency refinement',
                                 'clock_line_energy_fraction':clock_fraction,'symbol_evm_rms':evm,
+                                'local_gain_p10_p90':gain_summary,
                                 'checksum':'not_checked','protocol':'unknown'},
                     'constellation':{'i':points.real.tolist(),'q':points.imag.tolist(),
-                                     'amplitude_normalized':True,'normalization':'common RMS gain; per-symbol amplitudes preserved',
+                                     'amplitude_normalized':True,'normalization':('local RMS over 64 symbols then common RMS; no per-symbol normalization' if gain_control else 'common RMS gain; per-symbol amplitudes preserved'),
                                      'sampled_symbols':True}}
     return None
 
@@ -158,6 +171,8 @@ def recover_rrc(x, fs, max_bits=50000):
         corrected=source*np.exp(-1j*(2*np.pi*coarse*time+tracked)/order)
         guard=max(1,int(np.ceil(.03*fs)))
         candidate=_recover_rrc(corrected[:-guard],fs,max_bits)
+        if candidate is None:
+            candidate=_recover_rrc(corrected[:-guard],fs,max_bits,gain_control=True)
         if candidate is None or candidate['modulation']!=('BPSK' if order==2 else 'QPSK'):
             continue
         # Tracked phase is a numerical estimate, not a protocol reference.

@@ -62,3 +62,15 @@ class PskTrackingTests(unittest.TestCase):
                 self.assertEqual(f['hex'],packet.hex())
                 self.assertEqual(f['frontend'],'bpsk_g3ruh')
                 self.assertAlmostEqual(f['time_seconds'],2+f['bit_start']/1200)
+
+    def test_slow_gain_changes_keep_symbols_and_strict_evm(self):
+        x,fs,expected,_=fixture(2)
+        time=np.arange(len(x))/fs
+        x*=np.linspace(.35,1.6,len(x))*np.exp(2j*np.pi*(12*time*time+1.2*np.sin(2*np.pi*.7*time)))
+        report=decode_psk(x,fs)
+        self.assertTrue(report['candidates'],report)
+        c=report['candidates'][0]
+        self.assertEqual(c['parameters']['amplitude_recovery'],'local_rms_64_symbols')
+        self.assertTrue(equivalent(c['symbols'],expected,2))
+        self.assertLessEqual(c['evidence']['symbol_evm_rms'],.16)
+        self.assertLess(c['evidence']['local_gain_p10_p90'][0],c['evidence']['local_gain_p10_p90'][1])
