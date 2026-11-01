@@ -144,3 +144,20 @@ def search_psk(x, fs, bands, center_hz=0, max_channels=4):
                   analyzed_seconds=len(source)/fs,
                   status='timing_consistent_candidate' if candidates else 'no_consistent_candidate')
     return direct
+
+
+def write_psk_artifacts(trial, out):
+    import json
+    from pathlib import Path
+    out=Path(out)
+    for index,candidate in enumerate(trial.get('candidates',[])):
+        prefix='psk' if index==0 else f'psk-{index+1}'
+        artifacts={'bits':prefix+'-bits.txt','packed':prefix+'-packed.bin','symbols':prefix+'-symbols.txt'}
+        (out/artifacts['bits']).write_text(candidate['bits'],encoding='ascii')
+        (out/artifacts['symbols']).write_text(candidate['symbols'],encoding='ascii')
+        bits=np.fromiter((int(bit) for bit in candidate['bits']),dtype=np.uint8)
+        (out/artifacts['packed']).write_bytes(np.packbits(bits,bitorder='big').tobytes())
+        candidate['artifacts']=artifacts
+    if trial.get('candidates'):
+        trial['artifact']='psk-candidates.json'
+        (out/trial['artifact']).write_text(json.dumps(trial,indent=2),encoding='utf-8')

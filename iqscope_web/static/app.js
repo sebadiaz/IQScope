@@ -143,7 +143,7 @@ function showReport(report, jobId) {
     }
     list.append(note);
   }
-  if(!signals.length) list.append(element('div',audioPlot?'Audio importé : lecture et essais Morse/RTTY/AX.25 ci-dessous. Les émissions RF ne sont pas recherchées dans ce mode.':'Aucune bande stationnaire détectée. Les paquets sont recherchés séparément.','empty-results'));
+  if(!signals.length) list.append(element('div',audioPlot?'Audio importé : lecture et essais Morse/RTTY/PSK/AX.25 ci-dessous. Les émissions RF ne sont pas recherchées dans ce mode.':'Aucune bande stationnaire détectée. Les paquets sont recherchés séparément.','empty-results'));
   for(const sig of signals) {
     const details=element('details',undefined,'signal'), summary=element('summary');
     summary.append(element('strong',formatFrequency(sig.frequency_hz)));
@@ -164,11 +164,13 @@ function showReport(report, jobId) {
   const frameList=$('frame-list');frameList.replaceChildren();
   for(const trial of report.wideband_trials || []) {
     if(trial.decoder!=='psk_generic')continue;
+    if(trial.frequency_reference==='audio_hz')frameList.append(element('p',`Recherche PSK audio : ${trial.windows_examined.length} fenêtre(s) examinée(s), ${trial.deferred_window_count} différée(s). Signal analytique dérivé de l’audio, aucune fréquence RF.`,'hint psk-audio-search'));
     for(const candidate of trial.candidates || []) {
       const card=element('div',undefined,'frame psk-candidate');
       card.append(element('h3',`${candidate.modulation} · symboles candidats, sans CRC`));
       card.append(element('p',`${candidate.parameters.baud.toFixed(2)} bauds · ${candidate.symbol_count} symboles · correction porteuse ${candidate.parameters.carrier_offset_hz.toFixed(2)} Hz`));
-      if(candidate.channel)card.append(element('p',`Offset du canal : ${candidate.channel.offset_hz.toFixed(1)} Hz`));
+      if(candidate.channel)card.append(element('p',candidate.channel.audio_frequency_hz!==undefined?`Fréquence audio : ${candidate.channel.audio_frequency_hz.toFixed(1)} Hz`:`Offset du canal : ${candidate.channel.offset_hz.toFixed(1)} Hz`));
+      if(candidate.parameters.carrier_recovery)card.append(element('p','Suivi de phase BPSK dans cette fenêtre ; pas de continuité entre fenêtres.','hint'));
       if(candidate.parameters.pulse_shape==='rrc_trial')card.append(element('p',`Filtre adapté RRC essayé · α=${candidate.parameters.rrc_rolloff_trial} · erreur symbole RMS ${(100*candidate.evidence.symbol_evm_rms).toFixed(1)} %`,'hint psk-pulse-shape'));
       else card.append(element('p','Impulsions rectangulaires · récupération par transitions','hint psk-pulse-shape'));
       card.append(element('p','Rotation, conjugaison I/Q, correspondance bits/symboles et alignement des octets inconnus. Protocole non identifié.','hint'));
@@ -200,7 +202,7 @@ function showReport(report, jobId) {
   }
 
   if(audioPlot){
-    frameList.append(element('h3','Audio de récepteur · Morse, RTTY et AX.25'));
+    frameList.append(element('h3','Audio de récepteur · Morse, RTTY, PSK et AX.25'));
     frameList.append(element('p','Fréquences audio uniquement. Morse/RTTY : textes candidats sans CRC. AX.25 : structure et CRC vérifiés.','hint'));
     frameList.append(element('p',`Début de l’enregistrement : ${report.analyzed_seconds.toFixed(2)} s analysées (maximum demandé ${report.requested_seconds} s).`,'hint'));
     if(report.frame_artifact){const link=element('a','Télécharger les trames AX.25 validées');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(report.frame_artifact)}`;link.download=report.frame_artifact;frameList.append(link);}
@@ -287,6 +289,7 @@ function showReport(report, jobId) {
   }
   if(ax25Frames.length)frameList.append(element('h3',`AX.25 UI · ${ax25Frames.length} trame(s) CRC valide(s)`,'frames-title'));
   for(const trial of ax25Trials){
+    if(trial.frontend==='bpsk_g3ruh' && trial.artifact){const link=element('a','Télécharger le rapport AX.25 BPSK');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
     if(trial.budget_exhausted)frameList.append(element('p',`Recherche AX.25 partielle : limite de trames ou de ${trial.flag_pair_budget} paires de fanions atteinte.`,'hint'));
   }
   for(const frame of ax25Frames){
@@ -294,8 +297,12 @@ function showReport(report, jobId) {
     const f=frame.fields;
     const address=a=>`${a.callsign}${a.ssid?'-'+a.ssid:''}`;
     card.append(element('p',`${address(f.source)} → ${address(f.destination)} · ${frame.line_coding} · CRC-16/X-25 valide`,'ax25-addresses'));
+    if(frame.frontend==='bpsk_g3ruh')card.append(element('p','BPSK · G3RUH · CRC vérifié par IQScope','psk-ax25-integrity'));
+    if(frame.payload_artifact){const link=element('a','Télécharger la charge utile AX.25 BPSK');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(frame.payload_artifact)}`;link.download=frame.payload_artifact;card.append(link);}
     if(f.via.length)card.append(element('p',`Via : ${f.via.map(address).join(', ')}`));
-    card.append(element('p',`t=${frame.time_seconds.toFixed(6)} s · PID 0x${f.pid.toString(16).padStart(2,'0')}${frame.channel?' · '+formatFrequency(frame.channel.audio_frequency_hz ?? frame.channel.frequency_hz)+(frame.channel.audio_frequency_hz!==undefined?' audio':''):''}`));
+    const channel=frame.channel;
+    const channelLabel=channel?(channel.audio_frequency_hz!==undefined?' · '+formatFrequency(channel.audio_frequency_hz)+' audio':Number.isFinite(channel.frequency_hz)?' · '+formatFrequency(channel.frequency_hz):Number.isFinite(channel.offset_hz)?' · offset '+formatFrequency(channel.offset_hz):''):'';
+    card.append(element('p',`t=${frame.time_seconds.toFixed(6)} s · PID 0x${f.pid.toString(16).padStart(2,'0')}${channelLabel}`));
     if(f.text!==undefined)card.append(element('pre',f.text,'ax25-text'));
     else card.append(element('code',f.payload_hex));
     card.append(element('p','CRC et structure UI vérifiés ; identité de l’émetteur et interprétation APRS non établies.','hint'));
@@ -390,7 +397,7 @@ async function runFile(isDemo) {
     status('Détection des émissions et essais de décodage…','busy');
     const job=await api('/api/analyses',body);await followJob(job);
     $('source-badge').textContent=isDemo?'Démo synthétique':audioPlot?'Audio · fréquences audio':'Fichier IQ';
-    status(audioPlot?'Analyse terminée. Audio et résultats Morse/RTTY/AX.25 disponibles.':'Analyse terminée. Sélectionnez une émission pour écouter les candidats audio.','success');
+    status(audioPlot?'Analyse terminée. Audio et résultats Morse/RTTY/PSK/AX.25 disponibles.':'Analyse terminée. Sélectionnez une émission pour écouter les candidats audio.','success');
   } catch(error) {status(error.message,'error');}
   finally {
     if(uploadedId){try{await api(`/api/uploads/${encodeURIComponent(uploadedId)}`,undefined,'DELETE');}catch{/* A still-running job keeps its source until it finishes. */}}

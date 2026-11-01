@@ -33,7 +33,7 @@ def _line(values, fs, lower, upper, minimum_fraction):
     return float(fit.x),fraction
 
 
-def recover_rrc(x, fs, max_bits=50000):
+def _recover_rrc(x, fs, max_bits=50000):
     # Source is already bounded by decode_psk. Downsample after carrier
     # correction only if an estimated baud supports a narrower front end.
     if len(x)<1024:
@@ -123,4 +123,50 @@ def recover_rrc(x, fs, max_bits=50000):
                     'constellation':{'i':points.real.tolist(),'q':points.imag.tolist(),
                                      'amplitude_normalized':True,'normalization':'common RMS gain; per-symbol amplitudes preserved',
                                      'sampled_symbols':True}}
+    return None
+
+
+def recover_rrc(x, fs, max_bits=50000):
+    candidate=_recover_rrc(x,fs,max_bits)
+    if candidate is not None or len(x)<1024:
+        return candidate
+    power=float(np.mean(abs(x)**2))
+    if not np.isfinite(power) or power<1e-20:
+        return None
+    source=x/np.sqrt(power)
+    envelope=abs(source)**2
+    clock=_line(envelope-envelope.mean(),fs,30,min(9600,fs/8),.006)
+    if clock is None or len(source)/fs*clock[0]<100:
+        return None
+    time=np.arange(len(source))/fs
+    for order in (2,):
+        bounded=source/np.maximum(1,abs(source)/2)
+        powered=bounded**order
+        spectrum=abs(np.fft.fft(powered))**2
+        peak=int(np.argmax(spectrum))
+        if spectrum[peak]/max(spectrum.sum(),1e-30)<.003:
+            continue
+        coarse=float(np.fft.fftfreq(len(source),1/fs)[peak])
+        # Smooth the powered carrier below the symbol clock, so data
+        # transitions are suppressed before following its unwrapped phase.
+        down=max(1,int(np.ceil(fs/min(200,clock[0]/3))))
+        rate=fs/down
+        carrier=signal.resample_poly(powered*np.exp(-2j*np.pi*coarse*time),1,down)
+        carrier_time=np.arange(len(carrier))/rate
+        phase=np.unwrap(np.angle(carrier))
+        tracked=np.interp(time,carrier_time,phase)
+        corrected=source*np.exp(-1j*(2*np.pi*coarse*time+tracked)/order)
+        guard=max(1,int(np.ceil(.03*fs)))
+        candidate=_recover_rrc(corrected[:-guard],fs,max_bits)
+        if candidate is None or candidate['modulation']!=('BPSK' if order==2 else 'QPSK'):
+            continue
+        # Tracked phase is a numerical estimate, not a protocol reference.
+        instantaneous=coarse/order+np.diff(phase)*rate/(2*np.pi*order)
+        candidate['parameters']['carrier_offset_hz']+=float(np.median(instantaneous))
+        candidate['parameters']['carrier_recovery']='smoothed Mth-power phase tracking within this window'
+        candidate['parameters']['carrier_tracking_rate_hz']=rate
+        candidate['parameters']['carrier_tracking_end_guard_seconds']=guard/fs
+        candidate['evidence']['tracked_carrier_frequency_p10_p90_hz']=np.percentile(instantaneous,[10,90]).tolist()
+        candidate['evidence']['carrier_tracking_order']=order
+        return candidate
     return None

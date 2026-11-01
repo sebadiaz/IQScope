@@ -34,10 +34,13 @@ jobs:
         run: |
           python scripts/rtl433_reference.py --build
           echo "$PWD/corpus-cache/rtl433-reference/build/src" >> "$GITHUB_PATH"
+      - name: Verify bounded recorded BPSK receiver audio and CRC-valid payloads
+        run: python scripts/psk_radio_reference.py
       - run: python tests/browser_smoke.py
         env:
           NO_PROXY: 127.0.0.1,localhost
           IQSCOPE_TEST_RTL433: '1'
+          IQSCOPE_TEST_PSK_RADIO: '1'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -46,6 +49,11 @@ jobs:
             browser-artifacts/
             corpus-cache/rtl433-reference/provenance.json
             corpus-cache/rtl433-reference/results.json
+            corpus-cache/psk-radio/summary.json
+            corpus-cache/psk-radio/**/provenance.json
+            corpus-cache/psk-radio/**/report.json
+            corpus-cache/psk-radio/**/psk-ax25-frames.json
+            corpus-cache/psk-radio/**/psk-ax25-payload-*.bin
           if-no-files-found: ignore
   real-iq:
     runs-on: ubuntu-latest

@@ -21,7 +21,7 @@ class AudioTests(unittest.TestCase):
             self.assertEqual(report['source_kind'],'receiver_audio')
             self.assertIsNone(report['center_frequency_hz'])
             self.assertEqual(report['frequency_reference'],'audio_hz')
-            self.assertEqual([t['decoder'] for t in report['wideband_trials']],['cw_morse','rtty_ita2','afsk1200_ax25'])
+            self.assertEqual([t['decoder'] for t in report['wideband_trials']],['cw_morse','rtty_ita2','afsk1200_ax25','psk_generic','ax25_ui'])
             best = report['wideband_trials'][0]['candidates'][0]
             self.assertEqual(best['text'],TEXT)
             self.assertIn('audio_frequency_hz',best['channel'])

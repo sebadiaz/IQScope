@@ -671,4 +671,6 @@ a persistent or lossless archive.
 
 Les capteurs OOK/FSK peuvent utiliser automatiquement un **rtl_433 externe facultatif**, avec essais sur des canaux détectés, valeurs numériques dans l’interface et export JSON. Références réelles vérifiées : Fineoffset WH2 (OOK) et WH25 (FSK) ; l’intégrité annoncée par rtl_433 reste explicitement externe. Voir [installation, fonctionnement et limites](docs/RTL433.md).
 
-La première chaîne **BPSK/QPSK automatique** fournit une constellation et des symboles/bits candidats exportables. Elle traite les impulsions rectangulaires et des essais de filtres RRC, avec synchronisation automatique, et reste validée sur références synthétiques ; aucun protocole ni CRC PSK n’est identifié. Voir [fonctionnement et limites PSK](docs/PSK.md).
+La première chaîne **BPSK/QPSK automatique** fournit une constellation et des symboles/bits candidats exportables. Elle traite les impulsions rectangulaires et des essais de filtres RRC, avec synchronisation automatique, et reste validée sur références synthétiques ; les symboles seuls restent sans CRC. Le chemin BPSK G3RUH/AX.25 UI vérifie désormais des trames radio et exporte leurs charges utiles. Voir [fonctionnement et limites PSK](docs/PSK.md).
+
+Une [référence radio PW-Sat2](docs/PSK_RADIO.md) fournit deux trames AX.25 UI à CRC valide et des charges utiles de 180 et 230 octets. La recherche de salves et le suivi de phase BPSK sont automatiques. La source est de l’audio mono de récepteur ; les fréquences restent audio et aucun IQ RF original n’est revendiqué.

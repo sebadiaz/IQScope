@@ -113,3 +113,41 @@ def decode_ax25(candidates,max_frames=128,max_flag_pairs=2000):
                            'No AFSK-over-FM frontend, G3RUH descrambler, connected-mode frames or APRS field parsing.',
                            'Upstream demodulation may miss frames; a valid CRC does not authenticate an emitter.',
                            'Wideband detection can merge sidelobes into a band >24 kHz and exclude even a low-baud signal.']}
+
+
+def decode_psk_ax25(candidates):
+    """Try G3RUH descrambling on BPSK states, then existing NRZI/HDLC/FCS checks."""
+    inputs=[]
+    indices=[]
+    for index,candidate in enumerate(candidates[:8]):
+        if candidate.get('modulation')!='BPSK':
+            continue
+        bits=candidate['bits'][:50000]
+        descrambled=''.join(str(int(bits[i])^int(bits[i-12])^int(bits[i-17])) for i in range(17,len(bits)))
+        parameters=dict(candidate['parameters'])
+        parameters['first_symbol_center_seconds']+=17/parameters['baud']
+        inputs.append(dict(candidate,bits=descrambled,parameters=parameters))
+        indices.append(index)
+    result=decode_ax25(inputs)
+    result['frontend']='bpsk_g3ruh'
+    result['limitations']=['BPSK candidates with self-synchronizing x^17+x^12+1 descrambler, then NRZI/NRZ and HDLC trials.',
+                           'AX.25 UI structure and CRC-16/X-25 only; no sender authentication or satellite telemetry semantics.',
+                           'At most eight BPSK candidates and 50000 bits per candidate; descrambler consumes the first 17 states.']
+    for frame in result['frames']:
+        frame['candidate_index']=indices[frame['candidate_index']]
+        frame['bit_start']+=17
+        frame['frontend']='bpsk_g3ruh'
+        frame['descrambler']='G3RUH x^17+x^12+1'
+    return result
+
+
+def write_psk_ax25_artifacts(trial,out):
+    import json
+    from pathlib import Path
+    out=Path(out)
+    for index,frame in enumerate(trial['frames'],1):
+        frame['payload_artifact']=f'psk-ax25-payload-{index}.bin'
+        (out/frame['payload_artifact']).write_bytes(bytes.fromhex(frame['fields']['payload_hex']))
+    if trial['frames']:
+        trial['artifact']='psk-ax25-frames.json'
+        (out/trial['artifact']).write_text(json.dumps(trial,indent=2),encoding='utf-8')

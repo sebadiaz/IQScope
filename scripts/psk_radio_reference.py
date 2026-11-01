@@ -1,0 +1,70 @@
+"""Bounded recorded receiver-audio regression; no original RF IQ claim."""
+import hashlib
+import json
+from pathlib import Path
+import sys
+import urllib.request
+
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+from iqscope_audio import analyze_audio
+from iqscope_ax25 import crc_x25
+
+PIN='952ddfe53f62a150c53559249c83370630254cab'
+RECORDINGS={
+    'pwsat2':(1284374,'017910fff961278abb9b0ea97c9302e5740940bb5226008e3de8c2353fb8180a'),
+    'ao73':(535530,'d8758c1a860309185dc2b863a431b2266e050fb0e7c8e8d6d1f67a5b206ace9c')}
+# Payload hashes are development regression oracles from the first CRC-valid
+# decode, not independently supplied ground truth from the recording author.
+PAYLOAD_HASHES={
+    '4171091c943892f60041564c49e595dc1888a0c19fcc19914b904cf31d92b86c',
+    '6565ab6859ecad80f3415ff1cd000238e44c64df9e63aaf13274ae22b3156137'}
+
+
+def main():
+    root=Path('corpus-cache/psk-radio');root.mkdir(parents=True,exist_ok=True)
+    summaries={}
+    for name,(size,digest) in RECORDINGS.items():
+        url=f'https://raw.githubusercontent.com/daniestevez/satellite-recordings/{PIN}/{name}.wav'
+        with urllib.request.urlopen(url,timeout=45) as response:
+            data=response.read(size+1)
+        if len(data)!=size or hashlib.sha256(data).hexdigest()!=digest:
+            raise ValueError('Recorded audio size/hash mismatch')
+        path=root/(name+'.wav');path.write_bytes(data)
+        out=root/(name+'-result')
+        report=analyze_audio(path,out,20)
+        psk=next(t for t in report['wideband_trials'] if t['decoder']=='psk_generic')
+        frames=next(t for t in report['wideband_trials'] if t.get('frontend')=='bpsk_g3ruh')['frames']
+        hashes=set()
+        for frame in frames:
+            raw=bytes.fromhex(frame['hex'])
+            if crc_x25(raw[:-2])!=int.from_bytes(raw[-2:],'little'):
+                raise AssertionError('Invalid FCS in accepted recorded frame')
+            payload=bytes.fromhex(frame['fields']['payload_hex'])
+            if (out/frame['payload_artifact']).read_bytes()!=payload:
+                raise AssertionError('Payload export changed bytes')
+            hashes.add(hashlib.sha256(payload).hexdigest())
+        if name=='pwsat2':
+            if len(frames)!=2 or hashes!=PAYLOAD_HASHES:
+                raise AssertionError('PW-Sat2 recorded payload regression')
+            if any(f['fields']['source']['callsign']!='PWSAT2' for f in frames):
+                raise AssertionError('Unexpected AX.25 source address')
+        if report['center_frequency_hz'] is not None or report['source_kind']!='receiver_audio':
+            raise AssertionError('Receiver audio promoted to RF IQ')
+        provenance={'source_url':url,'source_sha256':digest,'source_bytes':size,
+                    'collection_readme':f'https://github.com/daniestevez/satellite-recordings/blob/{PIN}/README.md',
+                    'collection_license':f'https://github.com/daniestevez/satellite-recordings/blob/{PIN}/LICENSE',
+                    'recording_origin':'upstream amateur-satellite receiver-audio collection; receiver details not independently established',
+                    'input_kind':'mono receiver audio, not original RF IQ','rf_center_hz':None,
+                    'sample_rate_basis':'WAV header, then explicit ffmpeg mono resampling to 8 kHz',
+                    'payload_oracle':'development regression from CRC-valid decoding; not independent upstream golden bytes',
+                    'validated_scope':'AX.25 UI structure and FCS only; no authenticated emitter or telemetry semantics',
+                    'psk_candidates':len(psk['candidates']),'crc_valid_frames':len(frames),
+                    'payload_sha256':sorted(hashes),'windows_examined':psk['windows_examined']}
+        (out/'provenance.json').write_text(json.dumps(provenance,indent=2))
+        summaries[name]={'psk_candidates':len(psk['candidates']),'crc_valid_frames':len(frames),'payload_sha256':sorted(hashes)}
+    (root/'summary.json').write_text(json.dumps(summaries,indent=2))
+    print(json.dumps(summaries))
+
+
+if __name__=='__main__':
+    main()

@@ -332,6 +332,21 @@ def main():
                     response = page.request.get(urljoin(page.url,link.get_attribute('href')))
                     assert response.ok and len(response.json()['frames'])>=3
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                if os.environ.get('IQSCOPE_TEST_PSK_RADIO')=='1':
+                    import hashlib
+                    page.locator('#input-kind').select_option('audio')
+                    page.locator('#seconds').fill('20')
+                    page.locator('#iq-file').set_input_files(str(Path('corpus-cache/psk-radio/pwsat2.wav').resolve()))
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('.psk-ax25-integrity')).to_have_count(2,timeout=30000)
+                    expect(page.locator('.ax25-addresses').first).to_contain_text('PWSAT2')
+                    expect(page.locator('#metric-frames')).to_have_text('2')
+                    expect(page.locator('#center-label')).to_contain_text('aucune fréquence RF')
+                    with page.expect_download() as event:
+                        page.get_by_role('link',name='Télécharger la charge utile AX.25 BPSK',exact=True).first.click()
+                    payload=Path(event.value.path()).read_bytes()
+                    assert len(payload)==180
+                    assert hashlib.sha256(payload).hexdigest()=='4171091c943892f60041564c49e595dc1888a0c19fcc19914b904cf31d92b86c'
                 live_requests=[]
                 page.on('request',lambda request: live_requests.append(request.post_data_json) if request.url.endswith('/api/live/analyze') and request.method=='POST' else None)
                 page.get_by_role('tab',name='SDR en direct').click()
