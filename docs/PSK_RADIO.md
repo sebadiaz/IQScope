@@ -50,3 +50,15 @@ Le rapport distingue les symboles PSK candidats des trames validées. Seules ces
 `python scripts/psk_radio_reference.py` télécharge les deux fichiers avec bornes de taille et SHA-256, utilise l’import audio réel, vérifie les quatre trames PW-Sat2 et leurs exports, et enregistre les résultats AO-73, les fenêtres examinées et la provenance. Les WAV restent dans `corpus-cache/`, sans inclusion dans le paquet ni dans les artefacts CI.
 
 Chromium importe PW-Sat2 par l’interface en mode audio, vérifie les quatre trames, l’absence de fréquence RF et le téléchargement exact de 180 octets. Les tests synthétiques vérifient séparément le suivi BPSK variable, la détection de salve, le désembrouillage par un émetteur à registre indépendant et le rejet d’une trame corrompue. Ce corpus sert au développement : une évaluation indépendante plus large reste à constituer.
+
+## PicSat : référence supplémentaire et diagnostic des rejets
+
+Le corpus inclut maintenant [PicSat](https://github.com/daniestevez/satellite-recordings/blob/952ddfe53f62a150c53559249c83370630254cab/picsat.wav), 288 996 octets, SHA-256 `41d9eb1fb24b2c1c637f161a44c738576853cbf5396d959c38eff218ddf0fabd`. La [description amont](https://github.com/daniestevez/gr-satellites/blob/b9fee473d616b1b3ab3ebff1958c2fcb09d264be/python/satyaml/PicSat.yml) annonce notamment BPSK 1200 avec AX.25 G3RUH. Comme les autres références, il s’agit d’audio de récepteur, sans fréquence RF fournie au décodeur.
+
+Sur la fenêtre sélectionnée automatiquement, la chaîne récupère un candidat BPSK à environ 1196,18 bauds, avec 1088 symboles et une EVM d’environ 12,4 %. Aucun octet attendu indépendant n’est disponible : ces symboles ne constituent pas du contenu vérifié. Après désembrouillage et NRZI, les motifs de fanion observés sont proches de la fin du candidat ; aucun début de trame exploitable n’est retrouvé. Cela décrit les bits récupérés et ne prouve pas que le début de trame manque dans l’enregistrement original.
+
+Le rapport AX.25 fournit maintenant les premiers/derniers fanions observés, leur nombre et les étapes de rejet : longueur, débourrage ou alignement d’octet, FCS, puis structure UI. Les compteurs respectent les budgets existants ; ils ne reconstruisent aucun bit. Les index de fanion se réfèrent au flux de codage essayé et les diagnostics BPSK précisent les états retirés par le désembrouillage.
+
+Même sans trame acceptée, `psk-ax25-frames.json` peut être téléchargé si des fanions ont été observés. L’interface précise qu’aucune trame UI n’est validée et ne propose pas de charge utile binaire. Le contrôle de référence exige le candidat structurel PicSat, sans exiger une abstention permanente de la couche AX.25 : une amélioration ultérieure peut retrouver des trames.
+
+Les vérifications distinguent un flux partiel avec fanions de remplissage, une trame à mauvais CRC et une trame à FCS correct mais contrôle non pris en charge. Chromium importe PicSat, vérifie le compteur CRC à zéro et télécharge les diagnostics. La capture fait désormais partie du corpus de développement ; elle ne constitue pas un jeu d’évaluation tenu à l’écart du développement.

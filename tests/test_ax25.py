@@ -134,3 +134,32 @@ class Ax25Tests(unittest.TestCase):
         self.assertEqual(decode_ax25([candidate(hdlc(frame())[:-100])])['frames'],[])
         rng = np.random.default_rng(38)
         self.assertEqual(decode_ax25([candidate(''.join(map(str,rng.integers(0,2,10000).tolist())))])['frames'],[])
+
+
+class Ax25DiagnosticsTests(unittest.TestCase):
+    def test_partial_and_fill_flags_are_not_frames(self):
+        report=decode_ax25([candidate('01111110'*5)])
+        self.assertFalse(report['frames'])
+        self.assertGreater(report['length_rejected'],0)
+        self.assertEqual(report['crc_rejected'],0)
+        nrz=next(d for d in report['stream_diagnostics'] if d['line_coding']=='nrz')
+        self.assertEqual(nrz['flags_observed'],5)
+        self.assertEqual(nrz['first_flag_bit'],0)
+        self.assertEqual(nrz['last_flag_bit'],32)
+        single=decode_ax25([candidate('01111110'+'1'*200)])
+        self.assertFalse(single['frames'])
+        self.assertEqual(single['flag_pairs_examined'],0)
+
+    def test_corruption_is_counted_at_crc_stage(self):
+        report=decode_ax25([candidate(hdlc(frame(bad=True)))])
+        self.assertFalse(report['frames'])
+        self.assertGreater(report['crc_rejected'],0)
+        self.assertEqual(report['structure_rejected'],0)
+
+    def test_valid_fcs_with_unsupported_control_is_separate(self):
+        packet=frame()
+        body=bytearray(packet[:-2]);body[14]=0
+        report=decode_ax25([candidate(hdlc(with_fcs(bytes(body))))])
+        self.assertFalse(report['frames'])
+        self.assertEqual(report['crc_rejected'],0)
+        self.assertGreater(report['structure_rejected'],0)

@@ -65,6 +65,8 @@ def decode_ax25(candidates,max_frames=128,max_flag_pairs=2000):
     examined = 0
     exhausted = False
     rejected_crc = 0
+    length_rejected = stuffing_rejected = structure_rejected = 0
+    stream_diagnostics = []
     for candidate_index,candidate in enumerate(candidates):
         tone_bits = candidate['bits']
         nrzi = ''.join('1' if a==b else '0' for a,b in zip(tone_bits,tone_bits[1:]))
@@ -72,6 +74,10 @@ def decode_ax25(candidates,max_frames=128,max_flag_pairs=2000):
                    ('nrz_inverted',tone_bits.translate(str.maketrans('01','10')),0)]
         for coding,bits,origin_shift in streams:
             previous = bits.find('01111110')
+            diagnostic={'candidate_index':candidate_index,'line_coding':coding,
+                        'first_flag_bit':previous if previous>=0 else None,'last_flag_bit':previous if previous>=0 else None,
+                        'flags_observed':int(previous>=0)}
+            stream_diagnostics.append(diagnostic)
             while previous>=0:
                 following = bits.find('01111110',previous+8)
                 if following<0:
@@ -80,18 +86,26 @@ def decode_ax25(candidates,max_frames=128,max_flag_pairs=2000):
                     exhausted = True
                     break
                 examined += 1
+                diagnostic['flags_observed']+=1
+                diagnostic['last_flag_bit']=following
                 start,end = previous+8,following
                 previous = following
                 if not 18*8<=end-start<=330*8*6//5:
+                    length_rejected+=1
                     continue
                 packet = unstuff(bits[start:end])
-                if packet is None or len(packet)<18 or len(packet)>330:
+                if packet is None:
+                    stuffing_rejected+=1
+                    continue
+                if len(packet)<18 or len(packet)>330:
+                    length_rejected+=1
                     continue
                 if crc_x25(packet[:-2])!=int.from_bytes(packet[-2:],'little'):
                     rejected_crc += 1
                     continue
                 fields = parse_ui(packet[:-2])
                 if fields is None:
+                    structure_rejected+=1
                     continue
                 p = candidate['parameters']
                 # The NRZI bit is associated with its second tone symbol.
@@ -108,6 +122,9 @@ def decode_ax25(candidates,max_frames=128,max_flag_pairs=2000):
             break
     return {'decoder':'ax25_ui','family':'AX.25 UI','status':'validated_frames' if frames else 'no_valid_frames',
             'frames':frames,'flag_pairs_examined':examined,'crc_rejected':rejected_crc,
+            'length_rejected':length_rejected,'stuffing_rejected':stuffing_rejected,
+            'structure_rejected':structure_rejected,'stream_diagnostics':stream_diagnostics,
+            'diagnostic_scope':'Observed flags and rejection stages only; no reconstruction of missing frame boundaries.',
             'budget_exhausted':exhausted,'frame_budget':max_frames,'flag_pair_budget':max_flag_pairs,
             'limitations':['AX.25 UI only, at most ten addresses and 256 payload octets; NRZI/NRZ trials on recovered 2-FSK bits.',
                            'No AFSK-over-FM frontend, G3RUH descrambler, connected-mode frames or APRS field parsing.',
@@ -133,6 +150,9 @@ def decode_psk_ax25(candidates):
     result['limitations']=['BPSK candidates with self-synchronizing x^17+x^12+1 descrambler, then NRZI/NRZ and HDLC trials.',
                            'AX.25 UI structure and CRC-16/X-25 only; no sender authentication or satellite telemetry semantics.',
                            'At most eight BPSK candidates and 50000 bits per candidate; descrambler consumes the first 17 states.']
+    for diagnostic in result['stream_diagnostics']:
+        diagnostic['candidate_index']=indices[diagnostic['candidate_index']]
+        diagnostic['bit_reference']='descrambled stream; initial 17 BPSK states omitted; NRZI adds one state'
     for frame in result['frames']:
         frame['candidate_index']=indices[frame['candidate_index']]
         frame['bit_start']+=17
@@ -148,6 +168,6 @@ def write_psk_ax25_artifacts(trial,out):
     for index,frame in enumerate(trial['frames'],1):
         frame['payload_artifact']=f'psk-ax25-payload-{index}.bin'
         (out/frame['payload_artifact']).write_bytes(bytes.fromhex(frame['fields']['payload_hex']))
-    if trial['frames']:
+    if trial['frames'] or any(d['flags_observed'] for d in trial.get('stream_diagnostics',[])):
         trial['artifact']='psk-ax25-frames.json'
         (out/trial['artifact']).write_text(json.dumps(trial,indent=2),encoding='utf-8')

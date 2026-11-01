@@ -11,6 +11,7 @@ from iqscope_ax25 import crc_x25
 
 PIN='952ddfe53f62a150c53559249c83370630254cab'
 RECORDINGS={
+    'picsat':(288996,'41d9eb1fb24b2c1c637f161a44c738576853cbf5396d959c38eff218ddf0fabd'),
     'pwsat2':(1284374,'017910fff961278abb9b0ea97c9302e5740940bb5226008e3de8c2353fb8180a'),
     'ao73':(535530,'d8758c1a860309185dc2b863a431b2266e050fb0e7c8e8d6d1f67a5b206ace9c')}
 # Payload hashes are development regression oracles from the first CRC-valid
@@ -47,6 +48,9 @@ def main():
             digest_payload=hashlib.sha256(payload).hexdigest()
             hashes.add(digest_payload)
             payload_hashes.append(digest_payload)
+        if name=='picsat':
+            if not any(c['modulation']=='BPSK' and 1190<c['parameters']['baud']<1210 for c in psk['candidates']):
+                raise AssertionError('PicSat recorded BPSK structural regression; no golden bits asserted')
         if name=='pwsat2':
             expected=sorted([*PAYLOAD_HASHES,'597d97bdef95e92a99b2f9bc3c2237d4f1dc3124837785b2a7a1061081e8b561'])
             if len(frames)!=4 or sorted(payload_hashes)!=expected:
