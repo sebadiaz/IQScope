@@ -1,4 +1,4 @@
-"""Build a pinned optional decoder and verify a non-redistributed public capture."""
+"""Build a pinned optional decoder and verify non-redistributed OOK/FSK public captures."""
 import argparse
 import hashlib
 import io
@@ -24,6 +24,23 @@ DATA_COMMIT = '1aa8c29d6b9383739d1aeed495dbc5069b704392'
 DATA_HASH = 'b68fa16227ebb86e77f70f17409f9ce59d1542d787d002c9295afcb50ef71393'
 DATA_URL = f'https://raw.githubusercontent.com/merbanan/rtl_433_tests/{DATA_COMMIT}/tests/fineoffset/fineoffset_wh2/01/gfile001.cu8'
 EXPECTED = {'model':'Fineoffset-WH2','id':209,'temperature_C':24.6,'humidity':33,'mic':'CRC'}
+
+FSK_HASH = 'a4c0dbb2ab0c82e41b2db393fab0ab129f8b94a2c07f24f9479f38f021a57604'
+FSK_URL = f'https://raw.githubusercontent.com/merbanan/rtl_433_tests/{DATA_COMMIT}/tests/fineoffset/fineoffset_wh25/01/gfile001.cu8'
+FSK_EXPECTED = {'model':'Fineoffset-WH25','id':80,'battery_ok':1,'temperature_C':23.2,
+                'humidity':57,'pressure_hPa':1001.1,'mic':'CRC'}
+
+
+def matching_messages(report, expected):
+    if report['status'] != 'completed':
+        raise AssertionError(f'Incomplete reference analysis: {report}')
+    return [message for message in report['messages']
+            if all(message['fields'].get(key)==value for key,value in expected.items())]
+
+
+def read_cu8(data):
+    raw=np.frombuffer(data,dtype='u1').astype(np.float32)
+    return ((raw[::2]-127.5)+1j*(raw[1::2]-127.5))/127.5
 
 
 def download(url, expected, limit):
@@ -69,23 +86,35 @@ def main():
         raise RuntimeError('rtl_433 required; use --build or --executable')
     data=download(DATA_URL,DATA_HASH,131072)
     (root/'gfile001.cu8').write_bytes(data)
-    raw=np.frombuffer(data,dtype='u1').astype(np.float32)
-    x=((raw[::2]-127.5)+1j*(raw[1::2]-127.5))/127.5
+    x=read_cu8(data)
+    fsk_data=download(FSK_URL,FSK_HASH,131072)
+    (root/'wh25.cu8').write_bytes(fsk_data)
+    fsk=read_cu8(fsk_data)
     up=resample_poly(x,4,1)
     t=np.arange(len(up))/1_000_000
     two=up*np.exp(2j*np.pi*240_000*t)+.8*up*np.exp(-2j*np.pi*280_000*t)
+    mixed=up*np.exp(2j*np.pi*240_000*t)+resample_poly(fsk,4,1)*np.exp(-2j*np.pi*280_000*t)
     reports={}
-    for name,samples,rate in [('original',x,250_000),('two_frequency_shifted_copies',two,1_000_000),('silence',np.zeros_like(x),250_000)]:
+    for name,samples,rate in [('original',x,250_000),('two_frequency_shifted_copies',two,1_000_000),('silence',np.zeros_like(x),250_000),('fsk_original',fsk,250_000),('mixed_ook_fsk',mixed,1_000_000)]:
         bands,*_=discover(samples,rate)
         report=search_rtl433(samples,rate,bands)
         reports[name]=report
-        matches=[m for m in report['messages'] if all(m['fields'].get(k)==v for k,v in EXPECTED.items())]
+        matches=matching_messages(report,EXPECTED)
         if name=='original' and len(matches)!=1:
             raise AssertionError(f'WH2 expected values missing: {report}')
         if name=='two_frequency_shifted_copies':
             offsets=[report['channels_examined'][m['channel_index']]['offset_hz'] for m in matches]
             if not (any(v< -150_000 for v in offsets) and any(v>100_000 for v in offsets)):
                 raise AssertionError(f'Two automatically discovered channels not decoded: {report}')
+        if name=='fsk_original' and len(matching_messages(report,FSK_EXPECTED))!=1:
+            raise AssertionError(f'WH25 expected values missing: {report}')
+        if name=='mixed_ook_fsk':
+            ook_matches=matching_messages(report,EXPECTED)
+            fsk_matches=matching_messages(report,FSK_EXPECTED)
+            if not ook_matches or not fsk_matches:
+                raise AssertionError(f'Mixed OOK/FSK values missing: {report}')
+            if not any(a['channel_index']!=b['channel_index'] for a in ook_matches for b in fsk_matches):
+                raise AssertionError('Mixed references not recovered on separate channel trials')
         if name=='silence' and report['messages']:
             raise AssertionError('Unexpected silence detection')
     version=subprocess.run([executable,'-V'],capture_output=True,check=True,timeout=5)
@@ -96,10 +125,17 @@ def main():
                 'decoder_version':(version.stdout+version.stderr).decode(errors='replace')[:2000],
                 'expected_fields':EXPECTED,'expected_fields_source':DATA_URL.replace('.cu8','.json'),
                 'derived_case':'two frequency-shifted copies of ONE recording; not two independent captures',
+                'fsk_reference':{'source_url':FSK_URL,'source_sha256':FSK_HASH,'source_bytes':len(fsk_data),
+                                 'sample_rate_hz':250000,'sample_rate_basis':'upstream test convention, not independently calibrated',
+                                 'rf_center_hz':None,'expected_fields':FSK_EXPECTED,
+                                 'expected_fields_source':FSK_URL.replace('.cu8','.json'),
+                                 'modulation_basis':'pinned rtl_433 fineoffset_WH25 descriptor: FSK_PULSE_PCM',
+                                 'sample_license':'not established; raw samples not redistributed'},
+                'mixed_case':'two independently recorded sensors shifted and summed numerically; not a simultaneous RF acquisition',
                 'integrity':'rtl_433 CRC claim; not an independent IQScope CRC implementation'}
     (root/'provenance.json').write_text(json.dumps(provenance,indent=2))
     (root/'results.json').write_text(json.dumps(reports,indent=2))
-    print('WH2 values verified; two automatic frequency channels recovered; silence negative passed.')
+    print('WH2 OOK and WH25 FSK values verified; mixed automatic channels recovered; silence negative passed.')
 
 
 if __name__=='__main__':

@@ -64,26 +64,32 @@ def main():
                 if os.environ.get('IQSCOPE_TEST_RTL433')=='1':
                     import numpy as np
                     import json
-                    raw=np.fromfile(reference,dtype='u1').astype(np.float32)
-                    x=((raw[::2]-127.5)+1j*(raw[1::2]-127.5))/127.5
-                    with tempfile.TemporaryDirectory() as directory:
-                        data=Path(directory)/'sensor.sigmf-data'
-                        meta=data.with_suffix('.sigmf-meta')
-                        x.astype('<c8').tofile(data)
-                        meta.write_text(json.dumps({'global':{'core:datatype':'cf32_le','core:sample_rate':250000}}))
-                        page.locator('#iq-file').set_input_files(str(data))
-                        page.locator('#meta-file').set_input_files(str(meta))
-                        page.get_by_role('button',name='Analyser automatiquement').click()
-                        card=page.locator('.rtl433-message').first
-                        expect(card).to_contain_text('Fineoffset-WH2',timeout=30000)
-                        expect(card).to_contain_text('24.6')
-                        expect(card).to_contain_text('33')
-                        expect(card).to_contain_text('Non revérifiée par IQScope')
-                        with page.expect_download() as event:
-                            page.get_by_role('link',name='Télécharger les valeurs des capteurs (JSON)').click()
-                        downloaded=json.loads(Path(event.value.path()).read_text())
-                        assert downloaded['messages'][0]['fields']['temperature_C']==24.6
-                        assert downloaded['messages'][0]['independently_validated'] is False
+                    for capture,expected_model,temperature,humidity in [(reference,'Fineoffset-WH2',24.6,33),(reference.with_name('wh25.cu8'),'Fineoffset-WH25',23.2,57)]:
+                        raw=np.fromfile(capture,dtype='u1').astype(np.float32)
+                        x=((raw[::2]-127.5)+1j*(raw[1::2]-127.5))/127.5
+                        with tempfile.TemporaryDirectory() as directory:
+                            data=Path(directory)/'sensor.sigmf-data'
+                            meta=data.with_suffix('.sigmf-meta')
+                            x.astype('<c8').tofile(data)
+                            meta.write_text(json.dumps({'global':{'core:datatype':'cf32_le','core:sample_rate':250000}}))
+                            page.locator('#iq-file').set_input_files(str(data))
+                            page.locator('#meta-file').set_input_files(str(meta))
+                            page.get_by_role('button',name='Analyser automatiquement').click()
+                            card=page.locator('.rtl433-message').first
+                            expect(card).to_contain_text(expected_model,timeout=30000)
+                            expect(card).to_contain_text(str(temperature))
+                            expect(card).to_contain_text(str(humidity))
+                            if expected_model=='Fineoffset-WH25':
+                                expect(card).to_contain_text('1001.1')
+                            expect(card).to_contain_text('Non revérifiée par IQScope')
+                            with page.expect_download() as event:
+                                page.get_by_role('link',name='Télécharger les valeurs des capteurs (JSON)').click()
+                            downloaded=json.loads(Path(event.value.path()).read_text())
+                            assert downloaded['messages'][0]['fields']['temperature_C']==temperature
+                            assert downloaded['messages'][0]['fields']['humidity']==humidity
+                            if expected_model=='Fineoffset-WH25':
+                                assert downloaded['messages'][0]['fields']['pressure_hPa']==1001.1
+                            assert downloaded['messages'][0]['independently_validated'] is False
                 Path('browser-artifacts').mkdir(exist_ok=True)
                 page.screenshot(path='browser-artifacts/desktop.png', full_page=True)
                 # Exercise actual candidate text display through the same import UI.
