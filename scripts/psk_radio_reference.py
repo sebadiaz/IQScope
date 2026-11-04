@@ -48,6 +48,18 @@ def main():
             digest_payload=hashlib.sha256(payload).hexdigest()
             hashes.add(digest_payload)
             payload_hashes.append(digest_payload)
+        ao40=next(t for t in report['wideband_trials'] if t['decoder']=='ao40_fec')
+        fec_hashes=[]
+        for decoded in ao40['frames']:
+            payload=bytes.fromhex(decoded['payload_hex'])
+            if (out/decoded['payload_artifact']).read_bytes()!=payload:
+                raise AssertionError('AO-40 payload export mismatch')
+            fec_hashes.append(hashlib.sha256(payload).hexdigest())
+        if name=='ao73':
+            if fec_hashes!=['220bb05857d4220084ca46bcb7e48759226935627a25767144d588dc4a43b112']:
+                raise AssertionError('AO-73 AO-40 FEC payload regression')
+            if ao40['frames'][0]['crc_valid'] is not None:
+                raise AssertionError('AO-40 FEC claimed a CRC')
         if name=='picsat':
             if not any(c['modulation']=='BPSK' and 1190<c['parameters']['baud']<1210 for c in psk['candidates']):
                 raise AssertionError('PicSat recorded BPSK structural regression')
@@ -67,12 +79,14 @@ def main():
                     'recording_origin':'upstream amateur-satellite receiver-audio collection; receiver details not independently established',
                     'input_kind':'mono receiver audio, not original RF IQ','rf_center_hz':None,
                     'sample_rate_basis':'WAV header, then explicit ffmpeg mono resampling to 8 kHz',
-                    'payload_oracle':'development regression from CRC-valid decoding; not independent upstream golden bytes',
-                    'validated_scope':'AX.25 UI structure and FCS only; no authenticated emitter or telemetry semantics',
+                    'payload_oracle':'development regression from FCS- or FEC-verified decoding; not independent upstream golden bytes',
+                    'validated_scope':'AX.25 UI/FCS or AO-40 FEC parity, explicitly separated; no authenticated emitter or telemetry semantics',
+                    'ao40_fec_payload_sha256':fec_hashes,'ao40_fec_payload_count':len(ao40['frames']),
                     'psk_candidates':len(psk['candidates']),'crc_valid_frames':len(frames),
                     'payload_sha256':sorted(hashes),'windows_examined':psk['windows_examined']}
         (out/'provenance.json').write_text(json.dumps(provenance,indent=2))
-        summaries[name]={'psk_candidates':len(psk['candidates']),'crc_valid_frames':len(frames),'payload_sha256':sorted(hashes)}
+        summaries[name]={'ao40_fec_payload_sha256':fec_hashes,'ao40_fec_payload_count':len(ao40['frames']),
+                    'psk_candidates':len(psk['candidates']),'crc_valid_frames':len(frames),'payload_sha256':sorted(hashes)}
     (root/'summary.json').write_text(json.dumps(summaries,indent=2))
     print(json.dumps(summaries))
 

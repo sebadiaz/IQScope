@@ -163,6 +163,20 @@ function showReport(report, jobId) {
   }
   const frameList=$('frame-list');frameList.replaceChildren();
   for(const trial of report.wideband_trials || []) {
+    if(trial.decoder!=='ao40_fec')continue;
+    for(const frame of trial.frames || []) {
+      const card=element('div',undefined,'frame ao40-frame');
+      card.append(element('h3',`AO-40 FEC · ${frame.payload_bytes} octets`));
+      card.append(element('p',`${frame.baud.toFixed(2)} bauds · synchronisation ${65-frame.sync_errors}/65 · corrections RS : ${frame.rs_corrected_symbols.join(', ')}`));
+      card.append(element('p','Deux blocs Reed-Solomon vérifiés après Viterbi. Aucun CRC dans ce chemin ; identité et interprétation de télémétrie non établies.','hint ao40-validation'));
+      card.append(element('code',frame.payload_hex.slice(0,128)+'…'));
+      if(frame.payload_artifact){const link=element('a','Télécharger la charge utile AO-40');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(frame.payload_artifact)}`;link.download=frame.payload_artifact;card.append(link);}
+      frameList.append(card);
+    }
+    if(trial.artifact){const link=element('a','Télécharger le rapport AO-40 FEC');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
+  }
+
+  for(const trial of report.wideband_trials || []) {
     if(trial.decoder!=='psk_generic')continue;
     if(trial.frequency_reference==='audio_hz')frameList.append(element('p',`Recherche PSK audio : ${trial.windows_examined.length} fenêtre(s) examinée(s), ${trial.deferred_window_count} différée(s). Signal analytique dérivé de l’audio, aucune fréquence RF.`,'hint psk-audio-search'));
     for(const candidate of trial.candidates || []) {

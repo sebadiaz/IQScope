@@ -33,9 +33,10 @@ def _line(values, fs, lower, upper, minimum_fraction):
     return float(fit.x),fraction
 
 
-def _recover_rrc(x, fs, max_bits=50000, gain_control=False, quality_start_seconds=0):
+def _recover_rrc(x, fs, max_bits=50000, gain_control=False, quality_start_seconds=0, protocol_probe=None):
     # Source is already bounded by decode_psk. Downsample after carrier
     # correction only if an estimated baud supports a narrower front end.
+    if protocol_probe is not None and protocol_probe.done:return None
     if len(x)<1024 or quality_start_seconds>=len(x)/fs-.1:
         return None
     power=float(np.mean(abs(x)**2))
@@ -110,6 +111,8 @@ def _recover_rrc(x, fs, max_bits=50000, gain_control=False, quality_start_second
                                   options={'maxiter':12,'maxfev':160,'xtol':1e-6,'ftol':1e-6})
             evm,values,labels,centers,origin=evaluate(fit.x,True)
             quality=centers>=quality_start_seconds*rate
+            if order==2 and protocol_probe is not None and protocol_probe(values,float(fit.x[0]),float(centers[0]/rate),evm):
+                return None
             if evm>.16 or min(np.mean(labels[quality]==k) for k in range(order))<.12:
                 continue
             # Require consistency in both halves, not only a favorable subset.
@@ -145,9 +148,9 @@ def _recover_rrc(x, fs, max_bits=50000, gain_control=False, quality_start_second
     return None
 
 
-def recover_rrc(x, fs, max_bits=50000, quality_start_seconds=0):
-    candidate=_recover_rrc(x,fs,max_bits,quality_start_seconds=quality_start_seconds)
-    if candidate is not None or len(x)<1024:
+def recover_rrc(x, fs, max_bits=50000, quality_start_seconds=0, protocol_probe=None):
+    candidate=_recover_rrc(x,fs,max_bits,quality_start_seconds=quality_start_seconds,protocol_probe=protocol_probe)
+    if candidate is not None or len(x)<1024 or (protocol_probe is not None and protocol_probe.done):
         return candidate
     power=float(np.mean(abs(x)**2))
     if not np.isfinite(power) or power<1e-20:
@@ -162,8 +165,12 @@ def recover_rrc(x, fs, max_bits=50000, quality_start_seconds=0):
         bounded=source/np.maximum(1,abs(source)/2)
         powered=bounded**order
         spectrum=abs(np.fft.fft(powered))**2
-        peak=int(np.argmax(spectrum))
-        if spectrum[peak]/max(spectrum.sum(),1e-30)<.003:
+        tracking_rate=min(200,clock[0]/3)
+        width=max(3,int(round(.8*tracking_rate*len(source)/fs))|1)
+        band_power=ndimage.uniform_filter1d(spectrum,size=width,mode='wrap')*width
+        peak=int(np.argmax(band_power))
+        fraction=float(band_power[peak]/max(spectrum.sum(),1e-30))
+        if fraction<max(.003,5*width/len(source)):
             continue
         coarse=float(np.fft.fftfreq(len(source),1/fs)[peak])
         # Smooth the powered carrier below the symbol clock, so data
@@ -176,9 +183,9 @@ def recover_rrc(x, fs, max_bits=50000, quality_start_seconds=0):
         tracked=np.interp(time,carrier_time,phase)
         corrected=source*np.exp(-1j*(2*np.pi*coarse*time+tracked)/order)
         guard=max(1,int(np.ceil(.03*fs)))
-        candidate=_recover_rrc(corrected[:-guard],fs,max_bits,quality_start_seconds=quality_start_seconds)
+        candidate=_recover_rrc(corrected[:-guard],fs,max_bits,quality_start_seconds=quality_start_seconds,protocol_probe=protocol_probe)
         if candidate is None:
-            candidate=_recover_rrc(corrected[:-guard],fs,max_bits,gain_control=True,quality_start_seconds=quality_start_seconds)
+            candidate=_recover_rrc(corrected[:-guard],fs,max_bits,gain_control=True,quality_start_seconds=quality_start_seconds,protocol_probe=protocol_probe)
         if candidate is None or candidate['modulation']!=('BPSK' if order==2 else 'QPSK'):
             continue
         # Tracked phase is a numerical estimate, not a protocol reference.
@@ -189,5 +196,8 @@ def recover_rrc(x, fs, max_bits=50000, quality_start_seconds=0):
         candidate['parameters']['carrier_tracking_end_guard_seconds']=guard/fs
         candidate['evidence']['tracked_carrier_frequency_p10_p90_hz']=np.percentile(instantaneous,[10,90]).tolist()
         candidate['evidence']['carrier_tracking_order']=order
+        candidate['evidence']['carrier_band_energy_fraction']=fraction
+        candidate['parameters']['carrier_acquisition']='integrated powered-spectrum band'
+        candidate['parameters']['carrier_acquisition_bandwidth_hz']=width*fs/len(source)
         return candidate
     return None

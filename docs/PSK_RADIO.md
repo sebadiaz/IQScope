@@ -11,7 +11,7 @@ Les sources sont les WAV mono à 48 kHz de la [collection satellite-recordings](
 | `pwsat2.wav` | 1 284 374 octets | `017910fff961278abb9b0ea97c9302e5740940bb5226008e3de8c2353fb8180a` |
 | `ao73.wav` | 535 530 octets | `d8758c1a860309185dc2b863a431b2266e050fb0e7c8e8d6d1f67a5b206ace9c` |
 
-La [description PW-Sat2 de gr-satellites](https://github.com/daniestevez/gr-satellites/blob/b9fee473d616b1b3ab3ebff1958c2fcb09d264be/python/satyaml/PW-Sat2.yml) annonce notamment BPSK 1200 bauds avec AX.25 G3RUH. Ces indications servent à comparer les résultats ; ni débit, ni fréquence RF, ni indicatif ne sont fournis à la chaîne DSP. La [description AO-73](https://github.com/daniestevez/gr-satellites/blob/b9fee473d616b1b3ab3ebff1958c2fcb09d264be/python/satyaml/AO-73.yml) annonce DBPSK 1200 et AO-40 FEC : cette couche FEC n’est pas implémentée ici.
+La [description PW-Sat2 de gr-satellites](https://github.com/daniestevez/gr-satellites/blob/b9fee473d616b1b3ab3ebff1958c2fcb09d264be/python/satyaml/PW-Sat2.yml) annonce notamment BPSK 1200 bauds avec AX.25 G3RUH. Ces indications servent à comparer les résultats ; ni débit, ni fréquence RF, ni indicatif ne sont fournis à la chaîne DSP. La [description AO-73](https://github.com/daniestevez/gr-satellites/blob/b9fee473d616b1b3ab3ebff1958c2fcb09d264be/python/satyaml/AO-73.yml) annonce DBPSK 1200 et AO-40 FEC : cette couche est désormais traitée par la [voie AO-40 FEC](AO40_FEC.md).
 
 Ces fichiers sont de l’**audio mono de récepteur, pas des IQ RF originaux**. L’import produit de l’audio à 8 kHz via ffmpeg, puis un signal analytique par Hilbert et une interpolation ×2 pour la résolution numérique de synchronisation. L’interpolation ne crée aucune bande passante. Les fréquences restent audio, le centre RF reste absent et aucune phase RF originale n’est reconstruite.
 
@@ -37,7 +37,7 @@ Sur PW-Sat2, les trois salves donnent désormais des candidats BPSK, vers **1196
 
 Ces empreintes sont des références de régression issues du premier décodage à CRC valide pendant le développement ; elles ne sont pas des octets attendus fournis indépendamment par l’auteur de l’enregistrement. Le contrôle d’intégrité repose sur le FCS et la structure AX.25 UI. Les octets sont exportés sans interprétation de télémétrie, reconstruction d’image ou authentification.
 
-AO-73 est conservé dans le même contrôle : actuellement aucun candidat ni aucune trame acceptés sur la fenêtre examinée. Ce résultat ne prouve pas l’absence de BPSK dans le fichier. Le contrôle ne transforme pas ce cas en test exigeant une abstention permanente : une amélioration future peut produire davantage de résultats.
+AO-73 fournit désormais 256 octets via la voie AO-40 FEC ; voir [AO40_FEC.md](AO40_FEC.md). Les candidats PSK génériques restent refusés et aucune trame CRC n’est annoncée. Ce résultat ne prouve pas l’absence de BPSK dans le fichier. Le contrôle ne transforme pas ce cas en test exigeant une abstention permanente : une amélioration future peut produire davantage de résultats.
 
 ## AX.25 et exports
 
@@ -47,7 +47,7 @@ Le rapport distingue les symboles PSK candidats des trames validées. Seules ces
 
 ## Vérification reproductible
 
-`python scripts/psk_radio_reference.py` télécharge les deux fichiers avec bornes de taille et SHA-256, utilise l’import audio réel, vérifie les quatre trames PW-Sat2 et leurs exports, et enregistre les résultats AO-73, les fenêtres examinées et la provenance. Les WAV restent dans `corpus-cache/`, sans inclusion dans le paquet ni dans les artefacts CI.
+`python scripts/psk_radio_reference.py` télécharge les trois fichiers avec bornes de taille et SHA-256, utilise l’import audio réel, vérifie les quatre trames PW-Sat2 et leurs exports, et enregistre les résultats AO-73, les fenêtres examinées et la provenance. Les WAV restent dans `corpus-cache/`, sans inclusion dans le paquet ni dans les artefacts CI.
 
 Chromium importe PW-Sat2 par l’interface en mode audio, vérifie les quatre trames, l’absence de fréquence RF et le téléchargement exact de 180 octets. Les tests synthétiques vérifient séparément le suivi BPSK variable, la détection de salve, le désembrouillage par un émetteur à registre indépendant et le rejet d’une trame corrompue. Ce corpus sert au développement : une évaluation indépendante plus large reste à constituer.
 
@@ -61,7 +61,7 @@ Lorsqu’une fenêtre donne un candidat PSK sans trame BPSK G3RUH/AX.25 UI valid
 
 La reprise remplace le candidat initial uniquement si les bits effectivement récupérés donnent un FCS valide et une structure AX.25 UI valide. Sinon le résultat initial est conservé. Les horodatages et indices source sont recalés sur la fenêtre étendue. Le rapport enregistre le début de contexte, le début de la région de qualité et le résultat du contrôle CRC. Les budgets deviennent quatre fenêtres principales et jusqu’à quatre reprises de 3,1 secondes chacune, toujours dans les premières secondes d’audio demandées. Sans échantillons précédents, il n’y a pas de reprise.
 
-Sur PicSat, la chaîne récupère maintenant une trame AX.25 UI, source `PICSAT-2`, destination `PICSAT`, à environ 1196,18 bauds. La charge utile compte **114 octets**, SHA-256 `2c95b8abea7c459f8ca46c6315375036017b3d93d5f4f47f3e76a1eae61674f7`. Cette empreinte est une référence de régression issue du premier décodage à CRC valide, pas un contenu attendu fourni par l’auteur. Ni identité de l’émetteur ni sémantique de télémétrie ne sont établies. Les quatre trames PW-Sat2 restent vérifiées ; AO-73 reste sans candidat accepté.
+Sur PicSat, la chaîne récupère maintenant une trame AX.25 UI, source `PICSAT-2`, destination `PICSAT`, à environ 1196,18 bauds. La charge utile compte **114 octets**, SHA-256 `2c95b8abea7c459f8ca46c6315375036017b3d93d5f4f47f3e76a1eae61674f7`. Cette empreinte est une référence de régression issue du premier décodage à CRC valide, pas un contenu attendu fourni par l’auteur. Ni identité de l’émetteur ni sémantique de télémétrie ne sont établies. Les quatre trames PW-Sat2 restent vérifiées ; AO-73 fournit séparément une charge utile de 256 octets vérifiée par AO-40 FEC, sans CRC.
 
 Le rapport AX.25 fournit les premiers/derniers fanions observés, leur nombre et les étapes de rejet : longueur, débourrage ou alignement d’octet, FCS, puis structure UI. Ces compteurs respectent les budgets existants et ne reconstruisent aucun bit. Les index de fanion se réfèrent au flux de codage essayé et les diagnostics BPSK précisent les états retirés par le désembrouillage. Même sans trame acceptée, le JSON reste téléchargeable si des fanions ont été observés.
 

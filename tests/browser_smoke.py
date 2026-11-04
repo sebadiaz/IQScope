@@ -366,6 +366,18 @@ def main():
                     assert len(diagnostic['frames'])==1 and diagnostic['frames'][0]['fcs_valid']
                     assert diagnostic['length_rejected']>0
                     assert diagnostic['crc_rejected']==0
+                if os.environ.get('IQSCOPE_TEST_PSK_RADIO')=='1':
+                    page.locator('#iq-file').set_input_files(str(Path('corpus-cache/psk-radio/ao73.wav').resolve()))
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('.ao40-frame')).to_have_count(1,timeout=30000)
+                    expect(page.locator('.ao40-frame')).to_contain_text('256 octets')
+                    expect(page.locator('.ao40-validation')).to_contain_text('Aucun CRC')
+                    expect(page.locator('#metric-frames')).to_have_text('0')
+                    with page.expect_download() as event:
+                        page.get_by_role('link',name='Télécharger la charge utile AO-40',exact=True).click()
+                    payload=Path(event.value.path()).read_bytes()
+                    assert len(payload)==256
+                    assert hashlib.sha256(payload).hexdigest()=='220bb05857d4220084ca46bcb7e48759226935627a25767144d588dc4a43b112'
                 live_requests=[]
                 page.on('request',lambda request: live_requests.append(request.post_data_json) if request.url.endswith('/api/live/analyze') and request.method=='POST' else None)
                 page.get_by_role('tab',name='SDR en direct').click()

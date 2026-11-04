@@ -11,7 +11,7 @@
 <div class="tabs" role="tablist" aria-label="Type de source"><button id="tab-file" role="tab" aria-selected="true" aria-controls="file-panel" class="active">Fichier</button><button id="tab-live" role="tab" aria-selected="false" aria-controls="live-panel">SDR en direct</button></div>
 <section id="file-panel" role="tabpanel" aria-labelledby="tab-file">
 <label class="field">Nature du fichier<select id="input-kind"><option value="iq">Capture IQ RF</option><option value="audio">Audio de récepteur · MP3 / WAV</option></select></label>
-<p class="hint" id="audio-input-hint" hidden>Audio : 1 à 20 secondes, lecture et essais Morse/RTTY/PSK et AX.25 AFSK1200 ou BPSK G3RUH. Les fréquences affichées sont audio, pas RF. Nécessite ffmpeg sur cette machine.</p>
+<p class="hint" id="audio-input-hint" hidden>Audio : 1 à 20 secondes, lecture et essais Morse/RTTY/PSK et AX.25 AFSK1200 ou BPSK G3RUH, et AO-40 FEC. Les fréquences affichées sont audio, pas RF. Nécessite ffmpeg sur cette machine.</p>
 <label class="upload" for="iq-file"><span class="upload-icon">↥</span><strong>Ouvrir une capture</strong><span id="filename">SigMF · WAV IQ · .sdriq · .cf32</span><input id="iq-file" type="file" accept=".sigmf-data,.cf32,.iq,.bin,.wav,.sdriq"></label>
 <label class="field">Métadonnées SigMF <span>recommandé</span><input id="meta-file" type="file" accept=".sigmf-meta,.json"></label>
 <label class="field">Fréquence d’échantillonnage <span>fichier brut uniquement</span><div class="input-unit"><input id="file-rate" type="number" min="1000" max="20000000" value="1024000"><span>éch/s</span></div></label>
@@ -34,7 +34,7 @@
 <section class="live-history"><h3>Historique LoRa à CRC valide</h3><p id="live-history-summary" class="hint">Aucun événement estimé conservé.</p><div id="live-packet-list"></div><a href="/api/live/frames" download="iqscope-live-lora-history.json">Télécharger l’historique JSON</a></section>
 <p class="hint">Aperçu actualisé ~4 fois/s. Le décodage analyse des fenêtres récentes : il peut manquer des paquets entre deux analyses. rtl_tcp ne fournit pas les pertes matérielles ni la fréquence effective.</p>
 </section>
-<div class="source-footer"><span>13 capacités disponibles</span><button id="capabilities" class="text-button">Voir les capacités ↗</button><button id="datasets" class="text-button">Explorer les jeux de données ↗</button></div>
+<div class="source-footer"><span>14 capacités disponibles</span><button id="capabilities" class="text-button">Voir les capacités ↗</button><button id="datasets" class="text-button">Explorer les jeux de données ↗</button></div>
 </aside>
 <div class="analysis">
 <section class="panel plot-panel"><div class="panel-heading"><div><p class="eyebrow">VUE TEMPS–FRÉQUENCE</p><h2>Spectre & waterfall</h2></div><span class="badge" id="source-badge">En attente</span></div>

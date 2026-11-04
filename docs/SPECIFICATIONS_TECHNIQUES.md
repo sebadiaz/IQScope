@@ -1063,3 +1063,8 @@ L’import audio cherche automatiquement des salves PSK dans les 1–20 premièr
 ### État : référence PicSat et diagnostic des tentatives AX.25
 
 Une capture audio PicSat indépendante de PW-Sat2 est intégrée au corpus épinglé : trame BPSK G3RUH/AX.25 UI à CRC valide, charge utile de 114 octets. Une reprise bornée ajoute au plus 100 ms de contexte avant la salve, avec région de qualité explicite ; elle est retenue uniquement après CRC et structure UI valides. Les diagnostics bornés détaillent les fanions observés et les rejets par longueur, débourrage/alignement, FCS ou structure, avec téléchargement JSON même sans charge utile validée. Le test navigateur vérifie l’import réel, la région de contexte et le téléchargement exact de la charge utile PicSat. Les références de développement PW-Sat2 et AO-73 restent conservées ; voir [PSK_RADIO.md](PSK_RADIO.md).
+
+
+### État : AO-40 FEC et première charge utile AO-73
+
+La voie standard DBPSK AO-40 FEC récupère 256 octets sur le corpus AO-73, avec synchronisation distribuée, Viterbi K=7, dérandomisation CCSDS et deux blocs Reed-Solomon vérifiés après correction. Elle examine les six premières secondes d’audio ou d’IQ directs <=96 kéch/s, avec quatre essais FEC au plus et un paquet accepté. Les candidats PSK génériques conservent leurs seuils et restent distincts de cette validation protocolaire. L’interface et le rapport indiquent l’absence de CRC et n’ajoutent pas ces données au compteur CRC. La télémétrie, les formats courts/Manchester et la poursuite continue restent hors périmètre. Voir [AO40_FEC.md](AO40_FEC.md).

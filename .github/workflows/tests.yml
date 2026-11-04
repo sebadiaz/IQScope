@@ -54,6 +54,8 @@ jobs:
             corpus-cache/psk-radio/**/report.json
             corpus-cache/psk-radio/**/psk-ax25-frames.json
             corpus-cache/psk-radio/**/psk-ax25-payload-*.bin
+            corpus-cache/psk-radio/**/ao40-frames.json
+            corpus-cache/psk-radio/**/ao40-payload-*.bin
           if-no-files-found: ignore
   real-iq:
     runs-on: ubuntu-latest

@@ -676,3 +676,5 @@ La première chaîne **BPSK/QPSK automatique** fournit une constellation et des 
 Une [référence radio PW-Sat2](docs/PSK_RADIO.md) fournit quatre trames AX.25 UI à CRC valide, correspondant à trois charges utiles distinctes de 180 et 230 octets. Une correction lente de gain récupère la salve intermédiaire. La recherche de salves et le suivi de phase BPSK sont automatiques. La source est de l’audio mono de récepteur ; les fréquences restent audio et aucun IQ RF original n’est revendiqué.
 
 Le corpus PSK inclut aussi **PicSat** : une reprise automatique du contexte de début récupère une trame AX.25 UI à CRC valide, avec 114 octets de charge utile. Le rapport AX.25 distingue les segments trop courts, les erreurs de débourrage/alignement, de CRC et de structure. Les diagnostics restent téléchargeables sans exporter de faux contenu.
+
+**AO-73 / AO-40 FEC** : récupération automatique de 256 octets après synchronisation, Viterbi et deux vérifications Reed-Solomon. L’interface distingue cette validation du CRC. Voir [formats, budgets et limites](docs/AO40_FEC.md).
