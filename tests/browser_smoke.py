@@ -372,6 +372,15 @@ def main():
                     expect(page.locator('.ao40-frame')).to_have_count(1,timeout=30000)
                     expect(page.locator('.ao40-frame')).to_contain_text('256 octets')
                     expect(page.locator('.ao40-validation')).to_contain_text('Aucun CRC')
+                    expect(page.locator('.funcube-telemetry')).to_contain_text('Profil FUNcube-1 FM candidat')
+                    expect(page.locator('.funcube-measurement').filter(has_text='Tension batterie')).to_have_text('Tension batterie : 8140 mV')
+                    expect(page.locator('.funcube-measurement').filter(has_text='Courant système')).to_have_text('Courant système : 206 mA')
+                    expect(page.locator('.funcube-sequence')).to_contain_text('2543')
+                    with page.expect_download() as telemetry_event:
+                        page.get_by_role('link',name='Télécharger la télémétrie FUNcube (JSON)',exact=True).click()
+                    telemetry=json.loads(Path(telemetry_event.value.path()).read_text())
+                    assert telemetry['sequence_number']==2543 and telemetry['source_validity']['eps']
+                    assert telemetry['identity_confirmed'] is False
                     expect(page.locator('#metric-frames')).to_have_text('0')
                     with page.expect_download() as event:
                         page.get_by_role('link',name='Télécharger la charge utile AO-40',exact=True).click()

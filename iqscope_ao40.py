@@ -89,7 +89,9 @@ class _Probe:
             self.seen.add(key);self.attempts+=1
             try:payload,corrected=decode_frame(soft[index:index+5200]*np.sign(scores[index]))
             except (ValueError,ArithmeticError,reedsolo.ReedSolomonError):continue
-            self.frames.append({'decoder':'ao40_fec','payload_hex':payload.hex(),'payload_bytes':len(payload),
+            from iqscope_funcube import interpret_funcube
+            telemetry=interpret_funcube(payload)
+            self.frames.append({'telemetry':telemetry,'decoder':'ao40_fec','payload_hex':payload.hex(),'payload_bytes':len(payload),
                                 'time_seconds':float(first+(int(index)+1)/baud),'baud':float(baud),
                                 'sync_errors':errors,'rs_corrected_symbols':corrected,
                                 'upstream_symbol_evm_rms':float(evm),'crc_valid':None,'crc_check':'not_present',
@@ -138,6 +140,9 @@ def write_ao40_artifacts(trial,out):
     for index,frame in enumerate(trial['frames'],1):
         frame['payload_artifact']=f'ao40-payload-{index}.bin'
         (out/frame['payload_artifact']).write_bytes(bytes.fromhex(frame['payload_hex']))
+        if frame.get('telemetry',{}).get('status')=='candidate_interpretation':
+            frame['telemetry_artifact']=f'funcube-telemetry-{index}.json'
+            (out/frame['telemetry_artifact']).write_text(json.dumps(frame['telemetry'],indent=2),encoding='utf-8')
     if trial['frames']:
         trial['artifact']='ao40-frames.json'
         (out/trial['artifact']).write_text(json.dumps(trial,indent=2),encoding='utf-8')

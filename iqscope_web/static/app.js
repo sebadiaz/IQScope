@@ -170,6 +170,22 @@ function showReport(report, jobId) {
       card.append(element('p',`${frame.baud.toFixed(2)} bauds · synchronisation ${65-frame.sync_errors}/65 · corrections RS : ${frame.rs_corrected_symbols.join(', ')}`));
       card.append(element('p','Deux blocs Reed-Solomon vérifiés après Viterbi. Aucun CRC dans ce chemin ; identité et interprétation de télémétrie non établies.','hint ao40-validation'));
       card.append(element('code',frame.payload_hex.slice(0,128)+'…'));
+      const telemetry=frame.telemetry;
+      if(telemetry?.status==='candidate_interpretation') {
+        const section=element('div',undefined,'funcube-telemetry');
+        section.append(element('h3','Profil FUNcube-1 FM candidat · télémétrie partielle'));
+        section.append(element('p',`Séquence ${telemetry.sequence_number} · code de trame ${telemetry.header.frame_type_code}`,'funcube-sequence'));
+        section.append(element('p',`EPS déclaré valide : ${telemetry.source_validity.eps?'oui':'non'} · éclipse : ${telemetry.modes.eclipse?'oui':'non'}`,'funcube-validity'));
+        if(!telemetry.source_validity.eps)section.append(element('p','Bloc EPS déclaré invalide : valeurs non confirmées, éventuellement périmées.','hint funcube-stale'));
+        for(const measure of telemetry.measurements) {
+          const suffix=measure.unit==='count'?'':` ${measure.unit}`;
+          section.append(element('p',`${measure.label} : ${measure.value}${suffix}`,'funcube-measurement'));
+        }
+        section.append(element('p','Interprétation candidate du profil et des unités publiés. Identité et étalonnage indépendants non établis ; températures conservées en codes bruts.','hint'));
+        if(frame.telemetry_artifact){const link=element('a','Télécharger la télémétrie FUNcube (JSON)');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(frame.telemetry_artifact)}`;link.download=frame.telemetry_artifact;section.append(link);}
+        card.append(section);
+      }
+
       if(frame.payload_artifact){const link=element('a','Télécharger la charge utile AO-40');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(frame.payload_artifact)}`;link.download=frame.payload_artifact;card.append(link);}
       frameList.append(card);
     }

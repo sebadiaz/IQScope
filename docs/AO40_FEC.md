@@ -6,7 +6,7 @@ La voie AO-40 FEC est automatique sur l’audio de récepteur et les IQ complexe
 
 Sur le WAV AO-73 du [corpus épinglé](https://github.com/daniestevez/satellite-recordings/blob/952ddfe53f62a150c53559249c83370630254cab/ao73.wav), la chaîne récupère **256 octets** : SHA-256 `220bb05857d4220084ca46bcb7e48759226935627a25767144d588dc4a43b112`. La synchronisation distribuée correspond aux 65 bits attendus sans erreur ; les deux chemins Reed-Solomon passent sans correction de symbole après Viterbi. Le débit estimé est d’environ 1202,10 bauds.
 
-L’empreinte est une référence de régression issue du premier décodage FEC valide pendant le développement, pas des octets attendus fournis indépendamment par l’auteur. Le matériel de réception et l’identité de l’émetteur ne sont pas établis par ce résultat. La source est de l’audio mono, sans reconstruction de la fréquence ou phase RF d’origine. La télémétrie n’est pas interprétée.
+L’empreinte est une référence de régression issue du premier décodage FEC valide pendant le développement, pas des octets attendus fournis indépendamment par l’auteur. Le matériel de réception et l’identité de l’émetteur ne sont pas établis par ce résultat. La source est de l’audio mono, sans reconstruction de la fréquence ou phase RF d’origine. Une [interprétation partielle du profil FUNcube-1 FM](FUNCUBE_TELEMETRY.md) est maintenant proposée séparément, avec validité déclarée et unités documentées.
 
 ## Acquisition et validation
 
@@ -29,7 +29,7 @@ Les limites sont quatre essais synchronisation/FEC sur l’ensemble des filtres 
 
 Le format AO-73/AO-40 traité ici ne fournit pas de CRC supplémentaire dans cette chaîne. Le rapport utilise `crc_valid: null` et `crc_check: not_present`. L’interface affiche **« deux blocs Reed-Solomon vérifiés »**, propose le fichier binaire de 256 octets et un rapport JSON, et laisse le compteur des trames à CRC inchangé. La correction d’erreurs et la vérification de parité ne constituent pas une authentification.
 
-Les fichiers sont `ao40-payload-N.bin` et `ao40-frames.json`. Les rapports séparent nombre d’erreurs de synchronisation, corrections RS et EVM des symboles amont. Le décodeur Viterbi et la bibliothèque Reed-Solomon ne sont pas présentés comme une preuve d’identité ou de sémantique de télémétrie.
+Les fichiers sont `ao40-payload-N.bin` et `ao40-frames.json`. Les rapports séparent nombre d’erreurs de synchronisation, corrections RS et EVM des symboles amont. Le décodeur Viterbi et la bibliothèque Reed-Solomon ne sont pas présentés comme une preuve d’identité ou de sémantique de télémétrie. Les champs interprétés et leur JSON sont une couche candidate distincte.
 
 ## Vérifications
 

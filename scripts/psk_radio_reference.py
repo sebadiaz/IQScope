@@ -58,6 +58,13 @@ def main():
         if name=='ao73':
             if fec_hashes!=['220bb05857d4220084ca46bcb7e48759226935627a25767144d588dc4a43b112']:
                 raise AssertionError('AO-73 AO-40 FEC payload regression')
+            telemetry=ao40['frames'][0]['telemetry']
+            values={m['id']:m['value'] for m in telemetry['measurements']}
+            if (values['battery_voltage'],values['system_current'],telemetry['sequence_number'])!=(8140,206,2543):
+                raise AssertionError('FUNcube FC1 partial telemetry regression')
+            exported=json.loads((out/ao40['frames'][0]['telemetry_artifact']).read_text())
+            if exported!=telemetry or telemetry['identity_confirmed']:
+                raise AssertionError('Telemetry export or interpretation scope mismatch')
             if ao40['frames'][0]['crc_valid'] is not None:
                 raise AssertionError('AO-40 FEC claimed a CRC')
         if name=='picsat':

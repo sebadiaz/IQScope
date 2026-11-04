@@ -1068,3 +1068,8 @@ Une capture audio PicSat indépendante de PW-Sat2 est intégrée au corpus épin
 ### État : AO-40 FEC et première charge utile AO-73
 
 La voie standard DBPSK AO-40 FEC récupère 256 octets sur le corpus AO-73, avec synchronisation distribuée, Viterbi K=7, dérandomisation CCSDS et deux blocs Reed-Solomon vérifiés après correction. Elle examine les six premières secondes d’audio ou d’IQ directs <=96 kéch/s, avec quatre essais FEC au plus et un paquet accepté. Les candidats PSK génériques conservent leurs seuils et restent distincts de cette validation protocolaire. L’interface et le rapport indiquent l’absence de CRC et n’ajoutent pas ces données au compteur CRC. La télémétrie, les formats courts/Manchester et la poursuite continue restent hors périmètre. Voir [AO40_FEC.md](AO40_FEC.md).
+
+
+### État : première télémétrie numérique FUNcube-1 FM
+
+Une couche candidate interprète le sous-ensemble EPS/SW du profil FC1 Flight Model après validation FEC : valeurs électriques directes, compteurs, validité et modes. Les unités incertaines restent brutes, les autres profils restent non pris en charge, les 256 octets originaux sont conservés et aucune identité n’est confirmée. L’interface affiche les valeurs, marque les blocs déclarés invalides et propose un export JSON. Le code de type brut reste sans ordinal WO/HR/FM à cause des conventions divergentes des sources. Voir [FUNCUBE_TELEMETRY.md](FUNCUBE_TELEMETRY.md).
