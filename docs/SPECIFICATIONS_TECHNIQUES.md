@@ -1073,3 +1073,7 @@ La voie standard DBPSK AO-40 FEC récupère 256 octets sur le corpus AO-73, avec
 ### État : première télémétrie numérique FUNcube-1 FM
 
 Une couche candidate interprète le sous-ensemble EPS/SW du profil FC1 Flight Model après validation FEC : valeurs électriques directes, compteurs, validité et modes. Les unités incertaines restent brutes, les autres profils restent non pris en charge, les 256 octets originaux sont conservés et aucune identité n’est confirmée. L’interface affiche les valeurs, marque les blocs déclarés invalides et propose un export JSON. Le code de type brut reste sans ordinal WO/HR/FM à cause des conventions divergentes des sources. Voir [FUNCUBE_TELEMETRY.md](FUNCUBE_TELEMETRY.md).
+
+### État : première récupération 16-QAM carrée
+
+`iqscope_qam` ajoute une chaîne automatique aux analyses IQ par fichier et instantané SDR : débit par raie d’enveloppe, porteuse par puissance quatrième, trois filtres RRC et ajustement borné de synchronisation. Les amplitudes relatives sont conservées, les seize états doivent être présents et les seuils EVM sont vérifiés sur la fenêtre et ses deux moitiés. Recherche directe <=96 kéch/s ou quatre bandes spectrales <=48 kHz sur une source <=2,4 Méch/s, avec budgets de durée/échantillons/bits. L’interface affiche une constellation et propose les exports, sans augmenter le compteur CRC. Les références sont synthétiques uniquement ; les captures radio indépendantes, l’égalisation et les couches protocole restent à réaliser. Voir [QAM16.md](QAM16.md).

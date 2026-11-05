@@ -680,3 +680,5 @@ Le corpus PSK inclut aussi **PicSat** : une reprise automatique du contexte de d
 **AO-73 / AO-40 FEC** : récupération automatique de 256 octets après synchronisation, Viterbi et deux vérifications Reed-Solomon. L’interface distingue cette validation du CRC. Voir [formats, budgets et limites](docs/AO40_FEC.md).
 
 Une [interprétation partielle FUNcube-1 FM](docs/FUNCUBE_TELEMETRY.md) affiche maintenant les premières mesures du paquet AO-73 : batterie **8140 mV**, courant système **206 mA**, séquence **2543**. Le profil reste candidat, les indicateurs de validité sont conservés et la télémétrie peut être exportée en JSON.
+
+La première chaîne **16-QAM automatique** fournit une constellation et des symboles/bits candidats exportables, directement ou sur des canaux spectraux détectés. Validation synthétique uniquement, sans protocole ni CRC identifié : [méthode et limites](docs/QAM16.md).

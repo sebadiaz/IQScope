@@ -163,6 +163,27 @@ function showReport(report, jobId) {
   }
   const frameList=$('frame-list');frameList.replaceChildren();
   for(const trial of report.wideband_trials || []) {
+    if(trial.decoder!=='qam16_generic')continue;
+    for(const candidate of trial.candidates || []) {
+      const card=element('div',undefined,'frame qam16-candidate');
+      card.append(element('h3','16-QAM · symboles candidats, sans CRC'));
+      card.append(element('p',`${candidate.parameters.baud.toFixed(2)} bauds · ${candidate.symbol_count} symboles · erreur symbole RMS ${(100*candidate.evidence.symbol_evm_rms).toFixed(1)} %`));
+      card.append(element('p',`Correction porteuse : ${candidate.parameters.carrier_offset_hz.toFixed(2)} Hz · filtre RRC essayé α=${candidate.parameters.rrc_rolloff_trial}`));
+      if(candidate.channel)card.append(element('p',`Offset du canal : ${candidate.channel.offset_hz.toFixed(1)} Hz`));
+      card.append(element('p','Convention binaire arbitraire, rotation et conjugaison inconnues. Protocole non identifié ; aucune charge utile validée. Références synthétiques uniquement.','hint'));
+      const canvas=element('canvas');canvas.width=360;canvas.height=260;canvas.style.width='100%';canvas.style.maxWidth='360px';
+      canvas.setAttribute('role','img');canvas.setAttribute('aria-label','Constellation 16-QAM, amplitudes relatives conservées');
+      card.append(canvas);drawPskConstellation(canvas,candidate.constellation);
+      card.append(element('pre',candidate.bits.slice(0,256),'qam16-bits'));
+      for(const [kind,name] of Object.entries(candidate.artifacts || {})){
+        const link=element('a',`Télécharger 16-QAM · ${kind}`);link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(name)}`;link.download=name;card.append(link);
+      }
+      frameList.append(card);
+    }
+    if(trial.artifact){const link=element('a','Télécharger le rapport 16-QAM');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
+  }
+
+  for(const trial of report.wideband_trials || []) {
     if(trial.decoder!=='ao40_fec')continue;
     for(const frame of trial.frames || []) {
       const card=element('div',undefined,'frame ao40-frame');

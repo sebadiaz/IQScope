@@ -122,6 +122,26 @@ def main():
                         assert decoded['evidence']['checksum']=='not_checked'
                         assert decoded['parameters']['pulse_shape']==shape
                         assert page.locator('#metric-frames').inner_text()=='0'
+                from test_qam import fixture as qam_fixture, equivalent as qam_equivalent
+                x,fs,expected,_=qam_fixture(clock_ppm=175)
+                with tempfile.TemporaryDirectory() as directory:
+                    data=Path(directory)/'qam.sigmf-data';meta=data.with_suffix('.sigmf-meta')
+                    x.astype('<c8').tofile(data)
+                    meta.write_text(json.dumps({'global':{'core:datatype':'cf32_le','core:sample_rate':fs}}))
+                    page.locator('#iq-file').set_input_files(str(data))
+                    page.locator('#meta-file').set_input_files(str(meta))
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    card=page.locator('.qam16-candidate').first
+                    expect(card).to_contain_text('16-QAM · symboles candidats, sans CRC',timeout=30000)
+                    expect(card).to_contain_text('Protocole non identifié')
+                    expect(card.locator('canvas')).to_be_visible()
+                    expect(card.locator('.qam16-bits')).to_have_text(re.compile('^[01]+$'))
+                    with page.expect_download() as event:
+                        page.get_by_role('link',name='Télécharger le rapport 16-QAM',exact=True).click()
+                    decoded=json.loads(Path(event.value.path()).read_text())['candidates'][0]
+                    assert qam_equivalent(decoded['symbols'],expected)
+                    assert decoded['evidence']['checksum']=='not_checked'
+                    assert page.locator('#metric-frames').inner_text()=='0'
                 Path('browser-artifacts').mkdir(exist_ok=True)
                 page.screenshot(path='browser-artifacts/desktop.png', full_page=True)
                 # Exercise actual candidate text display through the same import UI.
