@@ -19,6 +19,7 @@ URL=f'https://raw.githubusercontent.com/billjgavin/28_and_75GHz_Capture_Files/{P
 BLOB='fa11ded813f4407afb6c9cad3ac37dc4c135dced'
 SIZE=8425587
 SHA256='4959f58182b54a8ba25893106be939f34716d0c3832afa4d88d1658e54844240'
+FORMAT_REFERENCE='https://www.keysight.com/so/en/assets/9018-04709/user-manuals/9018-04709.pdf'
 
 
 def read_keysight_csv(raw):
@@ -75,7 +76,8 @@ def main():
             'source_bytes':len(data),'origin':'conducted laboratory RF acquisition per upstream README; not radiated',
             'sample_rate_hz_declared':200e6,'symbol_rate_baud_declared':50e6,
             'license':'not established; no raw IQ redistributed','members':[],'previews':[],
-            'qam_trials':{},'embedded_readme_text':[]}
+            'qam_trials':{},'embedded_readme_text':[], 'format_reference':FORMAT_REFERENCE,
+            'regression_oracle':'expected structural outcomes observed during development; no independent bit oracle'}
     with zipfile.ZipFile(io.BytesIO(data)) as archive:
         members=archive.infolist()
         if len(members)>2000:raise ValueError('Too many archive members')
@@ -85,8 +87,11 @@ def main():
         for member in selected[:10]:
             if member.file_size>2_000_000:continue
             raw=archive.read(member)
+            preview=raw[:1800].decode('utf-8',errors='replace')
+            if member.filename.lower().endswith('.csv'):
+                preview=preview.split('MeasResult0,MeasResult1,MeasResult2')[0]
             result['previews'].append({'name':member.filename,'sha256':hashlib.sha256(raw).hexdigest(),
-                                       'prefix_hex':raw[:32].hex(),'text_prefix':raw[:1800].decode('utf-8',errors='replace')})
+                                       'prefix_hex':raw[:32].hex(),'text_prefix':preview})
         for member in members:
             if member.file_size>2_000_000:continue
             if member.filename.lower().endswith('.csv'):
@@ -99,6 +104,14 @@ def main():
                     text=' '.join(t.text or '' for t in xml.iter('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}t'))
                     result['embedded_readme_text'].append({'name':member.filename,'text':text})
     (root/'inspection.json').write_text(json.dumps(result,indent=2))
+    accepted={Path(name).name for name,trial in result['qam_trials'].items() if trial['candidates']}
+    expected={f'16qam {level}.csv' for level in 'abcde'}
+    if len(result['qam_trials'])!=32 or accepted!=expected:
+        raise AssertionError(f'Laboratory QAM regression: accepted {sorted(accepted)}')
+    for trial in result['qam_trials'].values():
+        for candidate in trial['candidates']:
+            if not 49.9e6<candidate['parameters']['baud']<50.1e6 or not 4900<=candidate['symbol_count']<=5000:
+                raise AssertionError('Physical baud or recovered symbol-count regression')
     print(json.dumps(result,indent=2))
 
 

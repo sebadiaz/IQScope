@@ -1,0 +1,235 @@
+{
+  "source_url": "https://raw.githubusercontent.com/billjgavin/28_and_75GHz_Capture_Files/3f9ea40d9b187d0819b14cb254dc04905d398889/IQ_28_Ghz.zip",
+  "source_sha256": "4959f58182b54a8ba25893106be939f34716d0c3832afa4d88d1658e54844240",
+  "source_git_blob": "fa11ded813f4407afb6c9cad3ac37dc4c135dced",
+  "reference_commit": "2a14fa6af634ceed3e70a55a52cfeba8442e7242",
+  "reference_run": "https://github.com/sebadiaz/IQScope/actions/runs/42289680499",
+  "acquisition": "conducted laboratory RF acquisition per upstream README; not radiated",
+  "source_sample_rate_hz": 200000000,
+  "center_frequency_hz": 28000000000,
+  "scope": "Structural 16-QAM candidates only; no independent symbol/bit oracle, no PRBS comparison, no CRC or protocol validation. Expected outcomes recorded during development.",
+  "files": [
+    {
+      "name": "IQ 28Ghz files 10_2_22/qpsk c.csv",
+      "sha256": "341d40dfd5b61026184f9ddee8c091bd8771440b4f937bc5ca51cccea57aadf8",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/16qam c.csv",
+      "sha256": "5e1641b6e1d657c70d9d98cd7e7e65808b5bfa055a00904a633228fc38543f54",
+      "status": "constellation_consistent_candidate",
+      "candidates": [
+        {
+          "symbol_count": 4988,
+          "baud": 49999998.30048297,
+          "evm_rms": 0.029295456511676768
+        }
+      ]
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/qpsk f.csv",
+      "sha256": "50e409bf0ad5b0576c00e13fd02256f6859913eea11ce0a300ecd1fa68f9aa0a",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/cw e.csv",
+      "sha256": "da9af379487306a79c9302ff40e6482f38f4f66e78d025d45d106fed68a3d625",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/qpsk e.csv",
+      "sha256": "be06389a500faf8bdf533916e201c057f9b1f1d64e743a0a75aaac74391db589",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/noise a.csv",
+      "sha256": "e7ee312f788f2c63cca9d1354c47cf42b2d176bd27e3dbaf55c0449f788e2e71",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/cw f.csv",
+      "sha256": "ce089365274c604fa357f9b43481978ed326647a6594f930ddc095feca5a2843",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/16qam a.csv",
+      "sha256": "d98e913cedbc41423271acbce3e7ebafbbad0a47050aa6e17762b36def954634",
+      "status": "constellation_consistent_candidate",
+      "candidates": [
+        {
+          "symbol_count": 4988,
+          "baud": 49999999.99988558,
+          "evm_rms": 0.01517009475138381
+        }
+      ]
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/8psk a.csv",
+      "sha256": "e0ff619636ae273c62759943d7fa0316cb82bf34a41dee7c087bbda7d88c145b",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/qpsk b.csv",
+      "sha256": "ddacf127a0a245d52e00b2be54aa79345bc40abb10153e4d455f8f63fbf9e16b",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/qpsk a.csv",
+      "sha256": "cfd2aa1c2726dc7aa079b2e8b07c37b69bd328a29046db3dfa4cdea147341023",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/16qam d.csv",
+      "sha256": "ee734fd9005aa8d8f012424fed932cbd0b491864d67ca2ce720303b4f37f74c1",
+      "status": "constellation_consistent_candidate",
+      "candidates": [
+        {
+          "symbol_count": 4988,
+          "baud": 49999994.25730767,
+          "evm_rms": 0.045988407089447556
+        }
+      ]
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/bpsk b.csv",
+      "sha256": "ebabf8061d0720a1591612b8f984cab079e8557905bf1549e3ce9535fb1e0def",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/bpsk d.csv",
+      "sha256": "e7f9080a976593e82eb39060cdd9c6e1f7b4f2c752cc274b960bf1bb21187d9b",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/bpsk c.csv",
+      "sha256": "dbe9a8cc6738132b8c79f967a0253d322efdf9988f998ac77aa6710f7c35ba57",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/cw b.csv",
+      "sha256": "8b8e6c5ffd9ef74ac1acabec7c1f9c871cae30e195e5be703342ba35691dc79d",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/cw d.csv",
+      "sha256": "0e7aa37eebd12dee31527be86d6ef3eb8b49dbe89c9a4d1f3d6af4a6ad9c6c47",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/16qam b.csv",
+      "sha256": "509abb06b14f99f538937ccc947b41038a7c644924a2d54594726d6687b010ad",
+      "status": "constellation_consistent_candidate",
+      "candidates": [
+        {
+          "symbol_count": 4988,
+          "baud": 49999999.99670825,
+          "evm_rms": 0.018918327975775074
+        }
+      ]
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/8psk e.csv",
+      "sha256": "78a95e7b0ad48b5a20b046152bc3dd38a08168a4613fd23090b079d7bc745b73",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/16qam f.csv",
+      "sha256": "5fd8a6b1ba9233a4bb9e32e766cebfe2508a3601db76060f1e2a0d0d5cf18cf3",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/16qam e.csv",
+      "sha256": "c4edd955c83b10e033b4a000780a47063c97fd2de8f271cc6eb183f21529cb3f",
+      "status": "constellation_consistent_candidate",
+      "candidates": [
+        {
+          "symbol_count": 4988,
+          "baud": 49999999.785611525,
+          "evm_rms": 0.07949336142324646
+        }
+      ]
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/noise b.csv",
+      "sha256": "cb777a665cbcf78938df503c6c38715dbb85375a907e288bdbd20cc8c3d7b401",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/8psk c.csv",
+      "sha256": "2df42dfa92b0775282e2828fbfbc110925b38986889477b75638da129538c7da",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/8psk d.csv",
+      "sha256": "20846df698d9edfc88f0abe52ab706edc3563f94e7001f34c4bcc44dc52d2d71",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/8psk f.csv",
+      "sha256": "a4a390957fbbfaa71e0db69c58da5274b301c3dd3647259e7fa3a41b4f3cfaab",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/qpsk d.csv",
+      "sha256": "b9245771ec6def36d3913594f82d96a0845a17ac4544301669345439d5bf487a",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/bpsk a.csv",
+      "sha256": "11dd85695d5ced510792f91f4c40e74fa0af45ba07d76e0d29b2bf320e7c342f",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/8psk b.csv",
+      "sha256": "b8a7007a5eeb50d203851dbc332cfd357304906c3fc680a625806548f60aa0be",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/cw c.csv",
+      "sha256": "37c32e078d4caf83ef654918cf55429bc260aa4c906bce71c6f6745e614a8ebc",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/bpsk f.csv",
+      "sha256": "1c1e928319f18eb20daa3f817c28ad897ef22afcafbab799de09d5b7e858df10",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/bpsk e.csv",
+      "sha256": "66add414538288fb063d48c5f84af90126b43a87d88c5de8860af0741f5d32e8",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    },
+    {
+      "name": "IQ 28Ghz files 10_2_22/cw a.csv",
+      "sha256": "c0f95fe9dc73aa94698f5671c2e39f96bfb3dd7c8634102b14eb30b05943dfdc",
+      "status": "no_consistent_candidate",
+      "candidates": []
+    }
+  ]
+}

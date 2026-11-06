@@ -170,7 +170,7 @@ function showReport(report, jobId) {
       card.append(element('p',`${candidate.parameters.baud.toFixed(2)} bauds · ${candidate.symbol_count} symboles · erreur symbole RMS ${(100*candidate.evidence.symbol_evm_rms).toFixed(1)} %`));
       card.append(element('p',`Correction porteuse : ${candidate.parameters.carrier_offset_hz.toFixed(2)} Hz · filtre RRC essayé α=${candidate.parameters.rrc_rolloff_trial}`));
       if(candidate.channel)card.append(element('p',`Offset du canal : ${candidate.channel.offset_hz.toFixed(1)} Hz`));
-      card.append(element('p','Convention binaire arbitraire, rotation et conjugaison inconnues. Protocole non identifié ; aucune charge utile validée. Références synthétiques uniquement.','hint'));
+      card.append(element('p','Convention binaire arbitraire, rotation et conjugaison inconnues. Protocole non identifié ; aucune charge utile validée.','hint'));
       const canvas=element('canvas');canvas.width=360;canvas.height=260;canvas.style.width='100%';canvas.style.maxWidth='360px';
       canvas.setAttribute('role','img');canvas.setAttribute('aria-label','Constellation 16-QAM, amplitudes relatives conservées');
       card.append(canvas);drawPskConstellation(canvas,candidate.constellation);

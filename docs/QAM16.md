@@ -40,16 +40,31 @@ Le champ `processing` conserve la fréquence d’échantillonnage source en Hz, 
 
 ## Validation actuelle
 
-La validation est **synthétique uniquement**. Le générateur de test applique un filtrage RRC dans le domaine fréquentiel, indépendant des coefficients temporels employés par le récepteur. Les comparaisons vérifient les symboles émis en tenant compte des huit rotations/conjugaisons possibles, plusieurs débits et graines, erreurs d’horloge constantes, fréquences positives/négatives et gains différents. Les tests à quatre échantillons par symbole et à 200 Méch/s contrôlent les labels récupérés, les unités physiques, les durées et les budgets ; ils ne représentent pas une mesure RF.
+Les références **synthétiques** vérifient les symboles émis. Le générateur de test applique un filtrage RRC dans le domaine fréquentiel, indépendant des coefficients temporels employés par le récepteur. Les comparaisons tiennent compte des huit rotations/conjugaisons possibles, plusieurs débits et graines, erreurs d’horloge constantes, fréquences positives/négatives et gains différents. Les tests à quatre échantillons par symbole et à 200 Méch/s contrôlent les labels récupérés, les unités physiques, les durées et les budgets ; ils ne représentent pas une mesure RF.
 
 Un mélange de deux canaux 16-QAM et d’une porteuse parasite vérifie la séparation automatique. Les cas BPSK, QPSK, 8-PSK, 64-QAM, FSK, porteuse, silence et bruit testés ne doivent pas produire de candidat. Les exports doivent restituer exactement les bits et labels décidés. Chromium importe une référence synthétique par les vrais chemins de l’application, affiche la constellation et télécharge le rapport.
 
-Ces contrôles ne prouvent pas une couverture de signaux radio réels ni de protocoles utilisant la QAM. Des captures indépendantes, des tests de faux positifs plus larges, l’égalisation, la poursuite de phase et des déframeurs de protocoles restent nécessaires.
+Une référence matérielle indépendante complète ces essais ci-dessous, avec validation structurelle seulement. Ces contrôles ne prouvent pas une couverture générale des signaux radio ni des protocoles utilisant la QAM. Des corpus plus larges, des tests de faux positifs supplémentaires, l’égalisation, la poursuite de phase et des déframeurs de protocoles restent nécessaires.
 
-## Capture indépendante repérée, à vérifier
+## Référence matérielle indépendante à 28 GHz
 
 Le dépôt [28_and_75GHz_Capture_Files, version figée](https://github.com/billjgavin/28_and_75GHz_Capture_Files/tree/3f9ea40d9b187d0819b14cb254dc04905d398889) décrit des acquisitions RF de laboratoire par liaison conduite, sans rayonnement. Son README annonce de la 16-QAM à 50 Mbaud, échantillonnée à 200 Méch/s, avec PRBS15 et fenêtres de 100 µs. L’[inspection CI](https://github.com/sebadiaz/IQScope/actions/runs/42289341612) confirme six CSV étiquetés 16-QAM, des en-têtes N9030B à 28 GHz, une durée de 100 µs et un pas de 5 ns.
 
 `python scripts/qam_lab_reference.py` télécharge seulement l’archive 28 GHz de 8 425 587 octets, vérifie sa taille, son empreinte Git et sa SHA-256 `4959f58182b54a8ba25893106be939f34716d0c3832afa4d88d1658e54844240`. Il inventorie ses membres sans extraire ni exécuter leur contenu, lit le README embarqué et essaie le décodeur QAM sur les CSV. Le parseur reconstruit les valeurs I puis Q alternées du résultat 0 ; le pas, le nombre de points du résultat 1 et la durée de capture doivent concorder. Les autres colonnes ne sont pas traitées comme des échantillons I/Q. Le workflow séparé `QAM laboratory reference` produit le rapport d’inspection et les résultats structurels, sans publier les échantillons ni les bits décidés : la licence de redistribution des données n’est pas établie.
 
-L’inspection des en-têtes est établie ; la récupération des symboles reste à vérifier. Aucun taux d’erreur PRBS ni contenu protocolaire validé n’est revendiqué. Les étiquettes de modulation sont fournies par les noms de fichiers et ne constituent pas des bits de référence indépendants.
+Le format I/Q et les scalaires sont documentés dans le [manuel Keysight IQ Analyzer](https://www.keysight.com/so/en/assets/9018-04709/user-manuals/9018-04709.pdf), section « IQ Waveform Measurement / Remote Command Results ». Le pas de 5 ns, les 20 001 points complexes et la durée de 100 µs concordent : la durée couvre l’intervalle du premier au dernier point.
+
+L’[essai CI sur les 32 CSV](https://github.com/sebadiaz/IQScope/actions/runs/42289680499) accepte cinq des six captures étiquetées 16-QAM, sans fournir de débit ni de filtre au décodeur :
+
+| Fichier | Niveau TX déclaré | Symboles candidats | Débit estimé | EVM RMS du récepteur |
+| --- | ---: | ---: | ---: | ---: |
+| 16qam a | −10 dBm | 4 988 | ≈50 Mbaud | 1,52 % |
+| 16qam b | −15 dBm | 4 988 | ≈50 Mbaud | 1,89 % |
+| 16qam c | −20 dBm | 4 988 | ≈50 Mbaud | 2,93 % |
+| 16qam d | −25 dBm | 4 988 | ≈50 Mbaud | 4,60 % |
+| 16qam e | −30 dBm | 4 988 | ≈50 Mbaud | 7,95 % |
+| 16qam f | −40 dBm | aucun candidat accepté | — | — |
+
+Les 26 CSV BPSK, QPSK, 8-PSK, porteuse et bruit du même corpus ne produisent aucun candidat QAM. Ce résultat n’est pas une estimation générale du taux de faux positifs. Les niveaux TX proviennent du README embarqué ; ce ne sont pas des SNR. L’EVM est celle calculée après les estimations et décisions d’IQScope, sans séquence de symboles de référence.
+
+Le workflow contrôle désormais ces issues, les ordres de grandeur du débit physique et le nombre de symboles. Ces attentes proviennent du premier décodage de développement : il ne s’agit pas d’une évaluation sur un corpus réservé. Aucun taux d’erreur PRBS ni contenu protocolaire validé n’est revendiqué. Les étiquettes de modulation sont fournies par les noms de fichiers et ne constituent pas des bits de référence indépendants. Le parseur CSV reste dans le script de référence ; ce format constructeur n’est pas encore importable directement dans l’interface.
