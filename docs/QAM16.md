@@ -4,7 +4,7 @@ IQScope essaie maintenant une chaîne **16-QAM carrée monoporteuse** dans les a
 
 ## Méthode
 
-Une raie cyclique de l’énergie de l’enveloppe fournit un débit symbole candidat. Une raie de la puissance quatrième fournit le décalage de fréquence, avec raffinement dans un intervalle de deux cases FFT. Trois filtres RRC sont essayés (roll-off 0,2 / 0,35 / 0,5, longueur dix symboles), après une décimation éventuelle. Une recherche initiale sur 24 phases puis un ajustement borné du débit et de la phase d’échantillonnage minimisent l’erreur vectorielle des symboles.
+Une raie cyclique de l’énergie de l’enveloppe fournit un débit symbole candidat. Une raie de la puissance quatrième fournit le décalage de fréquence, avec raffinement dans un intervalle de deux cases FFT. Lorsque l’entrée contient entre quatre et huit échantillons par symbole, une interpolation polyphasée par deux précède les filtres et la synchronisation. Elle ne crée pas d’information supplémentaire. Trois filtres RRC sont essayés (roll-off 0,2 / 0,35 / 0,5, longueur dix symboles), après une décimation éventuelle. Une recherche initiale sur 24 phases puis un ajustement borné du débit et de la phase d’échantillonnage minimisent l’erreur vectorielle des symboles.
 
 Le gain RMS commun conserve les amplitudes relatives : les symboles ne sont pas normalisés individuellement. La rotation est estimée par le moment d’ordre quatre d’une constellation QAM carrée. Les décisions utilisent les quatre niveaux de chaque axe, proportionnels à −3, −1, +1 et +3. L’acceptation exige une EVM RMS d’au plus 12 %, au plus 14 % dans chaque moitié, et au moins 1,5 % d’occupation pour chacun des seize états. Ces seuils sont structurels, pas une probabilité de classification.
 
@@ -12,9 +12,10 @@ Un candidat direct est recherché avant les canaux du détecteur spectral commun
 
 ## Budgets et limites
 
-- Entrée directe entre 1 et 96 kéch/s, recherche d’horloge de 30 à min(9600, débit d’échantillonnage/8) bauds.
+- Entrée directe entre 1 kéch/s et 250 Méch/s, avec au moins quatre échantillons source par symbole. Jusqu’à 96 kéch/s, recherche d’horloge de 30 à min(9600, débit d’échantillonnage/4) bauds.
+- Au-delà de 96 kéch/s, changement d’unité de temps vers une fréquence de calcul de 32 000, sans supprimer d’échantillons : recherche entre `Fs × 30/32000` et `Fs/4` bauds. Les débits, offsets et temps exportés sont reconvertis en unités physiques. Par exemple, à 200 Méch/s la plage cherchée est 187,5 kbaud à 50 Mbaud. Ce mode ne recherche donc pas les canaux étroits d’une telle source.
 - Au moins 280 symboles dans la durée examinée et 256 symboles de sortie. La limite de trois secondes empêche donc certains bas débits d’aboutir.
-- Trois premières secondes et 288 000 échantillons au plus par essai direct. Recherche spectrale jusqu’à 2,4 Méch/s, limitée également à 2 400 000 échantillons d’entrée et quatre canaux.
+- Trois premières secondes et 288 000 échantillons source au plus par essai direct ; l’interpolation peut porter le tampon à 576 000 échantillons. À 200 Méch/s, le budget source limite la fenêtre à 1,44 ms. Recherche spectrale jusqu’à 2,4 Méch/s, limitée également à 2 400 000 échantillons d’entrée et quatre canaux.
 - 24 phases initiales et au plus 160 évaluations par filtre, ajustées sur au plus 2048 centres répartis dans la fenêtre.
 - Au plus 40 000 bits (10 000 symboles) et 512 points de constellation par candidat. Les limites de durée et de sortie sont signalées.
 
@@ -35,10 +36,20 @@ L’interface montre constellation, EVM, débit estimé, correction de porteuse,
 
 Les échantillons source ne sont pas modifiés par le décodeur. Les essais SDR restent indépendants entre fenêtres : aucune continuité d’horloge ou de phase n’est revendiquée.
 
+Le champ `processing` conserve la fréquence d’échantillonnage source en Hz, le nombre d’échantillons lus, la fréquence dans la coordonnée de calcul, son facteur de conversion vers les Hz physiques et le facteur d’interpolation. L’ambiguïté de porteuse se réfère toujours à la fréquence source, avant interpolation.
+
 ## Validation actuelle
 
-La validation est **synthétique uniquement**. Le générateur de test applique un filtrage RRC dans le domaine fréquentiel, indépendant des coefficients temporels employés par le récepteur. Les comparaisons vérifient les symboles émis en tenant compte des huit rotations/conjugaisons possibles, plusieurs débits et graines, erreurs d’horloge constantes, fréquences positives/négatives et gains différents.
+La validation est **synthétique uniquement**. Le générateur de test applique un filtrage RRC dans le domaine fréquentiel, indépendant des coefficients temporels employés par le récepteur. Les comparaisons vérifient les symboles émis en tenant compte des huit rotations/conjugaisons possibles, plusieurs débits et graines, erreurs d’horloge constantes, fréquences positives/négatives et gains différents. Les tests à quatre échantillons par symbole et à 200 Méch/s contrôlent les labels récupérés, les unités physiques, les durées et les budgets ; ils ne représentent pas une mesure RF.
 
 Un mélange de deux canaux 16-QAM et d’une porteuse parasite vérifie la séparation automatique. Les cas BPSK, QPSK, 8-PSK, 64-QAM, FSK, porteuse, silence et bruit testés ne doivent pas produire de candidat. Les exports doivent restituer exactement les bits et labels décidés. Chromium importe une référence synthétique par les vrais chemins de l’application, affiche la constellation et télécharge le rapport.
 
 Ces contrôles ne prouvent pas une couverture de signaux radio réels ni de protocoles utilisant la QAM. Des captures indépendantes, des tests de faux positifs plus larges, l’égalisation, la poursuite de phase et des déframeurs de protocoles restent nécessaires.
+
+## Capture indépendante repérée, à vérifier
+
+Le dépôt [28_and_75GHz_Capture_Files, version figée](https://github.com/billjgavin/28_and_75GHz_Capture_Files/tree/3f9ea40d9b187d0819b14cb254dc04905d398889) décrit des acquisitions RF de laboratoire par liaison conduite, sans rayonnement. Son README annonce de la 16-QAM à 50 Mbaud, échantillonnée à 200 Méch/s, avec PRBS15 et fenêtres de 100 µs. Ces déclarations restent à confronter aux en-têtes des fichiers.
+
+`python scripts/qam_lab_reference.py` télécharge seulement l’archive 28 GHz de 8 425 587 octets, vérifie sa taille et son empreinte Git figée, inventorie ses membres et lit quelques préfixes sans extraire ni exécuter leur contenu. Le workflow séparé `QAM laboratory reference` produit le rapport d’inspection. Les données brutes ne sont pas publiées : leur licence de redistribution n’est pas établie.
+
+L’archive n’a pas encore été inspectée avec succès dans cette session. Aucun résultat de démodulation matérielle, taux d’erreur PRBS ni contenu validé n’est revendiqué.

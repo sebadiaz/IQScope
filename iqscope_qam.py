@@ -13,20 +13,28 @@ def decode_qam16(x,fs,max_seconds=3,max_bits=40000):
     result={'decoder':'qam16_generic','family':'16-QAM','candidates':[],
             'validation':'constellation, occupancy and timing only; protocol, bit mapping, byte alignment and CRC unknown',
             'limitations':['Stationary single-carrier square 16-QAM with RRC pulse shaping; no fading, equalizer or persistent phase tracking.',
-                            '1–96 kS/s; 30 to min(9600, sample_rate/8) baud; at least 256 recovered symbols.',
+                            '1 kS/s–250 MS/s; at least four source samples per symbol and 256 recovered symbols.',
+                            'Above 96 kS/s, frequencies are computed in a 32 kS/s time coordinate and converted back to physical units.',
                             'Carrier offset ambiguity modulo sample_rate/4; direct unambiguous range is +/- sample_rate/8.',
                             'Strongest envelope clock line only, three RRC rolloffs; bursts, low rolloff and interfering carriers may fail.']}
-    if not math.isfinite(fs) or not 1000<=fs<=96000 or len(x)<1024:
+    if not math.isfinite(fs) or not 1000<=fs<=250_000_000 or len(x)<1024:
         return dict(result,status='not_applicable')
     count=min(len(x),int(fs*max_seconds),288000)
+    source_rate=fs
+    # A change of time units, not decimation: retain every source sample.
+    fs=32000 if source_rate>96000 else source_rate
+    scale=source_rate/fs
     source=np.array(x[:count],dtype=np.complex128,copy=True)
-    result.update(analyzed_seconds=count/fs,duration_limited=count<len(x))
+    result.update(analyzed_seconds=count/source_rate,duration_limited=count<len(x),
+                  processing={'source_sample_rate_hz':source_rate,'source_sample_count':count,
+                              'time_coordinate_sample_rate':fs,'physical_hz_per_coordinate_hz':scale,
+                              'interpolation_factor':1})
     power=float(np.mean(abs(source)**2))
     if not np.isfinite(power) or power<1e-20 or not np.all(np.isfinite(source)):
         return dict(result,status='no_consistent_candidate')
     source/=np.sqrt(power)
     envelope=abs(source)**2
-    clock=_line(envelope-envelope.mean(),fs,30,min(9600,fs/8),.001)
+    clock=_line(envelope-envelope.mean(),fs,30,min(9600,fs/4),.001)
     if clock is None or count/fs*clock[0]<280:
         return dict(result,status='no_consistent_candidate')
     carrier=_line(source**4,fs,-fs/2,fs/2,.005)
@@ -34,9 +42,13 @@ def decode_qam16(x,fs,max_seconds=3,max_bits=40000):
     baud,clock_strength=clock;frequency,carrier_strength=carrier
     time=np.arange(count)/fs
     corrected=source*np.exp(-2j*np.pi*frequency/4*time)
-    down=max(1,int(fs/(16*baud)))
+    up=2 if fs/baud<8 else 1
+    if up>1:corrected=signal.resample_poly(corrected,up,1)
+    result['processing']['interpolation_factor']=up
+    interpolated_rate=fs*up
+    down=max(1,int(interpolated_rate/(16*baud)))
     y=signal.resample_poly(corrected,1,down) if down>1 else corrected
-    rate=fs/down;period=rate/baud
+    rate=interpolated_rate/down;period=rate/baud
     for rolloff in (.2,.35,.5):
         filtered=signal.fftconvolve(y,rrc_taps(period,rolloff),mode='same')
         numbers=np.arange(int((len(y)-12*period)/period))
@@ -58,7 +70,7 @@ def decode_qam16(x,fs,max_seconds=3,max_bits=40000):
         initial=min(phases,key=lambda p:evaluate((baud,p))[0])
         width=fs/count
         fit=optimize.minimize(lambda p:evaluate(p)[0],(baud,initial),method='Powell',
-                             bounds=((max(30,baud-width),min(9600,fs/8,baud+width)),(0,1)),
+                             bounds=((max(30,baud-width),min(9600,fs/4,baud+width)),(0,1)),
                              options={'maxiter':12,'maxfev':160,'xtol':1e-6,'ftol':1e-6})
         evm,values,i,q,centers,origin=evaluate(fit.x,True)
         labels=4*i+q
@@ -72,8 +84,8 @@ def decode_qam16(x,fs,max_seconds=3,max_bits=40000):
         result['candidates']=[{'modulation':'16-QAM','symbols':labels.tolist(),'bits':bits,'symbol_count':n,'bit_count':len(bits),
                                'bit_budget_reached':total>n,'packed_padding_bits':(-len(bits))%8,
                                'byte_alignment':'arbitrary recovered symbol; natural I/Q labels packed MSB-first, final zero padding',
-                               'parameters':{'baud':float(fit.x[0]),'carrier_offset_hz':frequency/4,'phase_origin_radians':float(origin),
-                                             'first_symbol_center_seconds':float(centers[0]/rate),'rrc_rolloff_trial':rolloff,
+                               'parameters':{'baud':float(fit.x[0]*scale),'carrier_offset_hz':frequency/4*scale,'phase_origin_radians':float(origin),
+                                             'first_symbol_center_seconds':float(centers[0]/rate/scale),'rrc_rolloff_trial':rolloff,
                                              'symbol_mapping':'4*I_rank+Q_rank, ranks ascending -3,-1,+1,+3; arbitrary natural binary, rotation/conjugation unresolved'},
                                'evidence':{'symbol_evm_rms':evm,'clock_line_energy_fraction':clock_strength,
                                            'carrier_line_energy_fraction':carrier_strength,'checksum':'not_checked','protocol':'unknown'},

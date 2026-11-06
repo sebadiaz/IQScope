@@ -135,3 +135,51 @@ class QamTests(unittest.TestCase):
             result=decode_qam16(values,fs)
             self.assertTrue(result['candidates'],result)
             self.assertTrue(equivalent(result['candidates'][0]['symbols'],expected))
+
+    def test_four_samples_per_symbol(self):
+        for rolloff,seed in ((.2,701),(.35,382),(.5,912)):
+            with self.subTest(rolloff=rolloff):
+                x,fs,expected,baud=fixture(fs=16000,baud=4000,rolloff=rolloff,seed=seed)
+                original=x.copy()
+                r=decode_qam16(x,fs)
+                np.testing.assert_array_equal(x,original)
+                self.assertTrue(r['candidates'],r)
+                c=r['candidates'][0]
+                self.assertTrue(equivalent(c['symbols'],expected))
+                self.assertAlmostEqual(c['parameters']['baud'],baud,delta=.1)
+                self.assertEqual(r['processing']['interpolation_factor'],2)
+
+    def test_high_rate_preserves_physical_units_and_labels(self):
+        x,fs,expected,_=fixture(fs=16000,baud=3800,offset=-273.4)
+        low=decode_qam16(x,fs)
+        scale=200e6/fs
+        r=search_qam16(x,200e6,[],28e9)
+        self.assertTrue(r['candidates'],r)
+        c=r['candidates'][0];reference=low['candidates'][0]
+        self.assertTrue(equivalent(c['symbols'],expected))
+        self.assertEqual(c['symbols'],reference['symbols'])
+        self.assertAlmostEqual(c['parameters']['baud'],3800*scale,delta=2000)
+        self.assertAlmostEqual(c['parameters']['carrier_offset_hz'],-273.4*scale,delta=2000)
+        self.assertAlmostEqual(c['parameters']['first_symbol_center_seconds']*scale,
+                               reference['parameters']['first_symbol_center_seconds'],delta=1e-7)
+        self.assertAlmostEqual(c['channel']['frequency_hz'],28e9-273.4*scale,delta=2000)
+        self.assertEqual(c['channel']['sample_rate'],200e6)
+        self.assertEqual(r['processing']['source_sample_count'],len(x))
+        self.assertEqual(r['processing']['time_coordinate_sample_rate'],32000)
+        self.assertAlmostEqual(r['analyzed_seconds'],len(x)/200e6)
+
+    def test_high_rate_boundaries_and_false_positives(self):
+        rng=np.random.default_rng(1083)
+        for x in (fixture(fs=16000,baud=4000,side=8)[0],
+                  rng.normal(size=6000)+1j*rng.normal(size=6000),np.ones(288010)):
+            r=decode_qam16(x,200e6)
+            self.assertFalse(r['candidates'],r)
+            self.assertLessEqual(r['processing']['source_sample_count'],288000)
+            self.assertAlmostEqual(r['analyzed_seconds'],min(len(x),288000)/200e6)
+        x,_,expected,_=fixture(fs=200e6,baud=50e6,offset=1e6)
+        r=decode_qam16(x,200e6,max_seconds=10e-6)
+        self.assertTrue(r['duration_limited'])
+        self.assertEqual(r['processing']['source_sample_count'],2000)
+        self.assertTrue(r['candidates'],r)
+        self.assertTrue(equivalent(r['candidates'][0]['symbols'],expected))
+        self.assertEqual(decode_qam16(x,251e6)['status'],'not_applicable')

@@ -681,4 +681,4 @@ Le corpus PSK inclut aussi **PicSat** : une reprise automatique du contexte de d
 
 Une [interprétation partielle FUNcube-1 FM](docs/FUNCUBE_TELEMETRY.md) affiche maintenant les premières mesures du paquet AO-73 : batterie **8140 mV**, courant système **206 mA**, séquence **2543**. Le profil reste candidat, les indicateurs de validité sont conservés et la télémétrie peut être exportée en JSON.
 
-La première chaîne **16-QAM automatique** fournit une constellation et des symboles/bits candidats exportables, directement ou sur des canaux spectraux détectés. Validation synthétique uniquement, sans protocole ni CRC identifié : [méthode et limites](docs/QAM16.md).
+La chaîne **16-QAM automatique** fournit une constellation et des symboles/bits candidats exportables, directement ou sur des canaux spectraux détectés. L’entrée directe accepte désormais quatre échantillons par symbole et les fréquences source jusqu’à 250 Méch/s, avec budgets bornés et conservation des unités physiques. Validation synthétique uniquement, sans protocole ni CRC identifié : [méthode et limites](docs/QAM16.md).

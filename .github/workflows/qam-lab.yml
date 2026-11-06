@@ -1,0 +1,27 @@
+name: QAM laboratory reference
+on:
+  push:
+    paths:
+      - scripts/qam_lab_reference.py
+      - .github/workflows/qam-lab.yml
+      - iqscope_qam.py
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Inspect bounded laboratory archive without executing its contents
+        run: python scripts/qam_lab_reference.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qam-laboratory-inspection
+          path: corpus-cache/qam-lab/inspection.json
+          if-no-files-found: ignore
