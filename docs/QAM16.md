@@ -44,7 +44,7 @@ Les références **synthétiques** vérifient les symboles émis. Le générateu
 
 Un mélange de deux canaux 16-QAM et d’une porteuse parasite vérifie la séparation automatique. Les cas BPSK, QPSK, 8-PSK, 64-QAM, FSK, porteuse, silence et bruit testés ne doivent pas produire de candidat. Les exports doivent restituer exactement les bits et labels décidés. Chromium importe une référence synthétique par les vrais chemins de l’application, affiche la constellation et télécharge le rapport.
 
-Une référence matérielle indépendante complète ces essais ci-dessous, avec validation structurelle seulement. Ces contrôles ne prouvent pas une couverture générale des signaux radio ni des protocoles utilisant la QAM. Des corpus plus larges, des tests de faux positifs supplémentaires, l’égalisation, la poursuite de phase et des déframeurs de protocoles restent nécessaires.
+Une référence matérielle indépendante complète ces essais ci-dessous, avec constellation et comparaison à un motif PRBS15 connu. Ces contrôles ne prouvent pas une couverture générale des signaux radio ni des protocoles utilisant la QAM. Des corpus plus larges, des tests de faux positifs supplémentaires, l’égalisation, la poursuite de phase et des déframeurs de protocoles restent nécessaires.
 
 ## Référence matérielle indépendante à 28 GHz
 
@@ -67,4 +67,18 @@ L’[essai CI sur les 32 CSV](https://github.com/sebadiaz/IQScope/actions/runs/4
 
 Les 26 CSV BPSK, QPSK, 8-PSK, porteuse et bruit du même corpus ne produisent aucun candidat QAM. Ce résultat n’est pas une estimation générale du taux de faux positifs. Les niveaux TX proviennent du README embarqué ; ce ne sont pas des SNR. L’EVM est celle calculée après les estimations et décisions d’IQScope, sans séquence de symboles de référence.
 
-Le workflow contrôle désormais ces issues, les ordres de grandeur du débit physique et le nombre de symboles. Ces attentes proviennent du premier décodage de développement : il ne s’agit pas d’une évaluation sur un corpus réservé. Aucun taux d’erreur PRBS ni contenu protocolaire validé n’est revendiqué. Les étiquettes de modulation sont fournies par les noms de fichiers et ne constituent pas des bits de référence indépendants. Le parseur CSV reste dans le script de référence ; ce format constructeur n’est pas encore importable directement dans l’interface.
+Le workflow contrôle ces issues, les ordres de grandeur du débit physique et le nombre de symboles. Ces attentes proviennent du premier décodage de développement : il ne s’agit pas d’une évaluation sur un corpus réservé. Le parseur CSV reste dans le script de référence ; ce format constructeur n’est pas encore importable directement dans l’interface.
+
+## Comparaison des bits au PRBS15 annoncé
+
+Le [contrôle PRBS15 sur les captures](https://github.com/sebadiaz/IQScope/actions/runs/42364274111) retrouve **zéro erreur sur 17 904 bits de vérification par capture**, pour chacun des fichiers `16qam a` à `16qam e`. Chaque capture contient 19 952 bits décidés ; les 2 048 premiers servent exclusivement à l’acquisition de la correspondance points/bits et de la phase du PRBS. Les 17 904 suivants servent exclusivement au décompte d’erreurs. La capture `f` reste refusée avant cette mesure.
+
+La première recherche, limitée aux codes naturels/Gray par axe, permutations et inversions des bits, laissait environ 12,5 % de désaccord. Une table bijective apprise entre les seize labels et les seize mots de quatre bits élimine ce désaccord. Cette observation caractérise la correspondance de ce corpus ; aucun standard constructeur précis n’est déduit de la table.
+
+`scripts/qam_prbs15.py` construit une période de 32 767 bits selon la convention explicite `b[n] = b[n-14] XOR b[n-15]`, initialisée par quinze uns. Les deux sens de parcours et toutes les phases sont examinés. Pour chaque phase, des corrélations circulaires calculées par FFT déterminent les quatre bits majoritaires associés à chaque label dans le préfixe. Les tables bijectives sont retenues ; aucune optimisation d’affectation n’est tentée lorsque la table majoritaire n’est pas bijective. La phase et la table sont choisies uniquement sur le préfixe. Elles restent fixes sur la suite ; aucun bit n’est corrigé par le PRBS.
+
+L’essai exige au moins 1 024 symboles, huit occurrences de chaque label dans le préfixe et utilise au plus 10 000 symboles. Le statut de cohérence exige une table bijective et au plus 10 % de désaccord dans chacune des deux portions ; la régression de ce corpus exige **zéro erreur** et au moins 17 000 bits de vérification. Le rapport fournit la table complète, la phase, le sens, les nombres de bits/erreurs, le BER de la suite et les SHA-256 des bits décidés et prédits, empaquetés MSB-first avec bourrage final par zéros. Il conserve le contrôle structurel de constellation séparément.
+
+Les tests utilisent un générateur LFSR SciPy indépendant, des tables non linéaires, des inversions de sens et des erreurs injectées. Remplacer uniquement la suite par du hasard doit laisser la table et la phase acquises inchangées et faire échouer la vérification. La CI mélange aussi les symboles de chaque capture réelle pour contrôler le rejet d’un ordre sans PRBS.
+
+Cette mesure exploite l’annonce explicite du PRBS15 par la source. La séquence mathématique est indépendante des décisions ; sa phase et la table sont inférées sur le préfixe, sans graine ni octets de référence fournis par l’auteur. La suite disjointe vérifie la prédiction, sans constituer un corpus indépendant réservé. Aucun protocole ni CRC n’est identifié. Dans l’application, les exports génériques QAM conservent leur convention naturelle et leur statut de bits candidats : la comparaison PRBS reste un outil de mesure du corpus de laboratoire.

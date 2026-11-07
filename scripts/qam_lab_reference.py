@@ -49,6 +49,15 @@ def read_keysight_csv(raw):
                   'sample_rate_basis':'inverse of first MeasResult1 scalar, checked against point count and capture duration'}
 
 
+def candidate_summary(candidate):
+    shuffled=np.random.default_rng(20261107).permutation(candidate['symbols'])
+    control=check_prbs15(shuffled)
+    return {'symbol_count':candidate['symbol_count'],'parameters':candidate['parameters'],
+            'evidence':candidate['evidence'],'prbs15':check_prbs15(candidate['symbols']),
+            'prbs15_shuffled_control':{'status':control['status'],
+                                     'evaluation_ber':control.get('evaluation_ber')}}
+
+
 def trial_summary(raw):
     x,fs,layout=read_keysight_csv(raw)
     trial=decode_qam16(x,fs)
@@ -62,8 +71,7 @@ def trial_summary(raw):
                            'clock_energy_fraction':clock[1] if clock else None,
                            'carrier_offset_hz':carrier[0]/4*fs/32000 if carrier else None,
                            'carrier_energy_fraction':carrier[1] if carrier else None},
-            'candidates':[{'symbol_count':c['symbol_count'],'parameters':c['parameters'],
-                           'evidence':c['evidence'],'prbs15':check_prbs15(c['symbols'])} for c in trial['candidates']],
+            'candidates':[candidate_summary(c) for c in trial['candidates']],
             'validation':'structural constellation plus separately reported known PRBS15 test-pattern comparison; no protocol or CRC'}
 
 
@@ -113,6 +121,12 @@ def main():
         for candidate in trial['candidates']:
             if not 49.9e6<candidate['parameters']['baud']<50.1e6 or not 4900<=candidate['symbol_count']<=5000:
                 raise AssertionError('Physical baud or recovered symbol-count regression')
+            pn=candidate['prbs15']
+            if (pn['status']!='prbs15_consistent' or pn['acquisition_error_count']!=0
+                    or pn['evaluation_bits']<17000 or pn['evaluation_error_count']!=0):
+                raise AssertionError('Laboratory PRBS15 bit comparison regression')
+            if candidate['prbs15_shuffled_control']['status']=='prbs15_consistent':
+                raise AssertionError('Shuffled real symbols falsely accepted as PRBS15')
     print(json.dumps(result,indent=2))
 
 

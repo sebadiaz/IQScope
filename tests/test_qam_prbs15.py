@@ -68,5 +68,6 @@ class QamPrbs15Tests(unittest.TestCase):
         self.assertTrue(r['symbol_budget_reached'])
         self.assertEqual(r['analyzed_symbols'],10000)
         self.assertEqual(check_prbs15(labels[:100])['status'],'not_enough_bits')
+        self.assertEqual(check_prbs15(np.ones(1024,dtype=int))['status'],'insufficient_label_coverage')
         for invalid in ([16]*1024,[-1]*1024,[1.5]*1024,[[0]*16]*64):
             with self.assertRaises(ValueError):check_prbs15(invalid)

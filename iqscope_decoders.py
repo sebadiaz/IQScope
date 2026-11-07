@@ -18,7 +18,7 @@ class Capability:
 
 
 CAPABILITIES = (
-    Capability('qam16_generic','16-QAM','stationary RRC square 16-QAM; blind carrier/clock, direct or four spectral channels; synthetic and conducted laboratory structural references','constellation/EVM and timing candidates only; arbitrary bit labels, no protocol or CRC'),
+    Capability('qam16_generic','16-QAM','stationary RRC square 16-QAM; blind carrier/clock, direct or four spectral channels; synthetic and PRBS15-checked conducted laboratory references','constellation/EVM and timing candidates only; arbitrary bit labels, no protocol or CRC'),
     Capability('ao40_fec','AO-40 FEC / DBPSK','standard 5200-symbol frames; first six seconds of audio or direct IQ <=96 kS/s', 'distributed sync, terminated Viterbi K=7, two shortened Reed-Solomon parity checks; no CRC or authentication'),
     Capability('psk_generic', 'BPSK / QPSK', 'rectangular or bounded RRC stationary PSK; blind carrier/phase/clock, narrowband or four spectral trials', 'phase clusters and timing only; ambiguous rotation/mapping, no protocol or CRC'),
     Capability('rtl433', 'OOK / FSK sensors', 'optional external rtl_433 on PATH; default device set, bounded automatic channel trials', 'external integrity claims only; no independent IQScope CRC'),
