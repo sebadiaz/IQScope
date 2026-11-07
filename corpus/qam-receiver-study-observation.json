@@ -1,0 +1,446 @@
+{
+  "source_url": "https://raw.githubusercontent.com/billjgavin/28_and_75GHz_Capture_Files/3f9ea40d9b187d0819b14cb254dc04905d398889/IQ_28_Ghz.zip",
+  "source_sha256": "4959f58182b54a8ba25893106be939f34716d0c3832afa4d88d1658e54844240",
+  "measurement_commit": "956cbab63b54ff5b6816eb5204977af7c162bb92",
+  "measurement_run": "https://github.com/sebadiaz/IQScope/actions/runs/42412233040",
+  "scope": "predeclared prefix-trained experiments; all results reported, no PRBS feedback or automatic acceptance change; blind baseline synchronization uses its ordinary window; only experimental correction fitting is prefix-only; development corpus, not a reserved evaluation corpus",
+  "training_symbols": 512,
+  "noise_reference_power": {
+    "noise a.csv": 5.236161494432432e-7,
+    "noise b.csv": 5.089570217994589e-7
+  },
+  "files": {
+    "16qam a.csv": {
+      "source_mean_power": 0.002021368112970259,
+      "generic_status": "constellation_consistent_candidate",
+      "variants": {
+        "baseline": {
+          "evaluation_decision_evm_rms": 0.014682953231948853,
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "prbs_status": "prbs15_consistent",
+          "parameters": {}
+        },
+        "prefix_dc": {
+          "evaluation_decision_evm_rms": 0.040976281159570624,
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "prbs_status": "prbs15_consistent",
+          "parameters": {
+            "offset_iq": [
+              -0.037969266546562186,
+              0.013254351797746563
+            ]
+          }
+        },
+        "prefix_affine_em": {
+          "evaluation_decision_evm_rms": 0.01970410092456592,
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "prbs_status": "prbs15_consistent",
+          "parameters": {
+            "linear_matrix": [
+              [
+                0.9953559729486741,
+                -0.015080130735833204
+              ],
+              [
+                0.01133556069612996,
+                0.9975784638028199
+              ]
+            ],
+            "offset_iq": [
+              -0.0011954426433030043,
+              0.0028373254152925394
+            ],
+            "prefix_noise_variance_per_axis": 0.00007411646682923923,
+            "iterations": 32
+          }
+        },
+        "prefix_decision_directed_fir3": {
+          "evaluation_decision_evm_rms": 0.019150784106661125,
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "prbs_status": "prbs15_consistent",
+          "parameters": {
+            "coefficients_i": [
+              1.0032035963436994,
+              -0.0034095822178051216,
+              -0.0015402229033773282
+            ],
+            "coefficients_q": [
+              0.012860303571153696,
+              -0.0011500521242386584,
+              0.0007295312264024616
+            ],
+            "ridge_per_symbol": 0.05
+          }
+        }
+      }
+    },
+    "16qam b.csv": {
+      "source_mean_power": 0.0006289290743067222,
+      "generic_status": "constellation_consistent_candidate",
+      "variants": {
+        "baseline": {
+          "evaluation_decision_evm_rms": 0.018889382790217964,
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "prbs_status": "prbs15_consistent",
+          "parameters": {}
+        },
+        "prefix_dc": {
+          "evaluation_decision_evm_rms": 0.0252883990417153,
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "prbs_status": "prbs15_consistent",
+          "parameters": {
+            "offset_iq": [
+              0.017256999205290575,
+              0.010041125421711487
+            ]
+          }
+        },
+        "prefix_affine_em": {
+          "evaluation_decision_evm_rms": 0.018078049874549085,
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "prbs_status": "prbs15_consistent",
+          "parameters": {
+            "linear_matrix": [
+              [
+                1.0032323193705628,
+                -0.003664772615659891
+              ],
+              [
+                0.007383900308049951,
+                1.0013928731172372
+              ]
+            ],
+            "offset_iq": [
+              0.002322061932207467,
+              0.0014365520470318457
+            ],
+            "prefix_noise_variance_per_axis": 0.00015998668773137107,
+            "iterations": 32
+          }
+        },
+        "prefix_decision_directed_fir3": {
+          "evaluation_decision_evm_rms": 0.01728535888322629,
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "prbs_status": "prbs15_consistent",
+          "parameters": {
+            "coefficients_i": [
+              0.9975924011321454,
+              -0.005770099259870327,
+              -0.0009291838282389363
+            ],
+            "coefficients_q": [
+              0.005516268439331723,
+              -0.0015810790918828375,
+              -0.0004819906506440846
+            ],
+            "ridge_per_symbol": 0.05
+          }
+        }
+      }
+    },
+    "16qam c.csv": {
+      "source_mean_power": 0.00020265174208789039,
+      "generic_status": "constellation_consistent_candidate",
+      "variants": {
+        "baseline": {
+          "evaluation_decision_evm_rms": 0.02917711876087086,
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "prbs_status": "prbs15_consistent",
+          "parameters": {}
+        },
+        "prefix_dc": {
+          "evaluation_decision_evm_rms": 0.02938494733408426,
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "prbs_status": "prbs15_consistent",
+          "parameters": {
+            "offset_iq": [
+              0.00022983672876011885,
+              -0.0016329368993985571
+            ]
+          }
+        },
+        "prefix_affine_em": {
+          "evaluation_decision_evm_rms": 0.02822378920842512,
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "prbs_status": "prbs15_consistent",
+          "parameters": {
+            "linear_matrix": [
+              [
+                0.9934223727925691,
+                -0.012512478735771725
+              ],
+              [
+                0.007895291415647473,
+                0.9937159611817085
+              ]
+            ],
+            "offset_iq": [
+              -0.0009680445468462425,
+              0.0020650261028159604
+            ],
+            "prefix_noise_variance_per_axis": 0.00037846550339284935,
+            "iterations": 32
+          }
+        },
+        "prefix_decision_directed_fir3": {
+          "evaluation_decision_evm_rms": 0.027716336893760074,
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "prbs_status": "prbs15_consistent",
+          "parameters": {
+            "coefficients_i": [
+              1.0053403884359604,
+              -0.0054583199348556604,
+              -0.0010846668202341924
+            ],
+            "coefficients_q": [
+              0.009907605205060985,
+              -0.0013890004087164364,
+              0.0005526186588053738
+            ],
+            "ridge_per_symbol": 0.05
+          }
+        }
+      }
+    },
+    "16qam d.csv": {
+      "source_mean_power": 0.00006331109682823844,
+      "generic_status": "constellation_consistent_candidate",
+      "variants": {
+        "baseline": {
+          "evaluation_decision_evm_rms": 0.04598789130569983,
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "prbs_status": "prbs15_consistent",
+          "parameters": {}
+        },
+        "prefix_dc": {
+          "evaluation_decision_evm_rms": 0.05627395014498452,
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "prbs_status": "prbs15_consistent",
+          "parameters": {
+            "offset_iq": [
+              -0.00961516341546788,
+              -0.03342091205676799
+            ]
+          }
+        },
+        "prefix_affine_em": {
+          "evaluation_decision_evm_rms": 0.04637101110176409,
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "prbs_status": "prbs15_consistent",
+          "parameters": {
+            "linear_matrix": [
+              [
+                1.0031056674423813,
+                -0.010929123957297407
+              ],
+              [
+                0.011296071140253511,
+                1.0050302360165873
+              ]
+            ],
+            "offset_iq": [
+              0.0018995404654516125,
+              -0.001263977321955865
+            ],
+            "prefix_noise_variance_per_axis": 0.0009849103024092997,
+            "iterations": 32
+          }
+        },
+        "prefix_decision_directed_fir3": {
+          "evaluation_decision_evm_rms": 0.046175517414685494,
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "prbs_status": "prbs15_consistent",
+          "parameters": {
+            "coefficients_i": [
+              0.994184576170252,
+              -0.0034145545521025444,
+              0.001185465956390227
+            ],
+            "coefficients_q": [
+              0.010655433808276363,
+              -0.0008431511616216501,
+              0.00028977936678882847
+            ],
+            "ridge_per_symbol": 0.05
+          }
+        }
+      }
+    },
+    "16qam e.csv": {
+      "source_mean_power": 0.000020797051184041334,
+      "generic_status": "constellation_consistent_candidate",
+      "variants": {
+        "baseline": {
+          "evaluation_decision_evm_rms": 0.07960147759329199,
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "prbs_status": "prbs15_consistent",
+          "parameters": {}
+        },
+        "prefix_dc": {
+          "evaluation_decision_evm_rms": 0.07979715889615649,
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "prbs_status": "prbs15_consistent",
+          "parameters": {
+            "offset_iq": [
+              -0.0042428704870573365,
+              -0.009095868942567949
+            ]
+          }
+        },
+        "prefix_affine_em": {
+          "evaluation_decision_evm_rms": 0.07969199363431258,
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "prbs_status": "prbs15_consistent",
+          "parameters": {
+            "linear_matrix": [
+              [
+                0.9906244338119061,
+                -0.009525738472384181
+              ],
+              [
+                0.014898568642870464,
+                0.99276908369796
+              ]
+            ],
+            "offset_iq": [
+              -0.0017218889727759065,
+              -0.004214072098515057
+            ],
+            "prefix_noise_variance_per_axis": 0.0029625039552321135,
+            "iterations": 32
+          }
+        },
+        "prefix_decision_directed_fir3": {
+          "evaluation_decision_evm_rms": 0.0795724696624642,
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "prbs_status": "prbs15_consistent",
+          "parameters": {
+            "coefficients_i": [
+              1.0020708547638026,
+              -0.0036211731055741645,
+              -0.002326951113904375
+            ],
+            "coefficients_q": [
+              0.011878483646148897,
+              0.0026955158426938872,
+              0.0020762774411443837
+            ],
+            "ridge_per_symbol": 0.05
+          }
+        }
+      }
+    },
+    "16qam f.csv": {
+      "source_mean_power": 0.0000025453996004518714,
+      "generic_status": "no_consistent_candidate",
+      "variants": {
+        "baseline": {
+          "evaluation_decision_evm_rms": 0.22111186281211678,
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 610,
+          "evaluation_ber": 0.03407059874888293,
+          "prbs_status": "prbs15_consistent",
+          "parameters": {}
+        },
+        "prefix_dc": {
+          "evaluation_decision_evm_rms": 0.2229398905400476,
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 694,
+          "evaluation_ber": 0.03876228775692583,
+          "prbs_status": "prbs15_consistent",
+          "parameters": {
+            "offset_iq": [
+              0.029706354505028818,
+              0.02032472620472839
+            ]
+          }
+        },
+        "prefix_affine_em": {
+          "evaluation_decision_evm_rms": 0.22958356310350428,
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 645,
+          "evaluation_ber": 0.03602546916890081,
+          "prbs_status": "prbs15_consistent",
+          "parameters": {
+            "linear_matrix": [
+              [
+                0.96459419042542,
+                -0.031234041070620056
+              ],
+              [
+                -0.004391229207739342,
+                0.9575852449715725
+              ]
+            ],
+            "offset_iq": [
+              -0.0014312774998698212,
+              0.007790441079734407
+            ],
+            "prefix_noise_variance_per_axis": 0.03030296156453132,
+            "iterations": 32
+          }
+        },
+        "prefix_decision_directed_fir3": {
+          "evaluation_decision_evm_rms": 0.2193960262043851,
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 640,
+          "evaluation_ber": 0.035746201966041107,
+          "prbs_status": "prbs15_consistent",
+          "parameters": {
+            "coefficients_i": [
+              0.9770833281629674,
+              -0.0032225865283885898,
+              0.0036465877822340585
+            ],
+            "coefficients_q": [
+              0.00609065873592797,
+              -0.005257928609016437,
+              -0.00171444160981087
+            ],
+            "ridge_per_symbol": 0.05
+          }
+        }
+      }
+    }
+  }
+}

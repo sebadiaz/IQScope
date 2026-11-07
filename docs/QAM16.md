@@ -100,3 +100,22 @@ Les trois résultats PRBS sont rapportés séparément, sans sélectionner un fi
 Le rapport générique fournit désormais un `rejection_reason`, les estimations d’acquisition disponibles et au plus trois résumés `filter_trials` : EVM globale/par moitié, occupation minimale et motifs de refus. La recherche multicanal range l’essai direct sous `direct_trial` et conserve les diagnostics de chaque canal dans `channels_examined`, pour distinguer un refus direct d’un canal accepté.
 
 Le paramètre Python optionnel `trial_observer` reçoit des copies des diagnostics et des labels bornés par le budget de sortie. Ses retours ne participent pas aux ajustements ni aux critères d’acceptation. Le script de laboratoire l’utilise pour examiner cette capture refusée ; les labels rejetés ne sont pas ajoutés aux candidats de l’application. Les tests vérifient l’isolation des copies et le refus d’une référence QAM bruitée. La CI conserve également le refus de `f`, ses deux motifs EVM, une EVM entre 20 et 25 %, un BER PRBS entre 2 et 6 % pour chaque filtre, et le rejet des contrôles à symboles mélangés.
+
+## Étude de corrections apprises sur le préfixe
+
+Le [banc comparatif](https://github.com/sebadiaz/IQScope/actions/runs/42412233040) reconstruit exactement les décisions du premier essai RRC 0,20 à partir des paramètres physiques exportés. Il vérifie cette égalité avant de comparer quatre voies sur chacune des six captures : référence, soustraction de la moyenne I/Q, correction affine par mélange gaussien à seize états, et égaliseur complexe causal à trois coefficients appris sur les décisions du préfixe. Les corrections utilisent les 512 premiers symboles, sans bits PRBS. La synchronisation aveugle initiale utilise sa fenêtre habituelle ; les tables et phases PRBS sont ensuite acquises sur le préfixe pour mesurer les erreurs sur les mêmes 17 904 bits de suite.
+
+Résultats pour `16qam f.csv` :
+
+| Voie | EVM sur la suite | Erreurs PRBS sur la suite | BER |
+| --- | ---: | ---: | ---: |
+| Référence | 22,11 % | 610 | 3,407 % |
+| Moyenne I/Q soustraite | 22,29 % | 694 | 3,876 % |
+| Correction affine EM | 22,96 % | 645 | 3,603 % |
+| Égaliseur à trois coefficients | 21,94 % | 640 | 3,575 % |
+
+L’égaliseur réduit légèrement l’EVM calculée sur ses propres décisions tout en augmentant les erreurs de bits. L’EVM seule ne suffit donc pas à justifier son activation. Les cinq autres captures restent à zéro erreur PRBS dans les quatre voies. Toutes les voies sont rapportées, sans choisir une correction avec les erreurs de la suite. Cette étude est exploratoire sur le corpus de développement, pas une validation sur des captures réservées. Le chemin générique conserve le traitement de référence et ses seuils ; les correcteurs restent dans le script d’étude.
+
+La puissance moyenne brute de `f` vaut environ `2,5454e-6` dans les unités du fichier. Les deux captures de bruit valent `5,2362e-7` et `5,0896e-7`, soit environ 20 % de cette puissance. Sous l’hypothèse d’une calibration identique et d’un bruit représentatif, le rapport `(puissance_f − puissance_bruit) / puissance_bruit` correspond à environ 5,87–6,02 dB. Ces enregistrements séparés donnent un indice compatible avec une limitation par le bruit ; ils ne constituent pas une mesure simultanée étalonnée du SNR.
+
+`scripts/qam_receiver_study.py` conserve les paramètres appris et les mesures dans `receiver-study.json`. Les essais sont bornés à quatre voies, 512 symboles d’apprentissage, 32 itérations EM et un égaliseur de longueur trois. Les tests vérifient la reconstruction en unités physiques, la récupération d’un canal affine synthétique connu, l’absence de modification des échantillons et l’indépendance des paramètres vis-à-vis de la suite.

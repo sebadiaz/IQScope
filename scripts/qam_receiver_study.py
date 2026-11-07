@@ -121,6 +121,16 @@ def main():
             results['files'][basename]={'layout':layout,'generic_status':decoded['status'],
                 'source_mean_power':float(np.mean(abs(x)**2)),
                 'variants':{method:dict(summarize(output),parameters=parameters) for method,output,parameters in variants(values)}}
+    if set(results['files'])!={f'16qam {letter}.csv' for letter in 'abcdef'}:
+        raise AssertionError('Expected six laboratory captures in receiver study')
+    if any(item['prbs15']['evaluation_bits']!=17904 for capture in results['files'].values() for item in capture['variants'].values()):
+        raise AssertionError('Receiver comparison changed the evaluation interval')
+    weak=results['files']['16qam f.csv']['source_mean_power']
+    results['weak_capture_noise_comparison']={
+        'assumption':'same voltage calibration and representative receiver noise; separate noise recordings, not a calibrated simultaneous SNR measurement',
+        'estimates':{name:{'noise_to_total_power_ratio':noise/weak,
+                            'excess_power_to_noise_db':float(10*np.log10((weak-noise)/noise)) if 0<noise<weak else None}
+                     for name,noise in results['noise_reference_power'].items()}}
     (root/'receiver-study.json').write_text(json.dumps(results,indent=2))
     print(json.dumps(results,indent=2))
 
