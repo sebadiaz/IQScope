@@ -94,6 +94,7 @@ def decode_qam16(x,fs,max_seconds=3,max_bits=40000,*,trial_observer=None):
         if min(len(labels),max_bits//4)<256:reasons.append('insufficient_output_symbols')
         diagnostic={'rrc_rolloff_trial':rolloff,'baud':float(fit.x[0]*scale),
                     'carrier_offset_hz':frequency/4*scale,'symbol_count':len(labels),
+                    'first_symbol_center_seconds':float(centers[0]/rate/scale),'phase_origin_radians':float(origin),
                     'symbol_evm_rms':evm,'half_symbol_evm_rms':half_evm,
                     'minimum_state_occupancy':occupancy,'rejection_reasons':reasons}
         result['filter_trials'].append(diagnostic)

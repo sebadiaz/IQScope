@@ -4,6 +4,8 @@ on:
     paths:
       - scripts/qam_lab_reference.py
       - scripts/qam_prbs15.py
+      - scripts/qam_receiver_study.py
+      - tests/test_qam_receiver_study.py
       - tests/test_qam_prbs15.py
       - .github/workflows/qam-lab.yml
       - iqscope_qam.py
@@ -22,9 +24,13 @@ jobs:
       - run: python -m pip install .
       - name: Inspect bounded archive and trial QAM without executing archive contents
         run: python scripts/qam_lab_reference.py
+      - name: Compare prefix-trained receiver corrections without PRBS feedback
+        run: python scripts/qam_receiver_study.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: qam-laboratory-inspection
-          path: corpus-cache/qam-lab/inspection.json
+          path: |
+            corpus-cache/qam-lab/inspection.json
+            corpus-cache/qam-lab/receiver-study.json
           if-no-files-found: ignore
