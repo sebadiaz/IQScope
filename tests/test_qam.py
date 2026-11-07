@@ -168,6 +168,7 @@ class QamTests(unittest.TestCase):
                 self.assertAlmostEqual(candidate['parameters']['baud'],baud,delta=1000)
                 self.assertLess(candidate['evidence']['symbol_evm_rms'],.08)
                 self.assertLessEqual(r['processing']['interpolation_factor'],3)
+                if ppm>0:self.assertEqual(r['acquisition']['clock_search_mode'],'extended_positive_clock')
 
     def test_high_rate_preserves_physical_units_and_labels(self):
         x,fs,expected,_=fixture(fs=16000,baud=3800,offset=-273.4)

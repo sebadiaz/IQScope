@@ -43,10 +43,23 @@ def decode_qam16(x,fs,max_seconds=3,max_bits=40000,*,trial_observer=None):
     source/=np.sqrt(power)
     envelope=abs(source)**2
     clock_upper=min(9600,fs/MIN_SOURCE_SPS)
-    clock=_line(envelope-envelope.mean(),fs,30,clock_upper,.001)
+    nominal_upper=min(9600,fs/4)
+    centered_envelope=envelope-envelope.mean()
+    clock=_line(centered_envelope,fs,30,clock_upper,.001)
     if clock is None:
         return dict(result,status='no_consistent_candidate',rejection_reason='clock_line_not_detected')
-    result['acquisition']={'clock_baud':clock[0]*scale,'clock_line_energy_fraction':clock[1]}
+    # Avoid switching resampling branches for insignificant estimates around
+    # the nominal four-sample boundary. The margin is 1/100 of one FFT bin.
+    margin=.01*fs/count
+    extended=clock[0]>nominal_upper+margin
+    if not extended:
+        if clock_upper>nominal_upper and clock[0]+2*fs/count>=nominal_upper:
+            clock=_line(centered_envelope,fs,30,nominal_upper,.001)
+            if clock is None:return dict(result,status='no_consistent_candidate',rejection_reason='clock_line_not_detected')
+        clock_upper=nominal_upper
+    result['acquisition']={'clock_baud':clock[0]*scale,'clock_line_energy_fraction':clock[1],
+                           'clock_search_mode':'extended_positive_clock' if extended else 'nominal_clock_range',
+                           'clock_boundary_margin_baud':margin*scale}
     if count/fs*clock[0]<280:
         return dict(result,status='no_consistent_candidate',rejection_reason='insufficient_clock_cycles')
     carrier=_line(source**4,fs,-fs/2,fs/2,.005)
