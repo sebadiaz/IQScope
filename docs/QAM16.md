@@ -150,4 +150,32 @@ Sur des références générées dans le domaine fréquentiel, à débit ADC de 
 
 Le [contrôle matériel après stabilisation](https://github.com/sebadiaz/IQScope/actions/runs/42417439750) conserve zéro erreur sur les cinq captures fortes et, sur `f`, 610 erreurs binaires après décision de symbole contre 602 après décision probabiliste par bit, sur les mêmes 17 904 bits de suite. Les empreintes des références PRBS prédites sont identiques à celles d’avant correction : le résultat ne provient pas d’un déplacement du segment évalué. La capture faible conserve son refus ; ce correctif améliore la couverture des erreurs d’horloge, sans revendiquer une réduction supplémentaire de ses erreurs.
 
+## Recherche de phase variable et de bruit I/Q corrélé
+
+`python scripts/qam_phase_study.py` complète le banc, après téléchargement et vérification de l’archive par `scripts/qam_lab_reference.py`. Il reconstruit les symboles du premier filtre RRC et vérifie leur identité avec les décisions du récepteur. Les cinq voies partagent ensuite exactement la table de bits et la phase PRBS acquises sur le préfixe de référence ; aucune voie ne réapprend cette calibration après correction. Les mêmes 17 904 bits de suite servent à la mesure.
+
+Le suivi aveugle de phase essaie 61 rotations entre −0,3 et +0,3 radian autour de la phase constante estimée. Il minimise la distance aux seize points dans trois fenêtres fixes de 31, 127 et 511 symboles. Le coût de chaque symbole est exclu de sa propre fenêtre de décision. Les rotations conservent l’amplitude des échantillons ; aucun point n’est remplacé par un symbole idéal. Ce traitement utilise les voisins passés et futurs : il reste expérimental et hors ligne. Les trois résultats sont publiés sans sélectionner une fenêtre avec les erreurs de vérification.
+
+Une autre voie ajuste par EM un gain complexe constant et une covariance réelle I/Q complète à deux dimensions, avec une constellation uniforme et 32 itérations. La covariance remplace la distance circulaire par une distance de Mahalanobis dans les probabilités de bits. Le gain reste borné entre 0,5 et 2 et le conditionnement de la covariance doit rester inférieur à 10. L’ajustement utilise uniquement les échantillons non étiquetés, sans valeurs de bits attendues.
+
+Un diagnostic séparé utilise les symboles PRBS attendus pour mesurer les résidus de la suite : covariance I/Q, corrélations des retards de un à huit symboles, dispersion des phases par blocs de 128 symboles et approximation descriptive pour un bruit blanc circulaire. Ces valeurs de référence ne servent à aucun correcteur ni ajustement de vraisemblance. Elles peuvent caractériser un défaut, sans prouver qu’une méthode de réception est optimale.
+
+Les tests synthétiques vérifient la récupération d’une dérive de phase sinusoïdale indépendante, la conservation des amplitudes, l’estimation d’une covariance connue et l’amélioration sur des symboles aléatoires distincts de ceux ayant servi à cet ajustement. Ils vérifient aussi l’équivalence avec les probabilités circulaires existantes lorsque la covariance est isotrope, ainsi que l’indépendance de la calibration PRBS vis-à-vis de la suite. Le chemin générique et ses seuils restent inchangés ; la CI conserve uniquement les mesures JSON dans `phase-study.json`.
+
+Les [mesures sur les six captures](https://github.com/sebadiaz/IQScope/actions/runs/42419347686), conservées dans `corpus/qam-phase-observation.json`, donnent sur `f` :
+
+| Voie | Erreurs sur 17 904 bits | Erreurs anciennes corrigées | Erreurs nouvelles introduites |
+| --- | ---: | ---: | ---: |
+| Probabilités circulaires actuelles | 602 | — | — |
+| Bruit I/Q elliptique | 611 | 9 | 18 |
+| Phase variable, fenêtre 31 | 750 | 82 | 230 |
+| Phase variable, fenêtre 127 | 641 | 35 | 74 |
+| Phase variable, fenêtre 511 | 621 | 12 | 31 |
+
+Les cinq captures fortes restent à zéro erreur dans toutes ces voies. L’empreinte des bits attendus de `f` reste `b3b1c4c30aaed626eed153081907322f6325e409596c2834285c6bb5984710ac`. Aucune correction supplémentaire n’est activée à partir de ces résultats.
+
+Sur la suite de `f`, le résidu par rapport à la référence a une puissance de 0,05754 et une covariance de conditionnement 1,024 : les dispersions I/Q sont proches. Les modules des corrélations mesurées aux retards de un à huit symboles restent inférieurs à 0,027. La dispersion des phases sur 34 blocs de 128 symboles vaut 0,0182 radian, contre une approximation de 0,0154 pour le bruit blanc circulaire ajusté. Ces observations sont compatibles avec une dégradation principalement bruitée ; elles ne prouvent ni la blancheur exacte du bruit ni l’absence d’une autre méthode utile.
+
+Le même script calcule aussi une prédiction du BER sous le modèle circulaire ajusté, avec la table de bits du préfixe. Le BER après décision de symbole est calculé par les probabilités gaussiennes de franchissement des seuils. Le BER minimal par bit **dans ce modèle sans mémoire et à symboles uniformes** est obtenu en intégrant les densités des deux valeurs de chaque bit, puis leur minimum. Des grilles de 401 et 801 points par axe vérifient la stabilité numérique ; les tableaux temporaires sont limités à 8 192 points par seize symboles. La seconde grille prédit environ **630 erreurs sur 17 904 bits**, contre **602 observées**. Les deux résolutions diffèrent de moins d’une erreur sur cet intervalle. Un test Monte-Carlo indépendant vérifie les deux BER théoriques. Cette comparaison situe l’ordre de grandeur des erreurs ; ce modèle n’est pas une borne pour un décodeur utilisant un code correcteur, une mémoire de canal ou la structure d’un protocole.
+
 Les rapports donnent `clock_search_mode`, la marge en bauds et les facteurs réels de rééchantillonnage. Chaque essai de filtre conserve aussi la période utilisée pour ses coefficients RRC, distincte du débit affiné ensuite. Le banc reconstruit les décisions avec ces paramètres exacts, y compris pour l’interpolation par trois.

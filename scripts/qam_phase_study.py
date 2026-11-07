@@ -12,7 +12,7 @@ import zipfile
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import numpy as np
 from scipy.ndimage import uniform_filter1d
-from scipy.special import logsumexp
+from scipy.special import logsumexp, ndtr
 from iqscope_qam import decode_qam16
 from iqscope_qam_soft import POINTS, _samples, estimate_awgn, bit_llrs
 from scripts.qam_lab_reference import read_keysight_csv, SHA256, SIZE, URL
@@ -157,6 +157,50 @@ def residual_diagnostics(values, mapping, reference):
             'phase_approximation_assumption': 'independent circular Gaussian residual and small phase error; descriptive, not a significance test'}
 
 
+def predict_awgn_errors(mapping, gain, variance, grid_points=401):
+    """Model-only BER, integrating all noisy received values, not capture bits.
+
+    The square grid is bounded; chunks avoid an unbounded grid x 16 temporary.
+    Gain/phase removal makes the circular model isotropic again.
+    """
+    mapping = np.asarray(mapping)
+    if mapping.shape != (16,) or mapping.dtype.kind not in 'iu' or set(mapping.tolist()) != set(range(16)):
+        raise ValueError('Expected a permutation of 0..15')
+    if (not np.isfinite(gain) or not .5 < abs(gain) < 2 or not np.isfinite(variance)
+            or not .001 <= variance <= .5 or not isinstance(grid_points, int)
+            or not 201 <= grid_points <= 801 or grid_points % 2 != 1):
+        raise ValueError('Unbounded AWGN integration parameters')
+    normalized_variance = variance / abs(gain) ** 2
+    sigma = np.sqrt(normalized_variance / 2)
+    levels = np.unique(POINTS.real)
+    edges = np.r_[-np.inf, (levels[:-1] + levels[1:]) / 2, np.inf]
+    transition = np.diff(ndtr((edges[None, :] - levels[:, None]) / sigma), axis=1)
+    bits = (mapping[:, None] >> np.arange(3, -1, -1)) & 1
+    hard = 0.
+    for source in range(16):
+        for target in range(16):
+            probability = transition[source // 4, target // 4] * transition[source % 4, target % 4]
+            hard += probability * np.count_nonzero(bits[source] != bits[target]) / 64
+    radius = float(levels[-1] + 8 * sigma)
+    axis = np.linspace(-radius, radius, grid_points)
+    step = axis[1] - axis[0]
+    mass = 0.
+    error = 0.
+    for start in range(0, grid_points ** 2, 8192):
+        indices = np.arange(start, min(start + 8192, grid_points ** 2))
+        samples = axis[indices // grid_points] + 1j * axis[indices % grid_points]
+        density = np.exp(-abs(samples[:, None] - POINTS[None, :]) ** 2 / normalized_variance)
+        density /= 16 * np.pi * normalized_variance
+        mass += float(density.sum()) * step ** 2
+        for bit in range(4):
+            error += float(np.minimum(density[:, bits[:, bit] == 0].sum(axis=1),
+                                       density[:, bits[:, bit] == 1].sum(axis=1)).sum()) * step ** 2 / 4
+    return {'symbol_map_bit_error_probability': float(hard), 'bit_map_error_probability': error,
+            'integrated_probability_mass': mass, 'grid_points_per_axis': grid_points,
+            'normalized_noise_variance': float(normalized_variance),
+            'scope': 'uniform independent symbols, memoryless circular Gaussian model; not a bound for coded reception or a proof about the real channel'}
+
+
 def measure(values):
     mapping, reference = reference_from_prefix(values)
     # This codebook and phase are frozen for ALL methods below.
@@ -199,6 +243,13 @@ def main():
             if not np.array_equal(slice_labels(values), labels):
                 raise AssertionError('Symbol reconstruction differs from receiver')
             results['files'][basename] = dict(measure(values), generic_status=decoded['status'])
+            if basename == '16qam f.csv':
+                mapping, _ = reference_from_prefix(values)
+                model = results['files'][basename]['methods']['baseline_circular']['model']
+                results['files'][basename]['awgn_prediction'] = [
+                    predict_awgn_errors(mapping, complex(model['gain_i'], model['gain_q']),
+                                        model['noise_variance_complex'], grid)
+                    for grid in (401, 801)]
     (root / 'phase-study.json').write_text(json.dumps(results, indent=2))
     print(json.dumps(results, indent=2), flush=True)
     if set(results['files']) != {f'16qam {letter}.csv' for letter in 'abcdef'}:

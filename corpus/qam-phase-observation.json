@@ -1,0 +1,1071 @@
+{
+  "source_url": "https://raw.githubusercontent.com/billjgavin/28_and_75GHz_Capture_Files/3f9ea40d9b187d0819b14cb254dc04905d398889/IQ_28_Ghz.zip",
+  "source_sha256": "4959f58182b54a8ba25893106be939f34716d0c3832afa4d88d1658e54844240",
+  "measurement_commit": "24914497cef67618f647645d75b389d5c96b759b",
+  "measurement_run": "https://github.com/sebadiaz/IQScope/actions/runs/42419347686",
+  "scope": "development-corpus research; fixed phase windows, all outcomes reported; no automatic acceptance change",
+  "files": {
+    "16qam a.csv": {
+      "mapping_scope": "baseline prefix only; frozen codebook and PN phase shared by all methods",
+      "expected_bits_sha256": "14641bb94b9ccae52b58ed1b3703716cfd99422a7e02bb130f9effca575951a7",
+      "methods": {
+        "baseline_circular": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "model": {
+            "gain_i": 0.9965401567933991,
+            "gain_q": -0.0007625768587322061,
+            "noise_variance_complex": 0.00021749518366129259,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        },
+        "elliptical_noise": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "gain_i": 0.9964854263328852,
+            "gain_q": -0.0006998797896019107,
+            "noise_covariance_iq": [
+              [
+                0.0001036678797603369,
+                -0.0000012645928870088998
+              ],
+              [
+                -0.0000012645928870088998,
+                0.00011383627690376187
+              ]
+            ],
+            "covariance_condition": 1.1012261507514904,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied samples; uniform QAM, constant complex gain, elliptical Gaussian noise"
+          }
+        },
+        "blind_phase_window_31": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "phase_search": {
+            "window_symbols": 31,
+            "trial_angles": 61,
+            "search_radius_radians": 0.3,
+            "phase_std_radians": 0.009475580755613718,
+            "phase_max_abs_radians": 0.020000000000000018,
+            "search_boundary_fraction": 0,
+            "constant_phase_radians": -0.000765224265863059,
+            "fit_scope": "unlabelled full window; offline neighbour costs exclude the target symbol; no PRBS feedback"
+          },
+          "model": {
+            "gain_i": 0.9965761417682631,
+            "gain_q": -0.00009584640203857525,
+            "noise_variance_complex": 0.00014586600307519448,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        },
+        "blind_phase_window_127": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "phase_search": {
+            "window_symbols": 127,
+            "trial_angles": 61,
+            "search_radius_radians": 0.3,
+            "phase_std_radians": 0.008506559744049395,
+            "phase_max_abs_radians": 0.019999999999999962,
+            "search_boundary_fraction": 0,
+            "constant_phase_radians": -0.000765224265863059,
+            "fit_scope": "unlabelled full window; offline neighbour costs exclude the target symbol; no PRBS feedback"
+          },
+          "model": {
+            "gain_i": 0.9965732899067915,
+            "gain_q": 0.0002059714605383851,
+            "noise_variance_complex": 0.00015155501716744953,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        },
+        "blind_phase_window_511": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "phase_search": {
+            "window_symbols": 511,
+            "trial_angles": 61,
+            "search_radius_radians": 0.3,
+            "phase_std_radians": 0.008177489174637297,
+            "phase_max_abs_radians": 0.010000000000000009,
+            "search_boundary_fraction": 0,
+            "constant_phase_radians": -0.000765224265863059,
+            "fit_scope": "unlabelled full window; offline neighbour costs exclude the target symbol; no PRBS feedback"
+          },
+          "model": {
+            "gain_i": 0.9965672836208126,
+            "gain_q": -0.000314205157403641,
+            "noise_variance_complex": 0.00016355035071975932,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        }
+      },
+      "residual_diagnostics": {
+        "scope": "known-reference diagnostics on verification suffix only; never fed into waveform or likelihood fit",
+        "complex_residual_power": 0.00019606634227244186,
+        "covariance_iq": [
+          [
+            0.00009952975766492715,
+            0.0000011600543251993925
+          ],
+          [
+            0.0000011600543251993925,
+            0.00009653658460751469
+          ]
+        ],
+        "covariance_condition": 1.0393914753320812,
+        "lag_correlations": [
+          {
+            "lag_symbols": 1,
+            "real": -0.052552040354483014,
+            "imag": -0.016898763301693397
+          },
+          {
+            "lag_symbols": 2,
+            "real": 0.013062167453876483,
+            "imag": 0.04019593582609707
+          },
+          {
+            "lag_symbols": 3,
+            "real": -0.033920381216120545,
+            "imag": -0.01131491142185335
+          },
+          {
+            "lag_symbols": 4,
+            "real": -0.03012342394812257,
+            "imag": -0.07580230149564174
+          },
+          {
+            "lag_symbols": 5,
+            "real": -0.03238868355647333,
+            "imag": 0.03564879139307218
+          },
+          {
+            "lag_symbols": 6,
+            "real": -0.024425704535966833,
+            "imag": 0.01841439932748313
+          },
+          {
+            "lag_symbols": 7,
+            "real": -0.008039360399159375,
+            "imag": -0.04105672305318211
+          },
+          {
+            "lag_symbols": 8,
+            "real": 0.024344950350684208,
+            "imag": -0.0015355430259992365
+          }
+        ],
+        "phase_block_symbols": 128,
+        "phase_block_count": 34,
+        "phase_block_std_radians": 0.0075357793711093345,
+        "white_noise_phase_std_approx_radians": 0.0008770113716735246,
+        "phase_approximation_assumption": "independent circular Gaussian residual and small phase error; descriptive, not a significance test"
+      },
+      "generic_status": "constellation_consistent_candidate"
+    },
+    "16qam b.csv": {
+      "mapping_scope": "baseline prefix only; frozen codebook and PN phase shared by all methods",
+      "expected_bits_sha256": "e66c5cb35a9b927651130990b37cf8e78abb6f1a2361fb71043528be83937e91",
+      "methods": {
+        "baseline_circular": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "model": {
+            "gain_i": 1.0030483029833135,
+            "gain_q": -0.003804189950413685,
+            "noise_variance_complex": 0.00033429157671415214,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        },
+        "elliptical_noise": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "gain_i": 1.0030137053690875,
+            "gain_q": -0.0037869514342301017,
+            "noise_covariance_iq": [
+              [
+                0.0001699186786332274,
+                0.000003045442705797403
+              ],
+              [
+                0.000003045442705797403,
+                0.00016437638265663724
+              ]
+            ],
+            "covariance_condition": 1.050512435288077,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied samples; uniform QAM, constant complex gain, elliptical Gaussian noise"
+          }
+        },
+        "blind_phase_window_31": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "phase_search": {
+            "window_symbols": 31,
+            "trial_angles": 61,
+            "search_radius_radians": 0.3,
+            "phase_std_radians": 0.005944583349103897,
+            "phase_max_abs_radians": 0.020000000000000018,
+            "search_boundary_fraction": 0,
+            "constant_phase_radians": -0.0037926106842422528,
+            "fit_scope": "unlabelled full window; offline neighbour costs exclude the target symbol; no PRBS feedback"
+          },
+          "model": {
+            "gain_i": 1.0030622678762264,
+            "gain_q": 0.00007180011114454148,
+            "noise_variance_complex": 0.0003208300817931216,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        },
+        "blind_phase_window_127": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "phase_search": {
+            "window_symbols": 127,
+            "trial_angles": 61,
+            "search_radius_radians": 0.3,
+            "phase_std_radians": 0.003920781502029548,
+            "phase_max_abs_radians": 0.010000000000000009,
+            "search_boundary_fraction": 0,
+            "constant_phase_radians": -0.0037926106842422528,
+            "fit_scope": "unlabelled full window; offline neighbour costs exclude the target symbol; no PRBS feedback"
+          },
+          "model": {
+            "gain_i": 1.0030609822105947,
+            "gain_q": 0.00006506123758820739,
+            "noise_variance_complex": 0.000323393655267385,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        },
+        "blind_phase_window_511": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "phase_search": {
+            "window_symbols": 511,
+            "trial_angles": 61,
+            "search_radius_radians": 0.3,
+            "phase_std_radians": 0.0002830691675176072,
+            "phase_max_abs_radians": 0.010000000000000009,
+            "search_boundary_fraction": 0,
+            "constant_phase_radians": -0.0037926106842422528,
+            "fit_scope": "unlabelled full window; offline neighbour costs exclude the target symbol; no PRBS feedback"
+          },
+          "model": {
+            "gain_i": 1.0030554493106498,
+            "gain_q": -0.000009729927776410646,
+            "noise_variance_complex": 0.00033442619989942874,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        }
+      },
+      "residual_diagnostics": {
+        "scope": "known-reference diagnostics on verification suffix only; never fed into waveform or likelihood fit",
+        "complex_residual_power": 0.00032581740156858644,
+        "covariance_iq": [
+          [
+            0.00016369612234183776,
+            0.0000010793984943786426
+          ],
+          [
+            0.0000010793984943786426,
+            0.00016212127922674867
+          ]
+        ],
+        "covariance_condition": 1.0165385579448043,
+        "lag_correlations": [
+          {
+            "lag_symbols": 1,
+            "real": -0.023598758027059182,
+            "imag": -0.007837666760753485
+          },
+          {
+            "lag_symbols": 2,
+            "real": 0.039459103417139395,
+            "imag": 0.0745271046679809
+          },
+          {
+            "lag_symbols": 3,
+            "real": -0.039392407816463436,
+            "imag": -0.02333649640554754
+          },
+          {
+            "lag_symbols": 4,
+            "real": 0.014982043960485083,
+            "imag": -0.04008946807660633
+          },
+          {
+            "lag_symbols": 5,
+            "real": -0.030502701690464318,
+            "imag": 0.020967389693610988
+          },
+          {
+            "lag_symbols": 6,
+            "real": -0.011801562354724002,
+            "imag": 0.0015233093228984723
+          },
+          {
+            "lag_symbols": 7,
+            "real": -0.02308812579142668,
+            "imag": -0.013842482939569868
+          },
+          {
+            "lag_symbols": 8,
+            "real": 0.007494299191032175,
+            "imag": 0.0031641143363614534
+          }
+        ],
+        "phase_block_symbols": 128,
+        "phase_block_count": 34,
+        "phase_block_std_radians": 0.0034629693968680326,
+        "white_noise_phase_std_approx_radians": 0.00112835015458929,
+        "phase_approximation_assumption": "independent circular Gaussian residual and small phase error; descriptive, not a significance test"
+      },
+      "generic_status": "constellation_consistent_candidate"
+    },
+    "16qam c.csv": {
+      "mapping_scope": "baseline prefix only; frozen codebook and PN phase shared by all methods",
+      "expected_bits_sha256": "dbaf97c414cb445c5c6f33e77506a7ab2bf5838256f6b7abe2f15ea8dec65438",
+      "methods": {
+        "baseline_circular": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "model": {
+            "gain_i": 0.9942663896582535,
+            "gain_q": -0.006696671203635179,
+            "noise_variance_complex": 0.000766100279646437,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        },
+        "elliptical_noise": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "gain_i": 0.9942497328716685,
+            "gain_q": -0.006733136249915677,
+            "noise_covariance_iq": [
+              [
+                0.0003892000452046772,
+                -0.00000501723972075297
+              ],
+              [
+                -0.00000501723972075297,
+                0.00037690385885997434
+              ]
+            ],
+            "covariance_condition": 1.042309385150402,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied samples; uniform QAM, constant complex gain, elliptical Gaussian noise"
+          }
+        },
+        "blind_phase_window_31": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "phase_search": {
+            "window_symbols": 31,
+            "trial_angles": 61,
+            "search_radius_radians": 0.3,
+            "phase_std_radians": 0.007172622878630545,
+            "phase_max_abs_radians": 0.020000000000000018,
+            "search_boundary_fraction": 0,
+            "constant_phase_radians": -0.006735186880691612,
+            "fit_scope": "unlabelled full window; offline neighbour costs exclude the target symbol; no PRBS feedback"
+          },
+          "model": {
+            "gain_i": 0.9942943489917151,
+            "gain_q": -0.00015381853497466863,
+            "noise_variance_complex": 0.0007552073835931236,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        },
+        "blind_phase_window_127": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "phase_search": {
+            "window_symbols": 127,
+            "trial_angles": 61,
+            "search_radius_radians": 0.3,
+            "phase_std_radians": 0.0050999852412216265,
+            "phase_max_abs_radians": 0.010000000000000009,
+            "search_boundary_fraction": 0,
+            "constant_phase_radians": -0.006735186880691612,
+            "fit_scope": "unlabelled full window; offline neighbour costs exclude the target symbol; no PRBS feedback"
+          },
+          "model": {
+            "gain_i": 0.994294697024745,
+            "gain_q": 0.00015023529242944985,
+            "noise_variance_complex": 0.0007545089530244047,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        },
+        "blind_phase_window_511": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "phase_search": {
+            "window_symbols": 511,
+            "trial_angles": 61,
+            "search_radius_radians": 0.3,
+            "phase_std_radians": 0.0021236850532898384,
+            "phase_max_abs_radians": 0.010000000000000009,
+            "search_boundary_fraction": 0,
+            "constant_phase_radians": -0.006735186880691612,
+            "fit_scope": "unlabelled full window; offline neighbour costs exclude the target symbol; no PRBS feedback"
+          },
+          "model": {
+            "gain_i": 0.994288887394564,
+            "gain_q": -0.00011833389364354413,
+            "noise_variance_complex": 0.0007661946934484538,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        }
+      },
+      "residual_diagnostics": {
+        "scope": "known-reference diagnostics on verification suffix only; never fed into waveform or likelihood fit",
+        "complex_residual_power": 0.0007576025423982016,
+        "covariance_iq": [
+          [
+            0.00038898059753406707,
+            -0.0000010721640876236212
+          ],
+          [
+            -0.0000010721640876236212,
+            0.00036862194486413433
+          ]
+        ],
+        "covariance_condition": 1.055543077403664,
+        "lag_correlations": [
+          {
+            "lag_symbols": 1,
+            "real": -0.0051094027503544226,
+            "imag": -0.019209914210014466
+          },
+          {
+            "lag_symbols": 2,
+            "real": 0.012946179493446034,
+            "imag": 0.01343552439303228
+          },
+          {
+            "lag_symbols": 3,
+            "real": -0.0012159491755162814,
+            "imag": 0.0013598298518548424
+          },
+          {
+            "lag_symbols": 4,
+            "real": -0.010763649134997512,
+            "imag": -0.027671711161902382
+          },
+          {
+            "lag_symbols": 5,
+            "real": 0.0022716487178174455,
+            "imag": -0.001067111303718343
+          },
+          {
+            "lag_symbols": 6,
+            "real": -0.011955908105929523,
+            "imag": 0.028057895622662594
+          },
+          {
+            "lag_symbols": 7,
+            "real": -0.0034193738871987683,
+            "imag": -0.007271351373333619
+          },
+          {
+            "lag_symbols": 8,
+            "real": 0.022826412947053246,
+            "imag": 0.01266196041858232
+          }
+        ],
+        "phase_block_symbols": 128,
+        "phase_block_count": 34,
+        "phase_block_std_radians": 0.003983582405433292,
+        "white_noise_phase_std_approx_radians": 0.001722793165419316,
+        "phase_approximation_assumption": "independent circular Gaussian residual and small phase error; descriptive, not a significance test"
+      },
+      "generic_status": "constellation_consistent_candidate"
+    },
+    "16qam d.csv": {
+      "mapping_scope": "baseline prefix only; frozen codebook and PN phase shared by all methods",
+      "expected_bits_sha256": "d314d81d81d03102e3d4d3cae1a641e71a6bd5c74db2d47db0f562ac2eef550d",
+      "methods": {
+        "baseline_circular": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "model": {
+            "gain_i": 1.0030573568149572,
+            "gain_q": -0.003364762082539853,
+            "noise_variance_complex": 0.0020944335973003946,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        },
+        "elliptical_noise": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "gain_i": 1.0030613231497927,
+            "gain_q": -0.0033461258204413105,
+            "noise_covariance_iq": [
+              [
+                0.001033267078316645,
+                0.000018422843102249857
+              ],
+              [
+                0.000018422843102249857,
+                0.001061168879056278
+              ]
+            ],
+            "covariance_condition": 1.0451300874799938,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied samples; uniform QAM, constant complex gain, elliptical Gaussian noise"
+          }
+        },
+        "blind_phase_window_31": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "phase_search": {
+            "window_symbols": 31,
+            "trial_angles": 61,
+            "search_radius_radians": 0.3,
+            "phase_std_radians": 0.009055824747146154,
+            "phase_max_abs_radians": 0.020000000000000018,
+            "search_boundary_fraction": 0,
+            "constant_phase_radians": -0.0033544935779247827,
+            "fit_scope": "unlabelled full window; offline neighbour costs exclude the target symbol; no PRBS feedback"
+          },
+          "model": {
+            "gain_i": 1.003064978206335,
+            "gain_q": -0.000016747811630695453,
+            "noise_variance_complex": 0.0020904979548122126,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        },
+        "blind_phase_window_127": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "phase_search": {
+            "window_symbols": 127,
+            "trial_angles": 61,
+            "search_radius_radians": 0.3,
+            "phase_std_radians": 0.006990999214808978,
+            "phase_max_abs_radians": 0.020000000000000018,
+            "search_boundary_fraction": 0,
+            "constant_phase_radians": -0.0033544935779247827,
+            "fit_scope": "unlabelled full window; offline neighbour costs exclude the target symbol; no PRBS feedback"
+          },
+          "model": {
+            "gain_i": 1.0030700955494312,
+            "gain_q": -0.0003228674921789999,
+            "noise_variance_complex": 0.0020802127335515837,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        },
+        "blind_phase_window_511": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "phase_search": {
+            "window_symbols": 511,
+            "trial_angles": 61,
+            "search_radius_radians": 0.3,
+            "phase_std_radians": 0.006036874737398673,
+            "phase_max_abs_radians": 0.010000000000000009,
+            "search_boundary_fraction": 0,
+            "constant_phase_radians": -0.0033544935779247827,
+            "fit_scope": "unlabelled full window; offline neighbour costs exclude the target symbol; no PRBS feedback"
+          },
+          "model": {
+            "gain_i": 1.0030697143029879,
+            "gain_q": 0.00048750229479465696,
+            "noise_variance_complex": 0.0020808389873779158,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        }
+      },
+      "residual_diagnostics": {
+        "scope": "known-reference diagnostics on verification suffix only; never fed into waveform or likelihood fit",
+        "complex_residual_power": 0.0020901504365682198,
+        "covariance_iq": [
+          [
+            0.0010360616262832993,
+            0.000021269768090656032
+          ],
+          [
+            0.000021269768090656032,
+            0.0010540888102849202
+          ]
+        ],
+        "covariance_condition": 1.0452082162396161,
+        "lag_correlations": [
+          {
+            "lag_symbols": 1,
+            "real": 0.002905131314166128,
+            "imag": -0.02093845336676942
+          },
+          {
+            "lag_symbols": 2,
+            "real": -0.0005506333019503655,
+            "imag": 0.014070147719902846
+          },
+          {
+            "lag_symbols": 3,
+            "real": -0.011163014006243938,
+            "imag": -0.01048400851975381
+          },
+          {
+            "lag_symbols": 4,
+            "real": 0.00839376933229624,
+            "imag": 0.003786375720621805
+          },
+          {
+            "lag_symbols": 5,
+            "real": 0.005120610300325592,
+            "imag": 0.001202851418412375
+          },
+          {
+            "lag_symbols": 6,
+            "real": -0.029727318740799875,
+            "imag": -0.004084523682719105
+          },
+          {
+            "lag_symbols": 7,
+            "real": -0.014628281054551998,
+            "imag": 0.0002759172455166491
+          },
+          {
+            "lag_symbols": 8,
+            "real": -0.008145370291944934,
+            "imag": 0.0028282058938461888
+          }
+        ],
+        "phase_block_symbols": 128,
+        "phase_block_count": 34,
+        "phase_block_std_radians": 0.005598886799739347,
+        "white_noise_phase_std_approx_radians": 0.002861474295946965,
+        "phase_approximation_assumption": "independent circular Gaussian residual and small phase error; descriptive, not a significance test"
+      },
+      "generic_status": "constellation_consistent_candidate"
+    },
+    "16qam e.csv": {
+      "mapping_scope": "baseline prefix only; frozen codebook and PN phase shared by all methods",
+      "expected_bits_sha256": "aa12b572ce115cb3142ac1c2920ef37a246dafdb25643bf0bbe5b75efd0503eb",
+      "methods": {
+        "baseline_circular": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "model": {
+            "gain_i": 0.9910128247129668,
+            "gain_q": -0.007236496010715262,
+            "noise_variance_complex": 0.0061844781913895554,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        },
+        "elliptical_noise": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "gain_i": 0.9910364028216633,
+            "gain_q": -0.0072310930093667115,
+            "noise_covariance_iq": [
+              [
+                0.003047972351442044,
+                0.000017206658239376235
+              ],
+              [
+                0.00001720665823937624,
+                0.003136508432016167
+              ]
+            ],
+            "covariance_condition": 1.031197684029259,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied samples; uniform QAM, constant complex gain, elliptical Gaussian noise"
+          }
+        },
+        "blind_phase_window_31": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "phase_search": {
+            "window_symbols": 31,
+            "trial_angles": 61,
+            "search_radius_radians": 0.3,
+            "phase_std_radians": 0.01154036032725142,
+            "phase_max_abs_radians": 0.03999999999999998,
+            "search_boundary_fraction": 0,
+            "constant_phase_radians": -0.007301991674942844,
+            "fit_scope": "unlabelled full window; offline neighbour costs exclude the target symbol; no PRBS feedback"
+          },
+          "model": {
+            "gain_i": 0.9910018611010653,
+            "gain_q": 0.000007414563364300859,
+            "noise_variance_complex": 0.006259454468161346,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        },
+        "blind_phase_window_127": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "phase_search": {
+            "window_symbols": 127,
+            "trial_angles": 61,
+            "search_radius_radians": 0.3,
+            "phase_std_radians": 0.006907192328474607,
+            "phase_max_abs_radians": 0.020000000000000018,
+            "search_boundary_fraction": 0,
+            "constant_phase_radians": -0.007301991674942844,
+            "fit_scope": "unlabelled full window; offline neighbour costs exclude the target symbol; no PRBS feedback"
+          },
+          "model": {
+            "gain_i": 0.9910322426873212,
+            "gain_q": -0.00005825089029182705,
+            "noise_variance_complex": 0.006198519061682019,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        },
+        "blind_phase_window_511": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "phase_search": {
+            "window_symbols": 511,
+            "trial_angles": 61,
+            "search_radius_radians": 0.3,
+            "phase_std_radians": 0.00411826746568015,
+            "phase_max_abs_radians": 0.010000000000000009,
+            "search_boundary_fraction": 0,
+            "constant_phase_radians": -0.007301991674942844,
+            "fit_scope": "unlabelled full window; offline neighbour costs exclude the target symbol; no PRBS feedback"
+          },
+          "model": {
+            "gain_i": 0.9910342918903157,
+            "gain_q": -0.00003364213181431426,
+            "noise_variance_complex": 0.006194411487512335,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        }
+      },
+      "residual_diagnostics": {
+        "scope": "known-reference diagnostics on verification suffix only; never fed into waveform or likelihood fit",
+        "complex_residual_power": 0.0061924100088443,
+        "covariance_iq": [
+          [
+            0.0030756913320715857,
+            0.000006677400195925485
+          ],
+          [
+            0.000006677400195925485,
+            0.0031167186767727144
+          ]
+        ],
+        "covariance_condition": 1.0140329610877787,
+        "lag_correlations": [
+          {
+            "lag_symbols": 1,
+            "real": -0.007663620707447452,
+            "imag": -0.008414108939821438
+          },
+          {
+            "lag_symbols": 2,
+            "real": -0.012276363713971554,
+            "imag": 0.01599649672786766
+          },
+          {
+            "lag_symbols": 3,
+            "real": -0.021251435024421908,
+            "imag": -0.01735093492969445
+          },
+          {
+            "lag_symbols": 4,
+            "real": 0.010975344144647766,
+            "imag": -0.020487593355180793
+          },
+          {
+            "lag_symbols": 5,
+            "real": 0.012449609235441418,
+            "imag": 0.005181160542131954
+          },
+          {
+            "lag_symbols": 6,
+            "real": 0.01768393734342272,
+            "imag": 0.011891410839471032
+          },
+          {
+            "lag_symbols": 7,
+            "real": 0.009070449115713676,
+            "imag": -0.0008688439096145571
+          },
+          {
+            "lag_symbols": 8,
+            "real": -0.0070613802222760785,
+            "imag": 0.0026852579872162713
+          }
+        ],
+        "phase_block_symbols": 128,
+        "phase_block_count": 34,
+        "phase_block_std_radians": 0.005306122875475807,
+        "white_noise_phase_std_approx_radians": 0.004923271966472405,
+        "phase_approximation_assumption": "independent circular Gaussian residual and small phase error; descriptive, not a significance test"
+      },
+      "generic_status": "constellation_consistent_candidate"
+    },
+    "16qam f.csv": {
+      "mapping_scope": "baseline prefix only; frozen codebook and PN phase shared by all methods",
+      "expected_bits_sha256": "b3b1c4c30aaed626eed153081907322f6325e409596c2834285c6bb5984710ac",
+      "methods": {
+        "baseline_circular": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 602,
+          "evaluation_ber": 0.03362377122430742,
+          "model": {
+            "gain_i": 0.9650046670680885,
+            "gain_q": -0.0015194111202971124,
+            "noise_variance_complex": 0.057219975196883675,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        },
+        "elliptical_noise": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 611,
+          "evaluation_ber": 0.03412645218945487,
+          "errors_corrected": 9,
+          "new_errors_introduced": 18,
+          "model": {
+            "gain_i": 0.9651419572774239,
+            "gain_q": -0.0016549429929615255,
+            "noise_covariance_iq": [
+              [
+                0.029636038503864117,
+                0.000945323551393056
+              ],
+              [
+                0.0009453235513930556,
+                0.027603381155488625
+              ]
+            ],
+            "covariance_condition": 1.1019404429470663,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied samples; uniform QAM, constant complex gain, elliptical Gaussian noise"
+          }
+        },
+        "blind_phase_window_31": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 750,
+          "evaluation_ber": 0.041890080428954424,
+          "errors_corrected": 82,
+          "new_errors_introduced": 230,
+          "phase_search": {
+            "window_symbols": 31,
+            "trial_angles": 61,
+            "search_radius_radians": 0.3,
+            "phase_std_radians": 0.060876262918823684,
+            "phase_max_abs_radians": 0.3,
+            "search_boundary_fraction": 0.00040096230954290296,
+            "constant_phase_radians": -0.0015745103796556443,
+            "fit_scope": "unlabelled full window; offline neighbour costs exclude the target symbol; no PRBS feedback"
+          },
+          "model": {
+            "gain_i": 0.962803869575315,
+            "gain_q": -0.0014735442702089236,
+            "noise_variance_complex": 0.060450649389913846,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        },
+        "blind_phase_window_127": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 641,
+          "evaluation_ber": 0.03580205540661305,
+          "errors_corrected": 35,
+          "new_errors_introduced": 74,
+          "phase_search": {
+            "window_symbols": 127,
+            "trial_angles": 61,
+            "search_radius_radians": 0.3,
+            "phase_std_radians": 0.02433194804299556,
+            "phase_max_abs_radians": 0.08000000000000002,
+            "search_boundary_fraction": 0,
+            "constant_phase_radians": -0.0015745103796556443,
+            "fit_scope": "unlabelled full window; offline neighbour costs exclude the target symbol; no PRBS feedback"
+          },
+          "model": {
+            "gain_i": 0.9645317998402643,
+            "gain_q": -0.00018015471692451536,
+            "noise_variance_complex": 0.05795822518617572,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        },
+        "blind_phase_window_511": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 621,
+          "evaluation_ber": 0.034684986595174265,
+          "errors_corrected": 12,
+          "new_errors_introduced": 31,
+          "phase_search": {
+            "window_symbols": 511,
+            "trial_angles": 61,
+            "search_radius_radians": 0.3,
+            "phase_std_radians": 0.011742028400034485,
+            "phase_max_abs_radians": 0.030000000000000027,
+            "search_boundary_fraction": 0,
+            "constant_phase_radians": -0.0015745103796556443,
+            "fit_scope": "unlabelled full window; offline neighbour costs exclude the target symbol; no PRBS feedback"
+          },
+          "model": {
+            "gain_i": 0.9649644238674043,
+            "gain_q": -0.0015902891451829444,
+            "noise_variance_complex": 0.05739057499771877,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        }
+      },
+      "residual_diagnostics": {
+        "scope": "known-reference diagnostics on verification suffix only; never fed into waveform or likelihood fit",
+        "complex_residual_power": 0.05754220961055262,
+        "covariance_iq": [
+          [
+            0.029001451894953737,
+            0.00024213036956794552
+          ],
+          [
+            0.00024213036956794552,
+            0.028540757715598882
+          ]
+        ],
+        "covariance_condition": 1.023504375817056,
+        "lag_correlations": [
+          {
+            "lag_symbols": 1,
+            "real": 0.012186905172365183,
+            "imag": -0.0025503047199315703
+          },
+          {
+            "lag_symbols": 2,
+            "real": 0.011374431114544005,
+            "imag": -0.006198481392201128
+          },
+          {
+            "lag_symbols": 3,
+            "real": -0.007733527494707969,
+            "imag": -0.0021805816249698823
+          },
+          {
+            "lag_symbols": 4,
+            "real": 0.004441805114481667,
+            "imag": 0.0038137909371204286
+          },
+          {
+            "lag_symbols": 5,
+            "real": -0.0249733202423403,
+            "imag": -0.007693073818449703
+          },
+          {
+            "lag_symbols": 6,
+            "real": 0.00604269606975121,
+            "imag": -0.008080021221374589
+          },
+          {
+            "lag_symbols": 7,
+            "real": 0.011394929095179572,
+            "imag": -0.004141301970210793
+          },
+          {
+            "lag_symbols": 8,
+            "real": -0.00001557610346740548,
+            "imag": -0.005808751098277373
+          }
+        ],
+        "phase_block_symbols": 128,
+        "phase_block_count": 34,
+        "phase_block_std_radians": 0.0181738388362843,
+        "white_noise_phase_std_approx_radians": 0.01544941027646689,
+        "phase_approximation_assumption": "independent circular Gaussian residual and small phase error; descriptive, not a significance test"
+      },
+      "generic_status": "no_consistent_candidate"
+    }
+  }
+}

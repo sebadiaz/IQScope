@@ -4,6 +4,7 @@ from iqscope_qam_soft import POINTS, bit_llrs, estimate_awgn
 from scripts.qam_phase_study import (
     blind_phase_search, estimate_elliptical, elliptical_llrs,
     reference_from_prefix, residual_diagnostics, score_llrs,
+    predict_awgn_errors,
 )
 from scripts.qam_receiver_study import slice_labels
 
@@ -78,3 +79,26 @@ class QamPhaseStudyTests(unittest.TestCase):
         model = {'gain_i': 1, 'gain_q': 0, 'noise_covariance_iq': [[1, 2], [2, 1]]}
         with self.assertRaises(ValueError):
             elliptical_llrs(POINTS, np.arange(16), model)
+
+    def test_model_prediction_matches_independent_monte_carlo(self):
+        rng = np.random.default_rng(516)
+        mapping = np.array([12, 14, 9, 8, 13, 15, 11, 10, 6, 7, 3, 1, 4, 5, 2, 0])
+        coarse = predict_awgn_errors(mapping, .965, .0572, 401)
+        fine = predict_awgn_errors(mapping, .965, .0572, 801)
+        self.assertAlmostEqual(fine['integrated_probability_mass'], 1, places=10)
+        # Grid refinement must change the prediction by less than one error
+        # over the laboratory's 17904-bit verification interval.
+        self.assertAlmostEqual(coarse['bit_map_error_probability'], fine['bit_map_error_probability'], delta=1/17904)
+        self.assertLessEqual(fine['bit_map_error_probability'], fine['symbol_map_bit_error_probability'])
+        errors = 0
+        hard_errors = 0
+        for _ in range(20):
+            labels = rng.integers(0, 16, 10000)
+            values = .965 * POINTS[labels] + np.sqrt(.0572/2) * (rng.normal(size=10000) + 1j*rng.normal(size=10000))
+            truth = ((mapping[labels, None] >> np.arange(3, -1, -1)) & 1).reshape(-1)
+            errors += np.count_nonzero((bit_llrs(values, mapping, gain=.965, noise_variance=.0572) < 0) != truth)
+            hard_labels = slice_labels(values / .965)
+            hard = ((mapping[hard_labels, None] >> np.arange(3, -1, -1)) & 1).reshape(-1)
+            hard_errors += np.count_nonzero(hard != truth)
+        self.assertAlmostEqual(errors / 800000, fine['bit_map_error_probability'], delta=.001)
+        self.assertAlmostEqual(hard_errors / 800000, fine['symbol_map_bit_error_probability'], delta=.001)
