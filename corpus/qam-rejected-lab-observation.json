@@ -1,0 +1,200 @@
+{
+  "source_url": "https://raw.githubusercontent.com/billjgavin/28_and_75GHz_Capture_Files/3f9ea40d9b187d0819b14cb254dc04905d398889/IQ_28_Ghz.zip",
+  "source_sha256": "4959f58182b54a8ba25893106be939f34716d0c3832afa4d88d1658e54844240",
+  "source_git_blob": "fa11ded813f4407afb6c9cad3ac37dc4c135dced",
+  "measurement_commit": "d5231b434fa705cbf9da7efe9d0b0eef5e39a51f",
+  "measurement_run": "https://github.com/sebadiaz/IQScope/actions/runs/42408173967",
+  "file": "IQ 28Ghz files 10_2_22/16qam f.csv",
+  "file_sha256": "5fd8a6b1ba9233a4bb9e32e766cebfe2508a3601db76060f1e2a0d0d5cf18cf3",
+  "status": "no_consistent_candidate",
+  "rejection_reason": "filter_trials_failed_quality_gates",
+  "acquisition": {
+    "clock_baud": 49999935.05774755,
+    "clock_energy_fraction": 0.0034738113138474756,
+    "carrier_offset_hz": 267.74250414837053,
+    "carrier_energy_fraction": 0.011952308279788618
+  },
+  "scope": "Rejected generic QAM fits remain rejected. Fixed filter trials reported separately; PRBS15 labeling and phase learned on prefix only. No CRC, protocol validation, correction or acceptance based on the known pattern.",
+  "filter_diagnostics": [
+    {
+      "fit": {
+        "rrc_rolloff_trial": 0.2,
+        "baud": 49999999.99988485,
+        "carrier_offset_hz": 267.74250414837053,
+        "symbol_count": 4988,
+        "symbol_evm_rms": 0.2218002398574453,
+        "half_symbol_evm_rms": [
+          0.2234141584225871,
+          0.22017449129717023
+        ],
+        "minimum_state_occupancy": 0.05793905372894948,
+        "rejection_reasons": [
+          "evm_rms_above_0.12",
+          "half_evm_above_0.14"
+        ]
+      },
+      "prbs15": {
+        "status": "prbs15_consistent",
+        "analyzed_symbols": 4988,
+        "symbol_budget_reached": false,
+        "acquisition_bits": 2048,
+        "evaluation_bits": 17904,
+        "reference": "PRBS15, period 32767; canonical recurrence b[n]=b[n-14] XOR b[n-15], all-one initial state; both time directions searched",
+        "scope": "known test-pattern consistency only; no CRC, protocol identification or authenticated transmitter",
+        "fit_scope": "labeling, sequence direction and phase selected only on acquisition prefix; evaluation suffix never used for selection",
+        "minimum_acquisition_label_occurrences": 26,
+        "phase_hypotheses": 65534,
+        "label_mapping_method": "per-label bit majority per PN phase; retain bijective tables",
+        "mapping_is_bijective": true,
+        "eligible_phase_tables_in_selected_direction": 2,
+        "label_to_nibble": [
+          12,
+          14,
+          9,
+          8,
+          13,
+          15,
+          11,
+          10,
+          6,
+          7,
+          3,
+          1,
+          4,
+          5,
+          2,
+          0
+        ],
+        "canonical_sequence_reversed": false,
+        "phase_index": 31315,
+        "acquisition_error_count": 59,
+        "evaluation_error_count": 610,
+        "evaluation_ber": 0.03407059874888293,
+        "recovered_bits_sha256": "714fd1547d4efdd8d9c6be0f7edfec206732d518e30412ba974037cdf5d15cc0",
+        "predicted_bits_sha256": "b3b1c4c30aaed626eed153081907322f6325e409596c2834285c6bb5984710ac",
+        "hash_convention": "all analyzed bits packed MSB-first; zero padding to complete the final byte"
+      },
+      "scope": "diagnostic of fixed RRC trials; labels remain rejected by the generic quality gates"
+    },
+    {
+      "fit": {
+        "rrc_rolloff_trial": 0.35,
+        "baud": 49999999.99988331,
+        "carrier_offset_hz": 267.74250414837053,
+        "symbol_count": 4988,
+        "symbol_evm_rms": 0.22297741295366152,
+        "half_symbol_evm_rms": [
+          0.22397881714066784,
+          0.2219714910687467
+        ],
+        "minimum_state_occupancy": 0.057137129109863675,
+        "rejection_reasons": [
+          "evm_rms_above_0.12",
+          "half_evm_above_0.14"
+        ]
+      },
+      "prbs15": {
+        "status": "prbs15_consistent",
+        "analyzed_symbols": 4988,
+        "symbol_budget_reached": false,
+        "acquisition_bits": 2048,
+        "evaluation_bits": 17904,
+        "reference": "PRBS15, period 32767; canonical recurrence b[n]=b[n-14] XOR b[n-15], all-one initial state; both time directions searched",
+        "scope": "known test-pattern consistency only; no CRC, protocol identification or authenticated transmitter",
+        "fit_scope": "labeling, sequence direction and phase selected only on acquisition prefix; evaluation suffix never used for selection",
+        "minimum_acquisition_label_occurrences": 26,
+        "phase_hypotheses": 65534,
+        "label_mapping_method": "per-label bit majority per PN phase; retain bijective tables",
+        "mapping_is_bijective": true,
+        "eligible_phase_tables_in_selected_direction": 2,
+        "label_to_nibble": [
+          12,
+          14,
+          9,
+          8,
+          13,
+          15,
+          11,
+          10,
+          6,
+          7,
+          3,
+          1,
+          4,
+          5,
+          2,
+          0
+        ],
+        "canonical_sequence_reversed": false,
+        "phase_index": 31315,
+        "acquisition_error_count": 62,
+        "evaluation_error_count": 644,
+        "evaluation_ber": 0.035969615728328866,
+        "recovered_bits_sha256": "128c88c06491fe242ea9899822ca184d39c05dd539b5806aa385dbd67d6c3d7f",
+        "predicted_bits_sha256": "b3b1c4c30aaed626eed153081907322f6325e409596c2834285c6bb5984710ac",
+        "hash_convention": "all analyzed bits packed MSB-first; zero padding to complete the final byte"
+      },
+      "scope": "diagnostic of fixed RRC trials; labels remain rejected by the generic quality gates"
+    },
+    {
+      "fit": {
+        "rrc_rolloff_trial": 0.5,
+        "baud": 49999999.99989201,
+        "carrier_offset_hz": 267.74250414837053,
+        "symbol_count": 4988,
+        "symbol_evm_rms": 0.22518834679406957,
+        "half_symbol_evm_rms": [
+          0.22580758978086052,
+          0.22456739625566952
+        ],
+        "minimum_state_occupancy": 0.05653568564554932,
+        "rejection_reasons": [
+          "evm_rms_above_0.12",
+          "half_evm_above_0.14"
+        ]
+      },
+      "prbs15": {
+        "status": "prbs15_consistent",
+        "analyzed_symbols": 4988,
+        "symbol_budget_reached": false,
+        "acquisition_bits": 2048,
+        "evaluation_bits": 17904,
+        "reference": "PRBS15, period 32767; canonical recurrence b[n]=b[n-14] XOR b[n-15], all-one initial state; both time directions searched",
+        "scope": "known test-pattern consistency only; no CRC, protocol identification or authenticated transmitter",
+        "fit_scope": "labeling, sequence direction and phase selected only on acquisition prefix; evaluation suffix never used for selection",
+        "minimum_acquisition_label_occurrences": 25,
+        "phase_hypotheses": 65534,
+        "label_mapping_method": "per-label bit majority per PN phase; retain bijective tables",
+        "mapping_is_bijective": true,
+        "eligible_phase_tables_in_selected_direction": 2,
+        "label_to_nibble": [
+          12,
+          14,
+          9,
+          8,
+          13,
+          15,
+          11,
+          10,
+          6,
+          7,
+          3,
+          1,
+          4,
+          5,
+          2,
+          0
+        ],
+        "canonical_sequence_reversed": false,
+        "phase_index": 31315,
+        "acquisition_error_count": 73,
+        "evaluation_error_count": 711,
+        "evaluation_ber": 0.03971179624664879,
+        "recovered_bits_sha256": "21198e7e60676bd37561e5a0c0f0d4e6fc563057838f93f3579f3e79bcd83627",
+        "predicted_bits_sha256": "b3b1c4c30aaed626eed153081907322f6325e409596c2834285c6bb5984710ac",
+        "hash_convention": "all analyzed bits packed MSB-first; zero padding to complete the final byte"
+      },
+      "scope": "diagnostic of fixed RRC trials; labels remain rejected by the generic quality gates"
+    }
+  ]
+}

@@ -62,7 +62,9 @@ def trial_summary(raw,diagnose=False):
     x,fs,layout=read_keysight_csv(raw)
     rejected_fits=[]
     def observe(diagnostic,labels):
+        control=check_prbs15(np.random.default_rng(20261107).permutation(labels))
         rejected_fits.append({'fit':diagnostic,'prbs15':check_prbs15(labels),
+                              'shuffled_control':{'status':control['status'],'evaluation_ber':control.get('evaluation_ber')},
                               'scope':'diagnostic of fixed RRC trials; labels remain rejected by the generic quality gates'})
     trial=decode_qam16(x,fs,trial_observer=observe if diagnose else None)
     normalized=x/np.sqrt(np.mean(abs(x)**2))
@@ -133,6 +135,21 @@ def main():
                 raise AssertionError('Laboratory PRBS15 bit comparison regression')
             if candidate['prbs15_shuffled_control']['status']=='prbs15_consistent':
                 raise AssertionError('Shuffled real symbols falsely accepted as PRBS15')
+    refused=[trial for name,trial in result['qam_trials'].items() if Path(name).name=='16qam f.csv']
+    if len(refused)!=1 or refused[0]['rejection_reason']!='filter_trials_failed_quality_gates':
+        raise AssertionError('Expected the laboratory f capture to retain its quality refusal')
+    fits=refused[0]['rejected_fit_diagnostics']
+    if [item['fit']['rrc_rolloff_trial'] for item in fits]!=[.2,.35,.5]:
+        raise AssertionError('Expected three fixed rejected filter diagnostics')
+    for item in fits:
+        fit=item['fit'];pn=item['prbs15']
+        if (set(fit['rejection_reasons'])!={'evm_rms_above_0.12','half_evm_above_0.14'}
+                or not .20<fit['symbol_evm_rms']<.25 or fit['minimum_state_occupancy']<.015):
+            raise AssertionError('Unexpected laboratory f quality-gate diagnostic')
+        if pn['status']!='prbs15_consistent' or pn['evaluation_bits']<17000 or not .02<pn['evaluation_ber']<.06:
+            raise AssertionError('Rejected laboratory f PRBS error measurement regression')
+        if item['shuffled_control']['status']=='prbs15_consistent':
+            raise AssertionError('Shuffled rejected-fit labels falsely accepted as PRBS15')
     print(json.dumps(result,indent=2))
 
 

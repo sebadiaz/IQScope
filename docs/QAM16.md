@@ -82,3 +82,21 @@ L’essai exige au moins 1 024 symboles, huit occurrences de chaque label dans l
 Les tests utilisent un générateur LFSR SciPy indépendant, des tables non linéaires, des inversions de sens et des erreurs injectées. Remplacer uniquement la suite par du hasard doit laisser la table et la phase acquises inchangées et faire échouer la vérification. La CI mélange aussi les symboles de chaque capture réelle pour contrôler le rejet d’un ordre sans PRBS.
 
 Cette mesure exploite l’annonce explicite du PRBS15 par la source. La séquence mathématique est indépendante des décisions ; sa phase et la table sont inférées sur le préfixe, sans graine ni octets de référence fournis par l’auteur. La suite disjointe vérifie la prédiction, sans constituer un corpus indépendant réservé. Aucun protocole ni CRC n’est identifié. Dans l’application, les exports génériques QAM conservent leur convention naturelle et leur statut de bits candidats : la comparaison PRBS reste un outil de mesure du corpus de laboratoire.
+
+## Diagnostic de la sixième capture refusée
+
+Le [diagnostic CI](https://github.com/sebadiaz/IQScope/actions/runs/42408173967) établit le refus de `16qam f.csv` (niveau TX déclaré −40 dBm). L’horloge est retrouvée à ≈49,999935 Mbaud et la correction de porteuse à ≈267,74 Hz. Les seize états sont suffisamment occupés : au moins 5,65 % chacun, au-dessus du minimum de 1,5 %. Les trois essais fixes échouent aux deux critères d’EVM :
+
+| RRC | EVM RMS globale | Erreurs PRBS dans la suite | Bits de vérification | BER observé |
+| --- | ---: | ---: | ---: | ---: |
+| 0,20 | 22,18 % | 610 | 17 904 | 3,407 % |
+| 0,35 | 22,30 % | 644 | 17 904 | 3,597 % |
+| 0,50 | 22,52 % | 711 | 17 904 | 3,971 % |
+
+La limite globale est 12 % ; la limite dans chaque moitié est 14 %. Pour le premier filtre, les moitiés sont à 22,34 % et 22,02 %. L’acquisition de l’horloge et de la porteuse aboutit, mais les décisions contiennent des erreurs mesurables. Le diagnostic établit le critère de refus et le désaccord binaire ; l’origine physique de la dégradation reste à caractériser.
+
+Les trois résultats PRBS sont rapportés séparément, sans sélectionner un filtre avec les erreurs de la suite. Chaque table et phase PN est apprise sur les seuls 2 048 bits du préfixe, puis figée. La cohérence avec un motif connu malgré plusieurs pour cent d’erreurs ne transforme pas cette sortie en candidat générique accepté. Le nombre de captures acceptées reste cinq sur six.
+
+Le rapport générique fournit désormais un `rejection_reason`, les estimations d’acquisition disponibles et au plus trois résumés `filter_trials` : EVM globale/par moitié, occupation minimale et motifs de refus. La recherche multicanal range l’essai direct sous `direct_trial` et conserve les diagnostics de chaque canal dans `channels_examined`, pour distinguer un refus direct d’un canal accepté.
+
+Le paramètre Python optionnel `trial_observer` reçoit des copies des diagnostics et des labels bornés par le budget de sortie. Ses retours ne participent pas aux ajustements ni aux critères d’acceptation. Le script de laboratoire l’utilise pour examiner cette capture refusée ; les labels rejetés ne sont pas ajoutés aux candidats de l’application. Les tests vérifient l’isolation des copies et le refus d’une référence QAM bruitée. La CI conserve également le refus de `f`, ses deux motifs EVM, une EVM entre 20 et 25 %, un BER PRBS entre 2 et 6 % pour chaque filtre, et le rejet des contrôles à symboles mélangés.
