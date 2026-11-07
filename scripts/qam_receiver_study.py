@@ -109,7 +109,8 @@ def affine_em(values,fit_count=TRAIN_SYMBOLS):
     raw=np.column_stack((values.real,values.imag))
     corrected=(raw-coef[2])@np.linalg.inv(coef[:2])
     return corrected[:,0]+1j*corrected[:,1],{'linear_matrix':coef[:2].tolist(),
-                'offset_iq':coef[2].tolist(),'prefix_noise_variance_per_axis':variance,'iterations':32}
+                'offset_iq':coef[2].tolist(),'noise_variance_per_axis':variance,'iterations':32,
+                'fit_symbol_count':len(train),'fit_scope':'prefix' if fit_count is not None else 'unlabelled full window'}
 
 
 def circular_em(values,iterations=32):
@@ -121,7 +122,9 @@ def circular_em(values,iterations=32):
 
 def soft_comparison(values):
     acquisition=check_prbs15(slice_labels(values))
-    if acquisition['status']!='prbs15_consistent':return {'status':'no_prefix_mapping'}
+    if (not acquisition.get('mapping_is_bijective',False)
+            or acquisition.get('acquisition_error_count',ACQUISITION_BITS)>.1*ACQUISITION_BITS):
+        return {'status':'no_prefix_mapping'}
     model=estimate_awgn(values)
     gain=model['gain_i']+1j*model['gain_q']
     llrs=bit_llrs(values,acquisition['label_to_nibble'],gain=gain,noise_variance=model['noise_variance_complex'])
@@ -129,9 +132,15 @@ def soft_comparison(values):
     pn=prbs15_period()
     if acquisition['canonical_sequence_reversed']:pn=pn[::-1]
     reference=pn[(acquisition['phase_index']+np.arange(len(predicted)))%len(pn)]
+    hard_labels=slice_labels(values)
+    hard=((np.asarray(acquisition['label_to_nibble'])[hard_labels,None]>>np.arange(3,-1,-1))&1).reshape(-1)
+    hard_wrong=hard[ACQUISITION_BITS:]!=reference[ACQUISITION_BITS:]
+    soft_wrong=predicted[ACQUISITION_BITS:]!=reference[ACQUISITION_BITS:]
     errors=int(np.count_nonzero(predicted[ACQUISITION_BITS:]!=reference[ACQUISITION_BITS:]))
     return {'status':'measured','model':model,'evaluation_bits':len(predicted)-ACQUISITION_BITS,
             'evaluation_error_count':errors,'evaluation_ber':errors/(len(predicted)-ACQUISITION_BITS),
+            'hard_errors_corrected':int(np.count_nonzero(hard_wrong & ~soft_wrong)),
+            'new_errors_introduced':int(np.count_nonzero(~hard_wrong & soft_wrong)),
             'mapping_scope':'same codebook and PN phase acquired on baseline prefix; no evaluation-bit feedback',
             'llr_convention':'log P0/P1, MSB first, clipped to +/-80; uniform symbol priors',
             'waveform_fit':'blind unlabelled samples; codebook is known-pattern calibration, not a generic protocol identification'}
@@ -215,6 +224,15 @@ def main():
         raise AssertionError('Expected six laboratory captures in receiver study')
     if any(item['prbs15']['evaluation_bits']!=17904 for capture in results['files'].values() for item in capture['variants'].values()):
         raise AssertionError('Receiver comparison changed the evaluation interval')
+    for name,capture in results['files'].items():
+        soft=capture['soft_bit_comparison']
+        if soft['status']!='measured' or soft['evaluation_bits']!=17904:
+            raise AssertionError('Missing bitwise-likelihood comparison')
+        baseline=capture['variants']['baseline']['prbs15']['evaluation_error_count']
+        if name=='16qam f.csv':
+            if not soft['evaluation_error_count']<baseline:raise AssertionError('Weak-capture bitwise gain regression')
+        elif soft['evaluation_error_count']!=0:
+            raise AssertionError('Bitwise demapping damaged a clean reference')
     weak=results['files']['16qam f.csv']['source_mean_power']
     results['weak_capture_noise_comparison']={
         'assumption':'same voltage calibration and representative receiver noise; separate noise recordings, not a calibrated simultaneous SNR measurement',

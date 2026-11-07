@@ -175,8 +175,10 @@ function showReport(report, jobId) {
       canvas.setAttribute('role','img');canvas.setAttribute('aria-label','Constellation 16-QAM, amplitudes relatives conservées');
       card.append(canvas);drawPskConstellation(canvas,candidate.constellation);
       card.append(element('pre',candidate.bits.slice(0,256),'qam16-bits'));
+      if(candidate.soft_bits?.status==='likelihood_model_estimated')card.append(element('p','Fiabilité estimée disponible pour chaque bit à l’export.','hint'));
       for(const [kind,name] of Object.entries(candidate.artifacts || {})){
-        const link=element('a',`Télécharger 16-QAM · ${kind}`);link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(name)}`;link.download=name;card.append(link);
+        const label=kind==='soft'?'fiabilité des bits':kind;
+        const link=element('a',`Télécharger 16-QAM · ${label}`);link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(name)}`;link.download=name;card.append(link);
       }
       frameList.append(card);
     }

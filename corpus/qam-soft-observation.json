@@ -1,0 +1,123 @@
+{
+  "source_url": "https://raw.githubusercontent.com/billjgavin/28_and_75GHz_Capture_Files/3f9ea40d9b187d0819b14cb254dc04905d398889/IQ_28_Ghz.zip",
+  "source_sha256": "4959f58182b54a8ba25893106be939f34716d0c3832afa4d88d1658e54844240",
+  "measurement_commit": "d0eda4652f23a830b1c281f36df432d8cbc4747e",
+  "measurement_run": "https://github.com/sebadiaz/IQScope/actions/runs/42414169734",
+  "scope": "Development-corpus observation. Blind waveform/noise likelihood fit, codebook and PN phase acquired on prefix; same verification suffix. Not an independent held-out dataset or unknown-protocol payload validation.",
+  "files": {
+    "16qam a.csv": {
+      "symbol_decision_errors": 0,
+      "soft_bit_comparison": {
+        "status": "measured",
+        "model": {
+          "gain_i": 0.9965401568882177,
+          "gain_q": -0.0007625768477960484,
+          "noise_variance_complex": 0.000217494993424101,
+          "iterations": 32,
+          "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+        },
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 0,
+        "evaluation_ber": 0,
+        "mapping_scope": "same codebook and PN phase acquired on baseline prefix; no evaluation-bit feedback",
+        "llr_convention": "log P0/P1, MSB first, clipped to +/-80; uniform symbol priors",
+        "waveform_fit": "blind unlabelled samples; codebook is known-pattern calibration, not a generic protocol identification"
+      }
+    },
+    "16qam b.csv": {
+      "symbol_decision_errors": 0,
+      "soft_bit_comparison": {
+        "status": "measured",
+        "model": {
+          "gain_i": 1.0030483031320057,
+          "gain_q": -0.003804189920466883,
+          "noise_variance_complex": 0.00033429128056337577,
+          "iterations": 32,
+          "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+        },
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 0,
+        "evaluation_ber": 0,
+        "mapping_scope": "same codebook and PN phase acquired on baseline prefix; no evaluation-bit feedback",
+        "llr_convention": "log P0/P1, MSB first, clipped to +/-80; uniform symbol priors",
+        "waveform_fit": "blind unlabelled samples; codebook is known-pattern calibration, not a generic protocol identification"
+      }
+    },
+    "16qam c.csv": {
+      "symbol_decision_errors": 0,
+      "soft_bit_comparison": {
+        "status": "measured",
+        "model": {
+          "gain_i": 0.994259677426256,
+          "gain_q": -0.006589558588243258,
+          "noise_variance_complex": 0.0007810295722174357,
+          "iterations": 32,
+          "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+        },
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 0,
+        "evaluation_ber": 0,
+        "mapping_scope": "same codebook and PN phase acquired on baseline prefix; no evaluation-bit feedback",
+        "llr_convention": "log P0/P1, MSB first, clipped to +/-80; uniform symbol priors",
+        "waveform_fit": "blind unlabelled samples; codebook is known-pattern calibration, not a generic protocol identification"
+      }
+    },
+    "16qam d.csv": {
+      "symbol_decision_errors": 0,
+      "soft_bit_comparison": {
+        "status": "measured",
+        "model": {
+          "gain_i": 1.0030573564039977,
+          "gain_q": -0.003364762084579936,
+          "noise_variance_complex": 0.002094434414975664,
+          "iterations": 32,
+          "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+        },
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 0,
+        "evaluation_ber": 0,
+        "mapping_scope": "same codebook and PN phase acquired on baseline prefix; no evaluation-bit feedback",
+        "llr_convention": "log P0/P1, MSB first, clipped to +/-80; uniform symbol priors",
+        "waveform_fit": "blind unlabelled samples; codebook is known-pattern calibration, not a generic protocol identification"
+      }
+    },
+    "16qam e.csv": {
+      "symbol_decision_errors": 0,
+      "soft_bit_comparison": {
+        "status": "measured",
+        "model": {
+          "gain_i": 0.9910128380717061,
+          "gain_q": -0.007236496606486422,
+          "noise_variance_complex": 0.006184451391054613,
+          "iterations": 32,
+          "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+        },
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 0,
+        "evaluation_ber": 0,
+        "mapping_scope": "same codebook and PN phase acquired on baseline prefix; no evaluation-bit feedback",
+        "llr_convention": "log P0/P1, MSB first, clipped to +/-80; uniform symbol priors",
+        "waveform_fit": "blind unlabelled samples; codebook is known-pattern calibration, not a generic protocol identification"
+      }
+    },
+    "16qam f.csv": {
+      "symbol_decision_errors": 610,
+      "soft_bit_comparison": {
+        "status": "measured",
+        "model": {
+          "gain_i": 0.9650046560956855,
+          "gain_q": -0.0015194402856229493,
+          "noise_variance_complex": 0.057219965741386554,
+          "iterations": 32,
+          "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+        },
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 602,
+        "evaluation_ber": 0.03362377122430742,
+        "mapping_scope": "same codebook and PN phase acquired on baseline prefix; no evaluation-bit feedback",
+        "llr_convention": "log P0/P1, MSB first, clipped to +/-80; uniform symbol priors",
+        "waveform_fit": "blind unlabelled samples; codebook is known-pattern calibration, not a generic protocol identification"
+      }
+    }
+  }
+}

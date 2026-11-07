@@ -1,11 +1,19 @@
 import unittest
 import numpy as np
-from scripts.qam_receiver_study import affine_em, circular_em, lanczos_samples, slice_labels, reconstruct_symbols, variants, POINTS
+from scripts.qam_receiver_study import affine_em, circular_em, lanczos_samples, slice_labels, reconstruct_symbols, variants, soft_comparison, POINTS
 from iqscope_qam import decode_qam16
 from test_qam import fixture
 
 
 class QamReceiverStudyTests(unittest.TestCase):
+    def test_soft_comparison_is_not_conditioned_on_evaluation_match(self):
+        from test_qam_prbs15 import fixture as prbs_fixture
+        labels,_=prbs_fixture()
+        values=POINTS[labels].copy()
+        values[512:]=POINTS[np.random.default_rng(445).integers(0,16,len(values)-512)]
+        report=soft_comparison(values)
+        self.assertEqual(report['status'],'measured')
+        self.assertGreater(report['evaluation_ber'],.4)
     def test_lanczos_fractional_sampling_on_bandlimited_tone(self):
         positions=np.arange(2000)
         values=np.exp(.15j*np.pi*positions)

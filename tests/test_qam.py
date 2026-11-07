@@ -130,6 +130,12 @@ class QamTests(unittest.TestCase):
             packed=np.frombuffer((Path(directory)/c['artifacts']['packed']).read_bytes(),dtype='u1')
             self.assertEqual(''.join(map(str,np.unpackbits(packed)[:c['bit_count']])),c['bits'])
             self.assertEqual(json.loads((Path(directory)/qam['artifact']).read_text())['candidates'][0]['constellation'],c['constellation'])
+            soft=json.loads((Path(directory)/c['artifacts']['soft']).read_text())
+            self.assertEqual(soft,c['soft_bits'])
+            self.assertEqual(len(soft['llr']),c['bit_count'])
+            self.assertEqual(soft['decisions'],''.join('1' if value<0 else '0' for value in soft['llr']))
+            self.assertTrue(np.all(np.isfinite(soft['llr'])))
+            self.assertLessEqual(max(abs(value) for value in soft['llr']),80)
 
     def test_gain_rotation_and_iq_conjugation(self):
         x,fs,expected,_=fixture(seed=722)

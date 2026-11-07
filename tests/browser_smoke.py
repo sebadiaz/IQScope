@@ -141,6 +141,12 @@ def main():
                     decoded=json.loads(Path(event.value.path()).read_text())['candidates'][0]
                     assert qam_equivalent(decoded['symbols'],expected)
                     assert decoded['evidence']['checksum']=='not_checked'
+                    with page.expect_download() as event:
+                        page.get_by_role('link',name='Télécharger 16-QAM · fiabilité des bits',exact=True).click()
+                    soft=json.loads(Path(event.value.path()).read_text())
+                    assert soft==decoded['soft_bits']
+                    assert len(soft['llr'])==decoded['bit_count']
+                    assert soft['status']=='likelihood_model_estimated'
                     assert page.locator('#metric-frames').inner_text()=='0'
                 Path('browser-artifacts').mkdir(exist_ok=True)
                 page.screenshot(path='browser-artifacts/desktop.png', full_page=True)

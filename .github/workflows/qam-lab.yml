@@ -9,6 +9,8 @@ on:
       - tests/test_qam_prbs15.py
       - .github/workflows/qam-lab.yml
       - iqscope_qam.py
+      - iqscope_qam_soft.py
+      - tests/test_qam_soft.py
   workflow_dispatch:
 permissions:
   contents: read

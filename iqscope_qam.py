@@ -114,6 +114,18 @@ def decode_qam16(x,fs,max_seconds=3,max_bits=40000,*,trial_observer=None):
                                'evidence':{'symbol_evm_rms':evm,'clock_line_energy_fraction':clock_strength,
                                            'carrier_line_energy_fraction':carrier_strength,'checksum':'not_checked','protocol':'unknown'},
                                'constellation':{'i':points.real.tolist(),'q':points.imag.tolist(),'normalization':'common RMS gain; symbol amplitudes retained','sampled_symbols':True}}]
+        from iqscope_qam_soft import estimate_awgn, bit_llrs
+        try:
+            model=estimate_awgn(values[:n])
+            llrs=bit_llrs(values[:n],gain=model['gain_i']+1j*model['gain_q'],noise_variance=model['noise_variance_complex'])
+            result['candidates'][0]['soft_bits']={
+                'status':'likelihood_model_estimated','llr':llrs.tolist(),'bit_count':len(llrs),
+                'decisions':''.join('1' if value<0 else '0' for value in llrs),
+                'convention':'log P(bit=0)/P(bit=1), MSB-first per symbol, clipped to +/-80',
+                'mapping':'natural 4*I_rank+Q_rank; rotation/conjugation and protocol labeling unresolved',
+                'model':model,'validation':'likelihood under estimated AWGN model only; no CRC, FEC or protocol validation'}
+        except ValueError:
+            result['candidates'][0]['soft_bits']={'status':'model_unavailable'}
         return dict(result,status='constellation_consistent_candidate')
     return dict(result,status='no_consistent_candidate',rejection_reason='filter_trials_failed_quality_gates')
 
@@ -162,6 +174,9 @@ def write_qam_artifacts(trial,out):
         (out/artifacts['bits']).write_text(candidate['bits'],encoding='ascii')
         (out/artifacts['packed']).write_bytes(np.packbits(np.array(list(candidate['bits']),dtype='u1'),bitorder='big').tobytes())
         (out/artifacts['symbols']).write_text(json.dumps(candidate['symbols']))
+        if candidate.get('soft_bits',{}).get('status')=='likelihood_model_estimated':
+            artifacts['soft']=prefix+'-soft.json'
+            (out/artifacts['soft']).write_text(json.dumps(candidate['soft_bits'],indent=2))
     if trial['candidates']:
         trial['artifact']='qam16-candidates.json'
         (out/trial['artifact']).write_text(json.dumps(trial,indent=2))
