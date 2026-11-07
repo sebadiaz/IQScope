@@ -7,7 +7,7 @@ import zipfile
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 import numpy as np
-from scipy import signal
+from scipy import signal, optimize
 from iqscope_qam import LEVELS, decode_qam16
 from iqscope_psk_rrc import rrc_taps
 from scripts.qam_lab_reference import read_keysight_csv, SHA256, SIZE, URL
@@ -38,6 +38,49 @@ def reconstruct_symbols(x,fs,fit):
     values=np.interp(centers,np.arange(len(filtered)),filtered.real)+1j*np.interp(centers,np.arange(len(filtered)),filtered.imag)
     values/=np.sqrt(np.mean(abs(values)**2))
     return values*np.exp(-1j*fit['phase_origin_radians'])
+
+
+def lanczos_samples(values,centers,radius=8):
+    indices=np.floor(centers).astype(int)[:,None]+np.arange(-radius+1,radius+1)[None,:]
+    distance=centers[:,None]-indices
+    weights=np.sinc(distance)*np.sinc(distance/radius)
+    weights[abs(distance)>=radius]=0
+    weights/=weights.sum(axis=1,keepdims=True)
+    return np.sum(values[np.clip(indices,0,len(values)-1)]*weights,axis=1)
+
+
+def frontend_variants(x,fs,fit,baseline):
+    source=np.asarray(x,dtype=complex)/np.sqrt(np.mean(abs(x)**2))
+    source*=np.exp(-2j*np.pi*fit['carrier_offset_hz']*np.arange(len(source))/fs)
+    up=2 if fs/fit['baud']<8 else 1
+    source=signal.resample_poly(source,up,1) if up>1 else source
+    down=max(1,int(fs*up/(16*fit['baud'])))
+    source=signal.resample_poly(source,1,down) if down>1 else source
+    rate=fs*up/down;period=rate/fit['baud']
+    centers=(fit['first_symbol_center_seconds']+np.arange(fit['symbol_count'])/fit['baud'])*rate
+    for span,rolloff in ((10,.2),(20,.1),(20,.15),(20,.2),(20,.25)):
+        filtered=signal.fftconvolve(source,rrc_taps(period,rolloff,span=span),mode='same')
+        def recover(shift):
+            values=lanczos_samples(filtered,centers+shift*period)
+            values/=np.sqrt(np.mean(abs(values)**2))
+            origin=(np.angle(np.mean(values**4))-np.pi)/4
+            return values*np.exp(-1j*origin)
+        def objective(shift):
+            sampled=recover(shift)
+            return np.mean(abs(sampled-POINTS[slice_labels(sampled)])**2)
+        fit_phase=optimize.minimize_scalar(objective,
+                                         bounds=(-.125,.125),method='bounded',options={'maxiter':24,'xatol':1e-5})
+        corrected=recover(fit_phase.x)
+        rotations=np.exp(.5j*np.pi*np.arange(4))
+        rotation=int(np.argmax([np.real(np.vdot(baseline,corrected*r)) for r in rotations]))
+        corrected*=rotations[rotation]
+        # Preserve baseline boundary symbols so every method evaluates the
+        # same bits without padding artifacts from the longer filter.
+        corrected[:16]=baseline[:16];corrected[-16:]=baseline[-16:]
+        parameters={'rrc_span':span,'rrc_rolloff':rolloff,'interpolator':'Lanczos radius 8',
+                    'timing_shift_symbols':float(fit_phase.x),'quarter_turn_alignment':rotation,'preserved_boundary_symbols':16,
+                    'fit_scope':'unlabelled full window; no PRBS feedback'}
+        yield f'rrc{span}_alpha{rolloff}_lanczos',corrected,parameters
 
 
 def affine_em(values,fit_count=TRAIN_SYMBOLS):
@@ -157,7 +200,7 @@ def main():
             if not np.array_equal(labels,expected):raise AssertionError('Symbol reconstruction differs from receiver')
             results['files'][basename]={'layout':layout,'generic_status':decoded['status'],
                 'source_mean_power':float(np.mean(abs(x)**2)),
-                'variants':{method:dict(summarize(output),parameters=parameters) for method,output,parameters in list(variants(values))+list(blind_variants(values))}}
+                'variants':{method:dict(summarize(output),parameters=parameters) for method,output,parameters in list(variants(values))+list(blind_variants(values))+list(frontend_variants(x,fs,fit,values))}}
     if set(results['files'])!={f'16qam {letter}.csv' for letter in 'abcdef'}:
         raise AssertionError('Expected six laboratory captures in receiver study')
     if any(item['prbs15']['evaluation_bits']!=17904 for capture in results['files'].values() for item in capture['variants'].values()):

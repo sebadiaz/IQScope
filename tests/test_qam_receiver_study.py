@@ -1,11 +1,19 @@
 import unittest
 import numpy as np
-from scripts.qam_receiver_study import affine_em, circular_em, slice_labels, reconstruct_symbols, variants, POINTS
+from scripts.qam_receiver_study import affine_em, circular_em, lanczos_samples, slice_labels, reconstruct_symbols, variants, POINTS
 from iqscope_qam import decode_qam16
 from test_qam import fixture
 
 
 class QamReceiverStudyTests(unittest.TestCase):
+    def test_lanczos_fractional_sampling_on_bandlimited_tone(self):
+        positions=np.arange(2000)
+        values=np.exp(.15j*np.pi*positions)
+        centers=np.arange(30,1950,4)+.371
+        expected=np.exp(.15j*np.pi*centers)
+        interpolated=lanczos_samples(values,centers)
+        linear=np.interp(centers,positions,values.real)+1j*np.interp(centers,positions,values.imag)
+        self.assertLess(np.mean(abs(interpolated-expected)**2),np.mean(abs(linear-expected)**2)/100)
     def test_blind_gain_phase_and_noise_from_unlabelled_samples(self):
         rng=np.random.default_rng(228)
         labels=rng.integers(0,16,6000)
