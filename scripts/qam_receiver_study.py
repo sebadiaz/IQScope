@@ -12,6 +12,8 @@ from iqscope_qam import LEVELS, decode_qam16
 from iqscope_psk_rrc import rrc_taps
 from scripts.qam_lab_reference import read_keysight_csv, SHA256, SIZE, URL
 from scripts.qam_prbs15 import check_prbs15
+from scripts.qam_prbs15 import prbs15_period, ACQUISITION_BITS
+from iqscope_qam_soft import estimate_awgn, bit_llrs
 
 TRAIN_SYMBOLS=512
 POINTS=(LEVELS[:,None]+1j*LEVELS[None,:]).reshape(-1)
@@ -112,20 +114,27 @@ def affine_em(values,fit_count=TRAIN_SYMBOLS):
 
 def circular_em(values,iterations=32):
     """Blind circular-AWGN likelihood; gain/phase/noise, without bit references."""
-    gain=1+0j
-    variance=max(float(np.mean(abs(values-POINTS[slice_labels(values)])**2)),1e-5)
-    for _ in range(iterations):
-        distance=abs(values[:,None]-gain*POINTS[None,:])**2
-        logits=-distance/max(variance,1e-5)
-        weights=np.exp(logits-logits.max(axis=1,keepdims=True))
-        weights/=weights.sum(axis=1,keepdims=True)
-        mean=weights@POINTS
-        energy=weights@(abs(POINTS)**2)
-        gain=np.sum(values*np.conj(mean))/np.sum(energy)
-        variance=float(np.sum(weights*abs(values[:,None]-gain*POINTS[None,:])**2)/len(values))
-    if not .5<abs(gain)<2:raise ValueError('Unbounded blind gain estimate')
-    return values/gain,{'gain_i':float(gain.real),'gain_q':float(gain.imag),
-                       'noise_variance_complex':variance,'iterations':iterations,'fit_scope':'unlabelled full window'}
+    parameters=estimate_awgn(values,iterations)
+    gain=parameters['gain_i']+1j*parameters['gain_q']
+    return values/gain,parameters
+
+
+def soft_comparison(values):
+    acquisition=check_prbs15(slice_labels(values))
+    if acquisition['status']!='prbs15_consistent':return {'status':'no_prefix_mapping'}
+    model=estimate_awgn(values)
+    gain=model['gain_i']+1j*model['gain_q']
+    llrs=bit_llrs(values,acquisition['label_to_nibble'],gain=gain,noise_variance=model['noise_variance_complex'])
+    predicted=(llrs<0).astype(np.uint8)
+    pn=prbs15_period()
+    if acquisition['canonical_sequence_reversed']:pn=pn[::-1]
+    reference=pn[(acquisition['phase_index']+np.arange(len(predicted)))%len(pn)]
+    errors=int(np.count_nonzero(predicted[ACQUISITION_BITS:]!=reference[ACQUISITION_BITS:]))
+    return {'status':'measured','model':model,'evaluation_bits':len(predicted)-ACQUISITION_BITS,
+            'evaluation_error_count':errors,'evaluation_ber':errors/(len(predicted)-ACQUISITION_BITS),
+            'mapping_scope':'same codebook and PN phase acquired on baseline prefix; no evaluation-bit feedback',
+            'llr_convention':'log P0/P1, MSB first, clipped to +/-80; uniform symbol priors',
+            'waveform_fit':'blind unlabelled samples; codebook is known-pattern calibration, not a generic protocol identification'}
 
 
 def blind_variants(values):
@@ -200,6 +209,7 @@ def main():
             if not np.array_equal(labels,expected):raise AssertionError('Symbol reconstruction differs from receiver')
             results['files'][basename]={'layout':layout,'generic_status':decoded['status'],
                 'source_mean_power':float(np.mean(abs(x)**2)),
+                'soft_bit_comparison':soft_comparison(values),
                 'variants':{method:dict(summarize(output),parameters=parameters) for method,output,parameters in list(variants(values))+list(blind_variants(values))+list(frontend_variants(x,fs,fit,values))}}
     if set(results['files'])!={f'16qam {letter}.csv' for letter in 'abcdef'}:
         raise AssertionError('Expected six laboratory captures in receiver study')
