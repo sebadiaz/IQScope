@@ -8,6 +8,8 @@ from scipy import signal, optimize
 from iqscope_psk_rrc import _line, rrc_taps
 
 LEVELS=np.array([-3,-1,1,3],dtype=float)/np.sqrt(10)
+# Nominal four-sample inputs need room for independent transmitter/ADC clocks.
+MIN_SOURCE_SPS=3.96
 
 
 def decode_qam16(x,fs,max_seconds=3,max_bits=40000,*,trial_observer=None):
@@ -19,7 +21,7 @@ def decode_qam16(x,fs,max_seconds=3,max_bits=40000,*,trial_observer=None):
             'filter_trials':[],
             'validation':'constellation, occupancy and timing only; protocol, bit mapping, byte alignment and CRC unknown',
             'limitations':['Stationary single-carrier square 16-QAM with RRC pulse shaping; no fading, equalizer or persistent phase tracking.',
-                            '1 kS/s–250 MS/s; at least four source samples per symbol and 256 recovered symbols.',
+                            '1 kS/s–250 MS/s; nominally four source samples per symbol with 1% clock tolerance; at least 256 recovered symbols.',
                             'Above 96 kS/s, frequencies are computed in a 32 kS/s time coordinate and converted back to physical units.',
                             'Carrier offset ambiguity modulo sample_rate/4; direct unambiguous range is +/- sample_rate/8.',
                             'Strongest envelope clock line only, three RRC rolloffs; bursts, low rolloff and interfering carriers may fail.']}
@@ -40,7 +42,8 @@ def decode_qam16(x,fs,max_seconds=3,max_bits=40000,*,trial_observer=None):
         return dict(result,status='no_consistent_candidate',rejection_reason='invalid_or_zero_power')
     source/=np.sqrt(power)
     envelope=abs(source)**2
-    clock=_line(envelope-envelope.mean(),fs,30,min(9600,fs/4),.001)
+    clock_upper=min(9600,fs/MIN_SOURCE_SPS)
+    clock=_line(envelope-envelope.mean(),fs,30,clock_upper,.001)
     if clock is None:
         return dict(result,status='no_consistent_candidate',rejection_reason='clock_line_not_detected')
     result['acquisition']={'clock_baud':clock[0]*scale,'clock_line_energy_fraction':clock[1]}
@@ -52,7 +55,7 @@ def decode_qam16(x,fs,max_seconds=3,max_bits=40000,*,trial_observer=None):
     result['acquisition'].update(carrier_offset_hz=frequency/4*scale,carrier_line_energy_fraction=carrier_strength)
     time=np.arange(count)/fs
     corrected=source*np.exp(-2j*np.pi*frequency/4*time)
-    up=2 if fs/baud<8 else 1
+    up=max(1,math.ceil(8*baud/fs))
     if up>1:corrected=signal.resample_poly(corrected,up,1)
     result['processing']['interpolation_factor']=up
     interpolated_rate=fs*up
@@ -80,7 +83,7 @@ def decode_qam16(x,fs,max_seconds=3,max_bits=40000,*,trial_observer=None):
         initial=min(phases,key=lambda p:evaluate((baud,p))[0])
         width=fs/count
         fit=optimize.minimize(lambda p:evaluate(p)[0],(baud,initial),method='Powell',
-                             bounds=((max(30,baud-width),min(9600,fs/4,baud+width)),(0,1)),
+                             bounds=((max(30,baud-width),min(clock_upper,baud+width)),(0,1)),
                              options={'maxiter':12,'maxfev':160,'xtol':1e-6,'ftol':1e-6})
         evm,values,i,q,centers,origin=evaluate(fit.x,True)
         labels=4*i+q
@@ -95,6 +98,7 @@ def decode_qam16(x,fs,max_seconds=3,max_bits=40000,*,trial_observer=None):
         diagnostic={'rrc_rolloff_trial':rolloff,'baud':float(fit.x[0]*scale),
                     'carrier_offset_hz':frequency/4*scale,'symbol_count':len(labels),
                     'first_symbol_center_seconds':float(centers[0]/rate/scale),'phase_origin_radians':float(origin),
+                    'resample_up':up,'resample_down':down,'rrc_samples_per_symbol':period,
                     'symbol_evm_rms':evm,'half_symbol_evm_rms':half_evm,
                     'minimum_state_occupancy':occupancy,'rejection_reasons':reasons}
         result['filter_trials'].append(diagnostic)

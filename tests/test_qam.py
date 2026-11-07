@@ -155,7 +155,19 @@ class QamTests(unittest.TestCase):
                 c=r['candidates'][0]
                 self.assertTrue(equivalent(c['symbols'],expected))
                 self.assertAlmostEqual(c['parameters']['baud'],baud,delta=.1)
-                self.assertEqual(r['processing']['interpolation_factor'],2)
+                self.assertIn(r['processing']['interpolation_factor'],(2,3))
+
+    def test_nominal_four_samples_accepts_both_clock_error_signs(self):
+        for ppm in (-500,175,500):
+            with self.subTest(clock_ppm=ppm):
+                x,fs,expected,baud=fixture(fs=200e6,baud=50e6,clock_ppm=ppm,offset=1e6)
+                r=decode_qam16(x,fs)
+                self.assertTrue(r['candidates'],r['filter_trials'])
+                candidate=r['candidates'][0]
+                self.assertTrue(equivalent(candidate['symbols'],expected))
+                self.assertAlmostEqual(candidate['parameters']['baud'],baud,delta=1000)
+                self.assertLess(candidate['evidence']['symbol_evm_rms'],.08)
+                self.assertLessEqual(r['processing']['interpolation_factor'],3)
 
     def test_high_rate_preserves_physical_units_and_labels(self):
         x,fs,expected,_=fixture(fs=16000,baud=3800,offset=-273.4)

@@ -36,8 +36,8 @@ class QamReceiverStudyTests(unittest.TestCase):
         self.assertLess(abs(estimated-gain),.005)
         self.assertAlmostEqual(parameters['noise_variance_complex'],2*.035**2,delta=.0002)
     def test_physical_time_reconstruction_matches_decisions(self):
-        for fs,baud,offset in ((16000,617,273.4),(200e6,50e6,1e6)):
-            x,_,_,_=fixture(fs=fs,baud=baud,offset=offset)
+        for fs,baud,offset,ppm in ((16000,617,273.4,0),(200e6,50e6,1e6,0),(200e6,50e6,1e6,500)):
+            x,_,_,_=fixture(fs=fs,baud=baud,offset=offset,clock_ppm=ppm)
             observed=[]
             decode_qam16(x,fs,trial_observer=lambda fit,labels:observed.append((fit,labels)))
             fit,labels=observed[0]

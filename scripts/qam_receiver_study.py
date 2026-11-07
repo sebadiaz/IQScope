@@ -30,12 +30,12 @@ def reconstruct_symbols(x,fs,fit):
     x=np.array(x,dtype=np.complex128,copy=True)
     x/=np.sqrt(np.mean(abs(x)**2))
     corrected=x*np.exp(-2j*np.pi*fit['carrier_offset_hz']*np.arange(len(x))/fs)
-    up=2 if fs/fit['baud']<8 else 1
+    up=fit.get('resample_up',2 if fs/fit['baud']<8 else 1)
     if up>1:corrected=signal.resample_poly(corrected,up,1)
-    down=max(1,int(fs*up/(16*fit['baud'])))
+    down=fit.get('resample_down',max(1,int(fs*up/(16*fit['baud']))))
     y=signal.resample_poly(corrected,1,down) if down>1 else corrected
     rate=fs*up/down
-    filtered=signal.fftconvolve(y,rrc_taps(rate/fit['baud'],fit['rrc_rolloff_trial']),mode='same')
+    filtered=signal.fftconvolve(y,rrc_taps(fit.get('rrc_samples_per_symbol',rate/fit['baud']),fit['rrc_rolloff_trial']),mode='same')
     centers=(fit['first_symbol_center_seconds']+np.arange(fit['symbol_count'])/fit['baud'])*rate
     values=np.interp(centers,np.arange(len(filtered)),filtered.real)+1j*np.interp(centers,np.arange(len(filtered)),filtered.imag)
     values/=np.sqrt(np.mean(abs(values)**2))
@@ -54,9 +54,9 @@ def lanczos_samples(values,centers,radius=8):
 def frontend_variants(x,fs,fit,baseline):
     source=np.asarray(x,dtype=complex)/np.sqrt(np.mean(abs(x)**2))
     source*=np.exp(-2j*np.pi*fit['carrier_offset_hz']*np.arange(len(source))/fs)
-    up=2 if fs/fit['baud']<8 else 1
+    up=fit.get('resample_up',2 if fs/fit['baud']<8 else 1)
     source=signal.resample_poly(source,up,1) if up>1 else source
-    down=max(1,int(fs*up/(16*fit['baud'])))
+    down=fit.get('resample_down',max(1,int(fs*up/(16*fit['baud']))))
     source=signal.resample_poly(source,1,down) if down>1 else source
     rate=fs*up/down;period=rate/fit['baud']
     centers=(fit['first_symbol_center_seconds']+np.arange(fit['symbol_count'])/fit['baud'])*rate
@@ -220,6 +220,15 @@ def main():
                 'source_mean_power':float(np.mean(abs(x)**2)),
                 'soft_bit_comparison':soft_comparison(values),
                 'variants':{method:dict(summarize(output),parameters=parameters) for method,output,parameters in list(variants(values))+list(blind_variants(values))+list(frontend_variants(x,fs,fit,values))}}
+    weak=results['files']['16qam f.csv']['source_mean_power']
+    results['weak_capture_noise_comparison']={
+        'assumption':'same voltage calibration and representative receiver noise; separate noise recordings, not a calibrated simultaneous SNR measurement',
+        'estimates':{name:{'noise_to_total_power_ratio':noise/weak,
+                            'excess_power_to_noise_db':float(10*np.log10((weak-noise)/noise)) if 0<noise<weak else None}
+                     for name,noise in results['noise_reference_power'].items()}}
+    # Preserve measurements even if a regression assertion subsequently fails.
+    (root/'receiver-study.json').write_text(json.dumps(results,indent=2))
+    print(json.dumps(results,indent=2),flush=True)
     if set(results['files'])!={f'16qam {letter}.csv' for letter in 'abcdef'}:
         raise AssertionError('Expected six laboratory captures in receiver study')
     if any(item['prbs15']['evaluation_bits']!=17904 for capture in results['files'].values() for item in capture['variants'].values()):
@@ -233,14 +242,6 @@ def main():
             if not soft['evaluation_error_count']<baseline:raise AssertionError('Weak-capture bitwise gain regression')
         elif soft['evaluation_error_count']!=0:
             raise AssertionError('Bitwise demapping damaged a clean reference')
-    weak=results['files']['16qam f.csv']['source_mean_power']
-    results['weak_capture_noise_comparison']={
-        'assumption':'same voltage calibration and representative receiver noise; separate noise recordings, not a calibrated simultaneous SNR measurement',
-        'estimates':{name:{'noise_to_total_power_ratio':noise/weak,
-                            'excess_power_to_noise_db':float(10*np.log10((weak-noise)/noise)) if 0<noise<weak else None}
-                     for name,noise in results['noise_reference_power'].items()}}
-    (root/'receiver-study.json').write_text(json.dumps(results,indent=2))
-    print(json.dumps(results,indent=2))
 
 
 if __name__=='__main__':main()
