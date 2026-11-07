@@ -58,15 +58,21 @@ def candidate_summary(candidate):
                                      'evaluation_ber':control.get('evaluation_ber')}}
 
 
-def trial_summary(raw):
+def trial_summary(raw,diagnose=False):
     x,fs,layout=read_keysight_csv(raw)
-    trial=decode_qam16(x,fs)
+    rejected_fits=[]
+    def observe(diagnostic,labels):
+        rejected_fits.append({'fit':diagnostic,'prbs15':check_prbs15(labels),
+                              'scope':'diagnostic of fixed RRC trials; labels remain rejected by the generic quality gates'})
+    trial=decode_qam16(x,fs,trial_observer=observe if diagnose else None)
     normalized=x/np.sqrt(np.mean(abs(x)**2))
     energy=abs(normalized)**2
     clock=_line(energy-energy.mean(),32000,30,8000,.001)
     carrier=_line(normalized**4,32000,-16000,16000,.005)
     return {'layout':layout,'source_sha256':hashlib.sha256(raw).hexdigest(),
             'status':trial['status'],'processing':trial.get('processing'),
+            'rejection_reason':trial.get('rejection_reason'),'filter_trials':trial['filter_trials'],
+            'rejected_fit_diagnostics':rejected_fits,
             'diagnostics':{'clock_baud':clock[0]*fs/32000 if clock else None,
                            'clock_energy_fraction':clock[1] if clock else None,
                            'carrier_offset_hz':carrier[0]/4*fs/32000 if carrier else None,
@@ -104,7 +110,7 @@ def main():
         for member in members:
             if member.file_size>2_000_000:continue
             if member.filename.lower().endswith('.csv'):
-                result['qam_trials'][member.filename]=trial_summary(archive.read(member))
+                result['qam_trials'][member.filename]=trial_summary(archive.read(member),diagnose=Path(member.filename).name=='16qam f.csv')
             elif member.filename.lower().endswith('.docx'):
                 with zipfile.ZipFile(io.BytesIO(archive.read(member))) as doc:
                     info=doc.getinfo('word/document.xml')

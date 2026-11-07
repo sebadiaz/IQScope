@@ -99,6 +99,8 @@ class QamTests(unittest.TestCase):
         bands,*_=discover(wide,fs)
         r=search_qam16(wide,fs,bands,7e6)
         self.assertTrue(r['candidates'],r)
+        self.assertNotIn('rejection_reason',r)
+        self.assertIn('rejection_reason',r['direct_trial'])
         c=r['candidates'][0]
         self.assertTrue(equivalent(c['symbols'],expected))
         self.assertAlmostEqual(c['channel']['frequency_hz'],7e6+35000+273.4,delta=.2)
@@ -183,3 +185,32 @@ class QamTests(unittest.TestCase):
         self.assertTrue(r['candidates'],r)
         self.assertTrue(equivalent(r['candidates'][0]['symbols'],expected))
         self.assertEqual(decode_qam16(x,251e6)['status'],'not_applicable')
+
+    def test_diagnostic_observer_cannot_change_decisions(self):
+        x,fs,expected,_=fixture()
+        baseline=decode_qam16(x,fs)
+        observed=[]
+        def observe(diagnostic,labels):
+            observed.append((diagnostic['symbol_evm_rms'],len(labels)))
+            diagnostic['rejection_reasons'].append('observer_mutation')
+            labels[:]=0
+        r=decode_qam16(x,fs,trial_observer=observe)
+        self.assertEqual(r,baseline)
+        self.assertTrue(equivalent(r['candidates'][0]['symbols'],expected))
+        self.assertLessEqual(len(observed),3)
+        self.assertTrue(observed)
+        self.assertLessEqual(observed[0][1],10000)
+
+    def test_quality_rejections_keep_fixed_thresholds(self):
+        x,fs,_,_=fixture(baud=4000)
+        rng=np.random.default_rng(128)
+        noisy=x+.25*(rng.normal(size=len(x))+1j*rng.normal(size=len(x)))
+        r=decode_qam16(noisy,fs)
+        self.assertFalse(r['candidates'],r['filter_trials'])
+        self.assertEqual(r['rejection_reason'],'filter_trials_failed_quality_gates')
+        self.assertEqual(len(r['filter_trials']),3)
+        for trial in r['filter_trials']:
+            self.assertIn('evm_rms_above_0.12',trial['rejection_reasons'])
+            self.assertGreater(trial['symbol_evm_rms'],.12)
+        r=decode_qam16(np.ones(4096),16000)
+        self.assertEqual(r['rejection_reason'],'clock_line_not_detected')

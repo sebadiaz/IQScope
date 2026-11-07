@@ -1,5 +1,6 @@
 """Bounded square 16-QAM trials. Symbol labels do not identify a protocol."""
 import math
+import copy
 from pathlib import Path
 import json
 import numpy as np
@@ -9,8 +10,13 @@ from iqscope_psk_rrc import _line, rrc_taps
 LEVELS=np.array([-3,-1,1,3],dtype=float)/np.sqrt(10)
 
 
-def decode_qam16(x,fs,max_seconds=3,max_bits=40000):
+def decode_qam16(x,fs,max_seconds=3,max_bits=40000,*,trial_observer=None):
+    """Recover candidates; optional observer receives bounded copies of fit diagnostics/labels.
+
+    Observations never feed back into fit selection or acceptance criteria.
+    """
     result={'decoder':'qam16_generic','family':'16-QAM','candidates':[],
+            'filter_trials':[],
             'validation':'constellation, occupancy and timing only; protocol, bit mapping, byte alignment and CRC unknown',
             'limitations':['Stationary single-carrier square 16-QAM with RRC pulse shaping; no fading, equalizer or persistent phase tracking.',
                             '1 kS/s–250 MS/s; at least four source samples per symbol and 256 recovered symbols.',
@@ -18,7 +24,7 @@ def decode_qam16(x,fs,max_seconds=3,max_bits=40000):
                             'Carrier offset ambiguity modulo sample_rate/4; direct unambiguous range is +/- sample_rate/8.',
                             'Strongest envelope clock line only, three RRC rolloffs; bursts, low rolloff and interfering carriers may fail.']}
     if not math.isfinite(fs) or not 1000<=fs<=250_000_000 or len(x)<1024:
-        return dict(result,status='not_applicable')
+        return dict(result,status='not_applicable',rejection_reason='input_rate_or_length')
     count=min(len(x),int(fs*max_seconds),288000)
     source_rate=fs
     # A change of time units, not decimation: retain every source sample.
@@ -31,15 +37,19 @@ def decode_qam16(x,fs,max_seconds=3,max_bits=40000):
                               'interpolation_factor':1})
     power=float(np.mean(abs(source)**2))
     if not np.isfinite(power) or power<1e-20 or not np.all(np.isfinite(source)):
-        return dict(result,status='no_consistent_candidate')
+        return dict(result,status='no_consistent_candidate',rejection_reason='invalid_or_zero_power')
     source/=np.sqrt(power)
     envelope=abs(source)**2
     clock=_line(envelope-envelope.mean(),fs,30,min(9600,fs/4),.001)
-    if clock is None or count/fs*clock[0]<280:
-        return dict(result,status='no_consistent_candidate')
+    if clock is None:
+        return dict(result,status='no_consistent_candidate',rejection_reason='clock_line_not_detected')
+    result['acquisition']={'clock_baud':clock[0]*scale,'clock_line_energy_fraction':clock[1]}
+    if count/fs*clock[0]<280:
+        return dict(result,status='no_consistent_candidate',rejection_reason='insufficient_clock_cycles')
     carrier=_line(source**4,fs,-fs/2,fs/2,.005)
-    if carrier is None:return dict(result,status='no_consistent_candidate')
+    if carrier is None:return dict(result,status='no_consistent_candidate',rejection_reason='carrier_line_not_detected')
     baud,clock_strength=clock;frequency,carrier_strength=carrier
+    result['acquisition'].update(carrier_offset_hz=frequency/4*scale,carrier_line_energy_fraction=carrier_strength)
     time=np.arange(count)/fs
     corrected=source*np.exp(-2j*np.pi*frequency/4*time)
     up=2 if fs/baud<8 else 1
@@ -74,9 +84,22 @@ def decode_qam16(x,fs,max_seconds=3,max_bits=40000):
                              options={'maxiter':12,'maxfev':160,'xtol':1e-6,'ftol':1e-6})
         evm,values,i,q,centers,origin=evaluate(fit.x,True)
         labels=4*i+q
-        if evm>.12 or min(np.mean(labels==k) for k in range(16))<.015:continue
         ideal=LEVELS[i]+1j*LEVELS[q]
-        if max(np.sqrt(np.mean(abs(a-b)**2)) for a,b in zip(np.array_split(values,2),np.array_split(ideal,2)))>.14:continue
+        half_evm=[float(np.sqrt(np.mean(abs(a-b)**2))) for a,b in zip(np.array_split(values,2),np.array_split(ideal,2))]
+        occupancy=float(min(np.mean(labels==k) for k in range(16)))
+        reasons=[]
+        if evm>.12:reasons.append('evm_rms_above_0.12')
+        if occupancy<.015:reasons.append('state_occupancy_below_0.015')
+        if max(half_evm)>.14:reasons.append('half_evm_above_0.14')
+        if min(len(labels),max_bits//4)<256:reasons.append('insufficient_output_symbols')
+        diagnostic={'rrc_rolloff_trial':rolloff,'baud':float(fit.x[0]*scale),
+                    'carrier_offset_hz':frequency/4*scale,'symbol_count':len(labels),
+                    'symbol_evm_rms':evm,'half_symbol_evm_rms':half_evm,
+                    'minimum_state_occupancy':occupancy,'rejection_reasons':reasons}
+        result['filter_trials'].append(diagnostic)
+        if trial_observer is not None:
+            trial_observer(copy.deepcopy(diagnostic),labels[:max(0,max_bits//4)].copy())
+        if reasons:continue
         total=len(labels);n=min(total,max_bits//4)
         if n<256:continue
         labels=labels[:n];points=values[np.unique(np.linspace(0,n-1,min(n,512),dtype=int))]
@@ -91,7 +114,7 @@ def decode_qam16(x,fs,max_seconds=3,max_bits=40000):
                                            'carrier_line_energy_fraction':carrier_strength,'checksum':'not_checked','protocol':'unknown'},
                                'constellation':{'i':points.real.tolist(),'q':points.imag.tolist(),'normalization':'common RMS gain; symbol amplitudes retained','sampled_symbols':True}}]
         return dict(result,status='constellation_consistent_candidate')
-    return dict(result,status='no_consistent_candidate')
+    return dict(result,status='no_consistent_candidate',rejection_reason='filter_trials_failed_quality_gates')
 
 
 def search_qam16(x,fs,bands,center_hz=0):
@@ -103,6 +126,7 @@ def search_qam16(x,fs,bands,center_hz=0):
             candidate['channel']={'offset_hz':offset,'frequency_hz':center_hz+offset if center_hz else None,'sample_rate':fs}
         return result
     if not math.isfinite(fs) or not 1000<=fs<=2_400_000:return result
+    result['direct_trial']={key:result.pop(key) for key in ('filter_trials','acquisition','rejection_reason') if key in result}
     eligible=sorted((b for b in bands if b['bandwidth_hz']<=48000),key=lambda b:b['spectral_snr_db'],reverse=True)
     source=np.asarray(x[:min(len(x),int(fs*3),2_400_000)])
     time=np.arange(len(source))/fs
@@ -113,7 +137,9 @@ def search_qam16(x,fs,bands,center_hz=0):
         mixed=source*np.exp(-2j*np.pi*offset*time)
         narrow=signal.resample_poly(mixed,1,down) if down>1 else mixed
         trial=decode_qam16(narrow,rate)
-        channels.append({'offset_hz':offset,'sample_rate':rate,'status':trial['status'],'source_sample_start':0,'source_sample_end':len(source)})
+        channels.append({'offset_hz':offset,'sample_rate':rate,'status':trial['status'],'source_sample_start':0,'source_sample_end':len(source),
+                         'rejection_reason':trial.get('rejection_reason'),'filter_trials':trial['filter_trials'],
+                         'acquisition':trial.get('acquisition')})
         for candidate in trial['candidates']:
             actual=offset+candidate['parameters']['carrier_offset_hz']
             candidate['channel']={'offset_hz':actual,'frequency_hz':center_hz+actual if center_hz else None,'sample_rate':rate}
