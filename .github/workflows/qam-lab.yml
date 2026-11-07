@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - scripts/qam_lab_reference.py
+      - scripts/qam_prbs15.py
+      - tests/test_qam_prbs15.py
       - .github/workflows/qam-lab.yml
       - iqscope_qam.py
   workflow_dispatch:

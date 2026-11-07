@@ -13,6 +13,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 import numpy as np
 from iqscope_qam import decode_qam16
 from iqscope_psk_rrc import _line
+from scripts.qam_prbs15 import check_prbs15
 
 PIN='3f9ea40d9b187d0819b14cb254dc04905d398889'
 URL=f'https://raw.githubusercontent.com/billjgavin/28_and_75GHz_Capture_Files/{PIN}/IQ_28_Ghz.zip'
@@ -62,8 +63,8 @@ def trial_summary(raw):
                            'carrier_offset_hz':carrier[0]/4*fs/32000 if carrier else None,
                            'carrier_energy_fraction':carrier[1] if carrier else None},
             'candidates':[{'symbol_count':c['symbol_count'],'parameters':c['parameters'],
-                           'evidence':c['evidence']} for c in trial['candidates']],
-            'validation':'structural constellation only; upstream filename is a modulation label, not decoded ground-truth bits or CRC'}
+                           'evidence':c['evidence'],'prbs15':check_prbs15(c['symbols'])} for c in trial['candidates']],
+            'validation':'structural constellation plus separately reported known PRBS15 test-pattern comparison; no protocol or CRC'}
 
 
 def main():
