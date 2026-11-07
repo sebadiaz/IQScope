@@ -42,6 +42,15 @@ class QamPrbs15Tests(unittest.TestCase):
         self.assertEqual(r['evaluation_error_count'],2)
         self.assertAlmostEqual(r['evaluation_ber'],2/(len(bits)-2048))
 
+    def test_arbitrary_nonlinear_labeling(self):
+        _,bits=fixture()
+        nibbles=bits.reshape(-1,4)@np.array([8,4,2,1])
+        encoding=np.array([10,3,14,5,2,8,0,15,7,13,4,1,11,6,9,12])
+        r=check_prbs15(encoding[nibbles])
+        self.assertEqual(r['status'],'prbs15_consistent',r)
+        self.assertEqual(r['evaluation_error_count'],0)
+        np.testing.assert_array_equal(np.array(r['label_to_nibble'])[encoding],np.arange(16))
+
     def test_evaluation_suffix_cannot_choose_fit(self):
         labels,_=fixture()
         original=check_prbs15(labels)
