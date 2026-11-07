@@ -11,6 +11,7 @@ on:
       - iqscope_qam.py
       - iqscope_qam_soft.py
       - tests/test_qam_soft.py
+      - tests/test_qam.py
   workflow_dispatch:
 permissions:
   contents: read
@@ -26,7 +27,7 @@ jobs:
       - run: python -m pip install .
       - name: Inspect bounded archive and trial QAM without executing archive contents
         run: python scripts/qam_lab_reference.py
-      - name: Compare prefix-trained receiver corrections without PRBS feedback
+      - name: Compare bounded receiver and bit-likelihood measurements without PRBS feedback
         run: python scripts/qam_receiver_study.py
       - uses: actions/upload-artifact@v4
         if: always()

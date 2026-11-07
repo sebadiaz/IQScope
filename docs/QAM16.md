@@ -12,10 +12,10 @@ Un candidat direct est recherché avant les canaux du détecteur spectral commun
 
 ## Budgets et limites
 
-- Entrée directe entre 1 kéch/s et 250 Méch/s, avec au moins quatre échantillons source par symbole. Jusqu’à 96 kéch/s, recherche d’horloge de 30 à min(9600, débit d’échantillonnage/4) bauds.
-- Au-delà de 96 kéch/s, changement d’unité de temps vers une fréquence de calcul de 32 000, sans supprimer d’échantillons : recherche entre `Fs × 30/32000` et `Fs/4` bauds. Les débits, offsets et temps exportés sont reconvertis en unités physiques. Par exemple, à 200 Méch/s la plage cherchée est 187,5 kbaud à 50 Mbaud. Ce mode ne recherche donc pas les canaux étroits d’une telle source.
+- Entrée directe entre 1 kéch/s et 250 Méch/s, nominalement quatre échantillons source par symbole avec environ 1 % de marge d’horloge. Jusqu’à 96 kéch/s, la recherche peut atteindre min(9600, débit d’échantillonnage/3,96) bauds ; son plancher reste 30 bauds. La sélection entre plage nominale et étendue est décrite ci-dessous.
+- Au-delà de 96 kéch/s, changement d’unité de temps vers une fréquence de calcul de 32 000, sans supprimer d’échantillons : recherche entre `Fs × 30/32000` et `Fs/3,96` bauds. Les débits, offsets et temps exportés sont reconvertis en unités physiques. À 200 Méch/s, le plafond nominal de 50 Mbaud peut ainsi être dépassé pour une erreur d’horloge positive, jusqu’à ≈50,505 Mbaud. Ce mode ne recherche donc pas les canaux étroits d’une telle source.
 - Au moins 280 symboles dans la durée examinée et 256 symboles de sortie. La limite de trois secondes empêche donc certains bas débits d’aboutir.
-- Trois premières secondes et 288 000 échantillons source au plus par essai direct ; l’interpolation peut porter le tampon à 576 000 échantillons. À 200 Méch/s, le budget source limite la fenêtre à 1,44 ms. Recherche spectrale jusqu’à 2,4 Méch/s, limitée également à 2 400 000 échantillons d’entrée et quatre canaux.
+- Trois premières secondes et 288 000 échantillons source au plus par essai direct ; l’interpolation par au plus trois peut porter le tampon à 864 000 échantillons. À 200 Méch/s, le budget source limite la fenêtre à 1,44 ms. Recherche spectrale jusqu’à 2,4 Méch/s, limitée également à 2 400 000 échantillons d’entrée et quatre canaux.
 - 24 phases initiales et au plus 160 évaluations par filtre, ajustées sur au plus 2048 centres répartis dans la fenêtre.
 - Au plus 40 000 bits (10 000 symboles) et 512 points de constellation par candidat. Les limites de durée et de sortie sont signalées.
 
@@ -133,3 +133,21 @@ Dans l’application, chaque candidat QAM accepté propose désormais un export 
 La capture `f` conserve son refus générique et ses seuils d’EVM. La comparaison de laboratoire utilise son codage acquis sur le préfixe ; les exports génériques n’appliquent pas ce codage spécifique. Les tests vérifient le signe, l’ordre et la saturation des LLR, une baisse des erreurs sur une référence AWGN synthétique à codage non Gray, ainsi que le téléchargement du JSON par Chromium. Remplacer la suite par du hasard doit produire une mesure d’échec, sans empêcher la comparaison par un choix fondé sur cette suite.
 
 Références techniques consultées : [récepteur de constellation GNU Radio](https://wiki.gnuradio.org/index.php/Constellation_Receiver), [interpolation fractionnaire GNU Radio](https://wiki.gnuradio.org/index.php/Fractional_Interpolator), [conception RRC et troncature](https://www.mathworks.com/help/signal/ref/rcosdesign.html), et [démodulation QAM avec LLR exacts](https://www.mathworks.com/help/comm/ref/qamdemod.html). L’implémentation utilise NumPy/SciPy et ses formules explicites, sans dépendance MATLAB ni GNU Radio.
+
+## Correction de la borne d’horloge à quatre échantillons par symbole
+
+Une erreur a été reproduite indépendamment du corpus matériel : le plafond strict `Fs/4` empêchait de rechercher le vrai débit lorsque l’émetteur était légèrement plus rapide que l’horloge nominale de l’ADC. Une erreur positive de 500 ppm pouvait conduire à une hypothèse d’horloge erronée et au refus d’une référence synthétique valide. À +175 ppm, le débit restait artificiellement bloqué à 50 Mbaud au lieu de 50,00875 Mbaud.
+
+La recherche autorise maintenant une marge autour des quatre échantillons nominaux, jusqu’à `Fs/3,96`. L’interpolation choisit un facteur entier suffisant pour conserver au moins huit échantillons internes par symbole, avec un maximum de trois. L’élargissement est activé lorsque l’estimation dépasse la borne nominale de plus de 0,01 case FFT. Cette marge de stabilité évite des changements de branche pour de très petites fluctuations autour de la limite. Sinon, la recherche et la borne d’ajustement nominales sont conservées. Les seuils d’EVM, d’occupation et de durée ne changent pas.
+
+Sur des références générées dans le domaine fréquentiel, à débit ADC de 200 Méch/s et débit symbole nominal de 50 Mbaud :
+
+| Erreur d’horloge | Avant | Après |
+| --- | --- | --- |
+| −500 ppm | symboles récupérés, EVM ≈3,92 % | même récupération |
+| +175 ppm | estimation bloquée à 50 Mbaud, EVM ≈9,65 % | estimation ≈50,008779 Mbaud, EVM ≈3,68 % |
+| +500 ppm | référence refusée | estimation ≈50,025031 Mbaud, EVM ≈3,67 %, symboles récupérés conformes à la séquence émise |
+
+Le [contrôle matériel après stabilisation](https://github.com/sebadiaz/IQScope/actions/runs/42417439750) conserve zéro erreur sur les cinq captures fortes et, sur `f`, 610 erreurs binaires après décision de symbole contre 602 après décision probabiliste par bit, sur les mêmes 17 904 bits de suite. Les empreintes des références PRBS prédites sont identiques à celles d’avant correction : le résultat ne provient pas d’un déplacement du segment évalué. La capture faible conserve son refus ; ce correctif améliore la couverture des erreurs d’horloge, sans revendiquer une réduction supplémentaire de ses erreurs.
+
+Les rapports donnent `clock_search_mode`, la marge en bauds et les facteurs réels de rééchantillonnage. Chaque essai de filtre conserve aussi la période utilisée pour ses coefficients RRC, distincte du débit affiné ensuite. Le banc reconstruit les décisions avec ces paramètres exacts, y compris pour l’interpolation par trois.

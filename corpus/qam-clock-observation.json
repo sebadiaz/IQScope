@@ -1,0 +1,128 @@
+{
+  "measurement_commit": "7760d43f27c6f5afa1688ca191fd8a93132285b1",
+  "measurement_run": "https://github.com/sebadiaz/IQScope/actions/runs/42417439750",
+  "previous_receiver_commit": "52564a6130420c9395f3edb8ff69cce4cbc626ac",
+  "scope": "Synthetic clock-boundary regression and unchanged hardware bit intervals; same QAM quality gates, no additional weak-capture error reduction claimed.",
+  "synthetic_after": [
+    {
+      "clock_ppm": -500,
+      "true_baud": 49975000,
+      "estimated_baud": 49975073.79271734,
+      "symbol_evm_rms": 0.039187044223201,
+      "recovered_labels_match": true,
+      "acquisition": {
+        "clock_baud": 49974966.128118254,
+        "clock_line_energy_fraction": 0.02119415809157142,
+        "clock_search_mode": "nominal_clock_range",
+        "clock_boundary_margin_baud": 416.40641265875496,
+        "carrier_offset_hz": 999830.8829372335,
+        "carrier_line_energy_fraction": 0.05301310661131838
+      },
+      "processing": {
+        "source_sample_rate_hz": 200000000,
+        "source_sample_count": 4803,
+        "time_coordinate_sample_rate": 32000,
+        "physical_hz_per_coordinate_hz": 6250,
+        "interpolation_factor": 2
+      }
+    },
+    {
+      "clock_ppm": 175,
+      "true_baud": 50008750,
+      "estimated_baud": 50008779.02003175,
+      "symbol_evm_rms": 0.036784863365456215,
+      "recovered_labels_match": true,
+      "acquisition": {
+        "clock_baud": 50008688.80332231,
+        "clock_line_energy_fraction": 0.01993264838888084,
+        "clock_search_mode": "extended_positive_clock",
+        "clock_boundary_margin_baud": 416.6666666666667,
+        "carrier_offset_hz": 999828.4197224427,
+        "carrier_line_energy_fraction": 0.05360726814676311
+      },
+      "processing": {
+        "source_sample_rate_hz": 200000000,
+        "source_sample_count": 4800,
+        "time_coordinate_sample_rate": 32000,
+        "physical_hz_per_coordinate_hz": 6250,
+        "interpolation_factor": 3
+      }
+    },
+    {
+      "clock_ppm": 500,
+      "true_baud": 50025000,
+      "estimated_baud": 50025030.88204119,
+      "symbol_evm_rms": 0.03669477949969954,
+      "recovered_labels_match": true,
+      "acquisition": {
+        "clock_baud": 50025155.51128973,
+        "clock_line_energy_fraction": 0.022036026863476242,
+        "clock_search_mode": "extended_positive_clock",
+        "clock_boundary_margin_baud": 416.84035014589415,
+        "carrier_offset_hz": 999829.0793526229,
+        "carrier_line_energy_fraction": 0.05297543554849951
+      },
+      "processing": {
+        "source_sample_rate_hz": 200000000,
+        "source_sample_count": 4798,
+        "time_coordinate_sample_rate": 32000,
+        "physical_hz_per_coordinate_hz": 6250,
+        "interpolation_factor": 3
+      }
+    }
+  ],
+  "synthetic_before": {
+    "positive_175_ppm": {
+      "estimated_baud": 49999999.99679627,
+      "symbol_evm_rms": 0.09646209835807712,
+      "status": "constellation_consistent_candidate"
+    },
+    "positive_500_ppm": {
+      "status": "no_consistent_candidate"
+    }
+  },
+  "hardware": {
+    "16qam a.csv": {
+      "hard_errors": 0,
+      "soft_errors": 0,
+      "evaluation_bits": 17904,
+      "predicted_reference_sha256": "14641bb94b9ccae52b58ed1b3703716cfd99422a7e02bb130f9effca575951a7",
+      "same_predicted_reference_as_before": true
+    },
+    "16qam b.csv": {
+      "hard_errors": 0,
+      "soft_errors": 0,
+      "evaluation_bits": 17904,
+      "predicted_reference_sha256": "e66c5cb35a9b927651130990b37cf8e78abb6f1a2361fb71043528be83937e91",
+      "same_predicted_reference_as_before": true
+    },
+    "16qam c.csv": {
+      "hard_errors": 0,
+      "soft_errors": 0,
+      "evaluation_bits": 17904,
+      "predicted_reference_sha256": "dbaf97c414cb445c5c6f33e77506a7ab2bf5838256f6b7abe2f15ea8dec65438",
+      "same_predicted_reference_as_before": true
+    },
+    "16qam d.csv": {
+      "hard_errors": 0,
+      "soft_errors": 0,
+      "evaluation_bits": 17904,
+      "predicted_reference_sha256": "d314d81d81d03102e3d4d3cae1a641e71a6bd5c74db2d47db0f562ac2eef550d",
+      "same_predicted_reference_as_before": true
+    },
+    "16qam e.csv": {
+      "hard_errors": 0,
+      "soft_errors": 0,
+      "evaluation_bits": 17904,
+      "predicted_reference_sha256": "aa12b572ce115cb3142ac1c2920ef37a246dafdb25643bf0bbe5b75efd0503eb",
+      "same_predicted_reference_as_before": true
+    },
+    "16qam f.csv": {
+      "hard_errors": 610,
+      "soft_errors": 602,
+      "evaluation_bits": 17904,
+      "predicted_reference_sha256": "b3b1c4c30aaed626eed153081907322f6325e409596c2834285c6bb5984710ac",
+      "same_predicted_reference_as_before": true
+    }
+  }
+}

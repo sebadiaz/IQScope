@@ -12,7 +12,6 @@ import xml.etree.ElementTree as ET
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 import numpy as np
 from iqscope_qam import decode_qam16
-from iqscope_psk_rrc import _line
 from scripts.qam_prbs15 import check_prbs15
 
 PIN='3f9ea40d9b187d0819b14cb254dc04905d398889'
@@ -67,18 +66,17 @@ def trial_summary(raw,diagnose=False):
                               'shuffled_control':{'status':control['status'],'evaluation_ber':control.get('evaluation_ber')},
                               'scope':'diagnostic of fixed RRC trials; labels remain rejected by the generic quality gates'})
     trial=decode_qam16(x,fs,trial_observer=observe if diagnose else None)
-    normalized=x/np.sqrt(np.mean(abs(x)**2))
-    energy=abs(normalized)**2
-    clock=_line(energy-energy.mean(),32000,30,8000,.001)
-    carrier=_line(normalized**4,32000,-16000,16000,.005)
+    acquisition=trial.get('acquisition',{})
     return {'layout':layout,'source_sha256':hashlib.sha256(raw).hexdigest(),
             'status':trial['status'],'processing':trial.get('processing'),
             'rejection_reason':trial.get('rejection_reason'),'filter_trials':trial['filter_trials'],
             'rejected_fit_diagnostics':rejected_fits,
-            'diagnostics':{'clock_baud':clock[0]*fs/32000 if clock else None,
-                           'clock_energy_fraction':clock[1] if clock else None,
-                           'carrier_offset_hz':carrier[0]/4*fs/32000 if carrier else None,
-                           'carrier_energy_fraction':carrier[1] if carrier else None},
+            'diagnostics':{'clock_baud':acquisition.get('clock_baud'),
+                           'clock_energy_fraction':acquisition.get('clock_line_energy_fraction'),
+                           'carrier_offset_hz':acquisition.get('carrier_offset_hz'),
+                           'carrier_energy_fraction':acquisition.get('carrier_line_energy_fraction'),
+                           'clock_search_mode':acquisition.get('clock_search_mode'),
+                           'clock_boundary_margin_baud':acquisition.get('clock_boundary_margin_baud')},
             'candidates':[candidate_summary(c) for c in trial['candidates']],
             'validation':'structural constellation plus separately reported known PRBS15 test-pattern comparison; no protocol or CRC'}
 

@@ -217,6 +217,8 @@ def main():
             labels=slice_labels(values)
             if not np.array_equal(labels,expected):raise AssertionError('Symbol reconstruction differs from receiver')
             results['files'][basename]={'layout':layout,'generic_status':decoded['status'],
+                'receiver_acquisition':decoded.get('acquisition'),'receiver_processing':decoded.get('processing'),
+                'reference_fit':fit,
                 'source_mean_power':float(np.mean(abs(x)**2)),
                 'soft_bit_comparison':soft_comparison(values),
                 'variants':{method:dict(summarize(output),parameters=parameters) for method,output,parameters in list(variants(values))+list(blind_variants(values))+list(frontend_variants(x,fs,fit,values))}}
