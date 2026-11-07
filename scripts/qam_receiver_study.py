@@ -40,9 +40,10 @@ def reconstruct_symbols(x,fs,fit):
     return values*np.exp(-1j*fit['phase_origin_radians'])
 
 
-def affine_em(values):
+def affine_em(values,fit_count=TRAIN_SYMBOLS):
     """Fit a noisy affine square-QAM mixture on prefix samples without labels."""
-    train=np.column_stack((values[:TRAIN_SYMBOLS].real,values[:TRAIN_SYMBOLS].imag))
+    selected=values if fit_count is None else values[:fit_count]
+    train=np.column_stack((selected.real,selected.imag))
     grid=np.column_stack((POINTS.real,POINTS.imag,np.ones(16)))
     coef=np.zeros((3,2))
     coef[:2]=np.diag(np.sqrt(2*np.var(train,axis=0)))
@@ -64,6 +65,42 @@ def affine_em(values):
     corrected=(raw-coef[2])@np.linalg.inv(coef[:2])
     return corrected[:,0]+1j*corrected[:,1],{'linear_matrix':coef[:2].tolist(),
                 'offset_iq':coef[2].tolist(),'prefix_noise_variance_per_axis':variance,'iterations':32}
+
+
+def circular_em(values,iterations=32):
+    """Blind circular-AWGN likelihood; gain/phase/noise, without bit references."""
+    gain=1+0j
+    variance=max(float(np.mean(abs(values-POINTS[slice_labels(values)])**2)),1e-5)
+    for _ in range(iterations):
+        distance=abs(values[:,None]-gain*POINTS[None,:])**2
+        logits=-distance/max(variance,1e-5)
+        weights=np.exp(logits-logits.max(axis=1,keepdims=True))
+        weights/=weights.sum(axis=1,keepdims=True)
+        mean=weights@POINTS
+        energy=weights@(abs(POINTS)**2)
+        gain=np.sum(values*np.conj(mean))/np.sum(energy)
+        variance=float(np.sum(weights*abs(values[:,None]-gain*POINTS[None,:])**2)/len(values))
+    if not .5<abs(gain)<2:raise ValueError('Unbounded blind gain estimate')
+    return values/gain,{'gain_i':float(gain.real),'gain_q':float(gain.imag),
+                       'noise_variance_complex':variance,'iterations':iterations,'fit_scope':'unlabelled full window'}
+
+
+def blind_variants(values):
+    corrected,parameters=circular_em(values)
+    yield 'blind_circular_em',corrected,parameters
+    corrected,parameters=affine_em(values,fit_count=None)
+    parameters['fit_scope']='unlabelled full window'
+    yield 'blind_affine_em',corrected,parameters
+    phase=0.
+    for _ in range(8):
+        rotated=values*np.exp(-1j*phase)
+        decisions=POINTS[slice_labels(rotated)]
+        phase=float(np.angle(np.vdot(decisions,values)))
+    yield 'blind_phase_only',values*np.exp(-1j*phase),{'phase_radians':phase,'iterations':8,'fit_scope':'unlabelled full window'}
+    m2=float(np.mean(abs(values)**2));m4=float(np.mean(abs(values)**4))
+    signal_power=np.sqrt(max((2*m2*m2-m4)/.68,1e-12))
+    if .25<signal_power<4:
+        yield 'blind_m2m4_gain',values/np.sqrt(signal_power),{'signal_power':float(signal_power),'fit_scope':'unlabelled full window'}
 
 
 def variants(values):
@@ -100,7 +137,7 @@ def main():
     raw=(root/'IQ_28_Ghz.zip').read_bytes()
     if len(raw)!=SIZE or hashlib.sha256(raw).hexdigest()!=SHA256:raise ValueError('Unverified laboratory archive')
     results={'source_url':URL,'source_sha256':SHA256,'training_symbols':TRAIN_SYMBOLS,
-             'scope':'predeclared prefix-trained experiments; all results reported, no PRBS feedback or automatic acceptance change',
+             'scope':'prefix-trained and declared blind full-window experiments; all results reported, no PRBS feedback or automatic acceptance change',
              'files':{},'noise_reference_power':{}}
     with zipfile.ZipFile(root/'IQ_28_Ghz.zip') as archive:
         for name in sorted(archive.namelist()):
@@ -120,7 +157,7 @@ def main():
             if not np.array_equal(labels,expected):raise AssertionError('Symbol reconstruction differs from receiver')
             results['files'][basename]={'layout':layout,'generic_status':decoded['status'],
                 'source_mean_power':float(np.mean(abs(x)**2)),
-                'variants':{method:dict(summarize(output),parameters=parameters) for method,output,parameters in variants(values)}}
+                'variants':{method:dict(summarize(output),parameters=parameters) for method,output,parameters in list(variants(values))+list(blind_variants(values))}}
     if set(results['files'])!={f'16qam {letter}.csv' for letter in 'abcdef'}:
         raise AssertionError('Expected six laboratory captures in receiver study')
     if any(item['prbs15']['evaluation_bits']!=17904 for capture in results['files'].values() for item in capture['variants'].values()):

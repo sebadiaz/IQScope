@@ -1,11 +1,24 @@
 import unittest
 import numpy as np
-from scripts.qam_receiver_study import affine_em, slice_labels, reconstruct_symbols, variants, POINTS
+from scripts.qam_receiver_study import affine_em, circular_em, slice_labels, reconstruct_symbols, variants, POINTS
 from iqscope_qam import decode_qam16
 from test_qam import fixture
 
 
 class QamReceiverStudyTests(unittest.TestCase):
+    def test_blind_gain_phase_and_noise_from_unlabelled_samples(self):
+        rng=np.random.default_rng(228)
+        labels=rng.integers(0,16,6000)
+        gain=.88*np.exp(.21j)
+        noise=.035*(rng.normal(size=len(labels))+1j*rng.normal(size=len(labels)))
+        received=gain*POINTS[labels]+noise
+        original=received.copy()
+        corrected,parameters=circular_em(received)
+        np.testing.assert_array_equal(received,original)
+        np.testing.assert_array_equal(slice_labels(corrected),labels)
+        estimated=parameters['gain_i']+1j*parameters['gain_q']
+        self.assertLess(abs(estimated-gain),.005)
+        self.assertAlmostEqual(parameters['noise_variance_complex'],2*.035**2,delta=.0002)
     def test_physical_time_reconstruction_matches_decisions(self):
         for fs,baud,offset in ((16000,617,273.4),(200e6,50e6,1e6)):
             x,_,_,_=fixture(fs=fs,baud=baud,offset=offset)
