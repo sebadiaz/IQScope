@@ -24,7 +24,7 @@ PREFIX = ACQUISITION_BITS // 4
 VALIDATION_START = 384
 GUARD = 40
 VALIDATION_FIT_END = VALIDATION_START-2*GUARD
-TAP_COUNTS = (7, 13)
+TAP_COUNTS = (7, 13, 21)  # 21 half-symbol taps cover the baseline's 10-symbol RRC span.
 RIDGES = (.001, .01, .1)
 
 
@@ -227,7 +227,7 @@ def main():
     if set(results['files']) != {f'16qam {letter}.csv' for letter in 'abcdef'}:
         raise AssertionError('Expected all six QAM captures')
     for name, capture in results['files'].items():
-        if len(capture['methods']) != 19:
+        if len(capture['methods']) != 1+3*len(TAP_COUNTS)*len(RIDGES):
             raise AssertionError('Missing a predefined method')
         for method in capture['methods'].values():
             if method['evaluation_bits'] != 17904:

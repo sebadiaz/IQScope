@@ -18,15 +18,16 @@ class QamFseStudyTests(unittest.TestCase):
         original = received.copy()
         fit = {'baud': baud, 'symbol_count': len(labels), 'carrier_offset_hz': 273.4,
                'first_symbol_center_seconds': 3.37/fs}
-        features, parameters = raw_features(received, fs, fit, 13)
-        targets = POINTS[labels[:PREFIX]]
-        gain = np.vdot(targets, features[:PREFIX, 6])/np.sum(abs(targets)**2)
-        naive = features[:, 6]/gain
-        self.assertGreater(np.count_nonzero(slice_labels(naive[PREFIX:-GUARD]) != labels[PREFIX:-GUARD]), 500)
-        fitted = fit_prefix_filter(features, targets, .001)
-        corrected = apply_prefix_filter(features, fitted)
-        np.testing.assert_array_equal(slice_labels(corrected[PREFIX:-GUARD]), labels[PREFIX:-GUARD])
-        self.assertEqual(parameters['sample_spacing_symbols'], .5)
+        for taps in (13, 21):
+            features, parameters = raw_features(received, fs, fit, taps)
+            targets = POINTS[labels[:PREFIX]]
+            gain = np.vdot(targets, features[:PREFIX, taps//2])/np.sum(abs(targets)**2)
+            naive = features[:, taps//2]/gain
+            self.assertGreater(np.count_nonzero(slice_labels(naive[PREFIX:-GUARD]) != labels[PREFIX:-GUARD]), 500)
+            fitted = fit_prefix_filter(features, targets, .001)
+            corrected = apply_prefix_filter(features, fitted)
+            np.testing.assert_array_equal(slice_labels(corrected[PREFIX:-GUARD]), labels[PREFIX:-GUARD])
+            self.assertEqual(parameters['sample_spacing_symbols'], .5)
         np.testing.assert_array_equal(received, original)
 
     def test_half_symbol_geometry_in_physical_time_units(self):
