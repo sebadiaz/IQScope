@@ -178,4 +178,37 @@ Sur la suite de `f`, le résidu par rapport à la référence a une puissance de
 
 Le même script calcule aussi une prédiction du BER sous le modèle circulaire ajusté, avec la table de bits du préfixe. Le BER après décision de symbole est calculé par les probabilités gaussiennes de franchissement des seuils. Le BER minimal par bit **dans ce modèle sans mémoire et à symboles uniformes** est obtenu en intégrant les densités des deux valeurs de chaque bit, puis leur minimum. Des grilles de 401 et 801 points par axe vérifient la stabilité numérique ; les tableaux temporaires sont limités à 8 192 points par seize symboles. La seconde grille prédit environ **630 erreurs sur 17 904 bits**, contre **602 observées**. Les deux résolutions diffèrent de moins d’une erreur sur cet intervalle. Un test Monte-Carlo indépendant vérifie les deux BER théoriques. Cette comparaison situe l’ordre de grandeur des erreurs ; ce modèle n’est pas une borne pour un décodeur utilisant un code correcteur, une mémoire de canal ou la structure d’un protocole.
 
+## Détection de séquences et bruit impulsionnel
+
+`scripts/qam_sequence_study.py` teste deux hypothèses supplémentaires après reconstruction du même premier filtre RRC. La table de bits et la phase PRBS sont acquises une fois sur le préfixe de référence, puis restent fixes pour toutes les voies et les mêmes 17 904 bits de vérification.
+
+Le détecteur BCJR utilise le modèle `y[n] = h0·s[n] + h1·s[n−1] + w[n]`. Ses seize états représentent le symbole précédent et ses 256 branches les couples précédent/courant. Les passages avant et arrière, avec normalisation à chaque étape, calculent les probabilités marginales des symboles ; les LLR résultent des sommes par valeur de bit. Les états initial et terminal sont inconnus et uniformes. Le traitement utilise toute la fenêtre hors ligne, au plus 10 000 symboles, sans code correcteur ni prior PRBS.
+
+Le gain principal, le coefficient d’interférence et la variance de bruit sont appris sur les seuls 512 premiers symboles non étiquetés. Huit itérations EM utilisent les probabilités des branches, sans décisions imposées ni symboles attendus. Deux pénalités fixes du coefficient d’interférence sont rapportées, nulle ou `0,05 × nombre de symboles`. Une voie témoin utilise le même ajustement initial sur préfixe, sans itération ni mémoire, pour distinguer l’effet du segment d’apprentissage de celui du BCJR. Le gain principal reste borné entre 0,5 et 2 ; le coefficient secondaire ne peut dépasser la moitié de son module.
+
+Une variante supplémentaire du même BCJR apprend les paramètres sur toute la fenêtre non étiquetée, avec huit itérations et la pénalité fixe de 0,05. Elle utilise les échantillons de la suite pour ajuster le canal, sans accès aux bits attendus ; elle doit donc être distinguée des voies à paramètres appris uniquement sur préfixe. Sa calibration points/bits et sa phase PRBS restent celles du préfixe de référence, comme pour les autres méthodes. Le rapport déclare pour chaque voie son périmètre et son nombre de symboles d’ajustement.
+
+La voie de bruit impulsionnel ajuste, sur les échantillons non étiquetés de la fenêtre, un gain complexe commun et deux composantes de bruit gaussien circulaire. Les 32 itérations EM estiment leurs variances et probabilités ; les probabilités sont bornées entre 2 % et 98 %. Les vraisemblances marginalisent les deux composantes avant de sommer les états associés à chaque valeur de bit. Aucun bit de vérification ne choisit une composante ou un modèle.
+
+Les tests comparent le BCJR à l’énumération exhaustive des 65 536 séquences possibles pour trois observations et un symbole précédent inconnu. Ils vérifient son identité avec les LLR sans mémoire lorsque le coefficient secondaire est nul, l’apprentissage d’un canal synthétique inconnu et l’invariance de ses paramètres quand seule la suite change. Un autre essai apprend le bruit impulsionnel sur des symboles aléatoires et mesure la qualité probabiliste sur des symboles indépendants. Des composantes de même variance doivent restituer les LLR gaussiens existants.
+
+Un diagnostic séparé mesure sur les résidus de référence le moment radial d’ordre quatre, des quantiles, des probabilités de queue et la corrélation avec le symbole précédent. Ces statistiques descriptives ne servent à aucun ajustement. Les mesures de toutes les voies sont enregistrées dans `sequence-study.json`, sans modification du chemin d’acceptation automatique.
+
+Les [mesures du banc complet](https://github.com/sebadiaz/IQScope/actions/runs/42461984466), enregistrées dans `corpus/qam-sequence-observation.json`, donnent sur la capture faible :
+
+| Voie | Symboles servant à l’ajustement | Erreurs sur 17 904 bits | Erreurs anciennes corrigées | Erreurs nouvelles introduites |
+| --- | ---: | ---: | ---: | ---: |
+| Probabilités circulaires actuelles | 4 988 | 602 | — | — |
+| Bruit impulsionnel à deux composantes | 4 988 | 607 | 0 | 5 |
+| Témoin sans mémoire appris sur préfixe | 512 | 622 | 17 | 37 |
+| BCJR, pénalité 0,05 | 512 | 634 | 39 | 71 |
+| BCJR, sans pénalité | 512 | 637 | 43 | 78 |
+| BCJR, pénalité 0,05, fenêtre complète | 4 988 | 615 | 16 | 29 |
+
+Les cinq autres captures restent à zéro erreur pour les six voies. Les empreintes des bits de référence restent identiques à celles des études précédentes, dont `b3b1c4c30aaed626eed153081907322f6325e409596c2834285c6bb5984710ac` pour `f`. Les voies BCJR réduisent la variance ajustée tout en ajoutant davantage d’erreurs qu’elles n’en corrigent. L’effet n’est donc pas un gain de décodage. La variante complète estime un coefficient secondaire d’environ 1,02 % du gain principal.
+
+Sur les 4 476 symboles de vérification de `f`, le rapport `E|r|⁴ / (E|r|²)²` vaut 2,00985, contre 2 pour un bruit gaussien circulaire. Les quantiles à 90 %, 99 % et 99,9 % de `|r|² / E|r|²` valent 2,30566, 4,63646 et 7,03504, contre 2,30259, 4,60517 et 6,90776 sous cette hypothèse. Le mélange aveugle ajuste des variances de 0,05236 et 0,07809, avec environ 22,2 % dans la seconde composante ; il n’établit pas une population distincte d’impulsions extrêmes. Ces mesures renforcent la compatibilité avec un bruit principalement gaussien, sans constituer un test de normalité ni une preuve d’optimalité du récepteur.
+
+Sur le canal synthétique indépendant à deux coefficients, les 1 077 erreurs de symboles avant traitement deviennent zéro après apprentissage aveugle sur préfixe et BCJR. Ce résultat vérifie que le détecteur peut corriger une interférence réellement présente ; il ne se transpose pas à un gain sur `f`. Tous les résultats réels ci-dessus restent exploratoires sur le corpus de développement. Le refus automatique de la capture faible et les exports génériques restent ceux du récepteur courant.
+
 Les rapports donnent `clock_search_mode`, la marge en bauds et les facteurs réels de rééchantillonnage. Chaque essai de filtre conserve aussi la période utilisée pour ses coefficients RRC, distincte du débit affiné ensuite. Le banc reconstruit les décisions avec ces paramètres exacts, y compris pour l’interpolation par trois.

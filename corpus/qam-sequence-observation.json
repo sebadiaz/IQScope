@@ -1,0 +1,1023 @@
+{
+  "source_url": "https://raw.githubusercontent.com/billjgavin/28_and_75GHz_Capture_Files/3f9ea40d9b187d0819b14cb254dc04905d398889/IQ_28_Ghz.zip",
+  "source_sha256": "4959f58182b54a8ba25893106be939f34716d0c3832afa4d88d1658e54844240",
+  "measurement_commit": "b4779cbef5c946bd75cf97f1c404311b2107674a",
+  "measurement_run": "https://github.com/sebadiaz/IQScope/actions/runs/42461984466",
+  "scope": "development-corpus study, all predefined models reported; no PRBS feedback or automatic acceptance change",
+  "files": {
+    "16qam a.csv": {
+      "mapping_scope": "baseline prefix only; frozen codebook and PN phase for every method",
+      "expected_bits_sha256": "14641bb94b9ccae52b58ed1b3703716cfd99422a7e02bb130f9effca575951a7",
+      "methods": {
+        "baseline_circular": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "model": {
+            "gain_i": 0.9965401567933991,
+            "gain_q": -0.0007625768587322061,
+            "noise_variance_complex": 0.00021749518366129259,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        },
+        "blind_impulsive_noise": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "gain_i": 0.9965435173610472,
+            "gain_q": -0.0007892975862986909,
+            "noise_variances_complex": [
+              0.00018093658406948487,
+              0.0003257098222594541
+            ],
+            "component_probabilities": [
+              0.7474717687794546,
+              0.25252823122054546
+            ],
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied samples; two circular Gaussian noise components, uniform QAM prior"
+          }
+        },
+        "prefix_memoryless": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "taps_i": [
+              0.996472845075612,
+              0
+            ],
+            "taps_q": [
+              -0.013187420853068014,
+              0
+            ],
+            "noise_variance_complex": 0.00016305427522420341,
+            "iterations": 0,
+            "postcursor_ridge_per_symbol": 0.05,
+            "fit_symbol_count": 512,
+            "fit_scope": "unlabelled first 512 symbols only; uniform independent QAM prior; no reference or decision targets"
+          }
+        },
+        "prefix_bcjr_ridge": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "taps_i": [
+              0.9964570108762517,
+              0.0034842950679098246
+            ],
+            "taps_q": [
+              -0.01334212455327283,
+              0.0010609226233838091
+            ],
+            "noise_variance_complex": 0.00014792729895041212,
+            "iterations": 8,
+            "postcursor_ridge_per_symbol": 0.05,
+            "fit_symbol_count": 512,
+            "fit_scope": "unlabelled first 512 symbols only; uniform independent QAM prior; no reference or decision targets"
+          }
+        },
+        "prefix_bcjr_unregularized": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "taps_i": [
+              0.9964562036599766,
+              0.003652072705105064
+            ],
+            "taps_q": [
+              -0.013349655478443804,
+              0.0011119938710301032
+            ],
+            "noise_variance_complex": 0.00014789289889360901,
+            "iterations": 8,
+            "postcursor_ridge_per_symbol": 0,
+            "fit_symbol_count": 512,
+            "fit_scope": "unlabelled first 512 symbols only; uniform independent QAM prior; no reference or decision targets"
+          }
+        },
+        "blind_full_window_bcjr": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "taps_i": [
+              0.9966009730192618,
+              0.003598693865265602
+            ],
+            "taps_q": [
+              -0.0007869375498772924,
+              0.001974114705872499
+            ],
+            "noise_variance_complex": 0.00019885088575811373,
+            "iterations": 8,
+            "postcursor_ridge_per_symbol": 0.05,
+            "fit_symbol_count": 4988,
+            "fit_scope": "unlabelled full supplied window; uniform independent QAM prior; no reference or decision targets"
+          }
+        }
+      },
+      "residual_distribution": {
+        "scope": "known-reference suffix diagnostics only; never used for any channel/noise fit",
+        "symbol_count": 4476,
+        "radial_fourth_moment_ratio": 2.1480374803835587,
+        "gaussian_radial_fourth_moment_ratio": 2,
+        "quantile_probabilities": [
+          0.5,
+          0.9,
+          0.99,
+          0.999
+        ],
+        "normalized_radial_quantiles": [
+          0.6485211803493869,
+          2.3517375659652924,
+          5.099798056076491,
+          7.5983425953618315
+        ],
+        "gaussian_normalized_radial_quantiles": [
+          0.6931471805599453,
+          2.302585092994046,
+          4.605170185988091,
+          6.907755278982136
+        ],
+        "tail_probabilities": [
+          {
+            "normalized_squared_radius": 4,
+            "observed_fraction": 0.027033065236818588,
+            "gaussian_fraction": 0.01831563888873418
+          },
+          {
+            "normalized_squared_radius": 9,
+            "observed_fraction": 0.00022341376228775692,
+            "gaussian_fraction": 0.00012340980408667956
+          }
+        ],
+        "reference_crosscorrelation_previous_symbol": [
+          0.0038531054896177247,
+          0.0022143100310491478
+        ],
+        "limits": "finite development-corpus sample; descriptive moments and tails, not a normality proof"
+      },
+      "generic_status": "constellation_consistent_candidate"
+    },
+    "16qam b.csv": {
+      "mapping_scope": "baseline prefix only; frozen codebook and PN phase for every method",
+      "expected_bits_sha256": "e66c5cb35a9b927651130990b37cf8e78abb6f1a2361fb71043528be83937e91",
+      "methods": {
+        "baseline_circular": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "model": {
+            "gain_i": 1.0030483029833135,
+            "gain_q": -0.003804189950413685,
+            "noise_variance_complex": 0.00033429157671415214,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        },
+        "blind_impulsive_noise": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "gain_i": 1.0030480756124698,
+            "gain_q": -0.003804520423734197,
+            "noise_variances_complex": [
+              0.0003159449106949336,
+              0.00039507937019894024
+            ],
+            "component_probabilities": [
+              0.7681583182081728,
+              0.2318416817918271
+            ],
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied samples; two circular Gaussian noise components, uniform QAM prior"
+          }
+        },
+        "prefix_memoryless": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "taps_i": [
+              1.002331955436899,
+              0
+            ],
+            "taps_q": [
+              -0.005509375213697317,
+              0
+            ],
+            "noise_variance_complex": 0.0003319000941815838,
+            "iterations": 0,
+            "postcursor_ridge_per_symbol": 0.05,
+            "fit_symbol_count": 512,
+            "fit_scope": "unlabelled first 512 symbols only; uniform independent QAM prior; no reference or decision targets"
+          }
+        },
+        "prefix_bcjr_ridge": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "taps_i": [
+              1.0021986589418315,
+              0.005882707625285774
+            ],
+            "taps_q": [
+              -0.005820720743413018,
+              0.0015671392106001297
+            ],
+            "noise_variance_complex": 0.00029153546854510104,
+            "iterations": 8,
+            "postcursor_ridge_per_symbol": 0.05,
+            "fit_symbol_count": 512,
+            "fit_scope": "unlabelled first 512 symbols only; uniform independent QAM prior; no reference or decision targets"
+          }
+        },
+        "prefix_bcjr_unregularized": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "taps_i": [
+              1.002192117106235,
+              0.006180525350407748
+            ],
+            "taps_q": [
+              -0.005836583293060934,
+              0.0016464990668857888
+            ],
+            "noise_variance_complex": 0.00029143598235481516,
+            "iterations": 8,
+            "postcursor_ridge_per_symbol": 0,
+            "fit_symbol_count": 512,
+            "fit_scope": "unlabelled first 512 symbols only; uniform independent QAM prior; no reference or decision targets"
+          }
+        },
+        "blind_full_window_bcjr": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "taps_i": [
+              1.0029519121136286,
+              0.005568910823096266
+            ],
+            "taps_q": [
+              -0.0039328862639281155,
+              0.0017805559618886697
+            ],
+            "noise_variance_complex": 0.00029694060296198333,
+            "iterations": 8,
+            "postcursor_ridge_per_symbol": 0.05,
+            "fit_symbol_count": 4988,
+            "fit_scope": "unlabelled full supplied window; uniform independent QAM prior; no reference or decision targets"
+          }
+        }
+      },
+      "residual_distribution": {
+        "scope": "known-reference suffix diagnostics only; never used for any channel/noise fit",
+        "symbol_count": 4476,
+        "radial_fourth_moment_ratio": 2.002698171150996,
+        "gaussian_radial_fourth_moment_ratio": 2,
+        "quantile_probabilities": [
+          0.5,
+          0.9,
+          0.99,
+          0.999
+        ],
+        "normalized_radial_quantiles": [
+          0.7007140680590415,
+          2.2917640001773067,
+          4.692064740477858,
+          7.23169626670007
+        ],
+        "gaussian_normalized_radial_quantiles": [
+          0.6931471805599453,
+          2.302585092994046,
+          4.605170185988091,
+          6.907755278982136
+        ],
+        "tail_probabilities": [
+          {
+            "normalized_squared_radius": 4,
+            "observed_fraction": 0.01675603217158177,
+            "gaussian_fraction": 0.01831563888873418
+          },
+          {
+            "normalized_squared_radius": 9,
+            "observed_fraction": 0.00022341376228775692,
+            "gaussian_fraction": 0.00012340980408667956
+          }
+        ],
+        "reference_crosscorrelation_previous_symbol": [
+          0.005808750586495864,
+          0.0019084032250954019
+        ],
+        "limits": "finite development-corpus sample; descriptive moments and tails, not a normality proof"
+      },
+      "generic_status": "constellation_consistent_candidate"
+    },
+    "16qam c.csv": {
+      "mapping_scope": "baseline prefix only; frozen codebook and PN phase for every method",
+      "expected_bits_sha256": "dbaf97c414cb445c5c6f33e77506a7ab2bf5838256f6b7abe2f15ea8dec65438",
+      "methods": {
+        "baseline_circular": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "model": {
+            "gain_i": 0.9942663896582535,
+            "gain_q": -0.006696671203635179,
+            "noise_variance_complex": 0.000766100279646437,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        },
+        "blind_impulsive_noise": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "gain_i": 0.9942548409519719,
+            "gain_q": -0.006702659246454131,
+            "noise_variances_complex": [
+              0.0007137737031376658,
+              0.0009399187000290146
+            ],
+            "component_probabilities": [
+              0.7686141711032901,
+              0.2313858288967098
+            ],
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied samples; two circular Gaussian noise components, uniform QAM prior"
+          }
+        },
+        "prefix_memoryless": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "taps_i": [
+              0.9933401332928897,
+              0
+            ],
+            "taps_q": [
+              -0.01032220339776875,
+              0
+            ],
+            "noise_variance_complex": 0.0007473258504727808,
+            "iterations": 0,
+            "postcursor_ridge_per_symbol": 0.05,
+            "fit_symbol_count": 512,
+            "fit_scope": "unlabelled first 512 symbols only; uniform independent QAM prior; no reference or decision targets"
+          }
+        },
+        "prefix_bcjr_ridge": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "taps_i": [
+              0.9934146769075257,
+              0.002887076992537386
+            ],
+            "taps_q": [
+              -0.01037274423246289,
+              0.001652194762373651
+            ],
+            "noise_variance_complex": 0.0007348170266294751,
+            "iterations": 8,
+            "postcursor_ridge_per_symbol": 0.05,
+            "fit_symbol_count": 512,
+            "fit_scope": "unlabelled first 512 symbols only; uniform independent QAM prior; no reference or decision targets"
+          }
+        },
+        "prefix_bcjr_unregularized": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "taps_i": [
+              0.9934183207429723,
+              0.003027268617606528
+            ],
+            "taps_q": [
+              -0.01037519221949996,
+              0.0017324239398547447
+            ],
+            "noise_variance_complex": 0.0007347892862215044,
+            "iterations": 8,
+            "postcursor_ridge_per_symbol": 0,
+            "fit_symbol_count": 512,
+            "fit_scope": "unlabelled first 512 symbols only; uniform independent QAM prior; no reference or decision targets"
+          }
+        },
+        "blind_full_window_bcjr": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "taps_i": [
+              0.9942823392918344,
+              0.002551954644366723
+            ],
+            "taps_q": [
+              -0.006656015135579394,
+              0.001791523373106552
+            ],
+            "noise_variance_complex": 0.0007553035092368867,
+            "iterations": 8,
+            "postcursor_ridge_per_symbol": 0.05,
+            "fit_symbol_count": 4988,
+            "fit_scope": "unlabelled full supplied window; uniform independent QAM prior; no reference or decision targets"
+          }
+        }
+      },
+      "residual_distribution": {
+        "scope": "known-reference suffix diagnostics only; never used for any channel/noise fit",
+        "symbol_count": 4476,
+        "radial_fourth_moment_ratio": 2.015227479228052,
+        "gaussian_radial_fourth_moment_ratio": 2,
+        "quantile_probabilities": [
+          0.5,
+          0.9,
+          0.99,
+          0.999
+        ],
+        "normalized_radial_quantiles": [
+          0.6919133590475828,
+          2.3171080771270107,
+          4.567603999547827,
+          7.293337660174436
+        ],
+        "gaussian_normalized_radial_quantiles": [
+          0.6931471805599453,
+          2.302585092994046,
+          4.605170185988091,
+          6.907755278982136
+        ],
+        "tail_probabilities": [
+          {
+            "normalized_squared_radius": 4,
+            "observed_fraction": 0.018096514745308313,
+            "gaussian_fraction": 0.01831563888873418
+          },
+          {
+            "normalized_squared_radius": 9,
+            "observed_fraction": 0.00044682752457551384,
+            "gaussian_fraction": 0.00012340980408667956
+          }
+        ],
+        "reference_crosscorrelation_previous_symbol": [
+          0.0026438287023693653,
+          0.0018973768544652855
+        ],
+        "limits": "finite development-corpus sample; descriptive moments and tails, not a normality proof"
+      },
+      "generic_status": "constellation_consistent_candidate"
+    },
+    "16qam d.csv": {
+      "mapping_scope": "baseline prefix only; frozen codebook and PN phase for every method",
+      "expected_bits_sha256": "d314d81d81d03102e3d4d3cae1a641e71a6bd5c74db2d47db0f562ac2eef550d",
+      "methods": {
+        "baseline_circular": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "model": {
+            "gain_i": 1.0030573568149572,
+            "gain_q": -0.003364762082539853,
+            "noise_variance_complex": 0.0020944335973003946,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        },
+        "blind_impulsive_noise": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "gain_i": 1.0030524501319538,
+            "gain_q": -0.0033607120542048807,
+            "noise_variances_complex": [
+              0.001995802386584819,
+              0.002413858237571703
+            ],
+            "component_probabilities": [
+              0.7640715932335069,
+              0.23592840676649302
+            ],
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied samples; two circular Gaussian noise components, uniform QAM prior"
+          }
+        },
+        "prefix_memoryless": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "taps_i": [
+              1.004076910242043,
+              0
+            ],
+            "taps_q": [
+              -0.011084570188502441,
+              0
+            ],
+            "noise_variance_complex": 0.0019760848315773833,
+            "iterations": 0,
+            "postcursor_ridge_per_symbol": 0.05,
+            "fit_symbol_count": 512,
+            "fit_scope": "unlabelled first 512 symbols only; uniform independent QAM prior; no reference or decision targets"
+          }
+        },
+        "prefix_bcjr_ridge": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "taps_i": [
+              1.004114748512938,
+              0.0035019016805431535
+            ],
+            "taps_q": [
+              -0.011178215888063647,
+              0.0006728802113004106
+            ],
+            "noise_variance_complex": 0.001962147113974355,
+            "iterations": 8,
+            "postcursor_ridge_per_symbol": 0.05,
+            "fit_symbol_count": 512,
+            "fit_scope": "unlabelled first 512 symbols only; uniform independent QAM prior; no reference or decision targets"
+          }
+        },
+        "prefix_bcjr_unregularized": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "taps_i": [
+              1.004116646207268,
+              0.0036776939620880135
+            ],
+            "taps_q": [
+              -0.011182919835217055,
+              0.0007066580308452933
+            ],
+            "noise_variance_complex": 0.0019621151564348516,
+            "iterations": 8,
+            "postcursor_ridge_per_symbol": 0,
+            "fit_symbol_count": 512,
+            "fit_scope": "unlabelled first 512 symbols only; uniform independent QAM prior; no reference or decision targets"
+          }
+        },
+        "blind_full_window_bcjr": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "taps_i": [
+              1.0029950748486298,
+              0.004142650696849047
+            ],
+            "taps_q": [
+              -0.0034657431284692204,
+              0.0017598629187187272
+            ],
+            "noise_variance_complex": 0.0020723287398766526,
+            "iterations": 8,
+            "postcursor_ridge_per_symbol": 0.05,
+            "fit_symbol_count": 4988,
+            "fit_scope": "unlabelled full supplied window; uniform independent QAM prior; no reference or decision targets"
+          }
+        }
+      },
+      "residual_distribution": {
+        "scope": "known-reference suffix diagnostics only; never used for any channel/noise fit",
+        "symbol_count": 4476,
+        "radial_fourth_moment_ratio": 1.9881365300213343,
+        "gaussian_radial_fourth_moment_ratio": 2,
+        "quantile_probabilities": [
+          0.5,
+          0.9,
+          0.99,
+          0.999
+        ],
+        "normalized_radial_quantiles": [
+          0.6900691268256635,
+          2.2694417857767917,
+          4.767509674511318,
+          6.435911838790245
+        ],
+        "gaussian_normalized_radial_quantiles": [
+          0.6931471805599453,
+          2.302585092994046,
+          4.605170185988091,
+          6.907755278982136
+        ],
+        "tail_probabilities": [
+          {
+            "normalized_squared_radius": 4,
+            "observed_fraction": 0.02100089365504915,
+            "gaussian_fraction": 0.01831563888873418
+          },
+          {
+            "normalized_squared_radius": 9,
+            "observed_fraction": 0,
+            "gaussian_fraction": 0.00012340980408667956
+          }
+        ],
+        "reference_crosscorrelation_previous_symbol": [
+          0.004434714037999079,
+          0.0020225069921720605
+        ],
+        "limits": "finite development-corpus sample; descriptive moments and tails, not a normality proof"
+      },
+      "generic_status": "constellation_consistent_candidate"
+    },
+    "16qam e.csv": {
+      "mapping_scope": "baseline prefix only; frozen codebook and PN phase for every method",
+      "expected_bits_sha256": "aa12b572ce115cb3142ac1c2920ef37a246dafdb25643bf0bbe5b75efd0503eb",
+      "methods": {
+        "baseline_circular": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "model": {
+            "gain_i": 0.9910128247129668,
+            "gain_q": -0.007236496010715262,
+            "noise_variance_complex": 0.0061844781913895554,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        },
+        "blind_impulsive_noise": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "gain_i": 0.9910099165547941,
+            "gain_q": -0.007235415113025291,
+            "noise_variances_complex": [
+              0.0060085021212584,
+              0.006751570372242913
+            ],
+            "component_probabilities": [
+              0.7631764246855574,
+              0.2368235753144426
+            ],
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied samples; two circular Gaussian noise components, uniform QAM prior"
+          }
+        },
+        "prefix_memoryless": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "taps_i": [
+              0.9916672864784776,
+              0
+            ],
+            "taps_q": [
+              -0.012272160182332202,
+              0
+            ],
+            "noise_variance_complex": 0.005954025286486656,
+            "iterations": 0,
+            "postcursor_ridge_per_symbol": 0.05,
+            "fit_symbol_count": 512,
+            "fit_scope": "unlabelled first 512 symbols only; uniform independent QAM prior; no reference or decision targets"
+          }
+        },
+        "prefix_bcjr_ridge": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "taps_i": [
+              0.9916232932070412,
+              0.003226355530138765
+            ],
+            "taps_q": [
+              -0.01236832004053076,
+              -0.003064166323728927
+            ],
+            "noise_variance_complex": 0.005932783773069827,
+            "iterations": 8,
+            "postcursor_ridge_per_symbol": 0.05,
+            "fit_symbol_count": 512,
+            "fit_scope": "unlabelled first 512 symbols only; uniform independent QAM prior; no reference or decision targets"
+          }
+        },
+        "prefix_bcjr_unregularized": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "taps_i": [
+              0.9916210404341235,
+              0.003392337448297771
+            ],
+            "taps_q": [
+              -0.012373291288301736,
+              -0.0032218032456626665
+            ],
+            "noise_variance_complex": 0.005932730798304253,
+            "iterations": 8,
+            "postcursor_ridge_per_symbol": 0,
+            "fit_symbol_count": 512,
+            "fit_scope": "unlabelled first 512 symbols only; uniform independent QAM prior; no reference or decision targets"
+          }
+        },
+        "blind_full_window_bcjr": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0,
+          "evaluation_ber": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "model": {
+            "taps_i": [
+              0.9910018660411738,
+              0.0033560687304864073
+            ],
+            "taps_q": [
+              -0.007149297113597643,
+              0.0031787121929943932
+            ],
+            "noise_variance_complex": 0.006160731688660687,
+            "iterations": 8,
+            "postcursor_ridge_per_symbol": 0.05,
+            "fit_symbol_count": 4988,
+            "fit_scope": "unlabelled full supplied window; uniform independent QAM prior; no reference or decision targets"
+          }
+        }
+      },
+      "residual_distribution": {
+        "scope": "known-reference suffix diagnostics only; never used for any channel/noise fit",
+        "symbol_count": 4476,
+        "radial_fourth_moment_ratio": 1.9631424568935485,
+        "gaussian_radial_fourth_moment_ratio": 2,
+        "quantile_probabilities": [
+          0.5,
+          0.9,
+          0.99,
+          0.999
+        ],
+        "normalized_radial_quantiles": [
+          0.7121842193522026,
+          2.319722544531643,
+          4.3761707667249405,
+          6.645305121675197
+        ],
+        "gaussian_normalized_radial_quantiles": [
+          0.6931471805599453,
+          2.302585092994046,
+          4.605170185988091,
+          6.907755278982136
+        ],
+        "tail_probabilities": [
+          {
+            "normalized_squared_radius": 4,
+            "observed_fraction": 0.017649687220732797,
+            "gaussian_fraction": 0.01831563888873418
+          },
+          {
+            "normalized_squared_radius": 9,
+            "observed_fraction": 0,
+            "gaussian_fraction": 0.00012340980408667956
+          }
+        ],
+        "reference_crosscorrelation_previous_symbol": [
+          0.0036069897692984285,
+          0.004149626954128303
+        ],
+        "limits": "finite development-corpus sample; descriptive moments and tails, not a normality proof"
+      },
+      "generic_status": "constellation_consistent_candidate"
+    },
+    "16qam f.csv": {
+      "mapping_scope": "baseline prefix only; frozen codebook and PN phase for every method",
+      "expected_bits_sha256": "b3b1c4c30aaed626eed153081907322f6325e409596c2834285c6bb5984710ac",
+      "methods": {
+        "baseline_circular": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 602,
+          "evaluation_ber": 0.03362377122430742,
+          "model": {
+            "gain_i": 0.9650046670680885,
+            "gain_q": -0.0015194111202971124,
+            "noise_variance_complex": 0.057219975196883675,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          }
+        },
+        "blind_impulsive_noise": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 607,
+          "evaluation_ber": 0.03390303842716711,
+          "errors_corrected": 0,
+          "new_errors_introduced": 5,
+          "model": {
+            "gain_i": 0.9643832230777484,
+            "gain_q": -0.0016416306452926605,
+            "noise_variances_complex": [
+              0.05235931376054448,
+              0.07809449569563327
+            ],
+            "component_probabilities": [
+              0.7783288945378692,
+              0.22167110546213076
+            ],
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied samples; two circular Gaussian noise components, uniform QAM prior"
+          }
+        },
+        "prefix_memoryless": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 622,
+          "evaluation_ber": 0.0347408400357462,
+          "errors_corrected": 17,
+          "new_errors_introduced": 37,
+          "model": {
+            "taps_i": [
+              0.9603096985415183,
+              0
+            ],
+            "taps_q": [
+              -0.012077343279265183,
+              0
+            ],
+            "noise_variance_complex": 0.0611804586272089,
+            "iterations": 0,
+            "postcursor_ridge_per_symbol": 0.05,
+            "fit_symbol_count": 512,
+            "fit_scope": "unlabelled first 512 symbols only; uniform independent QAM prior; no reference or decision targets"
+          }
+        },
+        "prefix_bcjr_ridge": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 634,
+          "evaluation_ber": 0.03541108132260947,
+          "errors_corrected": 39,
+          "new_errors_introduced": 71,
+          "model": {
+            "taps_i": [
+              0.9609105608165088,
+              0.010128464862285524
+            ],
+            "taps_q": [
+              -0.014636834018369295,
+              0.01660168174526687
+            ],
+            "noise_variance_complex": 0.06072320794970909,
+            "iterations": 8,
+            "postcursor_ridge_per_symbol": 0.05,
+            "fit_symbol_count": 512,
+            "fit_scope": "unlabelled first 512 symbols only; uniform independent QAM prior; no reference or decision targets"
+          }
+        },
+        "prefix_bcjr_unregularized": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 637,
+          "evaluation_ber": 0.03557864164432529,
+          "errors_corrected": 43,
+          "new_errors_introduced": 78,
+          "model": {
+            "taps_i": [
+              0.9610127091217305,
+              0.011256035801863757
+            ],
+            "taps_q": [
+              -0.014891438645666038,
+              0.01848265097135496
+            ],
+            "noise_variance_complex": 0.060712494088994706,
+            "iterations": 8,
+            "postcursor_ridge_per_symbol": 0,
+            "fit_symbol_count": 512,
+            "fit_scope": "unlabelled first 512 symbols only; uniform independent QAM prior; no reference or decision targets"
+          }
+        },
+        "blind_full_window_bcjr": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 615,
+          "evaluation_ber": 0.03434986595174263,
+          "errors_corrected": 16,
+          "new_errors_introduced": 29,
+          "model": {
+            "taps_i": [
+              0.9650219834986321,
+              0.009511818007776231
+            ],
+            "taps_q": [
+              -0.0016936763818428014,
+              0.0027047236373949797
+            ],
+            "noise_variance_complex": 0.05708619680704419,
+            "iterations": 8,
+            "postcursor_ridge_per_symbol": 0.05,
+            "fit_symbol_count": 4988,
+            "fit_scope": "unlabelled full supplied window; uniform independent QAM prior; no reference or decision targets"
+          }
+        }
+      },
+      "residual_distribution": {
+        "scope": "known-reference suffix diagnostics only; never used for any channel/noise fit",
+        "symbol_count": 4476,
+        "radial_fourth_moment_ratio": 2.009846288565055,
+        "gaussian_radial_fourth_moment_ratio": 2,
+        "quantile_probabilities": [
+          0.5,
+          0.9,
+          0.99,
+          0.999
+        ],
+        "normalized_radial_quantiles": [
+          0.6886828470584394,
+          2.3056620336428626,
+          4.636457872771696,
+          7.035038872692611
+        ],
+        "gaussian_normalized_radial_quantiles": [
+          0.6931471805599453,
+          2.302585092994046,
+          4.605170185988091,
+          6.907755278982136
+        ],
+        "tail_probabilities": [
+          {
+            "normalized_squared_radius": 4,
+            "observed_fraction": 0.020777479892761394,
+            "gaussian_fraction": 0.01831563888873418
+          },
+          {
+            "normalized_squared_radius": 9,
+            "observed_fraction": 0,
+            "gaussian_fraction": 0.00012340980408667956
+          }
+        ],
+        "reference_crosscorrelation_previous_symbol": [
+          0.007343488793351181,
+          0.00005331904210392534
+        ],
+        "limits": "finite development-corpus sample; descriptive moments and tails, not a normality proof"
+      },
+      "generic_status": "no_consistent_candidate"
+    }
+  }
+}
