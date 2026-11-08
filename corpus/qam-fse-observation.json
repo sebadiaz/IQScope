@@ -1,0 +1,1218 @@
+{
+  "source_url": "https://raw.githubusercontent.com/billjgavin/28_and_75GHz_Capture_Files/3f9ea40d9b187d0819b14cb254dc04905d398889/IQ_28_Ghz.zip",
+  "source_sha256": "4959f58182b54a8ba25893106be939f34716d0c3832afa4d88d1658e54844240",
+  "measurement_commit": "6c3993d084edfc5b6c92478d1ea5a15b4fd5c220",
+  "measurement_run": "https://github.com/sebadiaz/IQScope/actions/runs/42494920914",
+  "scope": "aided prefix and decision-directed FSE research, all fixed configurations reported; no generic acceptance change",
+  "evaluation_bits": 17904,
+  "filtered_evaluation_bits": 17744,
+  "baseline_boundary_symbols_each_end": 40,
+  "selection_scope": "264 prefix training symbols, 80-symbol gap, 128 validation symbols; final fit on 472 prefix symbols only",
+  "full_parameters_artifact": "fse-study.json in the linked workflow artifact; this observation keeps the full grid counts and selected weak filters",
+  "files": {
+    "16qam a.csv": {
+      "generic_status": "constellation_consistent_candidate",
+      "expected_bits_sha256": "14641bb94b9ccae52b58ed1b3703716cfd99422a7e02bb130f9effca575951a7",
+      "baseline": {
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 0,
+        "evaluation_ber": 0,
+        "model": {
+          "gain_i": 0.9965401567933995,
+          "gain_q": -0.0007625768587317561,
+          "noise_variance_complex": 0.00021749518366112513,
+          "iterations": 32,
+          "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+        }
+      },
+      "selected_by_prefix_validation": {
+        "aided_raw_fse": {
+          "method": "aided_raw_fse_taps21_ridge0.001",
+          "evaluation_error_count": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "filtered_evaluation_error_count": 0,
+          "prefix_validation_normalized_mse": 0.00011838632498007382
+        },
+        "decision_raw_fse": {
+          "method": "decision_raw_fse_taps21_ridge0.001",
+          "evaluation_error_count": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "filtered_evaluation_error_count": 0,
+          "prefix_validation_normalized_mse": 0.00011838632498007382
+        },
+        "aided_symbol_fir": {
+          "method": "aided_symbol_fir_taps13_ridge0.001",
+          "evaluation_error_count": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "filtered_evaluation_error_count": 0,
+          "prefix_validation_normalized_mse": 0.0001199610135509434
+        }
+      },
+      "grid": {
+        "aided_raw_fse_taps7_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0005551874546004442
+        },
+        "aided_raw_fse_taps7_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0006989997289688569
+        },
+        "aided_raw_fse_taps7_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0035992233632922152
+        },
+        "aided_raw_fse_taps13_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.00013199345133632252
+        },
+        "aided_raw_fse_taps13_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.00016591919062724405
+        },
+        "aided_raw_fse_taps13_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.002643569404026305
+        },
+        "aided_raw_fse_taps21_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.00011838632498007382
+        },
+        "aided_raw_fse_taps21_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0001473287323659028
+        },
+        "aided_raw_fse_taps21_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0027058444246462685
+        },
+        "decision_raw_fse_taps7_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0005551874546004442
+        },
+        "decision_raw_fse_taps7_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0006989997289688569
+        },
+        "decision_raw_fse_taps7_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0035992233632922152
+        },
+        "decision_raw_fse_taps13_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.00013199345133632252
+        },
+        "decision_raw_fse_taps13_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.00016591919062724405
+        },
+        "decision_raw_fse_taps13_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.002643569404026305
+        },
+        "decision_raw_fse_taps21_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.00011838632498007382
+        },
+        "decision_raw_fse_taps21_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0001473287323659028
+        },
+        "decision_raw_fse_taps21_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0027058444246462685
+        },
+        "aided_symbol_fir_taps7_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.00012172000818983144
+        },
+        "aided_symbol_fir_taps7_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.00022733573347009342
+        },
+        "aided_symbol_fir_taps7_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.008742750890425139
+        },
+        "aided_symbol_fir_taps13_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0001199610135509434
+        },
+        "aided_symbol_fir_taps13_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0002340993965882253
+        },
+        "aided_symbol_fir_taps13_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0094220764709341
+        },
+        "aided_symbol_fir_taps21_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.00012164972042928006
+        },
+        "aided_symbol_fir_taps21_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0002392015213900147
+        },
+        "aided_symbol_fir_taps21_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.009535140697717638
+        }
+      }
+    },
+    "16qam b.csv": {
+      "generic_status": "constellation_consistent_candidate",
+      "expected_bits_sha256": "e66c5cb35a9b927651130990b37cf8e78abb6f1a2361fb71043528be83937e91",
+      "baseline": {
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 0,
+        "evaluation_ber": 0,
+        "model": {
+          "gain_i": 1.0030483029821935,
+          "gain_q": -0.003804189623342712,
+          "noise_variance_complex": 0.00033429158141903956,
+          "iterations": 32,
+          "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+        }
+      },
+      "selected_by_prefix_validation": {
+        "aided_raw_fse": {
+          "method": "aided_raw_fse_taps21_ridge0.001",
+          "evaluation_error_count": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "filtered_evaluation_error_count": 0,
+          "prefix_validation_normalized_mse": 0.00027664204899677236
+        },
+        "decision_raw_fse": {
+          "method": "decision_raw_fse_taps21_ridge0.001",
+          "evaluation_error_count": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "filtered_evaluation_error_count": 0,
+          "prefix_validation_normalized_mse": 0.00027664204899677236
+        },
+        "aided_symbol_fir": {
+          "method": "aided_symbol_fir_taps13_ridge0.001",
+          "evaluation_error_count": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "filtered_evaluation_error_count": 0,
+          "prefix_validation_normalized_mse": 0.000276866239693503
+        }
+      },
+      "grid": {
+        "aided_raw_fse_taps7_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0006121620520576773
+        },
+        "aided_raw_fse_taps7_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0007482946583252111
+        },
+        "aided_raw_fse_taps7_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0033469205481998286
+        },
+        "aided_raw_fse_taps13_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.00028134506685063366
+        },
+        "aided_raw_fse_taps13_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.00033471365555887703
+        },
+        "aided_raw_fse_taps13_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.003003516243647865
+        },
+        "aided_raw_fse_taps21_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.00027664204899677236
+        },
+        "aided_raw_fse_taps21_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0003225797105577612
+        },
+        "aided_raw_fse_taps21_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0031731286347926654
+        },
+        "decision_raw_fse_taps7_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0006121620520576773
+        },
+        "decision_raw_fse_taps7_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0007482946583252111
+        },
+        "decision_raw_fse_taps7_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0033469205481998286
+        },
+        "decision_raw_fse_taps13_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.00028134506685063366
+        },
+        "decision_raw_fse_taps13_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.00033471365555887703
+        },
+        "decision_raw_fse_taps13_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.003003516243647865
+        },
+        "decision_raw_fse_taps21_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.00027664204899677236
+        },
+        "decision_raw_fse_taps21_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0003225797105577612
+        },
+        "decision_raw_fse_taps21_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0031731286347926654
+        },
+        "aided_symbol_fir_taps7_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0002848810075359989
+        },
+        "aided_symbol_fir_taps7_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0004272771900239012
+        },
+        "aided_symbol_fir_taps7_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.009533159913065525
+        },
+        "aided_symbol_fir_taps13_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.000276866239693503
+        },
+        "aided_symbol_fir_taps13_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.00043581816905106604
+        },
+        "aided_symbol_fir_taps13_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.010452263487012371
+        },
+        "aided_symbol_fir_taps21_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0002834036748892238
+        },
+        "aided_symbol_fir_taps21_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.00043683029653158664
+        },
+        "aided_symbol_fir_taps21_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.010412966588021736
+        }
+      }
+    },
+    "16qam c.csv": {
+      "generic_status": "constellation_consistent_candidate",
+      "expected_bits_sha256": "dbaf97c414cb445c5c6f33e77506a7ab2bf5838256f6b7abe2f15ea8dec65438",
+      "baseline": {
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 0,
+        "evaluation_ber": 0,
+        "model": {
+          "gain_i": 0.9942663896607534,
+          "gain_q": -0.00669667106108245,
+          "noise_variance_complex": 0.0007661002765516599,
+          "iterations": 32,
+          "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+        }
+      },
+      "selected_by_prefix_validation": {
+        "aided_raw_fse": {
+          "method": "aided_raw_fse_taps21_ridge0.001",
+          "evaluation_error_count": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "filtered_evaluation_error_count": 0,
+          "prefix_validation_normalized_mse": 0.0006907446151176582
+        },
+        "decision_raw_fse": {
+          "method": "decision_raw_fse_taps21_ridge0.001",
+          "evaluation_error_count": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "filtered_evaluation_error_count": 0,
+          "prefix_validation_normalized_mse": 0.0006907446151176582
+        },
+        "aided_symbol_fir": {
+          "method": "aided_symbol_fir_taps7_ridge0.001",
+          "evaluation_error_count": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "filtered_evaluation_error_count": 0,
+          "prefix_validation_normalized_mse": 0.0006697161558481873
+        }
+      },
+      "grid": {
+        "aided_raw_fse_taps7_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0011163968648625442
+        },
+        "aided_raw_fse_taps7_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0012137931428683674
+        },
+        "aided_raw_fse_taps7_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.003818224255632268
+        },
+        "aided_raw_fse_taps13_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0007063812178179429
+        },
+        "aided_raw_fse_taps13_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0007260380107457706
+        },
+        "aided_raw_fse_taps13_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.003134303067609161
+        },
+        "aided_raw_fse_taps21_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0006907446151176582
+        },
+        "aided_raw_fse_taps21_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0007116297521892167
+        },
+        "aided_raw_fse_taps21_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0033951491600806576
+        },
+        "decision_raw_fse_taps7_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0011163968648625442
+        },
+        "decision_raw_fse_taps7_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0012137931428683674
+        },
+        "decision_raw_fse_taps7_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.003818224255632268
+        },
+        "decision_raw_fse_taps13_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0007063812178179429
+        },
+        "decision_raw_fse_taps13_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0007260380107457706
+        },
+        "decision_raw_fse_taps13_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.003134303067609161
+        },
+        "decision_raw_fse_taps21_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0006907446151176582
+        },
+        "decision_raw_fse_taps21_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0007116297521892167
+        },
+        "decision_raw_fse_taps21_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0033951491600806576
+        },
+        "aided_symbol_fir_taps7_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0006697161558481873
+        },
+        "aided_symbol_fir_taps7_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0007517361497579836
+        },
+        "aided_symbol_fir_taps7_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.00909995784972759
+        },
+        "aided_symbol_fir_taps13_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0006883421605715327
+        },
+        "aided_symbol_fir_taps13_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0008078670530171346
+        },
+        "aided_symbol_fir_taps13_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.010360406737377972
+        },
+        "aided_symbol_fir_taps21_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0007089330267062807
+        },
+        "aided_symbol_fir_taps21_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0008193896948676978
+        },
+        "aided_symbol_fir_taps21_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.010407127078644707
+        }
+      }
+    },
+    "16qam d.csv": {
+      "generic_status": "constellation_consistent_candidate",
+      "expected_bits_sha256": "d314d81d81d03102e3d4d3cae1a641e71a6bd5c74db2d47db0f562ac2eef550d",
+      "baseline": {
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 0,
+        "evaluation_ber": 0,
+        "model": {
+          "gain_i": 1.003057356810411,
+          "gain_q": -0.0033647620077830787,
+          "noise_variance_complex": 0.0020944336068451216,
+          "iterations": 32,
+          "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+        }
+      },
+      "selected_by_prefix_validation": {
+        "aided_raw_fse": {
+          "method": "aided_raw_fse_taps13_ridge0.001",
+          "evaluation_error_count": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "filtered_evaluation_error_count": 0,
+          "prefix_validation_normalized_mse": 0.0018575135227891157
+        },
+        "decision_raw_fse": {
+          "method": "decision_raw_fse_taps13_ridge0.001",
+          "evaluation_error_count": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "filtered_evaluation_error_count": 0,
+          "prefix_validation_normalized_mse": 0.0018575135227891157
+        },
+        "aided_symbol_fir": {
+          "method": "aided_symbol_fir_taps7_ridge0.001",
+          "evaluation_error_count": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "filtered_evaluation_error_count": 0,
+          "prefix_validation_normalized_mse": 0.0018813144427569548
+        }
+      },
+      "grid": {
+        "aided_raw_fse_taps7_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0024125034614788285
+        },
+        "aided_raw_fse_taps7_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0024936124987069313
+        },
+        "aided_raw_fse_taps7_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0054437908424692346
+        },
+        "aided_raw_fse_taps13_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0018575135227891157
+        },
+        "aided_raw_fse_taps13_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0019001084718164253
+        },
+        "aided_raw_fse_taps13_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.004491966135344115
+        },
+        "aided_raw_fse_taps21_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0019589564049724366
+        },
+        "aided_raw_fse_taps21_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.001971319304389178
+        },
+        "aided_raw_fse_taps21_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.004497446707078764
+        },
+        "decision_raw_fse_taps7_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0024125034614788285
+        },
+        "decision_raw_fse_taps7_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0024936124987069313
+        },
+        "decision_raw_fse_taps7_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0054437908424692346
+        },
+        "decision_raw_fse_taps13_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0018575135227891157
+        },
+        "decision_raw_fse_taps13_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0019001084718164253
+        },
+        "decision_raw_fse_taps13_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.004491966135344115
+        },
+        "decision_raw_fse_taps21_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0019589564049724366
+        },
+        "decision_raw_fse_taps21_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.001971319304389178
+        },
+        "decision_raw_fse_taps21_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.004497446707078764
+        },
+        "aided_symbol_fir_taps7_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0018813144427569548
+        },
+        "aided_symbol_fir_taps7_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.002052111896838874
+        },
+        "aided_symbol_fir_taps7_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.011234147934255185
+        },
+        "aided_symbol_fir_taps13_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0019397817735961732
+        },
+        "aided_symbol_fir_taps13_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.002079202508970375
+        },
+        "aided_symbol_fir_taps13_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.010855659911879131
+        },
+        "aided_symbol_fir_taps21_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0019179167990232063
+        },
+        "aided_symbol_fir_taps21_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.002043936558262799
+        },
+        "aided_symbol_fir_taps21_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.011124385084858694
+        }
+      }
+    },
+    "16qam e.csv": {
+      "generic_status": "constellation_consistent_candidate",
+      "expected_bits_sha256": "aa12b572ce115cb3142ac1c2920ef37a246dafdb25643bf0bbe5b75efd0503eb",
+      "baseline": {
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 0,
+        "evaluation_ber": 0,
+        "model": {
+          "gain_i": 0.9910128247129776,
+          "gain_q": -0.007236496011722113,
+          "noise_variance_complex": 0.006184478191352887,
+          "iterations": 32,
+          "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+        }
+      },
+      "selected_by_prefix_validation": {
+        "aided_raw_fse": {
+          "method": "aided_raw_fse_taps13_ridge0.001",
+          "evaluation_error_count": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "filtered_evaluation_error_count": 0,
+          "prefix_validation_normalized_mse": 0.006295354424342148
+        },
+        "decision_raw_fse": {
+          "method": "decision_raw_fse_taps13_ridge0.001",
+          "evaluation_error_count": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "filtered_evaluation_error_count": 0,
+          "prefix_validation_normalized_mse": 0.006295354424342148
+        },
+        "aided_symbol_fir": {
+          "method": "aided_symbol_fir_taps7_ridge0.001",
+          "evaluation_error_count": 0,
+          "errors_corrected": 0,
+          "new_errors_introduced": 0,
+          "filtered_evaluation_error_count": 0,
+          "prefix_validation_normalized_mse": 0.006262547170799544
+        }
+      },
+      "grid": {
+        "aided_raw_fse_taps7_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.006349484875156338
+        },
+        "aided_raw_fse_taps7_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.006412588339967327
+        },
+        "aided_raw_fse_taps7_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.00967689925666149
+        },
+        "aided_raw_fse_taps13_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.006295354424342148
+        },
+        "aided_raw_fse_taps13_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.006356852325999385
+        },
+        "aided_raw_fse_taps13_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.009464119899204287
+        },
+        "aided_raw_fse_taps21_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.006539660810840389
+        },
+        "aided_raw_fse_taps21_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0065521948495529106
+        },
+        "aided_raw_fse_taps21_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.009670132165907157
+        },
+        "decision_raw_fse_taps7_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.006349484875156338
+        },
+        "decision_raw_fse_taps7_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.006412588339967327
+        },
+        "decision_raw_fse_taps7_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.00967689925666149
+        },
+        "decision_raw_fse_taps13_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.006295354424342148
+        },
+        "decision_raw_fse_taps13_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.006356852325999385
+        },
+        "decision_raw_fse_taps13_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.009464119899204287
+        },
+        "decision_raw_fse_taps21_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.006539660810840389
+        },
+        "decision_raw_fse_taps21_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0065521948495529106
+        },
+        "decision_raw_fse_taps21_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.009670132165907157
+        },
+        "aided_symbol_fir_taps7_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.006262547170799544
+        },
+        "aided_symbol_fir_taps7_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.006552645827135546
+        },
+        "aided_symbol_fir_taps7_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.016418212847496533
+        },
+        "aided_symbol_fir_taps13_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.006302544832900186
+        },
+        "aided_symbol_fir_taps13_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0066212220845663135
+        },
+        "aided_symbol_fir_taps13_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.016843882845611325
+        },
+        "aided_symbol_fir_taps21_ridge0.001": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0066719036579974186
+        },
+        "aided_symbol_fir_taps21_ridge0.01": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.0070717381203604076
+        },
+        "aided_symbol_fir_taps21_ridge0.1": {
+          "errors": 0,
+          "filtered_errors": 0,
+          "prefix_validation_mse": 0.019855907448697044
+        }
+      }
+    },
+    "16qam f.csv": {
+      "generic_status": "no_consistent_candidate",
+      "expected_bits_sha256": "b3b1c4c30aaed626eed153081907322f6325e409596c2834285c6bb5984710ac",
+      "baseline": {
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 602,
+        "evaluation_ber": 0.03362377122430742,
+        "model": {
+          "gain_i": 0.9650046670681118,
+          "gain_q": -0.0015194111203277077,
+          "noise_variance_complex": 0.05721997519686136,
+          "iterations": 32,
+          "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+        }
+      },
+      "selected_by_prefix_validation": {
+        "aided_raw_fse": {
+          "method": "aided_raw_fse_taps13_ridge0.01",
+          "evaluation_error_count": 638,
+          "errors_corrected": 56,
+          "new_errors_introduced": 92,
+          "filtered_evaluation_error_count": 630,
+          "prefix_validation_normalized_mse": 0.046746122453854046,
+          "filter": {
+            "coefficients_i": [
+              -0.03131860835418477,
+              0.037209662226019076,
+              0.020237767967685838,
+              -0.061650181983704665,
+              -0.03586755493651601,
+              0.2591479478518721,
+              0.39184938190213664,
+              0.2583114730872477,
+              -0.02774050476067652,
+              -0.04196898966331228,
+              -0.021859991261494398,
+              0.07968030026284242,
+              -0.04166470325741648
+            ],
+            "coefficients_q": [
+              -0.021684276957626304,
+              0.020593958633373363,
+              0.031432205622876914,
+              -0.08586352601561652,
+              -0.01638870817302096,
+              0.2346797883809533,
+              0.3660264033603428,
+              0.24049161580769954,
+              -0.025122139364910413,
+              -0.052005163013004424,
+              -0.01584826784837017,
+              0.060062638407070004,
+              -0.044101156508415125
+            ],
+            "ridge_relative_to_mean_gram_diagonal": 0.01,
+            "regularized_condition": 90.55185905625765,
+            "fit_symbol_count": 472,
+            "fit_prefix_end_exclusive": 512,
+            "validation_fit_symbol_count": 264,
+            "validation_gap_symbols": 80,
+            "validation_symbol_count": 128,
+            "prefix_validation_normalized_mse": 0.046746122453854046,
+            "prefix_training_mse": 0.0569394388004725,
+            "coefficient_scope": "fit/validation targets and rows strictly before symbol 512; coefficients frozen for suffix"
+          }
+        },
+        "decision_raw_fse": {
+          "method": "decision_raw_fse_taps21_ridge0.01",
+          "evaluation_error_count": 636,
+          "errors_corrected": 83,
+          "new_errors_introduced": 117,
+          "filtered_evaluation_error_count": 628,
+          "prefix_validation_normalized_mse": 0.04406680948238871,
+          "filter": {
+            "coefficients_i": [
+              -0.007859449122845256,
+              0.0050523947124878656,
+              -0.011832004115250429,
+              0.00822755592073586,
+              -0.02380134790295637,
+              0.009256944100237316,
+              0.047616749874140746,
+              -0.07967765906249662,
+              -0.02238579471591009,
+              0.2500890639734416,
+              0.41424375909954825,
+              0.24424999231024272,
+              -0.029799127570976674,
+              -0.038855936490572056,
+              -0.009266608672067581,
+              0.04567282299225021,
+              -0.010620302938827196,
+              -0.012785397140730301,
+              -0.0030208501031032575,
+              0.014162476201742406,
+              -0.01784924092419734
+            ],
+            "coefficients_q": [
+              0.0005213614487599044,
+              -0.0023688366147548694,
+              0.00758214017795862,
+              -0.012590174849692574,
+              -0.01558403620875178,
+              0.00832866658937315,
+              0.05143400943892427,
+              -0.0919720574359215,
+              -0.013927088648967145,
+              0.23411433905791104,
+              0.3631908822465059,
+              0.22709310487116707,
+              -0.01796440855663117,
+              -0.05580578803699036,
+              0.0010671843034865864,
+              0.026256495045683486,
+              -0.03186486342490296,
+              -0.002954116115739258,
+              -0.02300143416614404,
+              0.03202418964393697,
+              -0.012161646327098208
+            ],
+            "ridge_relative_to_mean_gram_diagonal": 0.01,
+            "regularized_condition": 228.7817369605442,
+            "fit_symbol_count": 472,
+            "fit_prefix_end_exclusive": 512,
+            "validation_fit_symbol_count": 264,
+            "validation_gap_symbols": 80,
+            "validation_symbol_count": 128,
+            "prefix_validation_normalized_mse": 0.04406680948238871,
+            "prefix_training_mse": 0.04841729835587654,
+            "coefficient_scope": "fit/validation targets and rows strictly before symbol 512; coefficients frozen for suffix"
+          }
+        },
+        "aided_symbol_fir": {
+          "method": "aided_symbol_fir_taps7_ridge0.01",
+          "evaluation_error_count": 635,
+          "errors_corrected": 24,
+          "new_errors_introduced": 57,
+          "filtered_evaluation_error_count": 627,
+          "prefix_validation_normalized_mse": 0.04633458463364528,
+          "filter": {
+            "coefficients_i": [
+              -0.0036986374266974394,
+              0.0003362074662928518,
+              -0.004610153405784561,
+              0.9684808733633883,
+              0.010016609143400943,
+              -0.003210557883901018,
+              -0.0007171137194168431
+            ],
+            "coefficients_q": [
+              0.0010066022403290484,
+              -0.008742153811750772,
+              -0.0009848897885826786,
+              0.022534985703821172,
+              -0.00429063685141064,
+              -0.007991523673511464,
+              -0.008290645945880967
+            ],
+            "ridge_relative_to_mean_gram_diagonal": 0.01,
+            "regularized_condition": 1.5349695373903969,
+            "fit_symbol_count": 472,
+            "fit_prefix_end_exclusive": 512,
+            "validation_fit_symbol_count": 264,
+            "validation_gap_symbols": 80,
+            "validation_symbol_count": 128,
+            "prefix_validation_normalized_mse": 0.04633458463364528,
+            "prefix_training_mse": 0.05797994096323281,
+            "coefficient_scope": "fit/validation targets and rows strictly before symbol 512; coefficients frozen for suffix"
+          }
+        }
+      },
+      "grid": {
+        "aided_raw_fse_taps7_ridge0.001": {
+          "errors": 704,
+          "filtered_errors": 696,
+          "prefix_validation_mse": 0.047585218935542344
+        },
+        "aided_raw_fse_taps7_ridge0.01": {
+          "errors": 703,
+          "filtered_errors": 695,
+          "prefix_validation_mse": 0.04743931648458552
+        },
+        "aided_raw_fse_taps7_ridge0.1": {
+          "errors": 701,
+          "filtered_errors": 693,
+          "prefix_validation_mse": 0.049704422623926395
+        },
+        "aided_raw_fse_taps13_ridge0.001": {
+          "errors": 637,
+          "filtered_errors": 629,
+          "prefix_validation_mse": 0.047080597533232196
+        },
+        "aided_raw_fse_taps13_ridge0.01": {
+          "errors": 638,
+          "filtered_errors": 630,
+          "prefix_validation_mse": 0.046746122453854046
+        },
+        "aided_raw_fse_taps13_ridge0.1": {
+          "errors": 627,
+          "filtered_errors": 619,
+          "prefix_validation_mse": 0.04864984702911117
+        },
+        "aided_raw_fse_taps21_ridge0.001": {
+          "errors": 637,
+          "filtered_errors": 629,
+          "prefix_validation_mse": 0.047931902680263996
+        },
+        "aided_raw_fse_taps21_ridge0.01": {
+          "errors": 638,
+          "filtered_errors": 630,
+          "prefix_validation_mse": 0.0475640565241359
+        },
+        "aided_raw_fse_taps21_ridge0.1": {
+          "errors": 646,
+          "filtered_errors": 638,
+          "prefix_validation_mse": 0.04994653463760425
+        },
+        "decision_raw_fse_taps7_ridge0.001": {
+          "errors": 705,
+          "filtered_errors": 697,
+          "prefix_validation_mse": 0.044745730100514844
+        },
+        "decision_raw_fse_taps7_ridge0.01": {
+          "errors": 713,
+          "filtered_errors": 705,
+          "prefix_validation_mse": 0.044610347663728685
+        },
+        "decision_raw_fse_taps7_ridge0.1": {
+          "errors": 715,
+          "filtered_errors": 707,
+          "prefix_validation_mse": 0.04684860697213891
+        },
+        "decision_raw_fse_taps13_ridge0.001": {
+          "errors": 645,
+          "filtered_errors": 637,
+          "prefix_validation_mse": 0.044567364536157034
+        },
+        "decision_raw_fse_taps13_ridge0.01": {
+          "errors": 642,
+          "filtered_errors": 634,
+          "prefix_validation_mse": 0.04427925044246063
+        },
+        "decision_raw_fse_taps13_ridge0.1": {
+          "errors": 641,
+          "filtered_errors": 633,
+          "prefix_validation_mse": 0.04481284881469122
+        },
+        "decision_raw_fse_taps21_ridge0.001": {
+          "errors": 652,
+          "filtered_errors": 644,
+          "prefix_validation_mse": 0.044586638266124745
+        },
+        "decision_raw_fse_taps21_ridge0.01": {
+          "errors": 636,
+          "filtered_errors": 628,
+          "prefix_validation_mse": 0.04406680948238871
+        },
+        "decision_raw_fse_taps21_ridge0.1": {
+          "errors": 633,
+          "filtered_errors": 625,
+          "prefix_validation_mse": 0.04455374183068956
+        },
+        "aided_symbol_fir_taps7_ridge0.001": {
+          "errors": 638,
+          "filtered_errors": 630,
+          "prefix_validation_mse": 0.04637904481760664
+        },
+        "aided_symbol_fir_taps7_ridge0.01": {
+          "errors": 635,
+          "filtered_errors": 627,
+          "prefix_validation_mse": 0.04633458463364528
+        },
+        "aided_symbol_fir_taps7_ridge0.1": {
+          "errors": 630,
+          "filtered_errors": 622,
+          "prefix_validation_mse": 0.05422456139384196
+        },
+        "aided_symbol_fir_taps13_ridge0.001": {
+          "errors": 661,
+          "filtered_errors": 653,
+          "prefix_validation_mse": 0.04751814297575377
+        },
+        "aided_symbol_fir_taps13_ridge0.01": {
+          "errors": 656,
+          "filtered_errors": 648,
+          "prefix_validation_mse": 0.04756299815269707
+        },
+        "aided_symbol_fir_taps13_ridge0.1": {
+          "errors": 650,
+          "filtered_errors": 642,
+          "prefix_validation_mse": 0.056406769374247025
+        },
+        "aided_symbol_fir_taps21_ridge0.001": {
+          "errors": 684,
+          "filtered_errors": 676,
+          "prefix_validation_mse": 0.04791997107840075
+        },
+        "aided_symbol_fir_taps21_ridge0.01": {
+          "errors": 684,
+          "filtered_errors": 676,
+          "prefix_validation_mse": 0.04810441083311396
+        },
+        "aided_symbol_fir_taps21_ridge0.1": {
+          "errors": 668,
+          "filtered_errors": 660,
+          "prefix_validation_mse": 0.0589696301250625
+        }
+      }
+    }
+  }
+}

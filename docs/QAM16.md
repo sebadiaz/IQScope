@@ -2,7 +2,7 @@
 
 IQScope essaie maintenant une chaîne **16-QAM carrée monoporteuse** dans les analyses IQ par fichier et les instantanés SDR. Les paramètres sont estimés à partir des échantillons : aucun débit symbole, décalage de porteuse ou filtre n’est fourni au décodeur. Les résultats sont des symboles et bits candidats, sans protocole ni CRC identifiés.
 
-La [revue des solutions publiées du 8 novembre 2026](QAM_LITERATURE_REVIEW.md) confronte les études ci-dessous au code et à des sources primaires. Elle distingue les corrections après reconstruction des symboles de l’égalisation fractionnaire et de l’apprentissage du filtre d’entrée, encore non évalués. La prévision AWGN de cette représentation ne démontre pas une limite des IQ bruts.
+La [revue des solutions publiées du 8 novembre 2026](QAM_LITERATURE_REVIEW.md) confronte les études ci-dessous au code et à des sources primaires. Elle distingue les corrections après reconstruction des symboles de l’apprentissage du filtre d’entrée. Le premier témoin fractionnaire sur préfixe est maintenant mesuré ci-dessous ; l’acquisition aveugle CMA/MCMA–RDE reste à évaluer. La prévision AWGN de la représentation actuelle ne démontre pas une limite des IQ bruts.
 
 ## Méthode
 
@@ -152,6 +152,8 @@ Sur des références générées dans le domaine fréquentiel, à débit ADC de 
 
 Le [contrôle matériel après stabilisation](https://github.com/sebadiaz/IQScope/actions/runs/42417439750) conserve zéro erreur sur les cinq captures fortes et, sur `f`, 610 erreurs binaires après décision de symbole contre 602 après décision probabiliste par bit, sur les mêmes 17 904 bits de suite. Les empreintes des références PRBS prédites sont identiques à celles d’avant correction : le résultat ne provient pas d’un déplacement du segment évalué. La capture faible conserve son refus ; ce correctif améliore la couverture des erreurs d’horloge, sans revendiquer une réduction supplémentaire de ses erreurs.
 
+Les rapports donnent `clock_search_mode`, la marge en bauds et les facteurs réels de rééchantillonnage. Chaque essai de filtre conserve aussi la période utilisée pour ses coefficients RRC, distincte du débit affiné ensuite. Le banc reconstruit les décisions avec ces paramètres exacts, y compris pour l’interpolation par trois.
+
 ## Recherche de phase variable et de bruit I/Q corrélé
 
 `python scripts/qam_phase_study.py` complète le banc, après téléchargement et vérification de l’archive par `scripts/qam_lab_reference.py`. Il reconstruit les symboles du premier filtre RRC et vérifie leur identité avec les décisions du récepteur. Les cinq voies partagent ensuite exactement la table de bits et la phase PRBS acquises sur le préfixe de référence ; aucune voie ne réapprend cette calibration après correction. Les mêmes 17 904 bits de suite servent à la mesure.
@@ -213,4 +215,42 @@ Sur les 4 476 symboles de vérification de `f`, le rapport `E|r|⁴ / (E|r|²)²
 
 Sur le canal synthétique indépendant à deux coefficients, les 1 077 erreurs de symboles avant traitement deviennent zéro après apprentissage aveugle sur préfixe et BCJR. Ce résultat vérifie que le détecteur peut corriger une interférence réellement présente ; il ne se transpose pas à un gain sur `f`. Tous les résultats réels ci-dessus restent exploratoires sur le corpus de développement. Le refus automatique de la capture faible et les exports génériques restent ceux du récepteur courant.
 
-Les rapports donnent `clock_search_mode`, la marge en bauds et les facteurs réels de rééchantillonnage. Chaque essai de filtre conserve aussi la période utilisée pour ses coefficients RRC, distincte du débit affiné ensuite. Le banc reconstruit les décisions avec ces paramètres exacts, y compris pour l’interpolation par trois.
+## Filtres fractionnaires appris sur préfixe
+
+`python scripts/qam_fse_study.py` met en œuvre le premier témoin proposé par la revue bibliographique. Il mesure un filtre appris à partir de la forme d’onde avant le RRC imposé, avec deux contrôles. Les filtres utilisant les symboles PRBS attendus du préfixe sont des **diagnostics aidés**, pas des récepteurs aveugles. La voie à décisions utilise seulement les labels décidés par le récepteur pour ses cibles d’apprentissage.
+
+Les estimations aveugles de cadence, porteuse et origine temporelle restent celles du premier essai RRC de référence. Les IQ sont normalisés en puissance et corrigés de la porteuse. Un filtre antirepliement passe-bas de coupure `0,9 × débit symbole`, à fenêtre Kaiser de paramètre 7 et demi-longueur de 32 symboles, précède un échantillonnage Lanczos de rayon huit. Les vecteurs d’entrée contiennent sept, treize ou vingt et un points espacés de T/2, symétriquement autour du centre de chaque symbole. Le dernier couvre dix symboles, comme le RRC du récepteur de référence. Aucun filtre RRC supplémentaire n’est appliqué à ces vecteurs bruts. L’ensemble est hors ligne et utilise des voisins passés et futurs.
+
+Le même apprentissage est comparé dans trois familles :
+
+- `aided_raw_fse` : points IQ à T/2, cibles attendues du seul préfixe connu ;
+- `decision_raw_fse` : mêmes points IQ, cibles égales aux décisions du récepteur sur le préfixe ;
+- `aided_symbol_fir` : symboles déjà reconstruits par le RRC, à espacement T, cibles attendues du préfixe. Ce témoin permet de distinguer l’apport des références correctes de celui des points IQ supplémentaires.
+
+Chaque famille rapporte les neuf combinaisons fixes de sept, treize ou vingt et un coefficients et de régularisation 0,001, 0,01 ou 0,1. Avec la référence circulaire actuelle, cela donne vingt-huit voies par capture. Les équations normales complexes utilisent une pénalité égale à la régularisation multipliée par la diagonale moyenne de la matrice de Gram. Le rapport conserve coefficients, conditionnement régularisé et erreurs d’apprentissage/validation.
+
+La configuration de chaque famille est choisie uniquement dans le préfixe de 512 symboles : 264 cibles d’apprentissage, un intervalle de séparation de 80 symboles couvrant aussi les supports de filtrage, puis 128 cibles de validation. Le critère est la MSE normalisée sur cette validation. Après ce choix, les coefficients sont réappris sur 472 symboles du préfixe et figés sur la suite. Les fonctions d’apprentissage refusent un tableau de cibles plus long que le préfixe. Les erreurs de bits de la suite ne choisissent aucun réglage.
+
+La calibration des probabilités conserve un ajustement aveugle de gain et de bruit, sur l’intérieur non étiqueté de chaque sortie, comme dans le modèle circulaire de référence. Elle est donc distincte de l’apprentissage des coefficients sur préfixe. La table points/bits et la phase PRBS sont celles acquises une seule fois sur le préfixe de référence.
+
+Les quarante premiers et derniers symboles conservent exactement les LLR de la référence, pour éviter de mesurer des artefacts de bord comme une correction. L’intervalle complet reste celui des 17 904 bits de vérification ; ses 160 derniers bits sont ainsi laissés à la référence. Le rapport fournit aussi le nombre d’erreurs sur les 17 744 bits réellement filtrés de la suite. Ce raccord n’utilise jamais les bits attendus pour remplir une sortie.
+
+Les tests utilisent une génération RRC indépendante et un canal déformant inconnu du filtre. Ils vérifient la récupération des symboles de la suite, l’espacement T/2 en unités physiques, l’invariance des coefficients quand seules les lignes de la suite changent, la séparation de validation, la conversion de tables binaires non Gray et l’identité des LLR de bord. Le banc écrit `fse-study.json` avec toutes les configurations et leur choix sur préfixe ; aucune voie n’entre dans l’acceptation générique.
+
+Les [mesures matérielles](https://github.com/sebadiaz/IQScope/actions/runs/42494920914) sont conservées sous forme compacte dans `corpus/qam-fse-observation.json` ; l’artefact CI contient les paramètres de toutes les voies. Sur `16qam f.csv`, les choix effectués par validation sur préfixe donnent :
+
+| Voie | Coefficients / régularisation choisis | Erreurs sur 17 904 bits | Erreurs anciennes corrigées | Erreurs nouvelles introduites |
+| --- | --- | ---: | ---: | ---: |
+| Référence actuelle | — | 602 | — | — |
+| Fractionnaire IQ, préfixe connu | 13 / 0,01 | 638 | 56 | 92 |
+| Fractionnaire IQ, décisions du préfixe | 21 / 0,01 | 636 | 83 | 117 |
+| Symboles reconstruits, préfixe connu | 7 / 0,01 | 635 | 24 | 57 |
+
+Les 160 bits laissés à la référence en fin de suite contiennent huit erreurs. La partie réellement filtrée compte donc 630, 628 et 627 erreurs pour ces trois voies, sur 17 744 bits, contre 594 dans la référence correspondante. Les empreintes des références PN restent celles des études précédentes ; pour `f`, `b3b1c4c30aaed626eed153081907322f6325e409596c2834285c6bb5984710ac`.
+
+Les vingt-sept corrections essayées donnent entre 627 et 715 erreurs sur l’intervalle complet : aucune ne bat la référence. Le minimum de 627 est un résultat exploratoire du tableau complet, pas le choix de la validation sur préfixe. Les scores de validation des familles aidée et à décisions ne se comparent pas directement, car leurs cibles diffèrent. Toutes les vingt-huit voies restent à zéro erreur sur chacune des cinq captures fortes.
+
+Le témoin de vingt et un coefficients couvre dix symboles avant décimation, pour éviter de comparer uniquement des filtres plus courts que le RRC de référence. Il ne produit pas de gain supplémentaire. Sur le canal synthétique déformant, les 614 erreurs de symboles du point central, après calibration de gain sur préfixe, deviennent zéro sur la suite après filtrage appris. Le test établit la capacité de correction du mécanisme, sans établir un gain sur la capture matérielle faible.
+
+Ces résultats portent sur des coefficients appris sur un préfixe court et sur la grille déclarée. Ils ne prouvent pas une limite du signal brut et ne remplacent pas une évaluation CMA/MCMA–RDE, une estimation d’impulsion sur des acquisitions séparées ou une comparaison de synchroniseurs. Aucun résultat aidé n’est présenté comme un décodage générique ; la capture faible conserve son refus.
+

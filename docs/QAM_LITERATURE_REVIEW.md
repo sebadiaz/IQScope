@@ -2,6 +2,8 @@
 
 Lecture du 8 novembre 2026. Code IQScope relu à la version `052e42cc4f15aeb5f7a8b90ff3f5d00cc415e156`, avec les observations QAM, les scripts de reconstruction, de phase et de détection de séquences. Cette revue apporte des pistes et un protocole d’essai ; elle ne rapporte aucun nouveau décodage de la capture réelle.
 
+Mise à jour après cette lecture : le [premier banc fractionnaire sur préfixe](QAM16.md#filtres-fractionnaires-appris-sur-préfixe) est désormais mesuré. Il donne 638 erreurs pour le filtre aidé choisi sur les IQ, contre 602 pour la référence ; les contrôles et toutes les configurations sont publiés. Ce résultat concerne l’étape de diagnostic décrite ci-dessous, sans constituer l’essai CMA/MCMA–RDE proposé ensuite.
+
 La priorité qui ressort est **l’apprentissage du filtre de réception avant la réduction à un point par symbole**, avec égalisation fractionnaire. Les échecs de nos corrections après filtrage ne suffisent pas à écarter cette famille. Les 602 erreurs actuelles sont un résultat mesuré du récepteur, pas une limite démontrée des échantillons IQ bruts.
 
 ## Ce que les éléments du projet établissent
