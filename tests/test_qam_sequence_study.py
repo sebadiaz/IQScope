@@ -4,7 +4,7 @@ import numpy as np
 from iqscope_qam_soft import POINTS, estimate_awgn, bit_llrs
 from scripts.qam_receiver_study import slice_labels
 from scripts.qam_sequence_study import (
-    PREFIX, bcjr, posterior_llrs, fit_prefix_channel, estimate_impulsive, impulsive_llrs,
+    PREFIX, bcjr, posterior_llrs, fit_channel, estimate_impulsive, impulsive_llrs,
 )
 
 
@@ -40,14 +40,18 @@ class QamSequenceStudyTests(unittest.TestCase):
         original = values.copy()
         self.assertGreater(np.count_nonzero(slice_labels(values[PREFIX:]) != labels[PREFIX:]), 500)
         for ridge in (0., .05):
-            fitted = fit_prefix_channel(values, ridge=ridge)
+            fitted = fit_channel(values, ridge=ridge)
             estimated = np.array(fitted['taps_i']) + 1j*np.array(fitted['taps_q'])
             np.testing.assert_allclose(estimated, taps, atol=.02)
             posterior, _ = bcjr(values, estimated, fitted['noise_variance_complex'])
             np.testing.assert_array_equal(np.argmax(posterior[PREFIX:], axis=1), labels[PREFIX:])
             changed = values.copy()
             changed[PREFIX:] = rng.normal(size=len(changed)-PREFIX) + 1j*rng.normal(size=len(changed)-PREFIX)
-            self.assertEqual(fit_prefix_channel(changed, ridge=ridge), fitted)
+            self.assertEqual(fit_channel(changed, ridge=ridge), fitted)
+        full = fit_channel(values, fit_count=None)
+        self.assertEqual(full['fit_symbol_count'], len(values))
+        estimated = np.array(full['taps_i']) + 1j*np.array(full['taps_q'])
+        np.testing.assert_allclose(estimated, taps, atol=.02)
         np.testing.assert_array_equal(values, original)
 
     def test_impulsive_fit_on_independent_train_and_evaluation_symbols(self):
@@ -86,6 +90,6 @@ class QamSequenceStudyTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 bcjr(values, taps, variance)
         with self.assertRaises(ValueError):
-            fit_prefix_channel(POINTS)
+            fit_channel(POINTS)
         with self.assertRaises(ValueError):
-            fit_prefix_channel(POINTS.repeat(40), iterations=9)
+            fit_channel(POINTS.repeat(40), iterations=9)

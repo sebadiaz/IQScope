@@ -80,12 +80,13 @@ def bcjr(values, taps, variance, *, statistics=False):
     return posterior, stats
 
 
-def fit_prefix_channel(values, ridge=.05, iterations=8):
-    """Two-tap EM fit on unlabelled prefix only; no hard/PRBS targets."""
+def fit_channel(values, ridge=.05, iterations=8, *, fit_count=PREFIX):
+    """Two-tap EM on declared unlabelled samples; no hard/PRBS targets."""
     values = _samples(values)
-    if len(values) < PREFIX or ridge not in (0., .05) or not isinstance(iterations, int) or not 0 <= iterations <= 8:
+    if (len(values) < PREFIX or fit_count not in (None, PREFIX) or ridge not in (0., .05)
+            or not isinstance(iterations, int) or not 0 <= iterations <= 8):
         raise ValueError('Invalid prefix-fit budget')
-    train = values[:PREFIX]
+    train = values if fit_count is None else values[:fit_count]
     initial = estimate_awgn(train)
     taps = np.array([complex(initial['gain_i'], initial['gain_q']), 0])
     variance = initial['noise_variance_complex']
@@ -100,8 +101,9 @@ def fit_prefix_channel(values, ridge=.05, iterations=8):
     bcjr(train[:1], taps, variance)
     return {'taps_i': taps.real.tolist(), 'taps_q': taps.imag.tolist(),
             'noise_variance_complex': variance, 'iterations': iterations,
-            'postcursor_ridge_per_symbol': ridge, 'fit_symbol_count': PREFIX,
-            'fit_scope': 'unlabelled first 512 symbols only; uniform independent QAM prior; no reference or decision targets'}
+            'postcursor_ridge_per_symbol': ridge, 'fit_symbol_count': len(train),
+            'fit_scope': ('unlabelled full supplied window' if fit_count is None else 'unlabelled first 512 symbols only')
+                         + '; uniform independent QAM prior; no reference or decision targets'}
 
 
 def estimate_impulsive(values):
@@ -184,8 +186,11 @@ def measure(values):
     results = {'baseline_circular': dict(score_llrs(baseline, reference), model=model)}
     impulsive = estimate_impulsive(values)
     results['blind_impulsive_noise'] = dict(score_llrs(impulsive_llrs(values, mapping, impulsive), reference, baseline), model=impulsive)
-    for method, ridge, iterations in (('prefix_memoryless', .05, 0), ('prefix_bcjr_ridge', .05, 8), ('prefix_bcjr_unregularized', 0., 8)):
-        channel = fit_prefix_channel(values, ridge=ridge, iterations=iterations)
+    for method, ridge, iterations, count in (('prefix_memoryless', .05, 0, PREFIX),
+                                             ('prefix_bcjr_ridge', .05, 8, PREFIX),
+                                             ('prefix_bcjr_unregularized', 0., 8, PREFIX),
+                                             ('blind_full_window_bcjr', .05, 8, None)):
+        channel = fit_channel(values, ridge=ridge, iterations=iterations, fit_count=count)
         taps = np.array(channel['taps_i']) + 1j * np.array(channel['taps_q'])
         posterior, _ = bcjr(values, taps, channel['noise_variance_complex'])
         results[method] = dict(score_llrs(posterior_llrs(posterior, mapping), reference, baseline), model=channel)
