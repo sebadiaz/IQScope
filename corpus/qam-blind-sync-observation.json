@@ -40,8 +40,8 @@
           "proportional_gain": 0.026313481273572494,
           "integral_gain": 0.00035084641698096666,
           "frequency_deviation_limit_fraction": 0.005,
-          "frequency_correction_final_fraction": 0.00009838379002398602,
-          "frequency_correction_tail_median_fraction": 0.000055309287563031115,
+          "frequency_correction_final_fraction": 9.838379002398602e-05,
+          "frequency_correction_tail_median_fraction": 5.5309287563031115e-05,
           "timing_error_tail_mean": 0.0022194318598938506,
           "timing_error_tail_rms": 0.6821872157073265,
           "error_clip_fraction": 0.005012028869286287,
@@ -221,8 +221,8 @@
             "proportional_gain": 0.026313481273572494,
             "integral_gain": 0.00035084641698096666,
             "frequency_deviation_limit_fraction": 0.005,
-            "frequency_correction_final_fraction": 0.00009838379002398602,
-            "frequency_correction_tail_median_fraction": 0.000055309287563031115,
+            "frequency_correction_final_fraction": 9.838379002398602e-05,
+            "frequency_correction_tail_median_fraction": 5.5309287563031115e-05,
             "timing_error_tail_mean": 0.0022194318598938506,
             "timing_error_tail_rms": 0.6821872157073265,
             "error_clip_fraction": 0.005012028869286287,
@@ -447,5 +447,96 @@
       "gardner_bw0.03_mcma_step0.08": 16
     }
   },
-  "conclusion": "None of the fourteen new fixed configurations improves weak-capture BER. All three primary methods retain zero errors on five strong captures. Gardner bandwidth .03 introduces strong-capture errors; no production activation. This does not establish a raw-IQ information bound or exhaust blind equalizers."
+  "conclusion": "None of the fourteen new fixed configurations improves weak-capture BER. All three primary methods retain zero errors on five strong captures. Gardner bandwidth .03 introduces strong-capture errors; no production activation. This does not establish a raw-IQ information bound or exhaust blind equalizers.",
+  "synthetic_noise_control": {
+    "scope": "supplementary identity-channel diagnostic after RF measurements; no receiver parameter selection",
+    "waveform": "independent uniform 16-QAM impulses at 2sps plus circular white Gaussian noise; not measured RF pulse shaping",
+    "receiver": "same MCMA step .02 -> RDE, 21 taps, four passes/stage; no known-symbol updates",
+    "rows": [
+      {
+        "noise_variance_complex": 0.0008,
+        "seed": 811,
+        "evaluation_bits": 17792,
+        "baseline_error_count": 0,
+        "mcma_error_count": 0,
+        "alignment": {
+          "symbol_lag": 0,
+          "conjugated": false,
+          "quarter_turn": 3,
+          "prefix_mse": 6.844353776297794e-06,
+          "scope": "baseline unlabelled prefix only; no PRBS bits or suffix alignment search"
+        }
+      },
+      {
+        "noise_variance_complex": 0.0008,
+        "seed": 922,
+        "evaluation_bits": 17792,
+        "baseline_error_count": 0,
+        "mcma_error_count": 0,
+        "alignment": {
+          "symbol_lag": 0,
+          "conjugated": false,
+          "quarter_turn": 3,
+          "prefix_mse": 5.891040432531152e-05,
+          "scope": "baseline unlabelled prefix only; no PRBS bits or suffix alignment search"
+        }
+      },
+      {
+        "noise_variance_complex": 0.0008,
+        "seed": 1033,
+        "evaluation_bits": 17792,
+        "baseline_error_count": 0,
+        "mcma_error_count": 0,
+        "alignment": {
+          "symbol_lag": 0,
+          "conjugated": false,
+          "quarter_turn": 0,
+          "prefix_mse": 1.4782815312031559e-05,
+          "scope": "baseline unlabelled prefix only; no PRBS bits or suffix alignment search"
+        }
+      },
+      {
+        "noise_variance_complex": 0.057,
+        "seed": 811,
+        "evaluation_bits": 17792,
+        "baseline_error_count": 501,
+        "mcma_error_count": 620,
+        "alignment": {
+          "symbol_lag": 0,
+          "conjugated": false,
+          "quarter_turn": 3,
+          "prefix_mse": 0.005649752313379348,
+          "scope": "baseline unlabelled prefix only; no PRBS bits or suffix alignment search"
+        }
+      },
+      {
+        "noise_variance_complex": 0.057,
+        "seed": 922,
+        "evaluation_bits": 17792,
+        "baseline_error_count": 569,
+        "mcma_error_count": 721,
+        "alignment": {
+          "symbol_lag": 0,
+          "conjugated": false,
+          "quarter_turn": 3,
+          "prefix_mse": 0.008192462154816718,
+          "scope": "baseline unlabelled prefix only; no PRBS bits or suffix alignment search"
+        }
+      },
+      {
+        "noise_variance_complex": 0.057,
+        "seed": 1033,
+        "evaluation_bits": 17792,
+        "baseline_error_count": 576,
+        "mcma_error_count": 697,
+        "alignment": {
+          "symbol_lag": 0,
+          "conjugated": false,
+          "quarter_turn": 0,
+          "prefix_mse": 0.00601340019498987,
+          "scope": "baseline unlabelled prefix only; no PRBS bits or suffix alignment search"
+        }
+      }
+    ]
+  }
 }

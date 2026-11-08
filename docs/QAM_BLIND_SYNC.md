@@ -47,4 +47,17 @@ Tous les alignements sur `f` retiennent un retard entier nul et aucune conjugais
 
 La variance complexe du modèle circulaire de sortie passe de 0,05722 à 0,05986 pour Gardner, 0,08605 pour MCMA et 0,08574 pour leur combinaison. Ces ajustements non étiquetés accompagnent la dégradation mesurée ; ils ne séparent pas à eux seuls bruit physique, interférence résiduelle et défaut d'apprentissage. Le passage de 0,01 à 0,03 montre aussi qu'une boucle plus rapide n'est pas automatiquement meilleure.
 
+## Contrôle supplémentaire : aucun canal à corriger
+
+Après les mesures RF, un diagnostic indépendant emploie un canal identité : impulsions 16-QAM uniformes à deux points par symbole, points intermédiaires nuls, puis bruit blanc gaussien circulaire. Il ne reproduit pas la mise en forme RF ; il vérifie si l'adaptation MCMA 0,02 → RDE peut dégrader une entrée déjà correctement échantillonnée. Aucun paramètre n'est choisi à partir de ses résultats. L'orientation est résolue sur le seul préfixe non étiqueté initial, puis les décisions sont vérifiées sur 17 792 bits synthétiques, hors préfixe et bord final.
+
+| Variance complexe du bruit | Graine | Erreurs initiales | Erreurs après MCMA → RDE |
+| --- | ---: | ---: | ---: |
+| 0,0008 | 811 / 922 / 1033 | 0 / 0 / 0 | 0 / 0 / 0 |
+| 0,057 | 811 | 501 | 620 |
+| 0,057 | 922 | 569 | 721 |
+| 0,057 | 1033 | 576 | 697 |
+
+La dégradation est donc reproductible pour ces réglages même sans interférence entre symboles ni protocole inconnu. Ce contrôle ne démontre pas que le mécanisme précis est identique dans la capture réelle. Il justifie de vérifier l'objectif et l'adaptation en présence de bruit avant d'ajouter des coefficients ou de réutiliser les paramètres de démonstrations à fort SNR. Le contrôle se lance séparément par `from scripts.qam_blind_sync_study import synthetic_noise_control` et figure aussi dans le JSON du banc CI.
+
 La conclusion porte sur ces configurations et cette courte capture. Elle ne prouve ni une limite d'information des IQ bruts, ni l'échec de toute égalisation aveugle. Il reste notamment à distinguer biais de l'objectif aveugle à faible SNR, initialisation du filtre et budget de convergence. Un prochain modèle de reconstruction de la forme d'onde devra estimer son bruit sur les observations, conserver les contrôles synthétiques et les échecs d'initialisation, et être comparé sans sélectionner ses paramètres sur le BER de `f`. Aucun de ces résultats ne justifie d'activer ces voies dans le décodeur générique.

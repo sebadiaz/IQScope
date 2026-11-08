@@ -265,6 +265,40 @@ def measure(x, fs, fit, acquisition, baseline_values):
             'methods': results}
 
 
+def synthetic_noise_control():
+    """Supplementary diagnostic, not hyperparameter selection or an RF model.
+
+    Identity channel at two samples/symbol: odd positions contain noise only.
+    The squared-modulus algorithms should not be assumed harmless merely
+    because their high-SNR tests recover an ISI-distorted constellation.
+    """
+    rows = []
+    for variance in (.0008, .057):
+        for seed in (811, 922, 1033):
+            rng = np.random.default_rng(seed)
+            labels = rng.integers(0, 16, 5000)
+            samples = np.zeros(2*len(labels), complex)
+            samples[::2] = POINTS[labels]
+            samples += np.sqrt(variance/2)*(rng.normal(size=len(samples))+1j*rng.normal(size=len(samples)))
+            positions = 2*np.arange(len(labels))[:, None]+np.arange(-10, 11)
+            matrix = samples[np.clip(positions, 0, len(samples)-1)]
+            output, _ = blind_equalizer(matrix, 'mcma', .02)
+            aligned, alignment = align_prefix(output, samples[::2])
+            baseline, _ = soft_output(samples[::2], np.arange(16))
+            trial, _ = soft_output(aligned, np.arange(16))
+            truth = ((labels[:, None] >> np.arange(3, -1, -1)) & 1).reshape(-1)
+            selected = slice(PREFIX*4, -GUARD*4)
+            rows.append(dict(noise_variance_complex=variance, seed=seed,
+                             evaluation_bits=len(truth[selected]),
+                             baseline_error_count=int(np.count_nonzero((baseline[selected] < 0) != truth[selected])),
+                             mcma_error_count=int(np.count_nonzero((trial[selected] < 0) != truth[selected])),
+                             alignment=alignment))
+    return {'scope': 'supplementary identity-channel diagnostic after RF measurements; no receiver parameter selection',
+            'waveform': 'independent uniform 16-QAM impulses at 2sps plus circular white Gaussian noise; not measured RF pulse shaping',
+            'receiver': 'same MCMA step .02 -> RDE, 21 taps, four passes/stage; no known-symbol updates',
+            'rows': rows}
+
+
 def main():
     root = Path('corpus-cache/qam-lab')
     raw = (root/'IQ_28_Ghz.zip').read_bytes()
@@ -284,6 +318,7 @@ def main():
             if not np.array_equal(slice_labels(values), labels):
                 raise AssertionError('Symbol reconstruction differs from baseline')
             results['files'][basename] = dict(measure(x, fs, fit, decoded['acquisition'], values), generic_status=decoded['status'])
+    results['synthetic_noise_control'] = synthetic_noise_control()
     (root/'blind-sync-study.json').write_text(json.dumps(results, indent=2))
     print(json.dumps(results, indent=2), flush=True)
     if set(results['files']) != {f'16qam {letter}.csv' for letter in 'abcdef'}:
