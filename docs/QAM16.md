@@ -2,6 +2,8 @@
 
 IQScope essaie maintenant une chaîne **16-QAM carrée monoporteuse** dans les analyses IQ par fichier et les instantanés SDR. Les paramètres sont estimés à partir des échantillons : aucun débit symbole, décalage de porteuse ou filtre n’est fourni au décodeur. Les résultats sont des symboles et bits candidats, sans protocole ni CRC identifiés.
 
+La [revue des solutions publiées du 8 novembre 2026](QAM_LITERATURE_REVIEW.md) confronte les études ci-dessous au code et à des sources primaires. Elle distingue les corrections après reconstruction des symboles de l’égalisation fractionnaire et de l’apprentissage du filtre d’entrée, encore non évalués. La prévision AWGN de cette représentation ne démontre pas une limite des IQ bruts.
+
 ## Méthode
 
 Une raie cyclique de l’énergie de l’enveloppe fournit un débit symbole candidat. Une raie de la puissance quatrième fournit le décalage de fréquence, avec raffinement dans un intervalle de deux cases FFT. Lorsque l’entrée contient entre quatre et huit échantillons par symbole, une interpolation polyphasée par deux précède les filtres et la synchronisation. Elle ne crée pas d’information supplémentaire. Trois filtres RRC sont essayés (roll-off 0,2 / 0,35 / 0,5, longueur dix symboles), après une décimation éventuelle. Une recherche initiale sur 24 phases puis un ajustement borné du débit et de la phase d’échantillonnage minimisent l’erreur vectorielle des symboles.
