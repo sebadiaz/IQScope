@@ -24,6 +24,7 @@ from scripts.qam_fse_study import (
 
 STRONG_NAMES = tuple(f'16qam {letter}.csv' for letter in 'abcde')
 WEAK_NAME = '16qam f.csv'
+NOISE_NAMES = ('noise a.csv', 'noise b.csv')
 
 
 def canonical_features(x, fs, fit, taps):
@@ -99,6 +100,87 @@ def leave_one_record_out(records, ridge):
             'folds': folds, 'selection_scope': 'equal mean of held-out strong-record normalized MSEs; weak record excluded'}
 
 
+def fit_noise_loaded(records, source_powers, target_power, noise_power, noise_covariance, ridge):
+    """Wiener transfer with target noise, using no target symbols or labels.
+
+    Unit noise covariance is measured on separate noise-only recordings.
+    Remove their contribution from source moments, then synthesize target
+    moments with its observable mean power. All covariances use X^H X units.
+    """
+    records = checked_records(records)
+    width = next(iter(records.values()))[0].shape[1]
+    covariance = np.asarray(noise_covariance, dtype=complex)
+    if (set(source_powers) != set(records) or ridge not in RIDGES
+            or not np.isfinite(noise_power) or noise_power <= 0
+            or not np.isfinite(target_power) or target_power <= noise_power
+            or covariance.shape != (width, width) or not np.all(np.isfinite(covariance))
+            or not np.allclose(covariance, covariance.conj().T, atol=1e-10)
+            or np.linalg.eigvalsh(covariance)[0] < -1e-10):
+        raise ValueError('Invalid noise-loaded calibration moments')
+    signal_covariance = np.zeros((width, width), dtype=complex)
+    signal_cross = np.zeros(width, dtype=complex)
+    fractions = {}
+    count = 0
+    for name, (matrix, targets) in records.items():
+        power = source_powers[name]
+        if not np.isfinite(power) or power <= noise_power:
+            raise ValueError('Calibration power must exceed representative noise power')
+        fraction = 1-noise_power/power
+        fractions[name] = float(fraction)
+        observed, desired = matrix[GUARD:-GUARD], targets[GUARD:-GUARD]
+        signal_covariance += (observed.conj().T@observed/len(observed)
+                              - (1-fraction)*covariance)/fraction
+        signal_cross += (observed.conj().T@desired/len(observed))/np.sqrt(fraction)
+        count += len(observed)
+    signal_covariance /= len(records)
+    signal_cross /= len(records)
+    signal_covariance = (signal_covariance+signal_covariance.conj().T)/2
+    eigenvalues, vectors = np.linalg.eigh(signal_covariance)
+    floor = max(float(eigenvalues[-1]), 1e-12)*1e-9
+    clipped = np.maximum(eigenvalues, floor)
+    signal_covariance = (vectors*clipped)@vectors.conj().T
+    target_fraction = 1-noise_power/target_power
+    target_covariance = target_fraction*signal_covariance+(1-target_fraction)*covariance
+    scale = float(np.trace(target_fraction*signal_covariance).real/width)
+    normal = target_covariance+ridge*scale*np.eye(width)
+    coefficients = np.linalg.solve(normal, np.sqrt(target_fraction)*signal_cross)
+    return {'coefficients_i': coefficients.real.tolist(), 'coefficients_q': coefficients.imag.tolist(),
+            'tap_count': width, 'ridge_relative_to_mean_gram_diagonal': ridge,
+            'calibration_files': list(records), 'fit_symbol_count': count,
+            'regularized_condition': float(np.linalg.cond(normal)),
+            'source_signal_fractions': fractions, 'target_signal_fraction': float(target_fraction),
+            'target_mean_power_raw_units': float(target_power), 'noise_mean_power_raw_units': float(noise_power),
+            'signal_covariance_min_eigenvalue_before_projection': float(eigenvalues[0]),
+            'signal_covariance_clipped_eigenvalues': int(np.count_nonzero(eigenvalues < floor)),
+            'target_scope': 'only target raw mean power; no target symbols or reference bits',
+            'coefficient_scope': 'strong-record channel moments plus measured noise covariance and target mean power',
+            'assumption': 'same voltage calibration and representative stationary noise across separate recordings; not simultaneous calibrated SNR'}
+
+
+def noise_profile(noise_records, target, taps, mode):
+    if set(noise_records) != set(NOISE_NAMES) or mode not in NOISE_NAMES+('mean',):
+        raise ValueError('Expected both predefined noise recordings')
+    names = NOISE_NAMES if mode == 'mean' else (mode,)
+    power = 0.
+    absolute_covariance = np.zeros((taps, taps), dtype=complex)
+    for name in names:
+        noise = noise_records[name]
+        if not np.isclose(noise['fs'], target['fs'], rtol=1e-12):
+            raise ValueError('Noise and target sample rates differ')
+        matrix, _ = canonical_features(noise['x'], noise['fs'], target['fit'], taps)
+        matrix = matrix[GUARD:-GUARD]
+        sample_power = float(np.mean(abs(noise['x'])**2))
+        absolute_covariance += sample_power*(matrix.conj().T@matrix/len(matrix))
+        power += sample_power
+    # Average absolute moments, rather than averaging differently normalized
+    # covariances without their measured voltage powers.
+    power /= len(names)
+    covariance = absolute_covariance/(len(names)*power)
+    return power, covariance, {'noise_files': list(names), 'aggregation': mode,
+            'noise_mean_power_raw_units': power, 'covariance_condition': float(np.linalg.cond(covariance)),
+            'sample_spacing_symbols': .5, 'tap_count': taps}
+
+
 def fit_banks(strong_features):
     """Build and select models before any weak-reference sequence is generated."""
     if set(strong_features) != set(TAP_COUNTS):
@@ -144,7 +226,7 @@ def evaluate_capture(capture, fitted):
     return measured, dict(score_llrs(baseline, reference), model=baseline_model), hashlib.sha256(np.packbits(reference).tobytes()).hexdigest()
 
 
-def study(captures):
+def study(captures, noise_records):
     if set(captures) != set(STRONG_NAMES+(WEAK_NAME,)):
         raise ValueError('Expected the six predefined captures')
     # Only strong hard decisions are used as targets. Weak data are not passed
@@ -157,6 +239,25 @@ def study(captures):
             matrix, _ = canonical_features(capture['x'], capture['fs'], capture['fit'], taps)
             strong_features[taps][name] = (matrix, POINTS[capture['labels']])
     models, selected = fit_banks(strong_features)
+    source_powers = {name: float(np.mean(abs(captures[name]['x'])**2)) for name in STRONG_NAMES}
+    target_power = float(np.mean(abs(captures[WEAK_NAME]['x'])**2))
+    noise_primary = {}
+    for family, parent in selected.items():
+        calibrated = models[parent]['filter']
+        taps = calibrated['tap_count']
+        records = {name: strong_features[taps][name] for name in calibrated['calibration_files']}
+        powers = {name: source_powers[name] for name in records}
+        for mode in NOISE_NAMES+('mean',):
+            noise_power, covariance, profile = noise_profile(noise_records, captures[WEAK_NAME], taps, mode)
+            name = f'noise_loaded_{family}_{mode}'
+            loaded = fit_noise_loaded(records, powers, target_power, noise_power, covariance,
+                                      calibrated['ridge_relative_to_mean_gram_diagonal'])
+            models[name] = {'family': f'noise_loaded_{family}', 'filter': loaded,
+                           'parent_configuration': parent, 'noise_profile': profile,
+                           'selection_mse': models[parent]['selection_mse'],
+                           'selection_scope': 'tap count/ridge from strong validation; noise measured separately; no target reference feedback'}
+            if mode == 'mean':
+                noise_primary[family] = name
     weak_methods = {}
     for name, model in models.items():
         measured, baseline, reference_hash = evaluate_capture(captures[WEAK_NAME], model['filter'])
@@ -174,16 +275,38 @@ def study(captures):
     for name in STRONG_NAMES[1:]:
         measured, strong_baseline, strong_hash = evaluate_capture(captures[name], one_filter)
         independent[name] = dict(measured, baseline=strong_baseline, expected_bits_sha256=strong_hash)
+    noise_held_out = {}
+    for name, fold in pooled['folds'].items():
+        base = fold['filter']
+        taps = base['tap_count']
+        records = {source: strong_features[taps][source] for source in base['calibration_files']}
+        power, covariance, _ = noise_profile(noise_records, captures[name], taps, 'mean')
+        loaded = fit_noise_loaded(records, {source: source_powers[source] for source in records},
+                                  source_powers[name], power, covariance, base['ridge_relative_to_mean_gram_diagonal'])
+        measured, strong_baseline, strong_hash = evaluate_capture(captures[name], loaded)
+        noise_held_out[name] = dict(measured, baseline=strong_baseline, expected_bits_sha256=strong_hash,
+                                    calibration_files=loaded['calibration_files'])
+    noise_independent = {}
+    for name in STRONG_NAMES[1:]:
+        taps = one_filter['tap_count']
+        records = {STRONG_NAMES[0]: strong_features[taps][STRONG_NAMES[0]]}
+        power, covariance, _ = noise_profile(noise_records, captures[name], taps, 'mean')
+        loaded = fit_noise_loaded(records, {STRONG_NAMES[0]: source_powers[STRONG_NAMES[0]]},
+                                  source_powers[name], power, covariance, one_filter['ridge_relative_to_mean_gram_diagonal'])
+        measured, strong_baseline, strong_hash = evaluate_capture(captures[name], loaded)
+        noise_independent[name] = dict(measured, baseline=strong_baseline, expected_bits_sha256=strong_hash)
     return {'scope': 'decision-directed calibration from separate strong recordings; not standalone blind acquisition',
-            'selection_scope': 'no weak observations, weak symbols or weak BER in filter coefficient fitting or configuration selection',
+            'selection_scope': 'strong validation selects configurations; noise-loaded coefficients additionally use target raw mean power and separate noise, never target reference symbols or BER',
             'demapper_scope': 'blind gain/noise fitted separately on the unlabelled target interior; no expected target symbols',
             'alignment_scope': 'per-record blind phase origins, clock and carrier estimates; no reference-based weak alignment',
             'boundary_scope': 'same first/last40 baseline symbol LLRs; 17904 full verification bits,17744 filtered bits',
-            'selected_by_calibration_validation': selected, 'models': models,
+            'selected_by_calibration_validation': selected, 'noise_loaded_primary_mean': noise_primary, 'models': models,
             'weak_capture': {'name': WEAK_NAME, 'generic_status': captures[WEAK_NAME]['status'],
                              'expected_bits_sha256': reference_hash, 'baseline': baseline, 'methods': weak_methods},
             'pooled_selected_held_out_strong': held_out,
-            'single_a_selected_independent_strong': independent}
+            'single_a_selected_independent_strong': independent,
+            'noise_loaded_mean_held_out_strong': noise_held_out,
+            'noise_loaded_mean_independent_strong': noise_independent}
 
 
 def main():
@@ -192,9 +315,14 @@ def main():
     if len(raw) != SIZE or hashlib.sha256(raw).hexdigest() != SHA256:
         raise ValueError('Unverified laboratory archive')
     captures = {}
+    noise_records = {}
     with zipfile.ZipFile(root/'IQ_28_Ghz.zip') as archive:
         for name in sorted(archive.namelist()):
             basename = Path(name).name
+            if basename in NOISE_NAMES:
+                x, fs, _ = read_keysight_csv(archive.read(name))
+                noise_records[basename] = {'x': x, 'fs': fs}
+                continue
             if basename not in STRONG_NAMES+(WEAK_NAME,):
                 continue
             x, fs, _ = read_keysight_csv(archive.read(name))
@@ -205,19 +333,20 @@ def main():
             if not np.array_equal(slice_labels(values), labels):
                 raise AssertionError('Symbol reconstruction differs from baseline')
             captures[basename] = {'x': x, 'fs': fs, 'fit': fit, 'values': values, 'labels': labels, 'status': decoded['status']}
-    results = {'source_url': URL, 'source_sha256': SHA256, **study(captures)}
+    results = {'source_url': URL, 'source_sha256': SHA256, **study(captures, noise_records)}
     (root/'calibration-study.json').write_text(json.dumps(results, indent=2))
     print(json.dumps(results, indent=2), flush=True)
-    if len(results['models']) != 2*len(TAP_COUNTS)*len(RIDGES):
+    if len(results['models']) != 2*len(TAP_COUNTS)*len(RIDGES)+6:
         raise AssertionError('Missing a predefined calibration configuration')
     for measured in results['weak_capture']['methods'].values():
         if measured['evaluation_bits'] != 17904 or measured['filtered_evaluation_bits'] != 17744:
             raise AssertionError('Verification interval changed')
-    for name, measured in results['pooled_selected_held_out_strong'].items():
-        if name in measured['calibration_files']:
-            raise AssertionError('A held-out record entered its calibration model')
-        if measured['baseline']['evaluation_error_count']:
-            raise AssertionError('Clean baseline regression')
+    for group in ('pooled_selected_held_out_strong', 'noise_loaded_mean_held_out_strong'):
+        for name, measured in results[group].items():
+            if name in measured['calibration_files']:
+                raise AssertionError('A held-out record entered its calibration model')
+            if measured['baseline']['evaluation_error_count']:
+                raise AssertionError('Clean baseline regression')
 
 
 if __name__ == '__main__':

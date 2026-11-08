@@ -6,7 +6,7 @@ from iqscope_qam_soft import POINTS
 from scripts.qam_receiver_study import slice_labels
 from scripts.qam_fse_study import GUARD, apply_prefix_filter, soft_output
 from scripts.qam_calibration_study import (
-    STRONG_NAMES, WEAK_NAME, canonical_features, fit_calibration, leave_one_record_out,
+    STRONG_NAMES, WEAK_NAME, canonical_features, fit_calibration, leave_one_record_out, fit_noise_loaded,
 )
 from test_qam import fixture
 
@@ -97,3 +97,39 @@ class QamCalibrationStudyTests(unittest.TestCase):
             fit_calibration({STRONG_NAMES[0]: (np.full((1200, 7), np.nan), record[1])}, .01)
         with self.assertRaises(ValueError):
             leave_one_record_out({STRONG_NAMES[0]: record}, .01)
+
+    def test_noise_loading_improves_independent_target_without_target_labels(self):
+        rng = np.random.default_rng(776)
+        labels = rng.integers(0, 16, 5000)
+        symbols = POINTS[labels]
+        variance = np.array([.02, .04, .08, .3, 1., 2., 4.])
+        def noise(count):
+            return (rng.normal(size=(count, 7))+1j*rng.normal(size=(count, 7)))*np.sqrt(variance/2)
+        measured_noise = noise(6000)
+        covariance = measured_noise.conj().T@measured_noise/len(measured_noise)
+        source = np.sqrt(1-1e-6)*symbols[:, None]+.001*noise(len(symbols))
+        records = {STRONG_NAMES[0]: (source, symbols)}
+        ordinary = fit_calibration(records, .001)
+        fitted = fit_noise_loaded(records, {STRONG_NAMES[0]: 1e6}, 2., 1., covariance, .001)
+        # Target data and labels are created only AFTER the filter is fixed.
+        frozen = copy.deepcopy(fitted)
+        labels = rng.integers(0, 16, 6000)
+        target = np.sqrt(.5)*POINTS[labels, None]+np.sqrt(.5)*noise(len(labels))
+        expected = ((labels[:, None] >> np.arange(3, -1, -1)) & 1).reshape(-1)
+        old, _ = soft_output(apply_prefix_filter(target, ordinary), np.arange(16))
+        new, _ = soft_output(apply_prefix_filter(target, fitted), np.arange(16))
+        self.assertGreater(np.count_nonzero((old<0) != expected), 100)
+        self.assertLess(np.count_nonzero((new<0) != expected), np.count_nonzero((old<0) != expected)/4)
+        self.assertEqual(fitted, frozen)
+        self.assertEqual(fitted['target_signal_fraction'], .5)
+
+    def test_noise_loading_rejects_inconsistent_power_and_covariance(self):
+        record = (np.ones((1200, 7), dtype=complex), np.ones(1200, dtype=complex))
+        records = {STRONG_NAMES[0]: record}
+        for target_power, noise_power, covariance in ((1., 2., np.eye(7)),
+                                                       (2., 1., -np.eye(7)),
+                                                       (2., 1., np.full((7, 7), np.nan))):
+            with self.assertRaises(ValueError):
+                fit_noise_loaded(records, {STRONG_NAMES[0]: 1e6}, target_power, noise_power, covariance, .001)
+        with self.assertRaises(ValueError):
+            fit_noise_loaded({WEAK_NAME: record}, {WEAK_NAME: 1e6}, 2., 1., np.eye(7), .001)
