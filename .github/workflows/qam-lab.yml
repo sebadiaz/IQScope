@@ -6,8 +6,10 @@ on:
       - scripts/qam_prbs15.py
       - scripts/qam_receiver_study.py
       - scripts/qam_phase_study.py
+      - scripts/qam_sequence_study.py
       - tests/test_qam_receiver_study.py
       - tests/test_qam_phase_study.py
+      - tests/test_qam_sequence_study.py
       - tests/test_qam_prbs15.py
       - .github/workflows/qam-lab.yml
       - iqscope_qam.py
@@ -33,6 +35,8 @@ jobs:
         run: python scripts/qam_receiver_study.py
       - name: Compare blind phase tracking and correlated Gaussian noise on frozen verification bits
         run: python scripts/qam_phase_study.py
+      - name: Compare prefix-trained sequence detection and impulsive-noise likelihoods
+        run: python scripts/qam_sequence_study.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -41,4 +45,5 @@ jobs:
             corpus-cache/qam-lab/inspection.json
             corpus-cache/qam-lab/receiver-study.json
             corpus-cache/qam-lab/phase-study.json
+            corpus-cache/qam-lab/sequence-study.json
           if-no-files-found: ignore
