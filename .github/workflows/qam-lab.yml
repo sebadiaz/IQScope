@@ -8,10 +8,12 @@ on:
       - scripts/qam_phase_study.py
       - scripts/qam_sequence_study.py
       - scripts/qam_fse_study.py
+      - scripts/qam_calibration_study.py
       - tests/test_qam_receiver_study.py
       - tests/test_qam_phase_study.py
       - tests/test_qam_sequence_study.py
       - tests/test_qam_fse_study.py
+      - tests/test_qam_calibration_study.py
       - tests/test_qam_prbs15.py
       - .github/workflows/qam-lab.yml
       - iqscope_qam.py
@@ -41,6 +43,8 @@ jobs:
         run: python scripts/qam_sequence_study.py
       - name: Measure raw fractionally spaced filters using declared prefix targets and controls
         run: python scripts/qam_fse_study.py
+      - name: Transfer calibration from strong QAM recordings without weak-reference feedback
+        run: python scripts/qam_calibration_study.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -51,4 +55,5 @@ jobs:
             corpus-cache/qam-lab/phase-study.json
             corpus-cache/qam-lab/sequence-study.json
             corpus-cache/qam-lab/fse-study.json
+            corpus-cache/qam-lab/calibration-study.json
           if-no-files-found: ignore
