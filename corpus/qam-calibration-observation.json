@@ -1,0 +1,776 @@
+{
+  "source_url": "https://raw.githubusercontent.com/billjgavin/28_and_75GHz_Capture_Files/3f9ea40d9b187d0819b14cb254dc04905d398889/IQ_28_Ghz.zip",
+  "source_sha256": "4959f58182b54a8ba25893106be939f34716d0c3832afa4d88d1658e54844240",
+  "measurement_commit": "6b3b5f96dd76b62601ccdc579f166f58d08243eb",
+  "measurement_run": "https://github.com/sebadiaz/IQScope/actions/runs/42501312228",
+  "scope": "decision-directed calibration from separate strong recordings; not standalone blind acquisition",
+  "selection_scope": "strong validation selects configurations; noise-loaded coefficients additionally use target raw mean power and separate noise, never target reference symbols or BER",
+  "demapper_scope": "blind gain/noise fitted separately on the unlabelled target interior; no expected target symbols",
+  "alignment_scope": "per-record blind phase origins, clock and carrier estimates; no reference-based weak alignment",
+  "boundary_scope": "same first/last40 baseline symbol LLRs; 17904 full verification bits,17744 filtered bits",
+  "weak_capture": {
+    "name": "16qam f.csv",
+    "generic_status": "no_consistent_candidate",
+    "expected_bits_sha256": "b3b1c4c30aaed626eed153081907322f6325e409596c2834285c6bb5984710ac",
+    "baseline": {
+      "evaluation_bits": 17904,
+      "evaluation_error_count": 602,
+      "evaluation_ber": 0.03362377122430742,
+      "model": {
+        "gain_i": 0.9650046670681118,
+        "gain_q": -0.0015194111203277077,
+        "noise_variance_complex": 0.05721997519686136,
+        "iterations": 32,
+        "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+      }
+    },
+    "selected": {
+      "calibration_a": {
+        "method": "calibration_a_taps21_ridge0.001",
+        "measurement": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 617,
+          "evaluation_ber": 0.034461572832886506,
+          "errors_corrected": 13,
+          "new_errors_introduced": 28,
+          "frontend": {
+            "input_scope": "raw normalized IQ; blind baseline clock/carrier only; no RRC matched filter",
+            "sample_spacing_symbols": 0.5,
+            "tap_count": 21,
+            "antialias_tap_count": 259,
+            "antialias_cutoff_hz": 44999999.99989637,
+            "antialias_kaiser_beta": 7,
+            "interpolator": "Lanczos radius 8",
+            "preserved_boundary_symbols_each_end": 40,
+            "valid_interior_symbols": 4908,
+            "phase_origin_radians": -0.7300331155168446,
+            "alignment_scope": "blind baseline phase only; no reference-bit alignment"
+          },
+          "likelihood_model": {
+            "gain_i": 0.8902418926948986,
+            "gain_q": -0.0008194033884662438,
+            "noise_variance_complex": 0.04848992588541774,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          },
+          "filtered_evaluation_bits": 17744,
+          "filtered_evaluation_error_count": 609
+        },
+        "filter": {
+          "coefficients_i": [
+            -0.0035232812663191448,
+            0.0019008977836860637,
+            0.008868357201231416,
+            -0.012647166512092278,
+            -0.017168212047881538,
+            0.03470291749548266,
+            0.02441510431447805,
+            -0.08765611871936187,
+            -0.03131735004787812,
+            0.3109198510654493,
+            0.5338385076888614,
+            0.3142769645679741,
+            -0.02997175385904706,
+            -0.08794624049956831,
+            0.026457774625979338,
+            0.03806307853035229,
+            -0.019173912839922494,
+            -0.01459554516709032,
+            0.012087532464395407,
+            0.002767962626712661,
+            -0.004005851634913117
+          ],
+          "coefficients_q": [
+            -0.00022836976195422454,
+            -0.00024336838284990872,
+            0.0005858322252344032,
+            -0.0008053373858111369,
+            -0.0014885312755728965,
+            0.002257017742968893,
+            0.00025382912812542315,
+            -0.0021730756108228493,
+            0.0004941618528742182,
+            -0.0009426502559579957,
+            0.0002727074932514092,
+            0.00135873377113406,
+            0.001928001049365637,
+            0.00007853370896046099,
+            -0.0003124526767917268,
+            -0.00026212993159606434,
+            -0.0008665124845362436,
+            0.0017977877221102485,
+            -0.001411863364961209,
+            -0.0004070029817003255,
+            0.0005608751179879032
+          ],
+          "tap_count": 21,
+          "ridge_relative_to_mean_gram_diagonal": 0.001,
+          "calibration_files": [
+            "16qam a.csv"
+          ],
+          "fit_symbol_count": 4908,
+          "regularized_condition": 2396.358707078479,
+          "target_scope": "baseline hard QAM decisions on strong calibration records only; no weak samples or reference bits in fit",
+          "coefficient_scope": "full strong-record interiors, fixed for weak inference"
+        },
+        "selection_mse": 0.00011838632498007597,
+        "selection_scope": "record a prefix validation only; full record a used for final refit"
+      },
+      "calibration_abcde": {
+        "method": "calibration_abcde_taps21_ridge0.001",
+        "measurement": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 620,
+          "evaluation_ber": 0.03462913315460232,
+          "errors_corrected": 17,
+          "new_errors_introduced": 35,
+          "frontend": {
+            "input_scope": "raw normalized IQ; blind baseline clock/carrier only; no RRC matched filter",
+            "sample_spacing_symbols": 0.5,
+            "tap_count": 21,
+            "antialias_tap_count": 259,
+            "antialias_cutoff_hz": 44999999.99989637,
+            "antialias_kaiser_beta": 7,
+            "interpolator": "Lanczos radius 8",
+            "preserved_boundary_symbols_each_end": 40,
+            "valid_interior_symbols": 4908,
+            "phase_origin_radians": -0.7300331155168446,
+            "alignment_scope": "blind baseline phase only; no reference-bit alignment"
+          },
+          "likelihood_model": {
+            "gain_i": 0.8904669136328296,
+            "gain_q": 0.0022749070527017285,
+            "noise_variance_complex": 0.04843077176361553,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          },
+          "filtered_evaluation_bits": 17744,
+          "filtered_evaluation_error_count": 612
+        },
+        "filter": {
+          "coefficients_i": [
+            -0.00440949373322352,
+            0.003753075223343028,
+            0.006161191419824164,
+            -0.008605992820188445,
+            -0.02388485162531764,
+            0.04267214274030176,
+            0.01837218079747878,
+            -0.0851098365858107,
+            -0.032338228179097483,
+            0.3100353856515506,
+            0.5386106352288078,
+            0.3084858636403458,
+            -0.02887348605996904,
+            -0.08353448258751842,
+            0.022526055513680657,
+            0.03907536451663871,
+            -0.0187778227032491,
+            -0.015410737625032757,
+            0.013911495870219916,
+            -0.0002918822192471522,
+            -0.0024015655269729267
+          ],
+          "coefficients_q": [
+            -0.00024576116665248873,
+            0.0003290106828327321,
+            -0.0006016165302535371,
+            0.00007593913444872141,
+            -0.0004985328160330138,
+            -0.0004920073598464968,
+            0.0034892974345698074,
+            -0.00513996451960332,
+            0.0018327700656384914,
+            0.0005618739213354612,
+            -0.0003137795829332319,
+            0.006824075544908943,
+            -0.0028143416727176677,
+            0.0019388848567586257,
+            0.0020588291963894592,
+            -0.004340079172276618,
+            -0.00007484938802936138,
+            0.004220976536841883,
+            -0.00308792680942591,
+            -0.0007481125963217949,
+            0.0016468517355180104
+          ],
+          "tap_count": 21,
+          "ridge_relative_to_mean_gram_diagonal": 0.001,
+          "calibration_files": [
+            "16qam a.csv",
+            "16qam b.csv",
+            "16qam c.csv",
+            "16qam d.csv",
+            "16qam e.csv"
+          ],
+          "fit_symbol_count": 24540,
+          "regularized_condition": 2211.400558043816,
+          "target_scope": "baseline hard QAM decisions on strong calibration records only; no weak samples or reference bits in fit",
+          "coefficient_scope": "full strong-record interiors, fixed for weak inference"
+        },
+        "selection_mse": 0.001916580349520831,
+        "selection_scope": "equal mean of held-out strong-record normalized MSEs; weak record excluded"
+      },
+      "noise_loaded_calibration_a": {
+        "method": "noise_loaded_calibration_a_mean",
+        "measurement": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 612,
+          "evaluation_ber": 0.03418230563002681,
+          "errors_corrected": 27,
+          "new_errors_introduced": 37,
+          "frontend": {
+            "input_scope": "raw normalized IQ; blind baseline clock/carrier only; no RRC matched filter",
+            "sample_spacing_symbols": 0.5,
+            "tap_count": 21,
+            "antialias_tap_count": 259,
+            "antialias_cutoff_hz": 44999999.99989637,
+            "antialias_kaiser_beta": 7,
+            "interpolator": "Lanczos radius 8",
+            "preserved_boundary_symbols_each_end": 40,
+            "valid_interior_symbols": 4908,
+            "phase_origin_radians": -0.7300331155168446,
+            "alignment_scope": "blind baseline phase only; no reference-bit alignment"
+          },
+          "likelihood_model": {
+            "gain_i": 0.939289388837426,
+            "gain_q": 0.0002965402931883157,
+            "noise_variance_complex": 0.053797706802280056,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          },
+          "filtered_evaluation_bits": 17744,
+          "filtered_evaluation_error_count": 604
+        },
+        "filter": {
+          "coefficients_i": [
+            -0.00257298409914477,
+            -0.003986325880730003,
+            0.012114678019959715,
+            -0.019359779320848244,
+            -0.01775137620007134,
+            0.04016205426922206,
+            0.026489631661336412,
+            -0.09680358513555085,
+            -0.03157169186793829,
+            0.33071203454254,
+            0.5562043158669248,
+            0.33464008645983645,
+            -0.03506563613172724,
+            -0.08936222992438121,
+            0.023785627403812792,
+            0.04430201055292847,
+            -0.021775037628287832,
+            -0.013436811617646031,
+            0.002333537856348405,
+            0.009986872105437961,
+            -0.01065259821066994
+          ],
+          "coefficients_q": [
+            0.0017926987762924133,
+            -0.0077969287672129154,
+            0.008260326444427025,
+            -0.0184359923639307,
+            0.01440780224517965,
+            -0.010415923257133695,
+            0.010509378396318957,
+            -0.011745085922576119,
+            0.008011605997165147,
+            -0.004514101357667859,
+            0.003546535643772533,
+            -0.001972214786769478,
+            0.0027449052245136253,
+            -0.0010238138225671732,
+            0.0031068118436467524,
+            -0.004434331895883872,
+            0.001556153995586782,
+            0.002059925095058083,
+            0.004790934644594522,
+            -0.0017576612056146973,
+            0.0024368813804931167
+          ],
+          "tap_count": 21,
+          "ridge_relative_to_mean_gram_diagonal": 0.001,
+          "calibration_files": [
+            "16qam a.csv"
+          ],
+          "fit_symbol_count": 4908,
+          "regularized_condition": 879.8587325304967,
+          "source_signal_fractions": {
+            "16qam a.csv": 0.999744585569393
+          },
+          "target_signal_fraction": 0.7971687488558977,
+          "target_mean_power_raw_units": 0.0000025453996004518714,
+          "noise_mean_power_raw_units": 5.16286585621351e-7,
+          "signal_covariance_min_eigenvalue_before_projection": -0.000003079779575447972,
+          "signal_covariance_clipped_eigenvalues": 1,
+          "target_scope": "only target raw mean power; no target symbols or reference bits",
+          "coefficient_scope": "strong-record channel moments plus measured noise covariance and target mean power",
+          "assumption": "same voltage calibration and representative stationary noise across separate recordings; not simultaneous calibrated SNR"
+        },
+        "selection_mse": 0.00011838632498007597,
+        "selection_scope": "tap count/ridge from strong validation; noise measured separately; no target reference feedback",
+        "noise_profile": {
+          "noise_files": [
+            "noise a.csv",
+            "noise b.csv"
+          ],
+          "aggregation": "mean",
+          "noise_mean_power_raw_units": 5.16286585621351e-7,
+          "covariance_condition": 90.72904205912263,
+          "sample_spacing_symbols": 0.5,
+          "tap_count": 21
+        }
+      },
+      "noise_loaded_calibration_abcde": {
+        "method": "noise_loaded_calibration_abcde_mean",
+        "measurement": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 610,
+          "evaluation_ber": 0.03407059874888293,
+          "errors_corrected": 24,
+          "new_errors_introduced": 32,
+          "frontend": {
+            "input_scope": "raw normalized IQ; blind baseline clock/carrier only; no RRC matched filter",
+            "sample_spacing_symbols": 0.5,
+            "tap_count": 21,
+            "antialias_tap_count": 259,
+            "antialias_cutoff_hz": 44999999.99989637,
+            "antialias_kaiser_beta": 7,
+            "interpolator": "Lanczos radius 8",
+            "preserved_boundary_symbols_each_end": 40,
+            "valid_interior_symbols": 4908,
+            "phase_origin_radians": -0.7300331155168446,
+            "alignment_scope": "blind baseline phase only; no reference-bit alignment"
+          },
+          "likelihood_model": {
+            "gain_i": 0.9378305070735168,
+            "gain_q": 0.00368379438393903,
+            "noise_variance_complex": 0.05359851987426299,
+            "iterations": 32,
+            "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+          },
+          "filtered_evaluation_bits": 17744,
+          "filtered_evaluation_error_count": 602
+        },
+        "filter": {
+          "coefficients_i": [
+            -0.0018564628733158412,
+            -0.0037350915784750364,
+            0.01214211543744219,
+            -0.019395717256274026,
+            -0.017684580745099644,
+            0.03986688848480182,
+            0.025863835233101123,
+            -0.09662463317575619,
+            -0.030652546685710085,
+            0.3298048084157387,
+            0.5559345144863649,
+            0.33357660130136213,
+            -0.0336550271103373,
+            -0.08961782779301289,
+            0.02428292879846371,
+            0.04343864858085413,
+            -0.021266236665946313,
+            -0.014016719169487652,
+            0.003006393816827945,
+            0.009049986256280566,
+            -0.009265105368277434
+          ],
+          "coefficients_q": [
+            0.0015434156935016105,
+            -0.007101952369801637,
+            0.007741018729682592,
+            -0.01817471529361086,
+            0.01398524081493719,
+            -0.010247488143570406,
+            0.010379834228027629,
+            -0.01189687132644839,
+            0.008081300456323364,
+            -0.003280817761154509,
+            0.005500704015181039,
+            -0.0007458092482788116,
+            0.0025370311720653987,
+            -0.001842668246159865,
+            0.0038041496054550187,
+            -0.004988176185214416,
+            0.0015702505163662488,
+            0.0022718657014630587,
+            0.005460155483697769,
+            -0.0025873688444240333,
+            0.0030567728894264367
+          ],
+          "tap_count": 21,
+          "ridge_relative_to_mean_gram_diagonal": 0.001,
+          "calibration_files": [
+            "16qam a.csv",
+            "16qam b.csv",
+            "16qam c.csv",
+            "16qam d.csv",
+            "16qam e.csv"
+          ],
+          "fit_symbol_count": 24540,
+          "regularized_condition": 879.4305690869235,
+          "source_signal_fractions": {
+            "16qam a.csv": 0.999744585569393,
+            "16qam b.csv": 0.9991791020534542,
+            "16qam c.csv": 0.9974523456827851,
+            "16qam d.csv": 0.9918452433856576,
+            "16qam e.csv": 0.975175010098666
+          },
+          "target_signal_fraction": 0.7971687488558977,
+          "target_mean_power_raw_units": 0.0000025453996004518714,
+          "noise_mean_power_raw_units": 5.16286585621351e-7,
+          "signal_covariance_min_eigenvalue_before_projection": -0.00012990810237716914,
+          "signal_covariance_clipped_eigenvalues": 3,
+          "target_scope": "only target raw mean power; no target symbols or reference bits",
+          "coefficient_scope": "strong-record channel moments plus measured noise covariance and target mean power",
+          "assumption": "same voltage calibration and representative stationary noise across separate recordings; not simultaneous calibrated SNR"
+        },
+        "selection_mse": 0.001916580349520831,
+        "selection_scope": "tap count/ridge from strong validation; noise measured separately; no target reference feedback",
+        "noise_profile": {
+          "noise_files": [
+            "noise a.csv",
+            "noise b.csv"
+          ],
+          "aggregation": "mean",
+          "noise_mean_power_raw_units": 5.16286585621351e-7,
+          "covariance_condition": 90.72904205912263,
+          "sample_spacing_symbols": 0.5,
+          "tap_count": 21
+        }
+      }
+    },
+    "grid": {
+      "calibration_a_taps7_ridge0.001": {
+        "errors": 734,
+        "corrected": 89,
+        "introduced": 221,
+        "filtered_errors": 726,
+        "calibration_mse": 0.0005551874546005885
+      },
+      "calibration_abcde_taps7_ridge0.001": {
+        "errors": 710,
+        "corrected": 78,
+        "introduced": 186,
+        "filtered_errors": 702,
+        "calibration_mse": 0.0024918119042031833
+      },
+      "calibration_a_taps7_ridge0.01": {
+        "errors": 721,
+        "corrected": 80,
+        "introduced": 199,
+        "filtered_errors": 713,
+        "calibration_mse": 0.0006989997289688705
+      },
+      "calibration_abcde_taps7_ridge0.01": {
+        "errors": 717,
+        "corrected": 81,
+        "introduced": 196,
+        "filtered_errors": 709,
+        "calibration_mse": 0.0025507619700900356
+      },
+      "calibration_a_taps7_ridge0.1": {
+        "errors": 715,
+        "corrected": 65,
+        "introduced": 178,
+        "filtered_errors": 707,
+        "calibration_mse": 0.003599223363292158
+      },
+      "calibration_abcde_taps7_ridge0.1": {
+        "errors": 717,
+        "corrected": 65,
+        "introduced": 180,
+        "filtered_errors": 709,
+        "calibration_mse": 0.005192936860600498
+      },
+      "calibration_a_taps13_ridge0.001": {
+        "errors": 631,
+        "corrected": 20,
+        "introduced": 49,
+        "filtered_errors": 623,
+        "calibration_mse": 0.00013199345133632742
+      },
+      "calibration_abcde_taps13_ridge0.001": {
+        "errors": 630,
+        "corrected": 19,
+        "introduced": 47,
+        "filtered_errors": 622,
+        "calibration_mse": 0.001927881491107441
+      },
+      "calibration_a_taps13_ridge0.01": {
+        "errors": 628,
+        "corrected": 19,
+        "introduced": 45,
+        "filtered_errors": 620,
+        "calibration_mse": 0.00016591919062724107
+      },
+      "calibration_abcde_taps13_ridge0.01": {
+        "errors": 622,
+        "corrected": 20,
+        "introduced": 40,
+        "filtered_errors": 614,
+        "calibration_mse": 0.0019536080547543767
+      },
+      "calibration_a_taps13_ridge0.1": {
+        "errors": 612,
+        "corrected": 22,
+        "introduced": 32,
+        "filtered_errors": 604,
+        "calibration_mse": 0.0026435694040262523
+      },
+      "calibration_abcde_taps13_ridge0.1": {
+        "errors": 611,
+        "corrected": 23,
+        "introduced": 32,
+        "filtered_errors": 603,
+        "calibration_mse": 0.00425971627572161
+      },
+      "calibration_a_taps21_ridge0.001": {
+        "errors": 617,
+        "corrected": 13,
+        "introduced": 28,
+        "filtered_errors": 609,
+        "calibration_mse": 0.00011838632498007597
+      },
+      "calibration_abcde_taps21_ridge0.001": {
+        "errors": 620,
+        "corrected": 17,
+        "introduced": 35,
+        "filtered_errors": 612,
+        "calibration_mse": 0.001916580349520831
+      },
+      "calibration_a_taps21_ridge0.01": {
+        "errors": 620,
+        "corrected": 9,
+        "introduced": 27,
+        "filtered_errors": 612,
+        "calibration_mse": 0.00014732873236590713
+      },
+      "calibration_abcde_taps21_ridge0.01": {
+        "errors": 615,
+        "corrected": 14,
+        "introduced": 27,
+        "filtered_errors": 607,
+        "calibration_mse": 0.001941123329324872
+      },
+      "calibration_a_taps21_ridge0.1": {
+        "errors": 599,
+        "corrected": 22,
+        "introduced": 19,
+        "filtered_errors": 591,
+        "calibration_mse": 0.0027058444246462884
+      },
+      "calibration_abcde_taps21_ridge0.1": {
+        "errors": 599,
+        "corrected": 22,
+        "introduced": 19,
+        "filtered_errors": 591,
+        "calibration_mse": 0.004286676543519603
+      },
+      "noise_loaded_calibration_a_noise a.csv": {
+        "errors": 614,
+        "corrected": 32,
+        "introduced": 44,
+        "filtered_errors": 606,
+        "calibration_mse": 0.00011838632498007597
+      },
+      "noise_loaded_calibration_a_noise b.csv": {
+        "errors": 613,
+        "corrected": 29,
+        "introduced": 40,
+        "filtered_errors": 605,
+        "calibration_mse": 0.00011838632498007597
+      },
+      "noise_loaded_calibration_a_mean": {
+        "errors": 612,
+        "corrected": 27,
+        "introduced": 37,
+        "filtered_errors": 604,
+        "calibration_mse": 0.00011838632498007597
+      },
+      "noise_loaded_calibration_abcde_noise a.csv": {
+        "errors": 616,
+        "corrected": 29,
+        "introduced": 43,
+        "filtered_errors": 608,
+        "calibration_mse": 0.001916580349520831
+      },
+      "noise_loaded_calibration_abcde_noise b.csv": {
+        "errors": 602,
+        "corrected": 37,
+        "introduced": 37,
+        "filtered_errors": 594,
+        "calibration_mse": 0.001916580349520831
+      },
+      "noise_loaded_calibration_abcde_mean": {
+        "errors": 610,
+        "corrected": 24,
+        "introduced": 32,
+        "filtered_errors": 602,
+        "calibration_mse": 0.001916580349520831
+      }
+    }
+  },
+  "strong_checks": {
+    "pooled_selected_held_out_strong": {
+      "16qam a.csv": {
+        "errors": 0,
+        "baseline_errors": 0,
+        "calibration_files": [
+          "16qam b.csv",
+          "16qam c.csv",
+          "16qam d.csv",
+          "16qam e.csv"
+        ],
+        "expected_bits_sha256": "14641bb94b9ccae52b58ed1b3703716cfd99422a7e02bb130f9effca575951a7"
+      },
+      "16qam b.csv": {
+        "errors": 0,
+        "baseline_errors": 0,
+        "calibration_files": [
+          "16qam a.csv",
+          "16qam c.csv",
+          "16qam d.csv",
+          "16qam e.csv"
+        ],
+        "expected_bits_sha256": "e66c5cb35a9b927651130990b37cf8e78abb6f1a2361fb71043528be83937e91"
+      },
+      "16qam c.csv": {
+        "errors": 0,
+        "baseline_errors": 0,
+        "calibration_files": [
+          "16qam a.csv",
+          "16qam b.csv",
+          "16qam d.csv",
+          "16qam e.csv"
+        ],
+        "expected_bits_sha256": "dbaf97c414cb445c5c6f33e77506a7ab2bf5838256f6b7abe2f15ea8dec65438"
+      },
+      "16qam d.csv": {
+        "errors": 0,
+        "baseline_errors": 0,
+        "calibration_files": [
+          "16qam a.csv",
+          "16qam b.csv",
+          "16qam c.csv",
+          "16qam e.csv"
+        ],
+        "expected_bits_sha256": "d314d81d81d03102e3d4d3cae1a641e71a6bd5c74db2d47db0f562ac2eef550d"
+      },
+      "16qam e.csv": {
+        "errors": 0,
+        "baseline_errors": 0,
+        "calibration_files": [
+          "16qam a.csv",
+          "16qam b.csv",
+          "16qam c.csv",
+          "16qam d.csv"
+        ],
+        "expected_bits_sha256": "aa12b572ce115cb3142ac1c2920ef37a246dafdb25643bf0bbe5b75efd0503eb"
+      }
+    },
+    "single_a_selected_independent_strong": {
+      "16qam b.csv": {
+        "errors": 0,
+        "baseline_errors": 0,
+        "expected_bits_sha256": "e66c5cb35a9b927651130990b37cf8e78abb6f1a2361fb71043528be83937e91"
+      },
+      "16qam c.csv": {
+        "errors": 0,
+        "baseline_errors": 0,
+        "expected_bits_sha256": "dbaf97c414cb445c5c6f33e77506a7ab2bf5838256f6b7abe2f15ea8dec65438"
+      },
+      "16qam d.csv": {
+        "errors": 0,
+        "baseline_errors": 0,
+        "expected_bits_sha256": "d314d81d81d03102e3d4d3cae1a641e71a6bd5c74db2d47db0f562ac2eef550d"
+      },
+      "16qam e.csv": {
+        "errors": 0,
+        "baseline_errors": 0,
+        "expected_bits_sha256": "aa12b572ce115cb3142ac1c2920ef37a246dafdb25643bf0bbe5b75efd0503eb"
+      }
+    },
+    "noise_loaded_mean_held_out_strong": {
+      "16qam a.csv": {
+        "errors": 0,
+        "baseline_errors": 0,
+        "calibration_files": [
+          "16qam b.csv",
+          "16qam c.csv",
+          "16qam d.csv",
+          "16qam e.csv"
+        ],
+        "expected_bits_sha256": "14641bb94b9ccae52b58ed1b3703716cfd99422a7e02bb130f9effca575951a7"
+      },
+      "16qam b.csv": {
+        "errors": 0,
+        "baseline_errors": 0,
+        "calibration_files": [
+          "16qam a.csv",
+          "16qam c.csv",
+          "16qam d.csv",
+          "16qam e.csv"
+        ],
+        "expected_bits_sha256": "e66c5cb35a9b927651130990b37cf8e78abb6f1a2361fb71043528be83937e91"
+      },
+      "16qam c.csv": {
+        "errors": 0,
+        "baseline_errors": 0,
+        "calibration_files": [
+          "16qam a.csv",
+          "16qam b.csv",
+          "16qam d.csv",
+          "16qam e.csv"
+        ],
+        "expected_bits_sha256": "dbaf97c414cb445c5c6f33e77506a7ab2bf5838256f6b7abe2f15ea8dec65438"
+      },
+      "16qam d.csv": {
+        "errors": 0,
+        "baseline_errors": 0,
+        "calibration_files": [
+          "16qam a.csv",
+          "16qam b.csv",
+          "16qam c.csv",
+          "16qam e.csv"
+        ],
+        "expected_bits_sha256": "d314d81d81d03102e3d4d3cae1a641e71a6bd5c74db2d47db0f562ac2eef550d"
+      },
+      "16qam e.csv": {
+        "errors": 0,
+        "baseline_errors": 0,
+        "calibration_files": [
+          "16qam a.csv",
+          "16qam b.csv",
+          "16qam c.csv",
+          "16qam d.csv"
+        ],
+        "expected_bits_sha256": "aa12b572ce115cb3142ac1c2920ef37a246dafdb25643bf0bbe5b75efd0503eb"
+      }
+    },
+    "noise_loaded_mean_independent_strong": {
+      "16qam b.csv": {
+        "errors": 0,
+        "baseline_errors": 0,
+        "expected_bits_sha256": "e66c5cb35a9b927651130990b37cf8e78abb6f1a2361fb71043528be83937e91"
+      },
+      "16qam c.csv": {
+        "errors": 0,
+        "baseline_errors": 0,
+        "expected_bits_sha256": "dbaf97c414cb445c5c6f33e77506a7ab2bf5838256f6b7abe2f15ea8dec65438"
+      },
+      "16qam d.csv": {
+        "errors": 0,
+        "baseline_errors": 0,
+        "expected_bits_sha256": "d314d81d81d03102e3d4d3cae1a641e71a6bd5c74db2d47db0f562ac2eef550d"
+      },
+      "16qam e.csv": {
+        "errors": 0,
+        "baseline_errors": 0,
+        "expected_bits_sha256": "aa12b572ce115cb3142ac1c2920ef37a246dafdb25643bf0bbe5b75efd0503eb"
+      }
+    }
+  }
+}

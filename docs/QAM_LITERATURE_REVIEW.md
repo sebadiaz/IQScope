@@ -4,6 +4,8 @@ Lecture du 8 novembre 2026. Code IQScope relu à la version `052e42cc4f15aeb5f7a
 
 Mise à jour après cette lecture : le [premier banc fractionnaire sur préfixe](QAM16.md#filtres-fractionnaires-appris-sur-préfixe) est désormais mesuré. Il donne 638 erreurs pour le filtre aidé choisi sur les IQ, contre 602 pour la référence ; les contrôles et toutes les configurations sont publiés. Ce résultat concerne l’étape de diagnostic décrite ci-dessous, sans constituer l’essai CMA/MCMA–RDE proposé ensuite.
 
+Le [transfert depuis les captures fortes et son adaptation au bruit mesuré](QAM16.md#calibration-à-partir-des-captures-fortes) est également évalué : les choix de calibration donnent 617 et 620 erreurs, puis 612 et 610 avec le bruit moyen, contre 602 actuellement. Les minima exploratoires ne sont pas présentés comme des choix automatiques. L’estimation sur acquisitions séparées est donc testée dans ce cadre, tandis que CMA/MCMA–RDE et la comparaison de synchroniseurs restent distinctes.
+
 La priorité qui ressort est **l’apprentissage du filtre de réception avant la réduction à un point par symbole**, avec égalisation fractionnaire. Les échecs de nos corrections après filtrage ne suffisent pas à écarter cette famille. Les 602 erreurs actuelles sont un résultat mesuré du récepteur, pas une limite démontrée des échantillons IQ bruts.
 
 ## Ce que les éléments du projet établissent

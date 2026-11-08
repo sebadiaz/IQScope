@@ -254,3 +254,46 @@ Le témoin de vingt et un coefficients couvre dix symboles avant décimation, po
 
 Ces résultats portent sur des coefficients appris sur un préfixe court et sur la grille déclarée. Ils ne prouvent pas une limite du signal brut et ne remplacent pas une évaluation CMA/MCMA–RDE, une estimation d’impulsion sur des acquisitions séparées ou une comparaison de synchroniseurs. Aucun résultat aidé n’est présenté comme un décodage générique ; la capture faible conserve son refus.
 
+## Calibration à partir des captures fortes
+
+`python scripts/qam_calibration_study.py` teste le transfert d’un filtre appris sur d’autres enregistrements. L’hypothèse est que le préfixe faible est trop court ou trop bruité pour estimer correctement ce filtre. La calibration utilise uniquement les décisions QAM des captures nommées `a` à `e`, dont les références précédentes établissent zéro erreur. Aucun symbole PRBS attendu n’entre dans la fonction d’ajustement et les fonctions de calibration refusent la capture `f`. Cette méthode requiert des captures de calibration ; elle ne constitue pas une acquisition aveugle autonome.
+
+Les vecteurs IQ sont ceux du banc fractionnaire, à espacement T/2 et sept, treize ou vingt et un coefficients. Avant de combiner des enregistrements, chaque vecteur est tourné de l’opposé de l’origine de phase estimée par le récepteur de référence. Cela exprime observations et décisions dans les mêmes axes de constellation, malgré les phases et ambiguïtés de quadrant propres à chaque capture. L’alignement n’utilise aucun bit attendu de la capture cible. Les estimations de cadence, porteuse et temps restent celles du récepteur courant.
+
+Deux familles de neuf configurations sont comparées, avec les mêmes régularisations 0,001, 0,01 et 0,1 :
+
+- `calibration_a` choisit le réglage sur la validation du seul préfixe de `a`, avec la séparation déjà décrite, puis réapprend les coefficients sur tout son intérieur : 4 908 symboles. Sa vérification sur les captures fortes utilise seulement `b` à `e`, absentes de cet apprentissage.
+- `calibration_abcde` valide chaque réglage en retirant successivement un enregistrement entier. Chaque filtre apprend sur 19 632 symboles de quatre captures et est évalué en MSE normalisée sur les 4 908 symboles de la cinquième. La moyenne des cinq MSE choisit le réglage. Le filtre final destiné à `f` est ensuite réappris sur 24 540 symboles des cinq captures fortes.
+
+Les cinq contrôles forts de la famille regroupée utilisent chacun leur filtre ayant exclu l’enregistrement contrôlé. Ils ne sont donc pas des sorties d’un filtre entraîné sur la même capture ; ils restent cependant des mesures de validation ayant servi au choix de réglage, au sein du corpus de développement. Dans ces deux familles à filtre fixe, la capture faible n’entre ni dans les équations normales ni dans le choix des paramètres. Ses références ne sont générées pour le décompte qu’après le gel des modèles.
+
+Pour l’inférence sur `f`, la calibration du gain et du bruit reste aveugle sur l’intérieur non étiqueté de sa sortie. Elle est distincte des coefficients du filtre, figés depuis les fortes. Les dix-huit configurations et les deux choix issus de la validation sont rapportés, sans choisir le meilleur BER de `f`. Les LLR de bord sont repris de la référence comme dans l’étude fractionnaire : 17 904 bits de vérification, dont 17 744 réellement filtrés et 160 laissés à la référence.
+
+Les tests vérifient le transfert sur une forme d’onde indépendante avec un autre bruit, une autre phase et une autre ambiguïté de quadrant. Ils contrôlent l’alignement de phase sans référence, l’exclusion d’un enregistrement de son filtre de validation, l’invariance de ce filtre si seules les cibles de l’enregistrement exclu changent, la conservation des entrées et le rejet de la capture faible à l’interface de calibration. Le banc conserve tous les coefficients, périmètres et mesures dans `calibration-study.json` ; il ne modifie pas l’acceptation du récepteur générique.
+
+Une variante distingue aussi le canal appris sur les fortes du niveau de bruit de la cible. Elle utilise les deux enregistrements `noise a.csv` et `noise b.csv` dans leurs unités de tension originales. Le choix principal, fixé avant sa mesure, moyenne leurs moments absolus. Les deux bruits séparés sont rapportés comme contrôles de sensibilité ; aucun n’est choisi d’après le BER de `f`.
+
+Les paramètres de longueur et de régularisation minimale restent ceux de la validation forte. La puissance moyenne brute de la cible est la seule nouvelle grandeur issue de cette cible pour le calcul des coefficients. Les covariances du bruit sont mesurées sur les vecteurs à T/2 après le même antirepliement. Sous l’hypothèse d’une calibration de tension identique et d’un bruit représentatif, on estime une fraction de puissance de signal `η = 1 − Pbruit / Ptotal`. On retire la contribution de bruit estimée des moments de chaque source forte, puis on moyenne les moments de signal. Une projection hermitienne positive corrige les éventuelles petites valeurs propres négatives dues à l’estimation ; le rapport conserve leur nombre et leur minimum avant projection.
+
+Dans la convention matricielle `sortie = X·c`, le filtre résout les équations de Wiener avec `Rcible = ηcible·Rsignal + (1−ηcible)·Rbruit` et `pcible = √ηcible·psignal`, plus la régularisation minimale choisie sur les fortes. Ce calcul adapte le filtre au bruit mesuré au lieu de transférer directement un réglage optimal à fort SNR. Il n’utilise aucun symbole attendu de la cible, mais dépend de sa puissance observable ; il doit donc être distingué du transfert à coefficients indépendants de toute donnée faible.
+
+Les deux familles, chacune avec la moyenne et les deux bruits séparés, ajoutent six voies aux dix-huit transferts fixes. Le modèle moyen est aussi contrôlé sur les cinq fortes laissées successivement hors calibration et sur les quatre fortes indépendantes du modèle `a`. Un test synthétique crée les données et labels cibles seulement après le gel du filtre et vérifie l’amélioration en bruit coloré ; un changement global d’unité de tension doit conserver les coefficients. Ces estimations avec des enregistrements séparés ne constituent pas une mesure simultanée étalonnée du SNR.
+
+Les [mesures de calibration et d’adaptation au bruit](https://github.com/sebadiaz/IQScope/actions/runs/42501312228) sont conservées dans `corpus/qam-calibration-observation.json`. Les choix obtenus sans consulter les erreurs de la cible donnent sur les mêmes 17 904 bits :
+
+| Méthode | Apprentissage du canal | Erreurs | Anciennes erreurs corrigées | Erreurs introduites |
+| --- | --- | ---: | ---: | ---: |
+| Référence actuelle | — | 602 | — | — |
+| Transfert fixe, configuration choisie sur `a` | 4 908 symboles de `a` | 617 | 13 | 28 |
+| Transfert fixe, configuration choisie par validation entre captures | 24 540 symboles de `a` à `e` | 620 | 17 | 35 |
+| Wiener adapté au bruit moyen, canal de `a` | 4 908 symboles de `a` | 612 | 27 | 37 |
+| Wiener adapté au bruit moyen, canal de `a` à `e` | 24 540 symboles de `a` à `e` | 610 | 24 | 32 |
+
+Les deux configurations de canal choisissent vingt et un coefficients et une régularisation minimale de 0,001. Avec le canal regroupé, les contrôles de bruit séparés donnent 616 erreurs pour `noise a.csv` et 602 pour `noise b.csv`. Avec le canal de `a`, ils donnent respectivement 614 et 613 erreurs. La moyenne, fixée comme résultat principal, donne les 610 et 612 erreurs du tableau ; le meilleur bruit séparé n’est pas choisi après observation du BER.
+
+Le bruit moyen brut vaut `5,1629e-7` dans les unités du fichier, contre une puissance totale de `2,5454e-6` pour `f`. Le modèle utilise donc une fraction de signal estimée de 0,79717 pour la cible. L’adaptation au bruit ramène le conditionnement régularisé d’environ 2 211 à 879 pour le canal regroupé, mais ce progrès numérique ne devient pas un gain de BER face à la référence. Les contrôles forts du transfert fixe, puis du Wiener moyen, restent à zéro erreur : cinq validations avec capture entière exclue pour chaque modèle regroupé et quatre captures indépendantes du modèle appris sur `a`.
+
+Deux réglages fixes de vingt et un coefficients à régularisation 0,1 donnent 599 erreurs dans le tableau exploratoire complet, trois de moins que la référence. Aucun n’est choisi par sa validation sur les fortes. Ce minimum observé ne démontre donc pas un choix automatique amélioré ; il a motivé le test séparé d’adaptation au bruit, dont la règle utilise uniquement des puissances et covariances observables. Cette règle ne bat pas les 602 erreurs. Les vingt-quatre configurations et tous leurs résultats restent publiés, avec l’empreinte de référence inchangée `b3b1c4c30aaed626eed153081907322f6325e409596c2834285c6bb5984710ac`.
+
+Le transfert de calibration réduit l’écart avec la référence par rapport à l’apprentissage sur préfixe faible, sans le supprimer. Les coefficients étant estimés sur d’autres captures, leur qualité dépend aussi de la stabilité de l’instrumentation, du filtre et de la synchronisation entre enregistrements. Le corpus demeure un corpus de développement déjà exploré ; aucune évaluation sur une nouvelle acquisition réservée ni aucune preuve d’optimalité du signal brut n’est revendiquée. La capture faible garde son refus générique.
+

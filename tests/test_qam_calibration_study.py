@@ -111,6 +111,9 @@ class QamCalibrationStudyTests(unittest.TestCase):
         records = {STRONG_NAMES[0]: (source, symbols)}
         ordinary = fit_calibration(records, .001)
         fitted = fit_noise_loaded(records, {STRONG_NAMES[0]: 1e6}, 2., 1., covariance, .001)
+        scaled = fit_noise_loaded(records, {STRONG_NAMES[0]: 9e6}, 18., 9., covariance, .001)
+        np.testing.assert_allclose(scaled['coefficients_i'], fitted['coefficients_i'], atol=1e-12)
+        np.testing.assert_allclose(scaled['coefficients_q'], fitted['coefficients_q'], atol=1e-12)
         # Target data and labels are created only AFTER the filter is fixed.
         frozen = copy.deepcopy(fitted)
         labels = rng.integers(0, 16, 6000)
