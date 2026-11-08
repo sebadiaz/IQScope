@@ -2,7 +2,7 @@
 
 IQScope essaie maintenant une chaîne **16-QAM carrée monoporteuse** dans les analyses IQ par fichier et les instantanés SDR. Les paramètres sont estimés à partir des échantillons : aucun débit symbole, décalage de porteuse ou filtre n’est fourni au décodeur. Les résultats sont des symboles et bits candidats, sans protocole ni CRC identifiés.
 
-La [revue des solutions publiées du 8 novembre 2026](QAM_LITERATURE_REVIEW.md) confronte les études ci-dessous au code et à des sources primaires. Elle distingue les corrections après reconstruction des symboles de l’apprentissage du filtre d’entrée. Le premier témoin fractionnaire sur préfixe est maintenant mesuré ci-dessous ; l’acquisition aveugle CMA/MCMA–RDE reste à évaluer. La prévision AWGN de la représentation actuelle ne démontre pas une limite des IQ bruts.
+La [revue des solutions publiées du 8 novembre 2026](QAM_LITERATURE_REVIEW.md) confronte les études ci-dessous au code et à des sources primaires. Elle distingue les corrections après reconstruction des symboles de l’apprentissage du filtre d’entrée. Le témoin fractionnaire sur préfixe et le [comparateur aveugle Gardner/CMA/MCMA–RDE](QAM_BLIND_SYNC.md) sont maintenant mesurés. Aucune de ces configurations ne réduit les 602 erreurs de la capture faible. La prévision AWGN de la représentation actuelle ne démontre pas une limite des IQ bruts.
 
 ## Méthode
 

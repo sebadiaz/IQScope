@@ -1,0 +1,451 @@
+{
+  "source_url": "https://raw.githubusercontent.com/billjgavin/28_and_75GHz_Capture_Files/3f9ea40d9b187d0819b14cb254dc04905d398889/IQ_28_Ghz.zip",
+  "source_sha256": "4959f58182b54a8ba25893106be939f34716d0c3832afa4d88d1658e54844240",
+  "measurement_commit": "77548d82e97fd9c8ea64aef1cf0ecd8b40cfe5b1",
+  "measurement_run": "https://github.com/sebadiaz/IQScope/actions/runs/42503960338",
+  "scope": "blind timing/equalizer experiments, fixed configurations, no reference-bit optimization",
+  "primary_methods": [
+    "gardner_bw0.01",
+    "baseline_grid_mcma_step0.02",
+    "gardner_bw0.01_mcma_step0.02"
+  ],
+  "primary_scope": "predefined after independent synthetic checks; sensitivity variants all reported, not chosen on weak BER",
+  "boundary_scope": "first/last40 LLRs copied from baseline; same17904 full verification bits,17744 filtered bits",
+  "weak_capture": {
+    "name": "16qam f.csv",
+    "generic_status": "no_consistent_candidate",
+    "expected_bits_sha256": "b3b1c4c30aaed626eed153081907322f6325e409596c2834285c6bb5984710ac",
+    "primary_results": {
+      "baseline_circular": {
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 602,
+        "evaluation_ber": 0.03362377122430742,
+        "model": {
+          "gain_i": 0.9650046670681118,
+          "gain_q": -0.0015194111203277077,
+          "noise_variance_complex": 0.05721997519686136,
+          "iterations": 32,
+          "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+        }
+      },
+      "gardner_bw0.01": {
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 655,
+        "evaluation_ber": 0.036584003574620196,
+        "errors_corrected": 70,
+        "new_errors_introduced": 123,
+        "parameters": {
+          "detector": "Gardner, Re((previous-current)*conj(midpoint))",
+          "bandwidth": 0.01,
+          "proportional_gain": 0.026313481273572494,
+          "integral_gain": 0.00035084641698096666,
+          "frequency_deviation_limit_fraction": 0.005,
+          "frequency_correction_final_fraction": 0.00009838379002398602,
+          "frequency_correction_tail_median_fraction": 0.000055309287563031115,
+          "timing_error_tail_mean": 0.0022194318598938506,
+          "timing_error_tail_rms": 0.6821872157073265,
+          "error_clip_fraction": 0.005012028869286287,
+          "initial_phase_symbols": 0,
+          "interpolation_phases": 128,
+          "interpolation_radius": 8,
+          "scope": "unlabelled samples only; same coarse baud seed, independent fine phase/frequency loop",
+          "coarse_baud": 49999935.05774755,
+          "carrier_offset_hz": 267.74250414837053,
+          "resample_up": 2,
+          "matched_rrc_rolloff": 0.2,
+          "phase_origin_radians": -0.7280223489996558,
+          "recovered_baud_tail_median": 49997169.749908514
+        },
+        "alignment": {
+          "symbol_lag": 0,
+          "conjugated": false,
+          "quarter_turn": 0,
+          "prefix_mse": 0.028257966103701612,
+          "scope": "baseline unlabelled prefix only; no PRBS bits or suffix alignment search"
+        },
+        "likelihood_model": {
+          "gain_i": 0.9638002858178654,
+          "gain_q": -0.0032241253771202556,
+          "noise_variance_complex": 0.05985626073630299,
+          "iterations": 32,
+          "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+        }
+      },
+      "baseline_grid_mcma_step0.02": {
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 1346,
+        "evaluation_ber": 0.0751787310098302,
+        "errors_corrected": 194,
+        "new_errors_introduced": 938,
+        "parameters": {
+          "method": "mcma -> rde",
+          "step_acquisition": 0.02,
+          "step_rde": 0.005,
+          "passes_per_stage": 4,
+          "tap_count": 21,
+          "training_symbols_per_pass": 4908,
+          "coefficient_updates": 39264,
+          "update_clip_fraction": 0.0006876528117359413,
+          "coefficients_i": [
+            -0.009671827450463334,
+            -0.00536993426721626,
+            0.003054433915452168,
+            -0.04069167904152256,
+            0.00740944524487736,
+            -0.02637922497833186,
+            0.06770168466002245,
+            -0.13803861581558324,
+            0.05821509777508066,
+            0.12432306426665844,
+            0.694267811353932,
+            0.1319483545932124,
+            0.08870630430852391,
+            -0.0996782605782174,
+            0.027689189673978903,
+            -0.01727839992971224,
+            0.02788993665874928,
+            -0.018946619722685968,
+            0.06137235779439429,
+            0.020448986328185134,
+            0.005522727933642082
+          ],
+          "coefficients_q": [
+            0.0014560654759483893,
+            -0.026668410301794638,
+            -0.0018987917681748735,
+            -0.016672047726827864,
+            0.008801069795419926,
+            0.011532921086016959,
+            -0.001728949251005599,
+            -0.02485740750299491,
+            -0.01835544292311217,
+            0.01460242440126306,
+            0.048868016480102895,
+            0.01071507972040322,
+            -0.01335082615221679,
+            0.017531587867500396,
+            -0.01324741591366285,
+            0.019783925212817525,
+            0.008533116361057427,
+            -0.0356204624840796,
+            -0.05171606450213751,
+            -0.038364691852826906,
+            0.026382502848137677
+          ],
+          "phase_origin_radians": -1.5537622424440976,
+          "fit_scope": "unlabelled full-window interior; no known or decided symbol targets; offline repeated passes"
+        },
+        "alignment": {
+          "symbol_lag": 0,
+          "conjugated": false,
+          "quarter_turn": 3,
+          "prefix_mse": 0.03494593477238699,
+          "scope": "baseline unlabelled prefix only; no PRBS bits or suffix alignment search"
+        },
+        "likelihood_model": {
+          "gain_i": 0.9371379710811332,
+          "gain_q": 0.02884277469575635,
+          "noise_variance_complex": 0.08604886379033787,
+          "iterations": 32,
+          "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+        }
+      },
+      "gardner_bw0.01_mcma_step0.02": {
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 1269,
+        "evaluation_ber": 0.07087801608579089,
+        "errors_corrected": 193,
+        "new_errors_introduced": 860,
+        "parameters": {
+          "equalizer": {
+            "method": "mcma -> rde",
+            "step_acquisition": 0.02,
+            "step_rde": 0.005,
+            "passes_per_stage": 4,
+            "tap_count": 21,
+            "training_symbols_per_pass": 4908,
+            "coefficient_updates": 39264,
+            "update_clip_fraction": 0.0007385900570497148,
+            "coefficients_i": [
+              -0.012677722014206892,
+              -0.010074613533912884,
+              0.0009437073595751994,
+              -0.03972511506745181,
+              0.014104767792712572,
+              -0.02714591989864598,
+              0.06451211664156815,
+              -0.13894201042377377,
+              0.07106139280362278,
+              0.13667311589029918,
+              0.7053285919507868,
+              0.10169369650475088,
+              0.07137099392877345,
+              -0.08304753254364204,
+              0.02584542561476336,
+              -0.018393720196360912,
+              0.03208200377737426,
+              -0.018920619586238502,
+              0.056365358300505174,
+              0.01066211117418273,
+              0.005813100547518606
+            ],
+            "coefficients_q": [
+              0.01124910363792867,
+              -0.028234434185497245,
+              -0.00694248093621515,
+              -0.01675777529809262,
+              -0.000854111848259344,
+              0.011760540263423873,
+              0.0024044676961213125,
+              -0.02937507205049172,
+              -0.01587448230658398,
+              0.015585933923423683,
+              0.04973387419332459,
+              0.014663211719797587,
+              -0.012119602201319638,
+              0.0203804932833406,
+              -0.015249807163574776,
+              0.01723311184520513,
+              0.00219511370736268,
+              -0.03356196530616545,
+              -0.05087198214077857,
+              -0.032990612676264484,
+              0.025738204882559436
+            ],
+            "phase_origin_radians": -1.5450071818669198,
+            "fit_scope": "unlabelled full-window interior; no known or decided symbol targets; offline repeated passes"
+          },
+          "timing": {
+            "detector": "Gardner, Re((previous-current)*conj(midpoint))",
+            "bandwidth": 0.01,
+            "proportional_gain": 0.026313481273572494,
+            "integral_gain": 0.00035084641698096666,
+            "frequency_deviation_limit_fraction": 0.005,
+            "frequency_correction_final_fraction": 0.00009838379002398602,
+            "frequency_correction_tail_median_fraction": 0.000055309287563031115,
+            "timing_error_tail_mean": 0.0022194318598938506,
+            "timing_error_tail_rms": 0.6821872157073265,
+            "error_clip_fraction": 0.005012028869286287,
+            "initial_phase_symbols": 0,
+            "interpolation_phases": 128,
+            "interpolation_radius": 8,
+            "scope": "unlabelled samples only; same coarse baud seed, independent fine phase/frequency loop",
+            "coarse_baud": 49999935.05774755,
+            "carrier_offset_hz": 267.74250414837053,
+            "resample_up": 2,
+            "matched_rrc_rolloff": 0.2,
+            "phase_origin_radians": -0.7280223489996558,
+            "recovered_baud_tail_median": 49997169.749908514
+          }
+        },
+        "alignment": {
+          "symbol_lag": 0,
+          "conjugated": false,
+          "quarter_turn": 3,
+          "prefix_mse": 0.05279959688758235,
+          "scope": "baseline unlabelled prefix only; no PRBS bits or suffix alignment search"
+        },
+        "likelihood_model": {
+          "gain_i": 0.9392925455268839,
+          "gain_q": 0.026436857629293917,
+          "noise_variance_complex": 0.08574084225607785,
+          "iterations": 32,
+          "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+        }
+      }
+    },
+    "all_configurations": {
+      "baseline_circular": {
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 602,
+        "evaluation_ber": 0.03362377122430742
+      },
+      "baseline_grid_cma_step0.02": {
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 1617,
+        "evaluation_ber": 0.09031501340482574,
+        "errors_corrected": 202,
+        "new_errors_introduced": 1217
+      },
+      "baseline_grid_cma_step0.08": {
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 1986,
+        "evaluation_ber": 0.11092493297587132,
+        "errors_corrected": 232,
+        "new_errors_introduced": 1616
+      },
+      "baseline_grid_mcma_step0.02": {
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 1346,
+        "evaluation_ber": 0.0751787310098302,
+        "errors_corrected": 194,
+        "new_errors_introduced": 938
+      },
+      "baseline_grid_mcma_step0.08": {
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 1727,
+        "evaluation_ber": 0.09645889186773905,
+        "errors_corrected": 214,
+        "new_errors_introduced": 1339
+      },
+      "gardner_bw0.01": {
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 655,
+        "evaluation_ber": 0.036584003574620196,
+        "errors_corrected": 70,
+        "new_errors_introduced": 123
+      },
+      "gardner_bw0.01_cma_step0.02": {
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 1587,
+        "evaluation_ber": 0.08863941018766756,
+        "errors_corrected": 187,
+        "new_errors_introduced": 1172
+      },
+      "gardner_bw0.01_cma_step0.08": {
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 2293,
+        "evaluation_ber": 0.12807193923145666,
+        "errors_corrected": 222,
+        "new_errors_introduced": 1913
+      },
+      "gardner_bw0.01_mcma_step0.02": {
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 1269,
+        "evaluation_ber": 0.07087801608579089,
+        "errors_corrected": 193,
+        "new_errors_introduced": 860
+      },
+      "gardner_bw0.01_mcma_step0.08": {
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 2258,
+        "evaluation_ber": 0.12611706881143878,
+        "errors_corrected": 218,
+        "new_errors_introduced": 1874
+      },
+      "gardner_bw0.03": {
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 882,
+        "evaluation_ber": 0.0492627345844504,
+        "errors_corrected": 121,
+        "new_errors_introduced": 401
+      },
+      "gardner_bw0.03_cma_step0.02": {
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 2181,
+        "evaluation_ber": 0.12181635388739946,
+        "errors_corrected": 225,
+        "new_errors_introduced": 1804
+      },
+      "gardner_bw0.03_cma_step0.08": {
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 5390,
+        "evaluation_ber": 0.3010500446827525,
+        "errors_corrected": 267,
+        "new_errors_introduced": 5055
+      },
+      "gardner_bw0.03_mcma_step0.02": {
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 1607,
+        "evaluation_ber": 0.08975647899910634,
+        "errors_corrected": 204,
+        "new_errors_introduced": 1209
+      },
+      "gardner_bw0.03_mcma_step0.08": {
+        "evaluation_bits": 17904,
+        "evaluation_error_count": 2137,
+        "evaluation_ber": 0.11935880250223414,
+        "errors_corrected": 222,
+        "new_errors_introduced": 1757
+      }
+    }
+  },
+  "strong_error_counts": {
+    "16qam a.csv": {
+      "baseline_circular": 0,
+      "baseline_grid_cma_step0.02": 0,
+      "baseline_grid_cma_step0.08": 0,
+      "baseline_grid_mcma_step0.02": 0,
+      "baseline_grid_mcma_step0.08": 0,
+      "gardner_bw0.01": 0,
+      "gardner_bw0.01_cma_step0.02": 0,
+      "gardner_bw0.01_cma_step0.08": 0,
+      "gardner_bw0.01_mcma_step0.02": 0,
+      "gardner_bw0.01_mcma_step0.08": 0,
+      "gardner_bw0.03": 31,
+      "gardner_bw0.03_cma_step0.02": 10,
+      "gardner_bw0.03_cma_step0.08": 9,
+      "gardner_bw0.03_mcma_step0.02": 9,
+      "gardner_bw0.03_mcma_step0.08": 9
+    },
+    "16qam b.csv": {
+      "baseline_circular": 0,
+      "baseline_grid_cma_step0.02": 0,
+      "baseline_grid_cma_step0.08": 0,
+      "baseline_grid_mcma_step0.02": 0,
+      "baseline_grid_mcma_step0.08": 0,
+      "gardner_bw0.01": 0,
+      "gardner_bw0.01_cma_step0.02": 0,
+      "gardner_bw0.01_cma_step0.08": 0,
+      "gardner_bw0.01_mcma_step0.02": 0,
+      "gardner_bw0.01_mcma_step0.08": 0,
+      "gardner_bw0.03": 24,
+      "gardner_bw0.03_cma_step0.02": 4,
+      "gardner_bw0.03_cma_step0.08": 10,
+      "gardner_bw0.03_mcma_step0.02": 4,
+      "gardner_bw0.03_mcma_step0.08": 5
+    },
+    "16qam c.csv": {
+      "baseline_circular": 0,
+      "baseline_grid_cma_step0.02": 0,
+      "baseline_grid_cma_step0.08": 0,
+      "baseline_grid_mcma_step0.02": 0,
+      "baseline_grid_mcma_step0.08": 0,
+      "gardner_bw0.01": 0,
+      "gardner_bw0.01_cma_step0.02": 0,
+      "gardner_bw0.01_cma_step0.08": 0,
+      "gardner_bw0.01_mcma_step0.02": 0,
+      "gardner_bw0.01_mcma_step0.08": 0,
+      "gardner_bw0.03": 21,
+      "gardner_bw0.03_cma_step0.02": 6,
+      "gardner_bw0.03_cma_step0.08": 6,
+      "gardner_bw0.03_mcma_step0.02": 5,
+      "gardner_bw0.03_mcma_step0.08": 5
+    },
+    "16qam d.csv": {
+      "baseline_circular": 0,
+      "baseline_grid_cma_step0.02": 0,
+      "baseline_grid_cma_step0.08": 0,
+      "baseline_grid_mcma_step0.02": 0,
+      "baseline_grid_mcma_step0.08": 0,
+      "gardner_bw0.01": 0,
+      "gardner_bw0.01_cma_step0.02": 0,
+      "gardner_bw0.01_cma_step0.08": 0,
+      "gardner_bw0.01_mcma_step0.02": 0,
+      "gardner_bw0.01_mcma_step0.08": 0,
+      "gardner_bw0.03": 45,
+      "gardner_bw0.03_cma_step0.02": 21,
+      "gardner_bw0.03_cma_step0.08": 27,
+      "gardner_bw0.03_mcma_step0.02": 17,
+      "gardner_bw0.03_mcma_step0.08": 17
+    },
+    "16qam e.csv": {
+      "baseline_circular": 0,
+      "baseline_grid_cma_step0.02": 0,
+      "baseline_grid_cma_step0.08": 0,
+      "baseline_grid_mcma_step0.02": 0,
+      "baseline_grid_mcma_step0.08": 0,
+      "gardner_bw0.01": 0,
+      "gardner_bw0.01_cma_step0.02": 0,
+      "gardner_bw0.01_cma_step0.08": 0,
+      "gardner_bw0.01_mcma_step0.02": 0,
+      "gardner_bw0.01_mcma_step0.08": 0,
+      "gardner_bw0.03": 31,
+      "gardner_bw0.03_cma_step0.02": 19,
+      "gardner_bw0.03_cma_step0.08": 23,
+      "gardner_bw0.03_mcma_step0.02": 17,
+      "gardner_bw0.03_mcma_step0.08": 16
+    }
+  },
+  "conclusion": "None of the fourteen new fixed configurations improves weak-capture BER. All three primary methods retain zero errors on five strong captures. Gardner bandwidth .03 introduces strong-capture errors; no production activation. This does not establish a raw-IQ information bound or exhaust blind equalizers."
+}
