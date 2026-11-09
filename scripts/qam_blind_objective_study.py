@@ -257,7 +257,7 @@ def measure(x, fs, fit, baseline_values, noise_records):
     results = {'baseline_circular': dict(score_llrs(baseline, reference), model=model)}
     covariance, noise_profile = measured_covariance(noise_records, x, fs, fit)
     for name, (output, parameters) in configurations(matrix, baseline_values, covariance).items():
-        aligned, alignment = align_prefix(output, baseline_values)
+        aligned, alignment = align_prefix(output, baseline_values, max_symbol_lag=6)
         alignment['status'] = 'prefix_matches' if alignment['prefix_mse'] < .25 else 'unreliable_prefix_match_with_fixed_lag_search'
         llrs, model = filtered_soft_output(aligned, mapping, baseline)
         results[name] = dict(score_llrs(llrs, reference, baseline), alignment=alignment,
@@ -286,7 +286,7 @@ def synthetic_controls():
             baseline, _ = soft_output(baseline_values, np.arange(16))
             methods = {'baseline': {'error_count': int(np.count_nonzero((baseline[selected] < 0) != truth[selected]))}}
             for name, (output, parameters) in configurations(matrix, baseline_values, variance*np.eye(TAPS)).items():
-                aligned, alignment = align_prefix(output, baseline_values)
+                aligned, alignment = align_prefix(output, baseline_values, max_symbol_lag=6)
                 alignment['status'] = 'prefix_matches' if alignment['prefix_mse'] < .25 else 'unreliable_prefix_match_with_fixed_lag_search'
                 llrs, _ = soft_output(aligned, np.arange(16))
                 methods[name] = {'error_count': int(np.count_nonzero((llrs[selected] < 0) != truth[selected])),

@@ -207,15 +207,17 @@ def blind_equalizer(matrix, method='mcma', step=.02):
                     'fit_scope': 'unlabelled full-window interior; no known or decided symbol targets; offline repeated passes'}
 
 
-def align_prefix(values, baseline):
+def align_prefix(values, baseline, max_symbol_lag=3):
     """Resolve only integer delay/quarter-turn/conjugation on baseline prefix."""
     values = _samples(values)
     baseline = _samples(baseline)
     if len(values) != len(baseline) or len(values) < PREFIX*2:
         raise ValueError('Alignment needs a common bounded symbol interval')
+    if not isinstance(max_symbol_lag, int) or not 0 <= max_symbol_lag <= 8:
+        raise ValueError('Invalid bounded prefix delay search')
     indices = np.arange(GUARD, PREFIX)
     trials = []
-    for lag in range(-3, 4):
+    for lag in range(-max_symbol_lag, max_symbol_lag+1):
         selected = values[indices+lag]
         for conjugated in (False, True):
             candidate = np.conj(selected) if conjugated else selected

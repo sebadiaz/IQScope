@@ -92,3 +92,17 @@ class BlindObjectiveStudyTests(unittest.TestCase):
                 noise_corrected_equalizer(matrix, covariance, initial)
         with self.assertRaises(ValueError):
             batch_equalizer(matrix, strength=.1)
+
+    def test_alignment_covers_filter_delay_without_suffix_feedback(self):
+        rng = np.random.default_rng(993)
+        baseline = POINTS[rng.integers(0, 16, 1500)]
+        for delay in (-5, 5):
+            candidate = np.conj(np.roll(baseline, delay))*1j
+            aligned, metadata = align_prefix(candidate, baseline, max_symbol_lag=6)
+            np.testing.assert_allclose(aligned[40:-40], baseline[40:-40], atol=1e-14)
+            self.assertEqual(metadata['symbol_lag'], delay)
+            altered = candidate.copy()
+            altered[600:] *= np.exp(.9j)
+            self.assertEqual(align_prefix(altered, baseline, max_symbol_lag=6)[1], metadata)
+        with self.assertRaises(ValueError):
+            align_prefix(baseline, baseline, max_symbol_lag=9)
