@@ -433,15 +433,42 @@ function showReport(report, jobId) {
       if(Number.isFinite(v.ground_speed_kt)) card.append(element('p',`Vitesse au sol : ${v.ground_speed_kt.toFixed(1)} kt`,'adsb-ground-speed'));
       if(Number.isFinite(v.ground_track_deg)) card.append(element('p',`Route au sol : ${v.ground_track_deg.toFixed(2)}°`,'adsb-ground-track'));
       if(Number.isFinite(v.airspeed_kt)) card.append(element('p',`Vitesse air ${v.airspeed_kind} : ${v.airspeed_kt.toFixed(1)} kt`,'adsb-airspeed'));
-      if(Number.isFinite(v.heading_deg)) card.append(element('p',`Cap diffusé : ${v.heading_deg.toFixed(2)}° · référence vraie/magnétique non déterminée`,'adsb-heading'));
+      if(Number.isFinite(v.heading_deg)) {
+        const label=v.heading_reference==='true_north'?'Cap vrai diffusé':v.heading_reference==='magnetic_north'?'Cap magnétique diffusé':'Cap diffusé';
+        const suffix=v.heading_reference==='not_determined_from_tc19'?' · référence vraie/magnétique non déterminée':'';
+        card.append(element('p',`${label} : ${v.heading_deg.toFixed(2)}°${suffix}`,'adsb-heading'));
+      }
+      if(Number.isFinite(v.horizontal_velocity_error_95_bound_m_s)) card.append(element('p',`Précision de vitesse déclarée : < ${v.horizontal_velocity_error_95_bound_m_s} m/s à 95 % (NACv ${v.nac_v_code})`,'adsb-velocity-accuracy'));
+      else if(v.nac_v_code!==undefined) card.append(element('p',`Précision de vitesse ${v.nac_v_status==='reserved_code'?'non interprétée':'non renseignée'} (NACv ${v.nac_v_code})`,'hint adsb-velocity-accuracy'));
       if(Number.isFinite(v.vertical_rate_ft_min)) {
         const source=v.vertical_rate_source==='barometric'?'barométrique':'GNSS';
         card.append(element('p',`Vitesse verticale : ${v.vertical_rate_ft_min} ft/min (${source})`,'adsb-vertical-rate'));
       }
     }
+    const operational=f.operational_status;
+    if(operational) {
+      if(operational.status==='decoded') {
+        card.append(element('p',`Statut ADS-B v${operational.adsb_version} · ${operational.environment==='airborne'?'aérien':'surface'}`,'adsb-operational-status'));
+        appendAdsbQuality(card,operational);
+      } else {
+        const detail=operational.status==='unsupported_version'?`version ${operational.version_code}`:`sous-type ${operational.subtype}`;
+        card.append(element('p',`Statut ADS-B non interprété : ${detail}.`,'hint adsb-operational-status'));
+      }
+    }
+    if(f.position_quality) appendAdsbQuality(card,f.position_quality);
     frameList.append(card);
   }
 }
+function appendAdsbQuality(card,q) {
+  if(Number.isFinite(q.horizontal_accuracy_95_bound_m)) card.append(element('p',`Précision horizontale déclarée : < ${q.horizontal_accuracy_95_bound_m} m à 95 % (NACp ${q.nac_p_code})`,'adsb-position-accuracy'));
+  else card.append(element('p',`Précision horizontale ${q.nac_p_status==='reserved_code'?'non interprétée':'non renseignée'} (NACp ${q.nac_p_code})`,'hint adsb-position-accuracy'));
+  if(q.sil_code===0) card.append(element('p','SIL 0 : intégrité non renseignée.','hint adsb-integrity'));
+  else {
+    const basis=q.sil_probability_basis==='per_hour'?'par heure':q.sil_probability_basis==='per_sample'?'par échantillon':'base de probabilité non déterminée';
+    card.append(element('p',`Intégrité déclarée : SIL ${q.sil_code} · ${basis}`,'adsb-integrity'));
+  }
+}
+
 async function followJob(job) {
   for (;;) {
     await new Promise(resolve=>setTimeout(resolve,450));

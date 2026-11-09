@@ -8,7 +8,7 @@ import math
 
 MAX_PAIR_AGE_SECONDS = 10.
 _DERIVED = ('callsign', 'identification_status', 'cpr', 'latitude_deg',
-            'longitude_deg', 'position_evidence', 'velocity')
+            'longitude_deg', 'position_evidence', 'velocity', 'operational_status', 'position_quality')
 
 
 def mode_s_remainder(frame):
@@ -74,6 +74,7 @@ def _airborne_velocity(message):
     if subtype not in (1, 2, 3, 4):
         return dict(value, status='unsupported_subtype')
     value['status'] = 'decoded'
+    value['velocity_accuracy_code'] = (message >> 43) & 7
     scale = 4 if subtype in (2, 4) else 1
     value['speed_resolution_kt'] = scale
     if subtype in (1, 2):
@@ -106,7 +107,7 @@ def _airborne_velocity(message):
             value['heading_deg'] = ((message >> 32) & 1023)*360/1024
             value['heading_status'] = 'available'
             # True/magnetic reference requires operational-status/profile
-            # context not decoded by this per-message receiver.
+            # context; a later causal pass can attach a recent TC31 reference.
             value['heading_reference'] = 'not_determined_from_tc19'
         else:
             value['heading_status'] = 'not_available'
@@ -116,6 +117,96 @@ def _airborne_velocity(message):
         value['vertical_rate_ft_min'] = (vertical_code-1)*64*(-1 if (message >> 19) & 1 else 1)
         value['vertical_rate_source'] = 'barometric' if (message >> 20) & 1 else 'GNSS'
     return value
+
+
+_NAC_P_HORIZONTAL_BOUND_M = {
+    1: 18520., 2: 7408., 3: 3704., 4: 1852., 5: 926., 6: 555.6,
+    7: 185.2, 8: 92.6, 9: 30., 10: 10., 11: 3.,
+}
+_NAC_V_HORIZONTAL_BOUND_M_S = {1: 10., 2: 3., 3: 1., 4: .3}
+MAX_OPERATIONAL_STATUS_AGE_SECONDS = 10.
+
+
+def _operational_status(message):
+    """Interpret only defined v1/v2 common fields of airborne/surface TC31."""
+    subtype = (message >> 48) & 7
+    value = {'subtype': subtype}
+    if subtype not in (0, 1):
+        return dict(value, status='unsupported_subtype')
+    version = (message >> 13) & 7
+    value['version_code'] = version
+    value['environment'] = 'airborne' if subtype == 0 else 'surface'
+    value['capability_class_code'] = (message >> 32) & 65535
+    value['operational_mode_code'] = (message >> 16) & 65535
+    if version not in (1, 2):
+        return dict(value, status='unsupported_version')
+    value.update(status='decoded', adsb_version=version)
+    nac_p = (message >> 8) & 15
+    value['nac_p_code'] = nac_p
+    value['nac_p_status'] = 'not_available' if nac_p == 0 else 'reserved_code'
+    if nac_p in _NAC_P_HORIZONTAL_BOUND_M:
+        value['nac_p_status'] = 'reported_bound'
+        value['horizontal_accuracy_95_bound_m'] = _NAC_P_HORIZONTAL_BOUND_M[nac_p]
+    value['sil_code'] = (message >> 4) & 3
+    value['sil_probability_basis'] = ('per_sample' if (message >> 1) & 1 else 'per_hour') if version == 2 else 'not_determined_from_version1'
+    value['heading_reference'] = 'magnetic_north' if (message >> 2) & 1 else 'true_north'
+    value['nic_supplement_a'] = (message >> 12) & 1
+    if subtype == 0:
+        value['nic_baro_code'] = (message >> 3) & 1
+    if version == 2:
+        value['sil_supplement'] = (message >> 1) & 1
+    return value
+
+
+def _apply_operational_context(records, events):
+    """Causal, same-domain, recent airborne status only; never backfill."""
+    cache = {}
+    for timestamp, index, key, type_code in sorted(events):
+        fields = records[index]['fields']
+        if type_code == 31:
+            status = fields['operational_status']
+            if status.get('status') == 'decoded' and status.get('environment') == 'airborne':
+                cache[key] = (timestamp, index)
+            else:
+                # A newer surface or unsupported status cancels an old context.
+                cache.pop(key, None)
+            continue
+        previous = cache.get(key)
+        if previous is None:
+            continue
+        status_time, status_index = previous
+        age = timestamp-status_time
+        if age > MAX_OPERATIONAL_STATUS_AGE_SECONDS:
+            cache.pop(key, None)
+            continue
+        status = records[status_index]['fields']['operational_status']
+        evidence = {
+            'adsb_version': status['adsb_version'],
+            'status_time_seconds': status_time, 'status_age_seconds': age,
+            'status_sample_start': records[status_index].get('sample_start'),
+            'status_hex': records[status_index]['hex'],
+        }
+        velocity = fields.get('velocity')
+        if velocity and velocity.get('status') == 'decoded':
+            velocity['operational_context'] = evidence.copy()
+            if 'heading_deg' in velocity:
+                velocity['heading_reference'] = status['heading_reference']
+            nac_v = velocity['velocity_accuracy_code']
+            velocity['nac_v_code'] = nac_v
+            velocity['nac_v_status'] = 'not_available' if nac_v == 0 else 'reserved_code'
+            if nac_v in _NAC_V_HORIZONTAL_BOUND_M_S:
+                velocity['nac_v_status'] = 'reported_bound'
+                velocity['horizontal_velocity_error_95_bound_m_s'] = _NAC_V_HORIZONTAL_BOUND_M_S[nac_v]
+        if 'latitude_deg' in fields:
+            quality = {
+                'nac_p_code': status['nac_p_code'], 'nac_p_status': status['nac_p_status'],
+                'sil_code': status['sil_code'], 'sil_probability_basis': status['sil_probability_basis'],
+                'operational_context': evidence.copy(),
+                'scope': 'transmitter_declared_categories_not_measured_error_or_receiver_validation',
+            }
+            if 'horizontal_accuracy_95_bound_m' in status:
+                quality['horizontal_accuracy_95_bound_m'] = status['horizontal_accuracy_95_bound_m']
+            fields['position_quality'] = quality
 
 
 def enrich_adsb_frames(frames):
@@ -128,6 +219,7 @@ def enrich_adsb_frames(frames):
     """
     result = deepcopy(frames)
     timed = []
+    operational_events = []
     for index, record in enumerate(result):
         fields = record.setdefault('fields', {})
         for key in _DERIVED:
@@ -150,6 +242,13 @@ def enrich_adsb_frames(frames):
                 fields['callsign'] = callsign
         if tc == 19:
             fields['velocity'] = _airborne_velocity(message)
+        if tc == 31:
+            fields['operational_status'] = _operational_status(message)
+        if tc in (19, 31) or 9 <= tc <= 18:
+            event_time = record.get('time_seconds')
+            if isinstance(event_time, (int, float)) and math.isfinite(event_time) and event_time >= 0:
+                domain = (df, raw[0] & 7 if df == 18 else None, raw[1:4])
+                operational_events.append((event_time, index, domain, tc))
         if not 9 <= tc <= 18:
             continue
         parity = (message >> 34) & 1
@@ -193,4 +292,5 @@ def enrich_adsb_frames(frames):
             'position_time_seconds': max(even[0], odd[0]),
             'scope': 'derived_from_crc_valid_pair; broadcast not authenticated; no navigation-integrity claim',
         }
+    _apply_operational_context(result, operational_events)
     return result

@@ -92,6 +92,28 @@ def main():
                     assert adsb_trial['frames'][0]['fields']['velocity']['vertical_rate_source']=='GNSS'
                     assert adsb_trial['frames'][1]['fields']['velocity']['airspeed_kind']=='TAS'
                     page.screenshot(path='browser-artifacts/adsb-velocity.png', full_page=True)
+                    from test_adsb_status import reference_status_iq
+                    status_path = Path(adsb_directory)/'operational.cf32'
+                    reference_status_iq().astype('<c8').tofile(status_path)
+                    page.locator('#iq-file').set_input_files(str(status_path))
+                    page.get_by_role('button', name='Analyser automatiquement').click()
+                    expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'), timeout=30000)
+                    expect(page.locator('#metric-frames')).to_have_text('4')
+                    expect(page.locator('.adsb-operational-status')).to_contain_text('ADS-B v2')
+                    expect(page.locator('.adsb-heading')).to_contain_text('Cap magnétique diffusé : 243.98')
+                    expect(page.locator('.adsb-heading')).not_to_contain_text('non déterminée')
+                    expect(page.locator('.adsb-position-accuracy')).to_have_count(2)
+                    expect(page.locator('.adsb-position-accuracy').last).to_contain_text('< 10 m à 95 % (NACp 10)')
+                    expect(page.locator('.adsb-integrity').last).to_contain_text('SIL 3 · par échantillon')
+                    expect(page.locator('.adsb-velocity-accuracy')).to_contain_text('< 1 m/s à 95 % (NACv 3)')
+                    expect(page.locator('.adsb-position')).to_contain_text('52.25720')
+                    report_response = page.request.get(urljoin(page.url, page.locator('#download').get_attribute('href')))
+                    assert report_response.ok
+                    status_trial = next(t for t in report_response.json()['wideband_trials'] if t['decoder']=='adsb_1090es')
+                    assert status_trial['frames'][1]['fields']['velocity']['heading_reference']=='magnetic_north'
+                    assert status_trial['frames'][1]['fields']['velocity']['operational_context']['status_hex']=='8DA05F21F8000000005A3E4E0708'
+                    assert status_trial['frames'][3]['fields']['position_quality']['nac_p_code']==10
+                    page.screenshot(path='browser-artifacts/adsb-operational-status.png', full_page=True)
                     page.locator('#file-rate').fill(previous_rate)
                 with tempfile.TemporaryDirectory() as directory:
                     from iqscope import demo
