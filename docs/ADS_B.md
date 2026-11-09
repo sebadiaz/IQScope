@@ -1,6 +1,6 @@
 # Indicatifs et positions ADS-B
 
-IQScope complète l'extraction de contenu des trames Mode S déjà reçues : indicatif de vol et coordonnées aériennes apparaissent dans l'interface et le rapport JSON. Le nouveau module n'ajoute aucun moteur externe ni téléchargement au moment de l'analyse.
+IQScope complète l'extraction de contenu des trames Mode S déjà reçues : indicatif de vol, coordonnées aériennes et vitesses apparaissent dans l'interface et le rapport JSON. Le nouveau module n'ajoute aucun moteur externe ni téléchargement au moment de l'analyse.
 
 ## Périmètre
 
@@ -32,8 +32,22 @@ Ces IQ de test sont une modulation synthétique de messages publiés ; elles ne 
 
 ## Limites
 
-Aucun décodage de position au sol, de CPR local sur une référence géographique, de position GNSS TC20–22, de vitesse ou de trajectoire entre analyses n'est ajouté. Une capture trop courte pour contenir une paire peut livrer des paquets et une altitude sans coordonnées. Les collisions et corrections de bits restent hors périmètre du récepteur.
+Aucun décodage de position au sol, de CPR local sur une référence géographique, de position GNSS TC20–22, de trajectoire entre analyses n'est ajouté. Une capture trop courte pour contenir une paire peut livrer des paquets et une altitude sans coordonnées. Les collisions et corrections de bits restent hors périmètre du récepteur.
 
 Un CRC valide vérifie les bits du paquet, sans authentifier la station ni garantir la véracité, l'intégrité de navigation ou la précision de sa position. Les valeurs de qualité NIC/NAC/SIL ne sont pas encore interprétées. Les DF18 ne sont pas automatiquement étiquetés ICAO.
 
 Sources des formats et valeurs de référence : [Aircraft Identification](https://mode-s.org/1090mhz/content/ads-b/2-identification.html) et [Airborne Position](https://mode-s.org/1090mhz/content/ads-b/3-airborne-position.html), The 1090 Megahertz Riddle, Junzi Sun. La distinction des corps DF18 est également vérifiée dans [dump1090, mode_s.c](https://github.com/flightaware/dump1090/blob/master/mode_s.c). Les formules sont implémentées directement, sans reprise d'une bibliothèque de décodage tierce.
+
+## Vitesses et direction du mouvement
+
+Les TC19 valides apportent leurs valeurs indépendamment d'une paire CPR ou d'une position résolue. Le champ velocity du JSON précise le sous-type, les disponibilités et les unités. Aucun suivi ni calcul de vitesse à partir de positions successives n'est utilisé.
+
+Les sous-types 1/2 donnent les composantes est/nord, la vitesse au sol et sa route. Les sous-types 3/4 donnent une vitesse air IAS ou TAS et, si son indicateur est valide, un cap. Les résolutions horizontales sont respectivement 1 ou 4 kt. Le TC19 seul laisse ici la référence vraie/magnétique du cap non déterminée ; l'interface conserve cette distinction avec la route au sol. La vitesse verticale est signée en ft/min et étiquetée GNSS ou barométrique selon sa source.
+
+Un code absent n'est pas transformé en zéro. Une vitesse réellement nulle reste affichable ; la route d'un vecteur sol nul reste indéfinie. Une seule composante sol disponible ne produit pas de vitesse totale. Les sous-types réservés n'ajoutent pas de valeurs numériques.
+
+Les deux messages publiés de référence sont 8D485020994409940838175B284F et 8DA05F219B06B6AF189400CBC33F. Les tests attendent respectivement −8/−159 kt, une route de 182,88° et −832 ft/min ; puis 375 kt TAS, un cap transmis de 243,984375° à référence non résolue et −2304 ft/min. L'exemple au sol donne 159,201130649 kt par norme du vecteur.
+
+Dix tests supplémentaires couvrent ces références, les directions cardinales, les résolutions, les zéros et absences, les sources verticales, les limites de codage et les CRC. Un second import IQ synthétique dans Chromium vérifie l'affichage, le rapport JSON téléchargeable et le compteur de deux paquets. La capture adsb-velocity.png est conservée avec les artefacts navigateur.
+
+Source des champs et exemples : [Airborne Velocity, The 1090 Megahertz Riddle](https://mode-s.org/1090mhz/content/ads-b/5-airborne-velocity.html). La distinction de référence du cap est recoupée avec le type HEADING_MAGNETIC_OR_TRUE de [dump1090](https://github.com/flightaware/dump1090/blob/master/mode_s.c). Les formules sont implémentées directement ; aucune bibliothèque tierce n'est intégrée. Les écarts d'altitude et les catégories de précision du message ne sont pas interprétés.

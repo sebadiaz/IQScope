@@ -428,6 +428,17 @@ function showReport(report, jobId) {
       card.append(element('p',`Position diffusée : ${f.latitude_deg.toFixed(5)}°, ${f.longitude_deg.toFixed(5)}°`,'adsb-position'));
       card.append(element('p','Position reconstruite depuis deux trames CRC valides ; émetteur non authentifié.','hint'));
     } else if(f.cpr) card.append(element('p','Position non résolue : une paire aérienne compatible est nécessaire.','hint adsb-position-pending'));
+    const v=f.velocity;
+    if(v) {
+      if(Number.isFinite(v.ground_speed_kt)) card.append(element('p',`Vitesse au sol : ${v.ground_speed_kt.toFixed(1)} kt`,'adsb-ground-speed'));
+      if(Number.isFinite(v.ground_track_deg)) card.append(element('p',`Route au sol : ${v.ground_track_deg.toFixed(2)}°`,'adsb-ground-track'));
+      if(Number.isFinite(v.airspeed_kt)) card.append(element('p',`Vitesse air ${v.airspeed_kind} : ${v.airspeed_kt.toFixed(1)} kt`,'adsb-airspeed'));
+      if(Number.isFinite(v.heading_deg)) card.append(element('p',`Cap diffusé : ${v.heading_deg.toFixed(2)}° · référence vraie/magnétique non déterminée`,'adsb-heading'));
+      if(Number.isFinite(v.vertical_rate_ft_min)) {
+        const source=v.vertical_rate_source==='barometric'?'barométrique':'GNSS';
+        card.append(element('p',`Vitesse verticale : ${v.vertical_rate_ft_min} ft/min (${source})`,'adsb-vertical-rate'));
+      }
+    }
     frameList.append(card);
   }
 }

@@ -70,6 +70,28 @@ def main():
                     expect(page.locator('.adsb-position-pending')).to_have_count(1)
                     Path('browser-artifacts').mkdir(exist_ok=True)
                     page.screenshot(path='browser-artifacts/adsb-fields.png', full_page=True)
+                    from test_adsb_velocity import reference_velocity_iq
+                    from urllib.parse import urljoin
+                    velocity_path = Path(adsb_directory)/'velocity.cf32'
+                    reference_velocity_iq().astype('<c8').tofile(velocity_path)
+                    page.locator('#iq-file').set_input_files(str(velocity_path))
+                    page.get_by_role('button', name='Analyser automatiquement').click()
+                    expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'), timeout=30000)
+                    expect(page.locator('#metric-frames')).to_have_text('2')
+                    expect(page.locator('.adsb-ground-speed')).to_contain_text('159.2 kt')
+                    expect(page.locator('.adsb-ground-track')).to_contain_text('182.88')
+                    expect(page.locator('.adsb-airspeed')).to_contain_text('TAS : 375.0 kt')
+                    expect(page.locator('.adsb-heading')).to_contain_text('243.98')
+                    expect(page.locator('.adsb-heading')).to_contain_text('non déterminée')
+                    expect(page.locator('.adsb-vertical-rate').first).to_contain_text('-832 ft/min (GNSS)')
+                    expect(page.locator('.adsb-vertical-rate').last).to_contain_text('-2304 ft/min (barométrique)')
+                    expect(page.locator('.adsb-position')).to_have_count(0)
+                    report_response = page.request.get(urljoin(page.url, page.locator('#download').get_attribute('href')))
+                    assert report_response.ok
+                    adsb_trial = next(t for t in report_response.json()['wideband_trials'] if t['decoder']=='adsb_1090es')
+                    assert adsb_trial['frames'][0]['fields']['velocity']['vertical_rate_source']=='GNSS'
+                    assert adsb_trial['frames'][1]['fields']['velocity']['airspeed_kind']=='TAS'
+                    page.screenshot(path='browser-artifacts/adsb-velocity.png', full_page=True)
                     page.locator('#file-rate').fill(previous_rate)
                 with tempfile.TemporaryDirectory() as directory:
                     from iqscope import demo

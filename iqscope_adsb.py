@@ -1,4 +1,4 @@
-"""ADS-B identification and global airborne CPR from CRC-valid DF17/18 frames.
+"""ADS-B identification, airborne velocity and global airborne CPR from CRC-valid DF17/18 frames.
 
 State is local to one analysis. Times are capture-relative, not UTC. These
 fields describe received broadcasts and are not authenticated navigation data.
@@ -8,7 +8,7 @@ import math
 
 MAX_PAIR_AGE_SECONDS = 10.
 _DERIVED = ('callsign', 'identification_status', 'cpr', 'latitude_deg',
-            'longitude_deg', 'position_evidence')
+            'longitude_deg', 'position_evidence', 'velocity')
 
 
 def mode_s_remainder(frame):
@@ -67,6 +67,57 @@ def _callsign(message):
     return ''.join(chars).strip() or None
 
 
+def _airborne_velocity(message):
+    """Decode TC19 without assuming heading reference or aircraft state."""
+    subtype = (message >> 48) & 7
+    value = {'subtype': subtype}
+    if subtype not in (1, 2, 3, 4):
+        return dict(value, status='unsupported_subtype')
+    value['status'] = 'decoded'
+    scale = 4 if subtype in (2, 4) else 1
+    value['speed_resolution_kt'] = scale
+    if subtype in (1, 2):
+        east_code, north_code = (message >> 32) & 1023, (message >> 21) & 1023
+        value['horizontal_kind'] = 'ground_speed'
+        if east_code:
+            value['east_velocity_kt'] = (east_code-1)*scale*(-1 if (message >> 42) & 1 else 1)
+        if north_code:
+            value['north_velocity_kt'] = (north_code-1)*scale*(-1 if (message >> 31) & 1 else 1)
+        if east_code and north_code:
+            east, north = value['east_velocity_kt'], value['north_velocity_kt']
+            value['ground_speed_kt'] = math.hypot(east, north)
+            value['horizontal_status'] = 'available'
+            if east or north:
+                value['ground_track_deg'] = math.degrees(math.atan2(east, north)) % 360
+                value['ground_track_status'] = 'available'
+            else:
+                value['ground_track_status'] = 'undefined_at_zero_ground_speed'
+        else:
+            value['horizontal_status'] = 'partial_components' if east_code or north_code else 'not_available'
+            value['ground_track_status'] = 'not_available'
+    else:
+        value['horizontal_kind'] = 'airspeed'
+        value['airspeed_kind'] = 'TAS' if (message >> 31) & 1 else 'IAS'
+        air_code = (message >> 21) & 1023
+        if air_code:
+            value['airspeed_kt'] = (air_code-1)*scale
+        value['horizontal_status'] = 'available' if air_code else 'not_available'
+        if (message >> 42) & 1:
+            value['heading_deg'] = ((message >> 32) & 1023)*360/1024
+            value['heading_status'] = 'available'
+            # True/magnetic reference requires operational-status/profile
+            # context not decoded by this per-message receiver.
+            value['heading_reference'] = 'not_determined_from_tc19'
+        else:
+            value['heading_status'] = 'not_available'
+    vertical_code = (message >> 10) & 511
+    value['vertical_rate_status'] = 'available' if vertical_code else 'not_available'
+    if vertical_code:
+        value['vertical_rate_ft_min'] = (vertical_code-1)*64*(-1 if (message >> 19) & 1 else 1)
+        value['vertical_rate_source'] = 'barometric' if (message >> 20) & 1 else 'GNSS'
+    return value
+
+
 def enrich_adsb_frames(frames):
     """Return independent enriched records; no state crosses analysis windows.
 
@@ -97,6 +148,8 @@ def enrich_adsb_frames(frames):
             fields['identification_status'] = 'decoded' if callsign else 'empty_or_reserved_character'
             if callsign:
                 fields['callsign'] = callsign
+        if tc == 19:
+            fields['velocity'] = _airborne_velocity(message)
         if not 9 <= tc <= 18:
             continue
         parity = (message >> 34) & 1
