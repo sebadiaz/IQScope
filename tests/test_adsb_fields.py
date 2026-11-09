@@ -98,6 +98,10 @@ class AdsbFieldsTests(unittest.TestCase):
         frames = enrich_adsb_frames([record(odd0, 0.), record(even0, 1.)])
         self.assertAlmostEqual(frames[1]['fields']['latitude_deg'], 52.2572021484375)
         self.assertNotIn('icao_hex', frames[1]['fields'])
+        unsupported_position = replace_message(EVEN, first_byte=0x93)
+        packet = decode_adsb(reference_iq(unsupported_position), 2_000_000)['frames'][0]
+        self.assertNotIn('barometric_altitude_ft', packet['fields'])
+        self.assertNotIn('latitude_deg', packet['fields'])
         # A non-ADS-B DF18 management/coarse format is not interpreted as ID.
         unsupported_id = replace_message(IDENT, first_byte=0x93)
         self.assertNotIn('callsign', enrich_adsb_frames([record(unsupported_id, 0.)])[0]['fields'])

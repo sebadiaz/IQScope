@@ -68,6 +68,8 @@ def main():
                     expect(page.locator('.adsb-position')).to_contain_text('52.25720')
                     expect(page.locator('.adsb-position')).to_contain_text('3.91937')
                     expect(page.locator('.adsb-position-pending')).to_have_count(1)
+                    Path('browser-artifacts').mkdir(exist_ok=True)
+                    page.screenshot(path='browser-artifacts/adsb-fields.png', full_page=True)
                     page.locator('#file-rate').fill(previous_rate)
                 with tempfile.TemporaryDirectory() as directory:
                     from iqscope import demo

@@ -4,7 +4,7 @@ IQScope complète l'extraction de contenu des trames Mode S déjà reçues : ind
 
 ## Périmètre
 
-Le démodulateur PPM conserve son traitement et ses budgets : entrée d'au moins 2 Méch/s, grille d'énergie à 8 Méch/s, recherche de 2 000 candidats et 100 paquets par défaut. Les champs supplémentaires sont interprétés après contrôle CRC-24. Les DF17 et DF18 restent des paquets conservés ; les nouveaux champs sont limités aux DF17 et DF18 CF0/1, où le corps ADS-B utilisé ici est applicable. Les autres contrôles DF18 conservent leurs octets et leur note de sémantique d'adresse, sans identification ou coordonnées supposées.
+Le démodulateur PPM conserve son traitement et ses budgets : entrée d'au moins 2 Méch/s, grille d'énergie à 8 Méch/s, recherche de 2 000 candidats et 100 paquets par défaut. Les champs supplémentaires sont interprétés après contrôle CRC-24. Les DF17 et DF18 restent des paquets conservés ; les nouveaux champs sont limités aux DF17 et DF18 CF0/1, où le corps ADS-B utilisé ici est applicable. Les autres contrôles DF18 conservent leurs octets et leur note de sémantique d'adresse, sans identification, altitude barométrique ou coordonnées supposées.
 
 Les messages d'identification TC1–4 fournissent huit caractères. Les lettres, chiffres et espaces sont décodés ; les espaces extérieurs sont retirés. Un caractère réservé ou un identifiant vide produit un statut explicite sans indicatif fabriqué. L'indicatif est une donnée diffusée, pas un identifiant unique d'aéronef.
 
@@ -36,4 +36,4 @@ Aucun décodage de position au sol, de CPR local sur une référence géographiq
 
 Un CRC valide vérifie les bits du paquet, sans authentifier la station ni garantir la véracité, l'intégrité de navigation ou la précision de sa position. Les valeurs de qualité NIC/NAC/SIL ne sont pas encore interprétées. Les DF18 ne sont pas automatiquement étiquetés ICAO.
 
-Sources des formats et valeurs de référence : [Aircraft Identification](https://mode-s.org/1090mhz/content/ads-b/2-identification.html) et [Airborne Position](https://mode-s.org/1090mhz/content/ads-b/3-airborne-position.html), The 1090 Megahertz Riddle, Junzi Sun. Les formules sont implémentées directement, sans reprise d'une bibliothèque de décodage tierce.
+Sources des formats et valeurs de référence : [Aircraft Identification](https://mode-s.org/1090mhz/content/ads-b/2-identification.html) et [Airborne Position](https://mode-s.org/1090mhz/content/ads-b/3-airborne-position.html), The 1090 Megahertz Riddle, Junzi Sun. La distinction des corps DF18 est également vérifiée dans [dump1090, mode_s.c](https://github.com/flightaware/dump1090/blob/master/mode_s.c). Les formules sont implémentées directement, sans reprise d'une bibliothèque de décodage tierce.

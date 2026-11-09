@@ -140,7 +140,7 @@ def decode_adsb(x, fs, max_candidates=2000, max_frames=100):
                 fields['control_field'] = frame[0] & 7
                 fields['address_note'] = 'DF18 address semantics depend on control field'
             tc = fields['type_code']
-            if 9 <= tc <= 18:
+            if 9 <= tc <= 18 and (df == 17 or (frame[0] & 7) in (0, 1)):
                 altitude = (frame[5] << 4) | (frame[6] >> 4)
                 if altitude & 0x10:
                     n = ((altitude & 0xFE0) >> 1) | (altitude & 0xF)
