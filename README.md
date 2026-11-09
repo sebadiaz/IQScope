@@ -133,7 +133,7 @@ not been tested in this development environment.
 | AM | Envelope-demodulated WAV candidate | Carrier-present AM only; OOK/fading can also produce candidates |
 | CW / Morse | Automatic carrier, speed and A–Z / 0–9 text candidates | Stationary on-off keying, 5–50 WPM, standard spacing; timing only, no checksum |
 | RTTY / ITA2 | Text candidates, raw character codes, automatic common baud rates/tones/polarity | Direct IQ at 1–12 kS/s or bounded stationary-channel search up to 2.4 MS/s, 5-bit LSB-first with at least 1.5 stop bits; framing only, no checksum |
-| Mode S / ADS-B | 112-bit DF17/DF18 frames, CRC-24, address/type code, selected barometric altitude | Clean captures at >= 2 MS/s; no general Mode S parity overlays, position reconstruction, collision recovery or bit-error correction; pulse timing uses an 8 MS/s energy grid |
+| Mode S / ADS-B | DF17/DF18 CRC-24 packets, address/type and barometric altitude; callsign and global airborne CPR position for DF17 and DF18 CF0/1 | Clean captures >=2 MS/s; TC9–18 even/odd pairs within 10 seconds in one analysis; no surface/local CPR, general Mode S parity overlays, collisions or bit-error correction |
 
 The capability registry distinguishes analog interpretations from validated
 packet integrity. A CRC does **not** authenticate a transmitter. For DF18, the
@@ -145,8 +145,9 @@ not appear as an isolated stationary band. Decoder effort is bounded by at most
 12 audio-band trials, 2,000 ADS-B candidates and 100 recovered packets per window.
 Deferred bands and exhausted packet-search budgets are exposed in the report.
 
-LoRa, military protocols and the other remaining families in the specifications are
-**planned, not implemented**. The current registry is a small explicit list;
+Many remaining families in the specifications are **planned, not implemented**.
+The sections below describe the partial LoRa and other implemented extensions.
+The current registry is an explicit list of bounded capabilities;
 a general third-party plugin loader and search engine remain future work.
 
 ## Command-line analysis
@@ -696,3 +697,7 @@ La [calibration sur des captures fortes séparées](docs/QAM16.md#calibration-à
 Les candidats 16-QAM acceptés proposent aussi un export de **fiabilité par bit (LLR)**, avec estimation aveugle du gain et du bruit. La décision bit par bit, avec la table de laboratoire acquise sur le préfixe, réduit les erreurs de la capture faible de 610 à 602 sur 17 904 bits ; les cinq captures plus fortes restent à zéro. Ce gain modeste conserve les seuils et le refus générique de la capture faible. Les LLR génériques gardent la convention binaire naturelle et préparent l’entrée de futurs décodeurs avec correction d’erreurs.
 
 La recherche d’horloge 16-QAM tolère désormais les écarts positifs autour de quatre échantillons nominaux par symbole. Une référence synthétique à +500 ppm, auparavant refusée, est récupérée ; à +175 ppm, l’EVM passe d’environ 9,65 % à 3,68 % et le débit n’est plus plafonné artificiellement. Les seuils de validation restent identiques et les résultats matériels précédents sont conservés.
+
+## ADS-B flight identification and airborne position
+
+Le récepteur extrait maintenant les indicatifs TC1–4 et les positions aériennes CPR TC9–18 à partir des trames CRC valides DF17 et DF18 CF0/1. Une paire pair/impair de même adresse et même domaine DF/control, reçue à dix secondes d’intervalle au plus dans une même analyse, fournit latitude et longitude sans position préalable du récepteur. Les coordonnées, l’indicatif, les codes CPR et la provenance de la paire sont conservés dans le rapport JSON ; l’interface affiche ces nouveaux champs. Les trames isolées restent visibles sans position inventée. Les positions de surface, le CPR local, les trames GNSS TC20–22 et le suivi entre instantanés restent hors périmètre. [Méthode, références et limites](docs/ADS_B.md).

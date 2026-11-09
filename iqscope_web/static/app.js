@@ -423,6 +423,11 @@ function showReport(report, jobId) {
     const f=frame.fields;
     card.append(element('p',`t=${frame.time_seconds.toFixed(6)} s · DF${f.downlink_format} · ${f.icao_hex ? 'ICAO' : 'Adresse'} ${f.address_hex} · type ${f.type_code}`));
     if(f.barometric_altitude_ft!==undefined) card.append(element('p',`Altitude barométrique : ${f.barometric_altitude_ft} ft`));
+    if(f.callsign) card.append(element('p',`Indicatif : ${f.callsign}`,'adsb-callsign'));
+    if(Number.isFinite(f.latitude_deg) && Number.isFinite(f.longitude_deg)) {
+      card.append(element('p',`Position diffusée : ${f.latitude_deg.toFixed(5)}°, ${f.longitude_deg.toFixed(5)}°`,'adsb-position'));
+      card.append(element('p','Position reconstruite depuis deux trames CRC valides ; émetteur non authentifié.','hint'));
+    } else if(f.cpr) card.append(element('p','Position non résolue : une paire aérienne compatible est nécessaire.','hint adsb-position-pending'));
     frameList.append(card);
   }
 }

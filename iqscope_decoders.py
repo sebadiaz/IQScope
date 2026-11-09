@@ -7,6 +7,7 @@ import math
 import numpy as np
 from scipy import signal
 from scipy.io import wavfile
+from iqscope_adsb import mode_s_remainder, enrich_adsb_frames
 
 
 @dataclass(frozen=True)
@@ -32,7 +33,7 @@ CAPABILITIES = (
     Capability('fsk2_generic', '2-FSK', 'stationary channels; direct <=96 kS/s or bounded wideband search <=2.4 MS/s; blind baud and raw bits', 'timing only; protocol unknown, no checksum'),
     Capability('cw_morse', 'CW / Morse', 'A-Z and 0-9; automatic stationary carrier and 5-50 WPM timing; bounded channel search', 'timing only; no checksum'),
     Capability('rtty_ita2', 'RTTY / ITA2', '45.45/50/75/100 baud, blind tones and polarity; bounded stationary wideband channel search', 'framing only; no checksum'),
-    Capability('adsb_1090es', 'Mode S / ADS-B', 'DF17/18, 112-bit, direct CRC; >= 2 MS/s', 'CRC-24'),
+    Capability('adsb_1090es', 'Mode S / ADS-B', 'DF17/18 CRC-valid frames; callsign/global airborne CPR for DF17 and DF18 CF0/1; TC9-18 pairs within 10s; >=2 MS/s', 'CRC-24'),
 )
 
 
@@ -77,15 +78,6 @@ def analog_trials(y, rate, measurements, bandwidth, out, index):
             trials.append({'decoder': 'analog_am', 'family': 'AM or envelope-modulated signal',
                            'status': 'unvalidated_candidate', 'audio': filename, 'evidence': []})
     return trials
-
-
-def mode_s_remainder(frame):
-    """Mode S CRC polynomial x^24 + ...; excludes address/parity overlays."""
-    value = int.from_bytes(frame, 'big')
-    for bit in range(len(frame) * 8 - 1, 23, -1):
-        if value & (1 << bit):
-            value ^= 0x1FFF409 << (bit - 24)
-    return value & 0xFFFFFF
 
 
 def decode_adsb(x, fs, max_candidates=2000, max_frames=100):
@@ -159,6 +151,7 @@ def decode_adsb(x, fs, max_candidates=2000, max_frames=100):
                            'evidence': [{'kind': 'mode_s_crc24', 'result': 'pass'}]})
         if budget_exhausted:
             break
+    frames = enrich_adsb_frames(frames)
     return {'decoder': 'adsb_1090es', 'family': 'Mode S / ADS-B',
             'status': 'validated_frames' if frames else 'no_valid_frame',
             'frames': frames, 'candidates_examined': candidates_examined,

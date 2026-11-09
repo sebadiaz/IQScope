@@ -52,6 +52,23 @@ def main():
                 expect(page.get_by_role('button',name='Analyser l’extrait NOAA-15 (SARSAT-7) PDS')).to_be_visible()
                 expect(page.locator('#dataset-list .recording').first).to_contain_text('250 kéch/s')
                 page.get_by_role('button',name='Fermer le catalogue').click()
+                # Published ADS-B messages on independent synthetic PPM IQ.
+                from test_adsb_fields import reference_aircraft_iq
+                import numpy as np
+                with tempfile.TemporaryDirectory() as adsb_directory:
+                    adsb_path = Path(adsb_directory)/'aircraft.cf32'
+                    reference_aircraft_iq().astype('<c8').tofile(adsb_path)
+                    previous_rate = page.locator('#file-rate').input_value()
+                    page.locator('#iq-file').set_input_files(str(adsb_path))
+                    page.locator('#file-rate').fill('2000000')
+                    page.get_by_role('button', name='Analyser automatiquement').click()
+                    expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'), timeout=30000)
+                    expect(page.locator('#metric-frames')).to_have_text('3')
+                    expect(page.locator('.adsb-callsign')).to_contain_text('KLM1023')
+                    expect(page.locator('.adsb-position')).to_contain_text('52.25720')
+                    expect(page.locator('.adsb-position')).to_contain_text('3.91937')
+                    expect(page.locator('.adsb-position-pending')).to_have_count(1)
+                    page.locator('#file-rate').fill(previous_rate)
                 with tempfile.TemporaryDirectory() as directory:
                     from iqscope import demo
                     meta = demo(directory)
