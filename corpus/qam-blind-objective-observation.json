@@ -1,0 +1,1607 @@
+{
+  "source_url": "https://raw.githubusercontent.com/billjgavin/28_and_75GHz_Capture_Files/3f9ea40d9b187d0819b14cb254dc04905d398889/IQ_28_Ghz.zip",
+  "source_sha256": "4959f58182b54a8ba25893106be939f34716d0c3832afa4d88d1658e54844240",
+  "measurement_commit": "cdee716e822a3d12fba667253557050290d48c4f",
+  "measurement_run": "https://github.com/sebadiaz/IQScope/actions/runs/42657163501",
+  "primary_methods": [
+    "warm_anchor0.1_mcma",
+    "noise_corrected_trust0.05"
+  ],
+  "selection_scope": "fixed on independent synthetic controls before new RF measurement; all configurations retained",
+  "boundary_scope": "first/last40 baseline symbol LLRs; same17904 verification bits,17744 treated bits",
+  "alignment_scope": "max6 symbols, fixed from 21 half-symbol tap support plus one symbol margin; unlabelled baseline prefix only; no suffix/PRBS alignment search",
+  "alignment_correction": {
+    "first_measurement_commit": "fec7d96924e2f274b270d11581f8a2a0e9db8644",
+    "first_measurement_run": "https://github.com/sebadiaz/IQScope/actions/runs/42656200573",
+    "same_reference_hashes": true,
+    "weak_cases": {
+      "cold_weighted0_rde": {
+        "before": 8795,
+        "after": 712,
+        "lag": -4,
+        "prefix_mse": 0.00460038700280359
+      },
+      "cold_weighted1_rde": {
+        "before": 8825,
+        "after": 722,
+        "lag": -4,
+        "prefix_mse": 0.005307046343730852
+      },
+      "warm_anchor0.0_rde": {
+        "before": 8796,
+        "after": 709,
+        "lag": -4,
+        "prefix_mse": 0.004573739898719624
+      }
+    }
+  },
+  "files": {
+    "16qam a.csv": {
+      "generic_status": "constellation_consistent_candidate",
+      "expected_bits_sha256": "14641bb94b9ccae52b58ed1b3703716cfd99422a7e02bb130f9effca575951a7",
+      "noise_profile": {
+        "noise_source_powers": {
+          "noise a.csv": 5.236161494432432e-7,
+          "noise b.csv": 5.089570217994589e-7
+        },
+        "target_source_power": 0.002021368112970259,
+        "pseudo_covariance_relative_frobenius_norm": 0.04552295720088523,
+        "assumption": "separate recordings representative of target additive noise; proper Gaussian moments, same receiver scale"
+      },
+      "methods": {
+        "baseline_circular": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "baseline_projection": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "stochastic_mcma_step0.02": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "cold_weighted0_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "cold_weighted0_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "cold_weighted1_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 2
+        },
+        "cold_weighted1_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "warm_anchor0.0_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "warm_anchor0.0_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "warm_anchor0.01_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "warm_anchor0.01_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "warm_anchor0.1_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "warm_anchor0.1_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "noise_corrected_trust0.05": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "noise_corrected_trust0.15": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 1
+        }
+      }
+    },
+    "16qam b.csv": {
+      "generic_status": "constellation_consistent_candidate",
+      "expected_bits_sha256": "e66c5cb35a9b927651130990b37cf8e78abb6f1a2361fb71043528be83937e91",
+      "noise_profile": {
+        "noise_source_powers": {
+          "noise a.csv": 5.236161494432432e-7,
+          "noise b.csv": 5.089570217994589e-7
+        },
+        "target_source_power": 0.0006289290743067222,
+        "pseudo_covariance_relative_frobenius_norm": 0.04538639270930177,
+        "assumption": "separate recordings representative of target additive noise; proper Gaussian moments, same receiver scale"
+      },
+      "methods": {
+        "baseline_circular": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "baseline_projection": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "stochastic_mcma_step0.02": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "cold_weighted0_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "cold_weighted0_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "cold_weighted1_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 5
+        },
+        "cold_weighted1_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "warm_anchor0.0_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "warm_anchor0.0_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "warm_anchor0.01_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "warm_anchor0.01_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "warm_anchor0.1_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "warm_anchor0.1_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "noise_corrected_trust0.05": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "noise_corrected_trust0.15": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 1
+        }
+      }
+    },
+    "16qam c.csv": {
+      "generic_status": "constellation_consistent_candidate",
+      "expected_bits_sha256": "dbaf97c414cb445c5c6f33e77506a7ab2bf5838256f6b7abe2f15ea8dec65438",
+      "noise_profile": {
+        "noise_source_powers": {
+          "noise a.csv": 5.236161494432432e-7,
+          "noise b.csv": 5.089570217994589e-7
+        },
+        "target_source_power": 0.00020265174208789039,
+        "pseudo_covariance_relative_frobenius_norm": 0.04562004602542899,
+        "assumption": "separate recordings representative of target additive noise; proper Gaussian moments, same receiver scale"
+      },
+      "methods": {
+        "baseline_circular": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "baseline_projection": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "stochastic_mcma_step0.02": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "cold_weighted0_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "cold_weighted0_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "cold_weighted1_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 12
+        },
+        "cold_weighted1_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "warm_anchor0.0_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "warm_anchor0.0_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "warm_anchor0.01_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "warm_anchor0.01_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "warm_anchor0.1_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "warm_anchor0.1_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "noise_corrected_trust0.05": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "noise_corrected_trust0.15": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 2
+        }
+      }
+    },
+    "16qam d.csv": {
+      "generic_status": "constellation_consistent_candidate",
+      "expected_bits_sha256": "d314d81d81d03102e3d4d3cae1a641e71a6bd5c74db2d47db0f562ac2eef550d",
+      "noise_profile": {
+        "noise_source_powers": {
+          "noise a.csv": 5.236161494432432e-7,
+          "noise b.csv": 5.089570217994589e-7
+        },
+        "target_source_power": 0.00006331109682823844,
+        "pseudo_covariance_relative_frobenius_norm": 0.04563475448799833,
+        "assumption": "separate recordings representative of target additive noise; proper Gaussian moments, same receiver scale"
+      },
+      "methods": {
+        "baseline_circular": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "baseline_projection": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "stochastic_mcma_step0.02": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "cold_weighted0_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 5
+        },
+        "cold_weighted0_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "cold_weighted1_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 23
+        },
+        "cold_weighted1_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "warm_anchor0.0_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 5
+        },
+        "warm_anchor0.0_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "warm_anchor0.01_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 3
+        },
+        "warm_anchor0.01_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "warm_anchor0.1_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "warm_anchor0.1_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "noise_corrected_trust0.05": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "noise_corrected_trust0.15": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 12
+        }
+      }
+    },
+    "16qam e.csv": {
+      "generic_status": "constellation_consistent_candidate",
+      "expected_bits_sha256": "aa12b572ce115cb3142ac1c2920ef37a246dafdb25643bf0bbe5b75efd0503eb",
+      "noise_profile": {
+        "noise_source_powers": {
+          "noise a.csv": 5.236161494432432e-7,
+          "noise b.csv": 5.089570217994589e-7
+        },
+        "target_source_power": 0.000020797051184041334,
+        "pseudo_covariance_relative_frobenius_norm": 0.04549339865970561,
+        "assumption": "separate recordings representative of target additive noise; proper Gaussian moments, same receiver scale"
+      },
+      "methods": {
+        "baseline_circular": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "baseline_projection": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "stochastic_mcma_step0.02": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "cold_weighted0_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 43
+        },
+        "cold_weighted0_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "cold_weighted1_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 98
+        },
+        "cold_weighted1_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 4154
+        },
+        "warm_anchor0.0_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 41
+        },
+        "warm_anchor0.0_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "warm_anchor0.01_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 31
+        },
+        "warm_anchor0.01_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "warm_anchor0.1_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 6
+        },
+        "warm_anchor0.1_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "noise_corrected_trust0.05": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 0
+        },
+        "noise_corrected_trust0.15": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 49
+        }
+      }
+    },
+    "16qam f.csv": {
+      "generic_status": "no_consistent_candidate",
+      "expected_bits_sha256": "b3b1c4c30aaed626eed153081907322f6325e409596c2834285c6bb5984710ac",
+      "noise_profile": {
+        "noise_source_powers": {
+          "noise a.csv": 5.236161494432432e-7,
+          "noise b.csv": 5.089570217994589e-7
+        },
+        "target_source_power": 0.0000025453996004518714,
+        "pseudo_covariance_relative_frobenius_norm": 0.04563564509402928,
+        "assumption": "separate recordings representative of target additive noise; proper Gaussian moments, same receiver scale"
+      },
+      "methods": {
+        "baseline_circular": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 602
+        },
+        "baseline_projection": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 606,
+          "errors_corrected": 3,
+          "new_errors_introduced": 7,
+          "lag": 0,
+          "prefix_mse": 0.0000012858338506736299,
+          "alignment_status": "prefix_matches"
+        },
+        "stochastic_mcma_step0.02": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 1346,
+          "errors_corrected": 194,
+          "new_errors_introduced": 938,
+          "lag": 0,
+          "prefix_mse": 0.03494593477238699,
+          "alignment_status": "prefix_matches"
+        },
+        "cold_weighted0_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 1098,
+          "errors_corrected": 178,
+          "new_errors_introduced": 674,
+          "lag": 0,
+          "prefix_mse": 0.022384938455967385,
+          "alignment_status": "prefix_matches"
+        },
+        "cold_weighted0_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 712,
+          "errors_corrected": 77,
+          "new_errors_introduced": 187,
+          "lag": -4,
+          "prefix_mse": 0.00460038700280359,
+          "alignment_status": "prefix_matches"
+        },
+        "cold_weighted1_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 1236,
+          "errors_corrected": 182,
+          "new_errors_introduced": 816,
+          "lag": 0,
+          "prefix_mse": 0.027693432095682324,
+          "alignment_status": "prefix_matches"
+        },
+        "cold_weighted1_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 722,
+          "errors_corrected": 88,
+          "new_errors_introduced": 208,
+          "lag": -4,
+          "prefix_mse": 0.005307046343730852,
+          "alignment_status": "prefix_matches"
+        },
+        "warm_anchor0.0_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 1097,
+          "errors_corrected": 178,
+          "new_errors_introduced": 673,
+          "lag": 0,
+          "prefix_mse": 0.022384341072701337,
+          "alignment_status": "prefix_matches"
+        },
+        "warm_anchor0.0_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 709,
+          "errors_corrected": 77,
+          "new_errors_introduced": 184,
+          "lag": -4,
+          "prefix_mse": 0.004573739898719624,
+          "alignment_status": "prefix_matches"
+        },
+        "warm_anchor0.01_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 1076,
+          "errors_corrected": 177,
+          "new_errors_introduced": 651,
+          "lag": 0,
+          "prefix_mse": 0.021087266582719495,
+          "alignment_status": "prefix_matches"
+        },
+        "warm_anchor0.01_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 1113,
+          "errors_corrected": 185,
+          "new_errors_introduced": 696,
+          "lag": 0,
+          "prefix_mse": 0.02201927301550125,
+          "alignment_status": "prefix_matches"
+        },
+        "warm_anchor0.1_mcma": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 886,
+          "errors_corrected": 157,
+          "new_errors_introduced": 441,
+          "lag": 0,
+          "prefix_mse": 0.01333818945625048,
+          "alignment_status": "prefix_matches"
+        },
+        "warm_anchor0.1_rde": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 738,
+          "errors_corrected": 98,
+          "new_errors_introduced": 234,
+          "lag": 0,
+          "prefix_mse": 0.004154255469130178,
+          "alignment_status": "prefix_matches"
+        },
+        "noise_corrected_trust0.05": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 656,
+          "errors_corrected": 73,
+          "new_errors_introduced": 127,
+          "lag": 0,
+          "prefix_mse": 0.0020120304500269547,
+          "alignment_status": "prefix_matches"
+        },
+        "noise_corrected_trust0.15": {
+          "evaluation_bits": 17904,
+          "evaluation_error_count": 989,
+          "errors_corrected": 172,
+          "new_errors_introduced": 559,
+          "lag": 0,
+          "prefix_mse": 0.020301653435673354,
+          "alignment_status": "prefix_matches"
+        }
+      }
+    }
+  },
+  "synthetic_controls": {
+    "scope": "independent identity-channel impulses at2sps plus circular AWGN; not RF pulse shaping; no reference-symbol updates",
+    "rows": [
+      {
+        "seed": 811,
+        "split": "development",
+        "noise_variance_complex": 0.0008,
+        "evaluation_bits": 17792,
+        "methods": {
+          "baseline": {
+            "error_count": 0
+          },
+          "baseline_projection": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.0000030277765704465354
+          },
+          "stochastic_mcma_step0.02": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.000006844353776298086
+          },
+          "cold_weighted0_mcma": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.0006664081150921485
+          },
+          "cold_weighted0_rde": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.000011269717139352901
+          },
+          "cold_weighted1_mcma": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.0007878534153295474
+          },
+          "cold_weighted1_rde": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.000010938918467637665
+          },
+          "warm_anchor0.0_mcma": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.0006662263284209434
+          },
+          "warm_anchor0.0_rde": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.000011269708957492385
+          },
+          "warm_anchor0.01_mcma": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.0006452228149669712
+          },
+          "warm_anchor0.01_rde": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.00001110688536094647
+          },
+          "warm_anchor0.1_mcma": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.0004947477004998187
+          },
+          "warm_anchor0.1_rde": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.000009838584763048884
+          },
+          "noise_corrected_trust0.05": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.002458511007526236
+          },
+          "noise_corrected_trust0.15": {
+            "error_count": 21,
+            "lag": 0,
+            "prefix_mse": 0.021610764811179912
+          }
+        }
+      },
+      {
+        "seed": 922,
+        "split": "development",
+        "noise_variance_complex": 0.0008,
+        "evaluation_bits": 17792,
+        "methods": {
+          "baseline": {
+            "error_count": 0
+          },
+          "baseline_projection": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.000054319707345043235
+          },
+          "stochastic_mcma_step0.02": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.000058910404325312905
+          },
+          "cold_weighted0_mcma": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.0005087120936468876
+          },
+          "cold_weighted0_rde": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.00006142193543992663
+          },
+          "cold_weighted1_mcma": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.0005933787872212279
+          },
+          "cold_weighted1_rde": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.00006105738318638957
+          },
+          "warm_anchor0.0_mcma": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.0005070932211627858
+          },
+          "warm_anchor0.0_rde": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.00006143690768861195
+          },
+          "warm_anchor0.01_mcma": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.0004954694336794918
+          },
+          "warm_anchor0.01_rde": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.00006128144109917278
+          },
+          "warm_anchor0.1_mcma": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.00039860352062860124
+          },
+          "warm_anchor0.1_rde": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.00006011655995195571
+          },
+          "noise_corrected_trust0.05": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.0027214167375989914
+          },
+          "noise_corrected_trust0.15": {
+            "error_count": 30,
+            "lag": 0,
+            "prefix_mse": 0.021337145455031438
+          }
+        }
+      },
+      {
+        "seed": 1033,
+        "split": "development",
+        "noise_variance_complex": 0.0008,
+        "evaluation_bits": 17792,
+        "methods": {
+          "baseline": {
+            "error_count": 0
+          },
+          "baseline_projection": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.000008437102168688664
+          },
+          "stochastic_mcma_step0.02": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.000014782815312031572
+          },
+          "cold_weighted0_mcma": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.000335139796447317
+          },
+          "cold_weighted0_rde": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.000014368597463875915
+          },
+          "cold_weighted1_mcma": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.00043078189782302885
+          },
+          "cold_weighted1_rde": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.000014094878393190884
+          },
+          "warm_anchor0.0_mcma": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.00033513583724961076
+          },
+          "warm_anchor0.0_rde": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.00001436859776740868
+          },
+          "warm_anchor0.01_mcma": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.00032550921176239937
+          },
+          "warm_anchor0.01_rde": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.000014202412511474332
+          },
+          "warm_anchor0.1_mcma": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.00025529487060053045
+          },
+          "warm_anchor0.1_rde": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.00001321192971375706
+          },
+          "noise_corrected_trust0.05": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.002434576298605701
+          },
+          "noise_corrected_trust0.15": {
+            "error_count": 32,
+            "lag": 0,
+            "prefix_mse": 0.021752549884139407
+          }
+        }
+      },
+      {
+        "seed": 1207,
+        "split": "validation",
+        "noise_variance_complex": 0.0008,
+        "evaluation_bits": 17792,
+        "methods": {
+          "baseline": {
+            "error_count": 0
+          },
+          "baseline_projection": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.000038336419873152814
+          },
+          "stochastic_mcma_step0.02": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.00004344137331541022
+          },
+          "cold_weighted0_mcma": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.0005217473896016608
+          },
+          "cold_weighted0_rde": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.00004730547713567784
+          },
+          "cold_weighted1_mcma": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.0005924601191590237
+          },
+          "cold_weighted1_rde": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.000046746812277303134
+          },
+          "warm_anchor0.0_mcma": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.0005219316246862294
+          },
+          "warm_anchor0.0_rde": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.000047306580875078687
+          },
+          "warm_anchor0.01_mcma": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.0005075667444299087
+          },
+          "warm_anchor0.01_rde": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.00004717368349361408
+          },
+          "warm_anchor0.1_mcma": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.0004027461347929316
+          },
+          "warm_anchor0.1_rde": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.00004583119255328784
+          },
+          "noise_corrected_trust0.05": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.002406496906357393
+          },
+          "noise_corrected_trust0.15": {
+            "error_count": 47,
+            "lag": 0,
+            "prefix_mse": 0.0217171759554444
+          }
+        }
+      },
+      {
+        "seed": 1439,
+        "split": "validation",
+        "noise_variance_complex": 0.0008,
+        "evaluation_bits": 17792,
+        "methods": {
+          "baseline": {
+            "error_count": 0
+          },
+          "baseline_projection": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.000007325731614130439
+          },
+          "stochastic_mcma_step0.02": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.000014804113887737973
+          },
+          "cold_weighted0_mcma": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.000467244070261089
+          },
+          "cold_weighted0_rde": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.000015469155809176773
+          },
+          "cold_weighted1_mcma": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.0006006039052220166
+          },
+          "cold_weighted1_rde": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.000014561464438500728
+          },
+          "warm_anchor0.0_mcma": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.0004680229995860821
+          },
+          "warm_anchor0.0_rde": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.000015472422592440408
+          },
+          "warm_anchor0.01_mcma": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.00045423467385272533
+          },
+          "warm_anchor0.01_rde": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.00001530375947295532
+          },
+          "warm_anchor0.1_mcma": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.0003544792276740208
+          },
+          "warm_anchor0.1_rde": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.000013997481458441144
+          },
+          "noise_corrected_trust0.05": {
+            "error_count": 0,
+            "lag": 0,
+            "prefix_mse": 0.0020439022335644983
+          },
+          "noise_corrected_trust0.15": {
+            "error_count": 34,
+            "lag": 0,
+            "prefix_mse": 0.020072186175838523
+          }
+        }
+      },
+      {
+        "seed": 811,
+        "split": "development",
+        "noise_variance_complex": 0.057,
+        "evaluation_bits": 17792,
+        "methods": {
+          "baseline": {
+            "error_count": 501
+          },
+          "baseline_projection": {
+            "error_count": 501,
+            "lag": 0,
+            "prefix_mse": 0.0005618551401084958
+          },
+          "stochastic_mcma_step0.02": {
+            "error_count": 620,
+            "lag": 0,
+            "prefix_mse": 0.005649752313379346
+          },
+          "cold_weighted0_mcma": {
+            "error_count": 551,
+            "lag": 0,
+            "prefix_mse": 0.002671820206930164
+          },
+          "cold_weighted0_rde": {
+            "error_count": 622,
+            "lag": -2,
+            "prefix_mse": 0.006107155549054347
+          },
+          "cold_weighted1_mcma": {
+            "error_count": 540,
+            "lag": 0,
+            "prefix_mse": 0.0027600935472305286
+          },
+          "cold_weighted1_rde": {
+            "error_count": 629,
+            "lag": -2,
+            "prefix_mse": 0.006859702385173207
+          },
+          "warm_anchor0.0_mcma": {
+            "error_count": 551,
+            "lag": 0,
+            "prefix_mse": 0.0026717840402045176
+          },
+          "warm_anchor0.0_rde": {
+            "error_count": 622,
+            "lag": -2,
+            "prefix_mse": 0.006108288277062512
+          },
+          "warm_anchor0.01_mcma": {
+            "error_count": 545,
+            "lag": 0,
+            "prefix_mse": 0.002585206138870056
+          },
+          "warm_anchor0.01_rde": {
+            "error_count": 561,
+            "lag": 0,
+            "prefix_mse": 0.003063094287892736
+          },
+          "warm_anchor0.1_mcma": {
+            "error_count": 521,
+            "lag": 0,
+            "prefix_mse": 0.002006734453441336
+          },
+          "warm_anchor0.1_rde": {
+            "error_count": 601,
+            "lag": 0,
+            "prefix_mse": 0.0035559767847144945
+          },
+          "noise_corrected_trust0.05": {
+            "error_count": 549,
+            "lag": 0,
+            "prefix_mse": 0.0031732836091477646
+          },
+          "noise_corrected_trust0.15": {
+            "error_count": 981,
+            "lag": 0,
+            "prefix_mse": 0.022978476239219562
+          }
+        }
+      },
+      {
+        "seed": 922,
+        "split": "development",
+        "noise_variance_complex": 0.057,
+        "evaluation_bits": 17792,
+        "methods": {
+          "baseline": {
+            "error_count": 569
+          },
+          "baseline_projection": {
+            "error_count": 569,
+            "lag": 0,
+            "prefix_mse": 0.0017716242825965458
+          },
+          "stochastic_mcma_step0.02": {
+            "error_count": 721,
+            "lag": 0,
+            "prefix_mse": 0.008192462154816723
+          },
+          "cold_weighted0_mcma": {
+            "error_count": 594,
+            "lag": 0,
+            "prefix_mse": 0.0031127124993188637
+          },
+          "cold_weighted0_rde": {
+            "error_count": 657,
+            "lag": 1,
+            "prefix_mse": 0.004877143452365842
+          },
+          "cold_weighted1_mcma": {
+            "error_count": 584,
+            "lag": 0,
+            "prefix_mse": 0.00315663133561943
+          },
+          "cold_weighted1_rde": {
+            "error_count": 639,
+            "lag": 1,
+            "prefix_mse": 0.004891260493569629
+          },
+          "warm_anchor0.0_mcma": {
+            "error_count": 594,
+            "lag": 0,
+            "prefix_mse": 0.0031127522389738406
+          },
+          "warm_anchor0.0_rde": {
+            "error_count": 656,
+            "lag": 1,
+            "prefix_mse": 0.004876168395087906
+          },
+          "warm_anchor0.01_mcma": {
+            "error_count": 592,
+            "lag": 0,
+            "prefix_mse": 0.00306220405055806
+          },
+          "warm_anchor0.01_rde": {
+            "error_count": 616,
+            "lag": 0,
+            "prefix_mse": 0.0036959231749729986
+          },
+          "warm_anchor0.1_mcma": {
+            "error_count": 581,
+            "lag": 0,
+            "prefix_mse": 0.002717968562460943
+          },
+          "warm_anchor0.1_rde": {
+            "error_count": 695,
+            "lag": 0,
+            "prefix_mse": 0.007486366212988701
+          },
+          "noise_corrected_trust0.05": {
+            "error_count": 603,
+            "lag": 0,
+            "prefix_mse": 0.004398937787370853
+          },
+          "noise_corrected_trust0.15": {
+            "error_count": 1055,
+            "lag": 0,
+            "prefix_mse": 0.02341271079697505
+          }
+        }
+      },
+      {
+        "seed": 1033,
+        "split": "development",
+        "noise_variance_complex": 0.057,
+        "evaluation_bits": 17792,
+        "methods": {
+          "baseline": {
+            "error_count": 576
+          },
+          "baseline_projection": {
+            "error_count": 576,
+            "lag": 0,
+            "prefix_mse": 0.001004003011759653
+          },
+          "stochastic_mcma_step0.02": {
+            "error_count": 697,
+            "lag": 0,
+            "prefix_mse": 0.006013400194989878
+          },
+          "cold_weighted0_mcma": {
+            "error_count": 616,
+            "lag": 0,
+            "prefix_mse": 0.0026372376035873894
+          },
+          "cold_weighted0_rde": {
+            "error_count": 626,
+            "lag": 4,
+            "prefix_mse": 0.003642751354744203
+          },
+          "cold_weighted1_mcma": {
+            "error_count": 616,
+            "lag": 0,
+            "prefix_mse": 0.002719675291984707
+          },
+          "cold_weighted1_rde": {
+            "error_count": 628,
+            "lag": 4,
+            "prefix_mse": 0.0038736589084231118
+          },
+          "warm_anchor0.0_mcma": {
+            "error_count": 616,
+            "lag": 0,
+            "prefix_mse": 0.0026372151861707676
+          },
+          "warm_anchor0.0_rde": {
+            "error_count": 626,
+            "lag": 4,
+            "prefix_mse": 0.0036433938497502545
+          },
+          "warm_anchor0.01_mcma": {
+            "error_count": 612,
+            "lag": 0,
+            "prefix_mse": 0.002573860334643594
+          },
+          "warm_anchor0.01_rde": {
+            "error_count": 620,
+            "lag": 0,
+            "prefix_mse": 0.0021557344580360096
+          },
+          "warm_anchor0.1_mcma": {
+            "error_count": 607,
+            "lag": 0,
+            "prefix_mse": 0.0021430691572447793
+          },
+          "warm_anchor0.1_rde": {
+            "error_count": 651,
+            "lag": 0,
+            "prefix_mse": 0.003861331297175558
+          },
+          "noise_corrected_trust0.05": {
+            "error_count": 643,
+            "lag": 0,
+            "prefix_mse": 0.0035487237259938164
+          },
+          "noise_corrected_trust0.15": {
+            "error_count": 1114,
+            "lag": 0,
+            "prefix_mse": 0.024560035703690832
+          }
+        }
+      },
+      {
+        "seed": 1207,
+        "split": "validation",
+        "noise_variance_complex": 0.057,
+        "evaluation_bits": 17792,
+        "methods": {
+          "baseline": {
+            "error_count": 552
+          },
+          "baseline_projection": {
+            "error_count": 552,
+            "lag": 0,
+            "prefix_mse": 0.0010861157829578478
+          },
+          "stochastic_mcma_step0.02": {
+            "error_count": 663,
+            "lag": 0,
+            "prefix_mse": 0.0057092286671106005
+          },
+          "cold_weighted0_mcma": {
+            "error_count": 602,
+            "lag": 0,
+            "prefix_mse": 0.0026102097627415093
+          },
+          "cold_weighted0_rde": {
+            "error_count": 702,
+            "lag": -2,
+            "prefix_mse": 0.006521505346187832
+          },
+          "cold_weighted1_mcma": {
+            "error_count": 596,
+            "lag": 0,
+            "prefix_mse": 0.0026268152696721273
+          },
+          "cold_weighted1_rde": {
+            "error_count": 677,
+            "lag": -3,
+            "prefix_mse": 0.007161587296699255
+          },
+          "warm_anchor0.0_mcma": {
+            "error_count": 602,
+            "lag": 0,
+            "prefix_mse": 0.002610305441364937
+          },
+          "warm_anchor0.0_rde": {
+            "error_count": 702,
+            "lag": -2,
+            "prefix_mse": 0.006521270778008558
+          },
+          "warm_anchor0.01_mcma": {
+            "error_count": 602,
+            "lag": 0,
+            "prefix_mse": 0.002550723494137033
+          },
+          "warm_anchor0.01_rde": {
+            "error_count": 616,
+            "lag": 0,
+            "prefix_mse": 0.004206052934633133
+          },
+          "warm_anchor0.1_mcma": {
+            "error_count": 581,
+            "lag": 0,
+            "prefix_mse": 0.0021474494327327863
+          },
+          "warm_anchor0.1_rde": {
+            "error_count": 621,
+            "lag": 0,
+            "prefix_mse": 0.004479443104894158
+          },
+          "noise_corrected_trust0.05": {
+            "error_count": 619,
+            "lag": 0,
+            "prefix_mse": 0.0034618015371664693
+          },
+          "noise_corrected_trust0.15": {
+            "error_count": 1064,
+            "lag": 0,
+            "prefix_mse": 0.022908211499710944
+          }
+        }
+      },
+      {
+        "seed": 1439,
+        "split": "validation",
+        "noise_variance_complex": 0.057,
+        "evaluation_bits": 17792,
+        "methods": {
+          "baseline": {
+            "error_count": 565
+          },
+          "baseline_projection": {
+            "error_count": 565,
+            "lag": 0,
+            "prefix_mse": 0.000752996991115438
+          },
+          "stochastic_mcma_step0.02": {
+            "error_count": 695,
+            "lag": 0,
+            "prefix_mse": 0.0056150783117834835
+          },
+          "cold_weighted0_mcma": {
+            "error_count": 602,
+            "lag": 0,
+            "prefix_mse": 0.0022957126908372334
+          },
+          "cold_weighted0_rde": {
+            "error_count": 667,
+            "lag": -1,
+            "prefix_mse": 0.004338198645231029
+          },
+          "cold_weighted1_mcma": {
+            "error_count": 594,
+            "lag": 0,
+            "prefix_mse": 0.0023700339426044738
+          },
+          "cold_weighted1_rde": {
+            "error_count": 672,
+            "lag": -1,
+            "prefix_mse": 0.004336544223791879
+          },
+          "warm_anchor0.0_mcma": {
+            "error_count": 602,
+            "lag": 0,
+            "prefix_mse": 0.0022956382732150036
+          },
+          "warm_anchor0.0_rde": {
+            "error_count": 667,
+            "lag": -1,
+            "prefix_mse": 0.00433742448693835
+          },
+          "warm_anchor0.01_mcma": {
+            "error_count": 599,
+            "lag": 0,
+            "prefix_mse": 0.002233901831966483
+          },
+          "warm_anchor0.01_rde": {
+            "error_count": 628,
+            "lag": 0,
+            "prefix_mse": 0.0031159034365340764
+          },
+          "warm_anchor0.1_mcma": {
+            "error_count": 599,
+            "lag": 0,
+            "prefix_mse": 0.0018193299043961322
+          },
+          "warm_anchor0.1_rde": {
+            "error_count": 683,
+            "lag": 0,
+            "prefix_mse": 0.006714252693850235
+          },
+          "noise_corrected_trust0.05": {
+            "error_count": 628,
+            "lag": 0,
+            "prefix_mse": 0.002914344744466025
+          },
+          "noise_corrected_trust0.15": {
+            "error_count": 1061,
+            "lag": 0,
+            "prefix_mse": 0.020993517917594406
+          }
+        }
+      }
+    ]
+  },
+  "conclusion": "No experimental configuration beats 602 weak-capture errors. Warm MCMA primary introduces six errors on strong e; corrected-noise primary keeps all five strong captures error-free but has 656 weak errors. Prefix delay coverage fixes a measurement defect; finite-iteration optimizer states remain reported. No generic decoder activation or threshold change.",
+  "weak_primary_results": {
+    "warm_anchor0.1_mcma": {
+      "evaluation_bits": 17904,
+      "evaluation_error_count": 886,
+      "evaluation_ber": 0.04948614834673816,
+      "errors_corrected": 157,
+      "new_errors_introduced": 441,
+      "alignment": {
+        "symbol_lag": 0,
+        "conjugated": false,
+        "quarter_turn": 0,
+        "prefix_mse": 0.01333818945625048,
+        "scope": "baseline unlabelled prefix only; no PRBS bits or suffix alignment search",
+        "status": "prefix_matches"
+      },
+      "parameters": {
+        "weighted_by_inverse_row_energy": false,
+        "anchor_strength": 0.1,
+        "maximum_iterations_per_stage": 80,
+        "training_symbols": 4908,
+        "fit_scope": "unlabelled full-window interior only; no error clipping in batch cost",
+        "stages": {
+          "mcma": {
+            "initial_objective": 0.1480422600793322,
+            "final_objective": 0.14395989254423194,
+            "gradient_norm": 0.000004052388120382669,
+            "optimizer_success": true,
+            "optimizer_status": 0,
+            "optimizer_message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+            "iterations": 67,
+            "function_evaluations": 73,
+            "coefficients_i": [
+              -0.028650375493998015,
+              0.023692099223185457,
+              -0.033765606884808404,
+              -0.002807540042091004,
+              -0.049430530983620304,
+              0.06437323362783821,
+              0.01342952610068547,
+              -0.09659611076663281,
+              -0.06535554911565979,
+              0.36684822432436087,
+              0.5259649946924213,
+              0.3538887004369692,
+              -0.053162710713787996,
+              -0.05478563174271412,
+              -0.01777470005803864,
+              0.0745634551335943,
+              -0.05238626706623169,
+              0.016442788264144175,
+              0.04619320598658114,
+              0.04484982833305721,
+              -0.023409361912683474
+            ],
+            "coefficients_q": [
+              0.02243670319665252,
+              -0.04173597749770227,
+              0.018212796525890435,
+              -0.0228818184425236,
+              0.019885171539335007,
+              0.0015483489760848145,
+              0.008470432078645713,
+              -0.021782177432304227,
+              0.013197403818522479,
+              -0.010321720733247112,
+              0.04032179509411657,
+              0.003554105099772109,
+              -0.016140558335268024,
+              0.010047293318295247,
+              -0.009680864000958137,
+              0.01632023438207032,
+              -0.014940851692510812,
+              -0.0031274543299686865,
+              -0.03927994969351744,
+              -0.026055574168211523,
+              0.006939187057999019
+            ]
+          },
+          "rde": {
+            "initial_objective": 0.0151546172063842,
+            "final_objective": 0.011996521442136443,
+            "gradient_norm": 0.0011560501775755366,
+            "optimizer_success": false,
+            "optimizer_status": 1,
+            "optimizer_message": "STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT",
+            "iterations": 80,
+            "function_evaluations": 100,
+            "coefficients_i": [
+              -0.03910938772115704,
+              0.04085454983554429,
+              -0.005585853238358749,
+              -0.006681553211978262,
+              -0.037927325847277905,
+              0.07766056823822463,
+              -0.0011414405187874946,
+              -0.07204462338100316,
+              -0.02012518499566324,
+              0.3200331988765834,
+              0.5060885334584136,
+              0.3340505396598794,
+              -0.02584484007115845,
+              -0.07313045229049321,
+              0.019471117139815586,
+              0.05013612904707862,
+              -0.0050795175527360665,
+              -0.049815477082532277,
+              0.025422746187543206,
+              -0.014567015949587233,
+              0.009462946043736932
+            ],
+            "coefficients_q": [
+              0.01789455257726723,
+              -0.027607921781544295,
+              0.0073439650748051396,
+              -0.014702798991727526,
+              0.024006134303171858,
+              -0.020879150348406143,
+              0.0294852527862644,
+              -0.005670385116946996,
+              -0.010409718031381713,
+              0.005541962186833067,
+              0.01747070639613121,
+              -0.034192341526502475,
+              0.014169316511378899,
+              0.030229220587643546,
+              -0.026341514089948274,
+              0.007562631442809594,
+              -0.002348084604020475,
+              0.007646087476552892,
+              -0.04197037993161966,
+              0.05634388330960579,
+              -0.013272847753041536
+            ]
+          }
+        }
+      },
+      "likelihood_model": {
+        "gain_i": 0.9502030082712863,
+        "gain_q": 0.02079693862301115,
+        "noise_variance_complex": 0.0678406215933298,
+        "iterations": 32,
+        "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+      }
+    },
+    "noise_corrected_trust0.05": {
+      "evaluation_bits": 17904,
+      "evaluation_error_count": 656,
+      "evaluation_ber": 0.03663985701519214,
+      "errors_corrected": 73,
+      "new_errors_introduced": 127,
+      "alignment": {
+        "symbol_lag": 0,
+        "conjugated": false,
+        "quarter_turn": 0,
+        "prefix_mse": 0.0020120304500269547,
+        "scope": "baseline unlabelled prefix only; no PRBS bits or suffix alignment search",
+        "status": "prefix_matches"
+      },
+      "parameters": {
+        "objective": "proper-Gaussian-deconvolved MCMA; covariance derivative included",
+        "trust_radius_relative_output_rms": 0.05,
+        "trust_constraint_slack": 4.99860569602717e-15,
+        "optimizer_terminal_constraint_slack": -8.559426648360735e-11,
+        "output_selection": "lowest unlabelled corrected cost among feasible evaluations and projected terminal step; initial filter included",
+        "initial_noise_variance_complex": 0.058554378200145196,
+        "initial_total_power": 0.9999677732881544,
+        "initial_objective": 0.12942091745499004,
+        "final_objective": 0.12591101232760507,
+        "gradient_norm_unconstrained": 0.06774820321584776,
+        "optimizer_success": true,
+        "optimizer_status": 0,
+        "optimizer_message": "Optimization terminated successfully",
+        "iterations": 49,
+        "function_evaluations": 53,
+        "coefficients_i": [
+          -0.02774620193587461,
+          0.03312381372097965,
+          -0.017654196064856163,
+          -0.0029047918257924313,
+          -0.046029072864239434,
+          0.06756709211932573,
+          0.013105310978083649,
+          -0.09859743771897882,
+          -0.052781231662138176,
+          0.37993797699441995,
+          0.5637873366453108,
+          0.36611217305845584,
+          -0.044304660746390105,
+          -0.07975979700909369,
+          0.0015206025823805737,
+          0.06666959131974796,
+          -0.04091874372256589,
+          -0.004792909105863271,
+          0.0295752955299476,
+          0.01708792840038189,
+          -0.010559963663901958
+        ],
+        "coefficients_q": [
+          0.008702895989930433,
+          -0.012674108081117743,
+          -0.0001849708535363367,
+          0.002708074547165841,
+          -0.0052253879378922575,
+          0.010933338473915286,
+          -0.011967649966769177,
+          0.00859545800576812,
+          -0.005143797152645071,
+          -0.0025926278710356587,
+          0.004994955832138626,
+          0.011877602134074782,
+          -0.020521510566725472,
+          0.020165603424509612,
+          -0.01374416580181902,
+          0.013681983677715844,
+          -0.016300595190604603,
+          0.010554289444698942,
+          -0.026043728539231398,
+          -0.008076311411892582,
+          0.003607366544797081
+        ],
+        "scope": "unlabelled input, measured/declared Gaussian covariance and baseline projection; no expected bits"
+      },
+      "likelihood_model": {
+        "gain_i": 0.9614788498132374,
+        "gain_q": 0.009731530380433468,
+        "noise_variance_complex": 0.058791601495468665,
+        "iterations": 32,
+        "fit_scope": "unlabelled supplied symbols; uniform square-16-QAM circular-AWGN model"
+      }
+    }
+  }
+}
