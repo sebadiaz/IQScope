@@ -456,9 +456,19 @@ function showReport(report, jobId) {
       }
     }
     if(f.position_quality) appendAdsbQuality(card,f.position_quality);
+    if(f.position_integrity_pair) appendAdsbNic(card,f.position_integrity_pair,true);
+    else if(f.position_integrity && f.position_integrity.status!=='operational_context_required') appendAdsbNic(card,f.position_integrity,false);
     frameList.append(card);
   }
 }
+function appendAdsbNic(card,value,paired) {
+  const role=paired?'paire CPR':'message';
+  const css=paired?'adsb-pair-integrity':'adsb-frame-integrity';
+  if(value.status==='reported_bound' && Number.isFinite(value.containment_radius_bound_m)) card.append(element('p',`Confinement déclaré de la ${paired?'paire CPR':'position du message'} : NIC ${value.nic_category} · Rc < ${value.containment_radius_bound_m} m`,css));
+  else if(value.status==='not_available') card.append(element('p',`Confinement non renseigné (${role}, NIC 0).`,'hint '+css));
+  else card.append(element('p',`NIC non déterminé (${role}).`,'hint '+css));
+}
+
 function appendAdsbQuality(card,q) {
   if(Number.isFinite(q.horizontal_accuracy_95_bound_m)) card.append(element('p',`Précision horizontale déclarée : < ${q.horizontal_accuracy_95_bound_m} m à 95 % (NACp ${q.nac_p_code})`,'adsb-position-accuracy'));
   else card.append(element('p',`Précision horizontale ${q.nac_p_status==='reserved_code'?'non interprétée':'non renseignée'} (NACp ${q.nac_p_code})`,'hint adsb-position-accuracy'));

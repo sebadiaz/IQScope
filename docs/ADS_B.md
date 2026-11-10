@@ -34,7 +34,7 @@ Ces IQ de test sont une modulation synthétique de messages publiés ; elles ne 
 
 Aucun décodage de position au sol, de CPR local sur une référence géographique, de position GNSS TC20–22, de trajectoire entre analyses n'est ajouté. Une capture trop courte pour contenir une paire peut livrer des paquets et une altitude sans coordonnées. Les collisions et corrections de bits restent hors périmètre du récepteur.
 
-Un CRC valide vérifie les bits du paquet, sans authentifier la station ni garantir la véracité, l'intégrité de navigation ou la précision de sa position. Les indicateurs NIC complets, GVA et SDA restent hors périmètre ; le traitement de NACp, NACv et SIL est décrit dans la section statut ci-dessous. Les DF18 ne sont pas automatiquement étiquetés ICAO.
+Un CRC valide vérifie les bits du paquet, sans authentifier la station ni garantir la véracité, l'intégrité de navigation ou la précision de sa position. Le NIC des positions de surface, la GVA et le SDA restent hors périmètre ; le traitement de NACp, NACv et SIL est décrit dans la section statut ci-dessous. Les DF18 ne sont pas automatiquement étiquetés ICAO.
 
 Sources des formats et valeurs de référence : [Aircraft Identification](https://mode-s.org/1090mhz/content/ads-b/2-identification.html) et [Airborne Position](https://mode-s.org/1090mhz/content/ads-b/3-airborne-position.html), The 1090 Megahertz Riddle, Junzi Sun. La distinction des corps DF18 est également vérifiée dans [dump1090, mode_s.c](https://github.com/flightaware/dump1090/blob/master/mode_s.c). Les formules sont implémentées directement, sans reprise d'une bibliothèque de décodage tierce.
 
@@ -56,7 +56,7 @@ Source des champs et exemples : [Airborne Velocity, The 1090 Megahertz Riddle](h
 
 Les TC31 des versions ADS-B 1/2, sous-types aérien et surface, exposent les champs communs définis : version, NACp, SIL, référence de cap et compléments disponibles. Les catégories NACp reconnues fournissent leur borne horizontale à 95 %. Le SIL est conservé comme code avec sa base : par heure ou par échantillon en v2, non déterminée par ce message en v1. Zéro reste une information non renseignée ; les codes réservés ne reçoivent pas de borne numérique.
 
-Ces informations décrivent ce que l'émetteur annonce, sans mesure indépendante de l'erreur ni garantie de navigation. Les indicateurs NIC complets, GVA et SDA ne sont pas calculés. Les blocs de capacités et de mode sont exportés comme codes bruts, sans prétendre en interpréter tous les bits.
+Ces informations décrivent ce que l'émetteur annonce, sans mesure indépendante de l'erreur ni garantie de navigation. Le NIC des positions de surface, la GVA et le SDA ne sont pas calculés. Les blocs de capacités et de mode sont exportés comme codes bruts, sans prétendre en interpréter tous les bits.
 
 Le code applique une politique locale explicite : seul un statut aérien décodé, du même DF/contrôle/adresse, antérieur ou simultané déjà observé et âgé de dix secondes au plus, peut préciser un TC19 ou une position suivante. Le statut n'est jamais propagé à une autre analyse. Un nouveau statut surface, réservé ou de version non prise en charge annule le contexte précédent. Un statut corrompu ou sans temps utilisable ne fournit aucun contexte. L'ordre chronologique est examiné sans changer l'ordre des trames exportées.
 
@@ -67,3 +67,19 @@ Les objets operational_status, position_quality et velocity.operational_context 
 Onze tests supplémentaires vérifient l'encodage des champs et leurs bornes, les versions et sous-types exclus, la causalité, l'expiration, l'isolation des domaines et des analyses, l'absence de mutation et le chemin PPM complet. Le statut figé 8DA05F21F8000000005A3E4E0708 est synthétique : v2, NACp10, SIL3 par échantillon, cap magnétique. Les messages de vitesse et de position de référence sont réadressés ou complétés pour cette scène de test ; elle n'est pas présentée comme une capture RF réelle. Chromium vérifie les champs affichés et le rapport téléchargé ; adsb-operational-status.png est conservée dans ses artefacts.
 
 Références des champs : [Aircraft Operation Status](https://mode-s.org/1090mhz/content/ads-b/6-operation-status.html), [Uncertainties](https://mode-s.org/1090mhz/content/ads-b/7-uncertainty.html), et la lecture des versions/références de [dump1090](https://github.com/flightaware/dump1090/blob/master/mode_s.c). Le décodeur utilise ses propres fonctions et ne dépend d'aucune de ces bibliothèques à l'exécution.
+
+## Intégrité NIC des positions aériennes
+
+Le NIC et la borne de rayon de confinement Rc sont interprétés pour les messages aériens TC9–18 sous contexte ADS-B v1/v2 récent. Ils décrivent une déclaration d'intégrité de navigation. Rc n'est ni l'erreur mesurée par IQScope, ni la précision NACp à 95 %, ni une authentification.
+
+Le calcul utilise NICs du statut en v1 ; NICa et le bit NICb du message de position en v2. Le même bit de position n'est pas traité comme NICb en v1. Seules les combinaisons définies sont décodées ; les autres restent non interprétées. NIC 0 reste sans borne finie. Aucune version n'est supposée sans statut.
+
+Chaque message possède un objet position_integrity avec catégorie, borne éventuelle et contexte source. Pour une position CPR, position_integrity_pair conserve les deux membres puis retient le NIC le plus faible et le rayon le plus grand. Chaque moitié utilise son propre contexte causal : un statut reçu entre les deux ne remplit pas rétroactivement l'intégrité de la première. Un même NIC peut correspondre à plusieurs rayons, comparés séparément.
+
+Si une moitié est non interprétable, la qualité de paire reste non déterminée. Si les deux moitiés sont interprétées et l'une annonce NIC 0, la paire reste sans borne finie. Ces limites n'effacent pas les coordonnées ni les paquets. Le rapport conserve octets, instants, indices des deux messages et statuts utilisés. NACp/SIL gardent la provenance du statut du message courant ; leurs probabilités ne sont pas combinées entre moitiés.
+
+Le NIC de surface, les formats GNSS TC20–22 et le NUCp v0 restent hors périmètre. Le contexte garde la limite de dix secondes et l'isolation par analyse et domaine DF/contrôle/adresse.
+
+Douze tests supplémentaires vérifient versions, compléments réservés, conversions NM/mètres, contexte manquant et conservation des sources. La scène IQ synthétique de cinq messages passe de NIC 8 à 9 entre les moitiés. La paire conserve NIC 8 et Rc <185,2 m. Le test navigateur vérifie ce résultat et le JSON ; adsb-cpr-integrity.png documente l'affichage. Cette scène ne constitue pas un nouvel enregistrement RF réel.
+
+Références : tables NIC v1/v2 de [The 1090 Megahertz Riddle](https://mode-s.org/1090mhz/content/ads-b/7-uncertainty.html), avec contrôle de combinaison dans [dump1090, track.c](https://github.com/flightaware/dump1090/blob/master/track.c). Les unités restent exactes : 0,1 NM vaut 185,2 m. Aucun repli automatique sur une combinaison inconnue n'est repris d'une autre bibliothèque.

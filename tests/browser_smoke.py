@@ -114,6 +114,26 @@ def main():
                     assert status_trial['frames'][1]['fields']['velocity']['operational_context']['status_hex']=='8DA05F21F8000000005A3E4E0708'
                     assert status_trial['frames'][3]['fields']['position_quality']['nac_p_code']==10
                     page.screenshot(path='browser-artifacts/adsb-operational-status.png', full_page=True)
+                    from test_adsb_integrity import reference_integrity_iq
+                    integrity_path = Path(adsb_directory)/'integrity.cf32'
+                    reference_integrity_iq().astype('<c8').tofile(integrity_path)
+                    page.locator('#iq-file').set_input_files(str(integrity_path))
+                    page.get_by_role('button', name='Analyser automatiquement').click()
+                    expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'), timeout=30000)
+                    expect(page.locator('#metric-frames')).to_have_text('5')
+                    expect(page.locator('.adsb-position')).to_contain_text('52.25720')
+                    expect(page.locator('.adsb-pair-integrity')).to_contain_text('NIC 8 · Rc < 185.2 m')
+                    expect(page.locator('.adsb-pair-integrity')).not_to_contain_text('95 %')
+                    expect(page.locator('.adsb-position-accuracy').last).to_contain_text('NACp 10')
+                    report_response = page.request.get(urljoin(page.url, page.locator('#download').get_attribute('href')))
+                    assert report_response.ok
+                    trial = next(t for t in report_response.json()['wideband_trials'] if t['decoder']=='adsb_1090es')
+                    latest = trial['frames'][3]['fields']
+                    assert latest['position_integrity']['nic_category']==9
+                    assert latest['position_integrity_pair']['nic_category']==8
+                    assert latest['position_integrity_pair']['members']['odd']['nic_category']==8
+                    assert latest['position_integrity_pair']['members']['even']['nic_category']==9
+                    page.screenshot(path='browser-artifacts/adsb-cpr-integrity.png', full_page=True)
                     page.locator('#file-rate').fill(previous_rate)
                 with tempfile.TemporaryDirectory() as directory:
                     from iqscope import demo

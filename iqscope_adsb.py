@@ -8,7 +8,8 @@ import math
 
 MAX_PAIR_AGE_SECONDS = 10.
 _DERIVED = ('callsign', 'identification_status', 'cpr', 'latitude_deg',
-            'longitude_deg', 'position_evidence', 'velocity', 'operational_status', 'position_quality')
+            'longitude_deg', 'position_evidence', 'velocity', 'operational_status', 'position_quality',
+            'position_integrity', 'position_integrity_pair')
 
 
 def mode_s_remainder(frame):
@@ -158,10 +159,74 @@ def _operational_status(message):
     return value
 
 
+def _airborne_integrity(message, status, evidence):
+    """Interpret defined airborne NIC/Rc combinations; keep reserved bits unknown."""
+    version, tc = status['adsb_version'], message >> 51
+    a, b = status['nic_supplement_a'], (message >> 48) & 1
+    value = {'status': 'reserved_combination', 'type_code': tc,
+             'adsb_version': version, 'operational_context': evidence.copy(),
+             'scope': 'transmitter_declared_NIC_and_containment_bound'}
+    fixed = {9:(11,7.5), 10:(10,25.), 12:(7,370.4), 14:(5,1852.),
+             15:(4,3704.), 17:(1,37040.), 18:(0,None)}
+    if version == 1:
+        value['nic_supplement_s'] = a
+        variable = {11:((8,185.2),(9,75.)), 13:((6,926.),(6,1111.2)),
+                    16:((2,14816.),(3,7408.))}
+        if tc in variable:
+            category, radius = variable[tc][a]
+        elif a == 0 and tc in fixed:
+            category, radius = fixed[tc]
+        else:
+            return value
+    elif version == 2:
+        value.update(nic_supplement_a=a, nic_supplement_b=b)
+        variable = {11:{(0,0):(8,185.2),(1,1):(9,75.)},
+                    13:{(0,0):(6,926.),(0,1):(6,555.6),(1,1):(6,1111.2)},
+                    16:{(0,0):(2,14816.),(1,1):(3,7408.)}}
+        if tc in variable and (a,b) in variable[tc]:
+            category, radius = variable[tc][a,b]
+        elif tc in fixed and (a,b) == (0,0):
+            category, radius = fixed[tc]
+        else:
+            return value
+    else:
+        return dict(value, status='unsupported_version')
+    value['nic_category'] = category
+    value['status'] = 'reported_bound' if radius is not None else 'not_available'
+    if radius is not None:
+        value['containment_radius_bound_m'] = radius
+    return value
+
+
+def _combine_cpr_integrity(records, pairs):
+    """Keep the weakest category and largest radius from two interpreted halves."""
+    for index, even_index, odd_index in pairs:
+        members = {}
+        for parity, source_index in (('even', even_index), ('odd', odd_index)):
+            source = records[source_index]
+            member = deepcopy(source['fields']['position_integrity'])
+            member.update(message_hex=source['hex'], time_seconds=source.get('time_seconds'),
+                          sample_start=source.get('sample_start'))
+            members[parity] = member
+        combined = {'status': 'incomplete_or_uninterpreted_member',
+                    'method': 'minimum_NIC_and_maximum_Rc_across_CPR_pair', 'members': members,
+                    'scope': 'declared_pair_integrity_not_measured_error_or_authentication'}
+        values = list(members.values())
+        if all(v['status'] in ('reported_bound', 'not_available') for v in values):
+            category = min(v['nic_category'] for v in values)
+            combined['nic_category'] = category
+            if category == 0:
+                combined['status'] = 'not_available'
+            else:
+                combined['status'] = 'reported_bound'
+                combined['containment_radius_bound_m'] = max(v['containment_radius_bound_m'] for v in values)
+        records[index]['fields']['position_integrity_pair'] = combined
+
+
 def _apply_operational_context(records, events):
     """Causal, same-domain, recent airborne status only; never backfill."""
     cache = {}
-    for timestamp, index, key, type_code in sorted(events):
+    for timestamp, index, key, type_code, message in sorted(events):
         fields = records[index]['fields']
         if type_code == 31:
             status = fields['operational_status']
@@ -197,6 +262,8 @@ def _apply_operational_context(records, events):
             if nac_v in _NAC_V_HORIZONTAL_BOUND_M_S:
                 velocity['nac_v_status'] = 'reported_bound'
                 velocity['horizontal_velocity_error_95_bound_m_s'] = _NAC_V_HORIZONTAL_BOUND_M_S[nac_v]
+        if 9 <= type_code <= 18:
+            fields['position_integrity'] = _airborne_integrity(message, status, evidence)
         if 'latitude_deg' in fields:
             quality = {
                 'nac_p_code': status['nac_p_code'], 'nac_p_status': status['nac_p_status'],
@@ -220,6 +287,7 @@ def enrich_adsb_frames(frames):
     result = deepcopy(frames)
     timed = []
     operational_events = []
+    cpr_pairs = []
     for index, record in enumerate(result):
         fields = record.setdefault('fields', {})
         for key in _DERIVED:
@@ -248,9 +316,10 @@ def enrich_adsb_frames(frames):
             event_time = record.get('time_seconds')
             if isinstance(event_time, (int, float)) and math.isfinite(event_time) and event_time >= 0:
                 domain = (df, raw[0] & 7 if df == 18 else None, raw[1:4])
-                operational_events.append((event_time, index, domain, tc))
+                operational_events.append((event_time, index, domain, tc, message))
         if not 9 <= tc <= 18:
             continue
+        fields['position_integrity'] = {'status': 'operational_context_required', 'type_code': tc}
         parity = (message >> 34) & 1
         latitude, longitude = (message >> 17) & 131071, message & 131071
         fields['cpr'] = {'format': 'odd' if parity else 'even',
@@ -281,6 +350,7 @@ def enrich_adsb_frames(frames):
         if position is None:
             fields['cpr']['status'] = 'inconsistent_latitude_zones'
             continue
+        cpr_pairs.append((index, even[3], odd[3]))
         fields['latitude_deg'], fields['longitude_deg'] = position
         fields['cpr']['status'] = 'global_airborne_position'
         fields['position_evidence'] = {
@@ -293,4 +363,5 @@ def enrich_adsb_frames(frames):
             'scope': 'derived_from_crc_valid_pair; broadcast not authenticated; no navigation-integrity claim',
         }
     _apply_operational_context(result, operational_events)
+    _combine_cpr_integrity(result, cpr_pairs)
     return result
