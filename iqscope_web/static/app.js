@@ -342,6 +342,27 @@ function showReport(report, jobId) {
       frameList.append(card);
     }
   }
+  for(const trial of report.wideband_trials || []) {
+    if(trial.decoder!=='pocsag' || !trial.messages.length)continue;
+    frameList.append(element('h3',`POCSAG · ${trial.messages.length} message(s) contrôlé(s)`,'frames-title'));
+    frameList.append(element('p','BCH(31,21) et parité paire vérifiés, sans correction. Aucun CRC ; émetteur non authentifié.','hint pocsag-validation'));
+    if(trial.budget_exhausted || trial.input_budget_reached)frameList.append(element('p','Recherche POCSAG partielle : une limite de traitement est atteinte.','hint'));
+    for(const message of trial.messages) {
+      const card=element('div',undefined,'frame pocsag-message');
+      const f=message.fields;
+      card.append(element('h3',`POCSAG ${message.nominal_baud} · adresse ${f.capcode}`,'pocsag-address'));
+      card.append(element('p',`Fonction ${f.function} · ${message.baud.toFixed(2)} bauds · t=${message.time_seconds.toFixed(6)} s`));
+      if(message.channel && Number.isFinite(message.channel.frequency_hz))card.append(element('p',`Canal ${formatFrequency(message.channel.frequency_hz)}`));
+      if(f.message_format==='tone_only')card.append(element('p','Appel sans message.','pocsag-tone-only'));
+      else if(f.text!==undefined) {
+        card.append(element('p',f.message_format==='numeric'?'Message numérique · espaces finaux conservés':'Message IA5 / ASCII de base','pocsag-format'));
+        card.append(element('pre',f.text,'pocsag-text'));
+        if(f.reserved_character_present)card.append(element('p','Caractère réservé reçu : code brut conservé dans le rapport.','hint'));
+      } else card.append(element('p','Fonction sans interprétation standard sélectionnée ; bits conservés dans le rapport.','hint pocsag-raw'));
+      frameList.append(card);
+    }
+    if(trial.artifact){const link=element('a','Télécharger les messages POCSAG (JSON)');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
+  }
   if(ax25Frames.length)frameList.append(element('h3',`AX.25 UI · ${ax25Frames.length} trame(s) CRC valide(s)`,'frames-title'));
   for(const trial of ax25Trials){
     if(trial.frontend==='bpsk_g3ruh' && !trial.frames.length && trial.stream_diagnostics?.some(d=>d.flags_observed))frameList.append(element('p','BPSK : fanions HDLC observés, aucune trame AX.25 UI validée. Le rapport détaille les rejets ; aucune charge utile binaire n’est déduite.','hint psk-ax25-unresolved'));

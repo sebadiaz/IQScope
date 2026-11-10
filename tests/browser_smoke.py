@@ -135,6 +135,39 @@ def main():
                     assert latest['position_integrity_pair']['members']['even']['nic_category']==9
                     page.screenshot(path='browser-artifacts/adsb-cpr-integrity.png', full_page=True)
                     page.locator('#file-rate').fill(previous_rate)
+                # Independent POCSAG FSK IQ: actual import, safe text and JSON export.
+                from test_pocsag import reference_pocsag_iq, TEXT as POCSAG_TEXT
+                with tempfile.TemporaryDirectory() as pager_directory:
+                    pager_path = Path(pager_directory)/'pager.cf32'
+                    reference_pocsag_iq().astype('<c8').tofile(pager_path)
+                    previous_rate = page.locator('#file-rate').input_value()
+                    page.locator('#iq-file').set_input_files(str(pager_path))
+                    page.locator('#file-rate').fill('24000')
+                    page.get_by_role('button', name='Analyser automatiquement').click()
+                    expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'), timeout=30000)
+                    expect(page.locator('.pocsag-message')).to_have_count(1)
+                    expect(page.locator('.pocsag-address')).to_contain_text('1200 · adresse 1234567')
+                    expect(page.locator('.pocsag-text')).to_have_text(POCSAG_TEXT)
+                    expect(page.locator('.pocsag-message b')).to_have_count(0)
+                    expect(page.locator('.pocsag-validation')).to_contain_text('Aucun CRC')
+                    expect(page.locator('#metric-frames')).to_have_text('0')
+                    with page.expect_download() as event:
+                        page.get_by_role('link', name='Télécharger les messages POCSAG (JSON)').click()
+                    import json
+                    pager_report = json.loads(Path(event.value.path()).read_text())
+                    pager_message = pager_report['messages'][0]
+                    assert pager_message['fields']['text']==POCSAG_TEXT
+                    assert pager_message['fields']['function']==3
+                    assert pager_message['bch_valid'] and pager_message['even_parity_valid']
+                    assert len(pager_message['batch_sync_bit_starts'])==2
+                    page.screenshot(path='browser-artifacts/pocsag.png', full_page=True)
+                    reference_pocsag_iq(text='00123 45-67', function=0).astype('<c8').tofile(pager_path)
+                    page.locator('#iq-file').set_input_files(str(pager_path))
+                    page.get_by_role('button', name='Analyser automatiquement').click()
+                    expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'), timeout=30000)
+                    expect(page.locator('.pocsag-format')).to_contain_text('Message numérique')
+                    expect(page.locator('.pocsag-text')).to_contain_text('00123 45-67')
+                    page.locator('#file-rate').fill(previous_rate)
                 with tempfile.TemporaryDirectory() as directory:
                     from iqscope import demo
                     meta = demo(directory)
