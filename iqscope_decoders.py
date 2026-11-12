@@ -34,7 +34,7 @@ CAPABILITIES = (
     Capability('cw_morse', 'CW / Morse', 'A-Z and 0-9; automatic stationary carrier and 5-50 WPM timing; bounded channel search', 'timing only; no checksum'),
     Capability('rtty_ita2', 'RTTY / ITA2', '45.45/50/75/100 baud, blind tones and polarity; bounded stationary wideband channel search', 'framing only; no checksum'),
     Capability('adsb_1090es', 'Mode S / ADS-B', 'DF17/18 CRC-valid frames; callsign, TC19 velocity, TC31 v1/v2 quality/status; global airborne CPR and conservative pair NIC/Rc under recent status; TC9-18 pairs within 10s; DF17/DF18 CF0/1; >=2 MS/s', 'CRC-24'),
-    Capability('pocsag', 'POCSAG paging', '512/1200/2400 baud on stationary 2-FSK candidates or demodulated receiver audio; exact batch sync, capcodes, numeric function 0 and IA5 function 3; bounded complete messages', 'BCH(31,21) and even parity without correction; no CRC or authentication; synthetic IQ and independent laboratory receiver-audio references'),
+    Capability('pocsag', 'POCSAG paging', '512/1200/2400 baud on stationary 2-FSK candidates or demodulated receiver audio; exact batch sync, capcodes, numeric function 0 and IA5 function 3; bounded complete messages', 'BCH(31,21) plus even parity; at most two corrected bits per complete message, received words retained; no CRC or authentication; synthetic IQ and laboratory audio references'),
 )
 
 

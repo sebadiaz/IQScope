@@ -18,8 +18,9 @@ suivante doit alors apparaître à l'emplacement attendu, après 544 bits.
 
 Les mots d'adresse, de données et de terminaison doivent satisfaire le
 BCH(31,21), de générateur x¹⁰+x⁹+x⁸+x⁶+x⁵+x³+1, et la parité paire du mot complet.
-Il n'y a **aucune correction d'erreur** dans cette première version. Un mot
-corrompu ou une rupture de synchronisation abandonne le message ouvert.
+Une correction bornée à **deux bits sur le message complet** est disponible,
+comme décrit ci-dessous. Un mot non corrigeable ou une rupture de synchronisation
+abandonne le message ouvert.
 L'adresse ou l'idle suivant termine le message ; une fin de capture n'est pas
 interprétée comme une terminaison. Des messages indépendants suivants peuvent
 encore être reçus. Les répétitions sont conservées.
@@ -64,10 +65,53 @@ filtrée à 192 kéch/s vérifie la découverte du canal malgré une porteuse pl
 forte. Un autre test importe les IQ dans Chromium, contrôle le texte et les
 chiffres, télécharge le JSON et vérifie l'absence d'interprétation HTML.
 
-Les références IQ ci-dessus sont **synthétiques**. La correction BCH, les alphabets
+Les références IQ ci-dessus sont **synthétiques**. Les alphabets
 nationaux, les formats propriétaires, FLEX/ERMES et la continuité entre instantanés
 restent à réaliser. La validation audio indépendante suivante ne fournit pas les
 IQ RF d'origine.
+
+## Correction BCH bornée et conservation des mots reçus
+
+Le code BCH(31,21) est complété par sa parité paire. Le décodeur calcule un
+syndrome composé des dix bits de reste polynomial et de cette parité. Une table
+de 529 masques couvre zéro, une ou deux inversions parmi les 32 positions ; la
+construction exige des syndromes distincts. Le mot proposé est contrôlé à
+nouveau après correction. La synchronisation de lot reste toujours exacte :
+elle n'utilise pas cette table.
+
+Par défaut, **la somme des corrections d'adresse, de données et de terminaison
+ne dépasse pas deux bits**. Deux mots ayant chacun deux erreurs font donc
+refuser le message. Un mot d'adresse peut terminer un message et ouvrir le
+suivant ; sa preuve apparaît dans chacun des messages concernés, selon son rôle.
+Il n'existe pas de compteur global additionnant ces preuves comme autant de
+bits physiques distincts. Le paramètre `max_corrected_bits=0` sélectionne le
+contrôle strict, et la valeur 1 limite la somme à un seul bit.
+
+`codewords_hex` et `terminator_hex` conservent les mots récupérés, après choix de
+polarité et avant correction. `decoded_codewords_hex` et
+`decoded_terminator_hex` contiennent ceux utilisés pour les champs interprétés.
+La liste `corrections` précise rôle, indice de bit dans le candidat, deux mots
+hexadécimaux et positions changées, numérotées de 1 (bit fort) à 32 (parité).
+`received_bch_parity_valid` distingue les mots reçus déjà valides ;
+`validation_stage` indique si une correction a été appliquée. `bch_valid` et
+`even_parity_valid` portent sur les mots finalement utilisés. L'interface affiche
+le nombre de bits corrigés et laisse le compteur CRC inchangé.
+
+La décision choisit un mot valide dans un rayon de deux bits. Quand davantage
+d'erreurs se produisent, un autre mot valide peut se trouver dans ce rayon : ce
+contrôle ne prouve donc pas la valeur initialement émise. La limite globale et
+la synchronisation exacte restent nécessaires ; aucun CRC ou mécanisme
+d'authentification supplémentaire n'est introduit.
+
+Huit tests supplémentaires couvrent 2 112 injections d'une ou deux erreurs sur
+quatre mots de référence, puis 14 880 injections de trois erreurs sur trois mots
+(toutes refusées). Ils vérifient également la limite globale, les trois rôles,
+les sources conservées, l'adresse partagée entre messages, le mode strict et la
+récupération automatique sur IQ et audio synthétiques. Un test Chromium est
+préparé pour le texte corrigé, l'indication de deux bits, le compteur CRC et les
+deux mots distincts dans le JSON. Les huit captures audio indépendantes restent
+des références sans correction : elles ne démontrent pas un gain sur signal
+radio corrompu.
 
 ## Audio FM démodulé et références indépendantes
 

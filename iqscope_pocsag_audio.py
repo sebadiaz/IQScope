@@ -5,7 +5,7 @@ from scipy import ndimage
 from iqscope_pocsag import decode_pocsag
 
 
-def decode_pocsag_audio(audio, fs, max_seconds=20, max_edges=50000):
+def decode_pocsag_audio(audio, fs, max_seconds=20, max_edges=50000, max_corrected_bits=2):
     """Fit three standard clock hypotheses, then require strict batch/BCH checks.
 
     All transitions constrain a single clock per window. A rate alias may fit
@@ -58,7 +58,7 @@ def decode_pocsag_audio(audio, fs, max_seconds=20, max_edges=50000):
                     candidates.append(dict(bits=''.join(map(str, bits.astype(int).tolist())),
                                            parameters=dict(baud=baud, first_symbol_center_seconds=float(centers[0]/fs)),
                                            timing_evidence=diagnostic))
-    trial = decode_pocsag(candidates)
+    trial = decode_pocsag(candidates, max_corrected_bits=max_corrected_bits)
     for message in trial['messages']:
         message['frontend'] = 'receiver_audio_discriminator'
         message['frequency_reference'] = 'demodulated_audio_levels_no_RF_frequency'
@@ -72,7 +72,7 @@ def decode_pocsag_audio(audio, fs, max_seconds=20, max_edges=50000):
         'Demodulated FM/discriminator audio levels, not original RF IQ or AFSK tones.',
         'Single global clock fit per bounded window; rate +/-3% and transition residual <=0.15 symbol.',
         'At most 20 seconds and 50000 transitions; no burst search or adaptive baseline/clock tracking.',
-        'Only a complete message with exact sync and BCH/parity supplies decoded content; no error correction.',
+        'Only complete messages with exact sync and BCH/parity after at most two corrected bits over the message; no sync repair.',
         'Basic IA5 function 3 and numeric function 0; no identity authentication or inferred RF center.',
     ]
     return trial

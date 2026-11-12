@@ -80,7 +80,7 @@ def analyze_audio(path,out,seconds=20):
               'audio_artifact':'audio-preview.wav','signals':[],'wideband_trials':[cw,rtty,afsk,psk,psk_ax25,ao40,pocsag],
               'spectrum':{'frequency_hz':frequency.tolist(),'power_db':power_db.tolist()},
               'waterfall':{'power_db':waterfall.tolist(),'time_seconds':(starts/fs).tolist(),'sampled_windows':True},
-              'capabilities':[{'id':'pocsag','family':'POCSAG receiver audio','validation':'Exact batch sync, BCH(31,21) and even parity; no correction or CRC'},
+              'capabilities':[{'id':'pocsag','family':'POCSAG receiver audio','validation':'Exact batch sync, BCH(31,21) plus even parity; at most two corrected bits per complete message; no CRC'},
                               {'id':'ao40_fec','family':'AO-40 FEC / DBPSK','validation':'Viterbi and two Reed-Solomon parity checks; no CRC'},
                               {'id':'psk_generic','family':'BPSK / QPSK receiver audio','validation':'phase/timing candidates; BPSK G3RUH AX.25 UI has separate CRC-16/X-25 checks'},
                               {'id':'cw_morse','family':'CW / Morse','validation':'timing candidates only; no checksum'},

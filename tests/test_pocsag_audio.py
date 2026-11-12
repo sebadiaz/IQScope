@@ -83,7 +83,7 @@ class PocsagAudioTests(unittest.TestCase):
         bits = transmission()
         index = 1088+15  # One information bit in the first message codeword.
         damaged = bits[:index]+('0' if bits[index]=='1' else '1')+bits[index+1:]
-        trial = decode_pocsag_audio(reference_audio(bits_override=damaged), 8000)
+        trial = decode_pocsag_audio(reference_audio(bits_override=damaged), 8000, max_corrected_bits=0)
         self.assertFalse(trial['messages'])
         self.assertGreater(trial['invalid_codewords'], 0)
 

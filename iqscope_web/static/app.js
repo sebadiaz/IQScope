@@ -345,13 +345,14 @@ function showReport(report, jobId) {
   for(const trial of report.wideband_trials || []) {
     if(trial.decoder!=='pocsag' || !trial.messages.length)continue;
     frameList.append(element('h3',`POCSAG · ${trial.messages.length} message(s) contrôlé(s)`,'frames-title'));
-    frameList.append(element('p','BCH(31,21) et parité paire vérifiés, sans correction. Aucun CRC ; émetteur non authentifié.','hint pocsag-validation'));
+    frameList.append(element('p',`BCH(31,21) et parité paire vérifiés · au plus ${trial.budgets?.corrected_bits_per_message ?? 0} bits corrigés par message. Aucun CRC ; émetteur non authentifié.`,'hint pocsag-validation'));
     if(trial.budget_exhausted || trial.input_budget_reached || trial.duration_limited || trial.edge_budget_reached)frameList.append(element('p','Recherche POCSAG partielle : une limite de traitement est atteinte.','hint'));
     for(const message of trial.messages) {
       const card=element('div',undefined,'frame pocsag-message');
       const f=message.fields;
       card.append(element('h3',`POCSAG ${message.nominal_baud} · adresse ${f.capcode}`,'pocsag-address'));
       card.append(element('p',`Fonction ${f.function} · ${message.baud.toFixed(2)} bauds · t=${message.time_seconds.toFixed(6)} s`));
+      if(message.corrected_bits)card.append(element('p',`Correction BCH : ${message.corrected_bits} bit${message.corrected_bits>1?'s':''} sur le message complet, terminaison comprise. Mots reçus conservés dans le JSON.`,'hint pocsag-corrections'));
       if(message.frontend==='receiver_audio_discriminator')card.append(element('p','Audio démodulé · aucun centre RF déduit.','hint pocsag-audio-reference'));
       if(message.channel && Number.isFinite(message.channel.frequency_hz))card.append(element('p',`Canal ${formatFrequency(message.channel.frequency_hz)}`));
       if(f.message_format==='tone_only')card.append(element('p','Appel sans message.','pocsag-tone-only'));

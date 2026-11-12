@@ -134,7 +134,7 @@ not been tested in this development environment.
 | CW / Morse | Automatic carrier, speed and A–Z / 0–9 text candidates | Stationary on-off keying, 5–50 WPM, standard spacing; timing only, no checksum |
 | RTTY / ITA2 | Text candidates, raw character codes, automatic common baud rates/tones/polarity | Direct IQ at 1–12 kS/s or bounded stationary-channel search up to 2.4 MS/s, 5-bit LSB-first with at least 1.5 stop bits; framing only, no checksum |
 | Mode S / ADS-B | DF17/DF18 CRC-24 packets, address/type and barometric altitude; callsign, TC19 velocities and global airborne CPR position for DF17 and DF18 CF0/1 | Clean captures >=2 MS/s; TC9–18 even/odd pairs within 10 seconds in one analysis; no surface/local CPR, general Mode S parity overlays, collisions or bit-error correction |
-| POCSAG | Capcodes, numeric messages and basic IA5 text from automatic 2-FSK candidates or demodulated receiver audio; JSON export | 512/1200/2400 baud, exact batch sync and error-free BCH/parity, complete messages only; synthetic IQ plus eight independent laboratory audio captures; no error correction or cross-analysis state |
+| POCSAG | Capcodes, numeric messages and basic IA5 text from automatic 2-FSK candidates or demodulated receiver audio; JSON export | 512/1200/2400 baud, exact batch sync and BCH/parity checks; at most two corrected bits over the complete message, received words retained; synthetic IQ plus eight laboratory audio captures; no cross-analysis state |
 
 The capability registry distinguishes analog interpretations from validated
 packet integrity. A CRC does **not** authenticate a transmitter. For DF18, the
@@ -143,7 +143,10 @@ address is not automatically labeled as an ICAO identity.
 [POCSAG paging](docs/POCSAG.md) is also tried automatically on recovered 2-FSK
 bits, for both polarities. The UI displays capcodes, numeric strings with leading
 zeros preserved, and standard function-3 IA5 text; raw words and content are
-downloadable as JSON. BCH(31,21) and even parity are checked without correction.
+downloadable as JSON. BCH(31,21) and even parity are checked after at most two
+corrected bits over a complete message, including its terminator. Raw received
+words, decoded words and changed bit positions are exported separately; the UI
+labels repairs. Setting `max_corrected_bits=0` on the parser selects strict checks.
 These messages have their own section and do not increase the CRC frame counter.
 Receiver-audio import also tries POCSAG automatically on demodulated FM levels.
 Eight pinned RadioLib/GQRX laboratory WAV recordings each yield a checked message

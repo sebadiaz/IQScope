@@ -167,6 +167,26 @@ def main():
                     expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'), timeout=30000)
                     expect(page.locator('.pocsag-format')).to_contain_text('Message numérique')
                     expect(page.locator('.pocsag-text')).to_contain_text('00123 45-67')
+                    # A checked BCH repair must be visible and preserve received words.
+                    from test_pocsag import transmission, message_words
+                    damaged_words = message_words()
+                    damaged_words[15] ^= (1 << 15) | (1 << 11)
+                    reference_pocsag_iq(bits_override=transmission(damaged_words)).astype('<c8').tofile(pager_path)
+                    page.locator('#iq-file').set_input_files(str(pager_path))
+                    page.get_by_role('button', name='Analyser automatiquement').click()
+                    expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'), timeout=30000)
+                    expect(page.locator('.pocsag-text')).to_have_text(POCSAG_TEXT)
+                    expect(page.locator('.pocsag-corrections')).to_contain_text('2 bits')
+                    expect(page.locator('#metric-frames')).to_have_text('0')
+                    response = page.request.get(urljoin(page.url, page.locator('#download').get_attribute('href')))
+                    assert response.ok
+                    repaired = next(t for t in response.json()['wideband_trials'] if t['decoder']=='pocsag')['messages'][0]
+                    assert repaired['corrected_bits']==2
+                    assert repaired['validation_stage']=='after_BCH_correction'
+                    assert not repaired['received_bch_parity_valid']
+                    assert repaired['codewords_hex'][1]!=repaired['decoded_codewords_hex'][1]
+                    assert repaired['corrections'][0]['role']=='message'
+                    page.screenshot(path='browser-artifacts/pocsag-bch.png', full_page=True)
                     if os.environ.get('IQSCOPE_TEST_POCSAG_RADIO')=='1':
                         from scripts.pocsag_radio_reference import PUBLISHED_TEXT
                         page.locator('#input-kind').select_option('audio')

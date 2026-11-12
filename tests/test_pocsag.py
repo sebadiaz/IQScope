@@ -54,8 +54,8 @@ def candidate(bits, baud=1200, origin=.125):
                 channel=dict(offset_hz=35000, frequency_hz=153035000, sample_rate=24000))
 
 
-def reference_pocsag_iq(fs=24000, baud=1200, inverted=False, text=TEXT, function=3):
-    bits = transmission(message_words(text=text, function=function))+'10'*64
+def reference_pocsag_iq(fs=24000, baud=1200, inverted=False, text=TEXT, function=3, bits_override=None):
+    bits = (bits_override if bits_override is not None else transmission(message_words(text=text, function=function)))+'10'*64
     states = np.array(list(map(int, bits)))
     if inverted:
         states = 1-states
@@ -130,7 +130,7 @@ class PocsagTests(unittest.TestCase):
         for index in range(len(words)):
             for mask in (1, 1 << 17, 3):
                 damaged = words.copy(); damaged[index] ^= mask
-                result = decode_pocsag([candidate(transmission(damaged))])
+                result = decode_pocsag([candidate(transmission(damaged))], max_corrected_bits=0)
                 self.assertFalse(result['messages'], (index, mask))
                 self.assertGreater(result['invalid_codewords'], 0)
 
@@ -200,7 +200,7 @@ class PocsagTests(unittest.TestCase):
 
     def test_corruption_does_not_prevent_a_later_independent_message(self):
         words = message_words(); words[15] ^= 1 << 23
-        result = decode_pocsag([candidate(transmission(words)+transmission())])
+        result = decode_pocsag([candidate(transmission(words)+transmission())], max_corrected_bits=0)
         self.assertEqual(len(result['messages']), 1)
         self.assertEqual(result['messages'][0]['fields']['text'], TEXT)
         self.assertGreater(result['incomplete_messages'], 0)
