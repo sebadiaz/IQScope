@@ -167,6 +167,32 @@ def main():
                     expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'), timeout=30000)
                     expect(page.locator('.pocsag-format')).to_contain_text('Message numérique')
                     expect(page.locator('.pocsag-text')).to_contain_text('00123 45-67')
+                    if os.environ.get('IQSCOPE_TEST_POCSAG_RADIO')=='1':
+                        from scripts.pocsag_radio_reference import PUBLISHED_TEXT
+                        page.locator('#input-kind').select_option('audio')
+                        page.locator('#iq-file').set_input_files('corpus-cache/pocsag-radio/lab/pager_addr0.wav')
+                        page.get_by_role('button', name='Analyser automatiquement').click()
+                        expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'), timeout=30000)
+                        expect(page.locator('.pocsag-message')).to_have_count(1)
+                        expect(page.locator('.pocsag-address')).to_contain_text('adresse 1100000')
+                        expect(page.locator('.pocsag-text')).to_have_text(PUBLISHED_TEXT)
+                        expect(page.locator('.pocsag-audio-reference')).to_contain_text('aucun centre RF')
+                        expect(page.locator('#metric-frames')).to_have_text('0')
+                        response = page.request.get(urljoin(page.url, page.locator('#download').get_attribute('href')))
+                        assert response.ok
+                        recording_report = response.json()
+                        assert recording_report['source_kind']=='receiver_audio'
+                        assert recording_report['center_frequency_hz'] is None
+                        recording_trial = next(t for t in recording_report['wideband_trials'] if t['decoder']=='pocsag')
+                        assert recording_trial['messages'][0]['fields']['text']==PUBLISHED_TEXT
+                        assert recording_trial['messages'][0]['channel'] is None
+                        assert recording_trial['messages'][0]['corrected_bits']==0
+                        with page.expect_download() as event:
+                            page.get_by_role('link', name='Télécharger les messages POCSAG (JSON)').click()
+                        assert json.loads(Path(event.value.path()).read_text())==recording_trial
+                        page.screenshot(path='browser-artifacts/pocsag-radio.png', full_page=True)
+                        page.locator('#input-kind').select_option('iq')
+                        page.locator('#iq-file').set_input_files(str(pager_path))
                     page.locator('#file-rate').fill(previous_rate)
                 with tempfile.TemporaryDirectory() as directory:
                     from iqscope import demo

@@ -11,7 +11,7 @@
 <div class="tabs" role="tablist" aria-label="Type de source"><button id="tab-file" role="tab" aria-selected="true" aria-controls="file-panel" class="active">Fichier</button><button id="tab-live" role="tab" aria-selected="false" aria-controls="live-panel">SDR en direct</button></div>
 <section id="file-panel" role="tabpanel" aria-labelledby="tab-file">
 <label class="field">Nature du fichier<select id="input-kind"><option value="iq">Capture IQ RF</option><option value="audio">Audio de récepteur · MP3 / WAV</option></select></label>
-<p class="hint" id="audio-input-hint" hidden>Audio : 1 à 20 secondes, lecture et essais Morse/RTTY/PSK et AX.25 AFSK1200 ou BPSK G3RUH, et AO-40 FEC. Les fréquences affichées sont audio, pas RF. Nécessite ffmpeg sur cette machine.</p>
+<p class="hint" id="audio-input-hint" hidden>Audio : 1 à 20 secondes, essais Morse/RTTY/PSK, AX.25 AFSK1200 ou BPSK G3RUH, POCSAG sur audio FM démodulé et AO-40 FEC. Les fréquences affichées sont audio, pas RF. Nécessite ffmpeg sur cette machine.</p>
 <label class="upload" for="iq-file"><span class="upload-icon">↥</span><strong>Ouvrir une capture</strong><span id="filename">SigMF · WAV IQ · .sdriq · .cf32</span><input id="iq-file" type="file" accept=".sigmf-data,.cf32,.iq,.bin,.wav,.sdriq"></label>
 <label class="field">Métadonnées SigMF <span>recommandé</span><input id="meta-file" type="file" accept=".sigmf-meta,.json"></label>
 <label class="field">Fréquence d’échantillonnage <span>fichier brut uniquement</span><div class="input-unit"><input id="file-rate" type="number" min="1000" max="20000000" value="1024000"><span>éch/s</span></div></label>

@@ -14,6 +14,8 @@ from iqscope_ao40 import search_ao40_audio, write_ao40_artifacts
 from iqscope_psk_audio import search_audio_psk
 from iqscope_psk import write_psk_artifacts
 from iqscope_ax25 import decode_psk_ax25, write_psk_ax25_artifacts
+from iqscope_pocsag_audio import decode_pocsag_audio
+from iqscope_pocsag import write_pocsag_artifact
 
 
 def decode_audio(path,seconds=20):
@@ -52,6 +54,8 @@ def analyze_audio(path,out,seconds=20):
     cw = search_cw(analytic,fs)
     afsk = decode_afsk1200(audio,fs)
     rtty = decode_rtty(analytic,fs)
+    pocsag = decode_pocsag_audio(audio,fs)
+    write_pocsag_artifact(pocsag,out)
     rtty['frequency_reference'] = 'audio_hz'
     for candidate in rtty['candidates']:
         p = candidate['parameters']
@@ -73,10 +77,11 @@ def analyze_audio(path,out,seconds=20):
               'sample_rate':fs,'center_frequency_hz':None,'frequency_reference':'audio_hz',
               'analyzed_seconds':len(audio)/fs,'requested_seconds':seconds,
               'duration_scope':'At most the requested first audio seconds; source duration is not measured.',
-              'audio_artifact':'audio-preview.wav','signals':[],'wideband_trials':[cw,rtty,afsk,psk,psk_ax25,ao40],
+              'audio_artifact':'audio-preview.wav','signals':[],'wideband_trials':[cw,rtty,afsk,psk,psk_ax25,ao40,pocsag],
               'spectrum':{'frequency_hz':frequency.tolist(),'power_db':power_db.tolist()},
               'waterfall':{'power_db':waterfall.tolist(),'time_seconds':(starts/fs).tolist(),'sampled_windows':True},
-              'capabilities':[{'id':'ao40_fec','family':'AO-40 FEC / DBPSK','validation':'Viterbi and two Reed-Solomon parity checks; no CRC'},
+              'capabilities':[{'id':'pocsag','family':'POCSAG receiver audio','validation':'Exact batch sync, BCH(31,21) and even parity; no correction or CRC'},
+                              {'id':'ao40_fec','family':'AO-40 FEC / DBPSK','validation':'Viterbi and two Reed-Solomon parity checks; no CRC'},
                               {'id':'psk_generic','family':'BPSK / QPSK receiver audio','validation':'phase/timing candidates; BPSK G3RUH AX.25 UI has separate CRC-16/X-25 checks'},
                               {'id':'cw_morse','family':'CW / Morse','validation':'timing candidates only; no checksum'},
                               {'id':'rtty_ita2','family':'RTTY / ITA2','validation':'framing candidates only; no checksum'},
@@ -84,7 +89,7 @@ def analyze_audio(path,out,seconds=20):
               'limitations':['Receiver audio, not original RF IQ; no RF center, phase or original bandwidth can be recovered.',
                              'PSK trials use derived analytic audio with 2x interpolation, not original RF IQ; G3RUH/AX.25 UI is separately CRC-checked.',
                              'Mono mixdown at 8 kHz; stereo cancellation and lossy compression may affect results.',
-                             'CW/RTTY/PSK candidates, AFSK1200/BPSK G3RUH AX.25 UI and standard AO-40 FEC; no voice transcription or military protocol decoding.',
+                             'CW/RTTY/PSK candidates, AFSK1200/BPSK G3RUH AX.25 UI, POCSAG levels and standard AO-40 FEC; no voice transcription or military protocol decoding.',
                              'First 1–20 seconds only; CW/RTTY text is candidate content; AX.25 FCS does not establish sender identity.',
                              'RTTY tests at most the first 12 seconds; PSK tests at most four three-second windows.']}
     if cw['candidates']:

@@ -257,15 +257,15 @@ function showReport(report, jobId) {
   }
 
   if(audioPlot){
-    frameList.append(element('h3','Audio de récepteur · Morse, RTTY, PSK et AX.25'));
-    frameList.append(element('p','Fréquences audio uniquement. Morse/RTTY : textes candidats sans CRC. AX.25 : structure et CRC vérifiés.','hint'));
+    frameList.append(element('h3','Audio de récepteur · Morse, RTTY, PSK, AX.25 et POCSAG'));
+    frameList.append(element('p','Fréquences audio uniquement. Morse/RTTY : textes candidats sans CRC. AX.25 : structure et CRC vérifiés. POCSAG : BCH/parité vérifiés, sans CRC.','hint'));
     frameList.append(element('p',`Début de l’enregistrement : ${report.analyzed_seconds.toFixed(2)} s analysées (maximum demandé ${report.requested_seconds} s).`,'hint'));
     if(report.frame_artifact){const link=element('a','Télécharger les trames AX.25 validées');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(report.frame_artifact)}`;link.download=report.frame_artifact;frameList.append(link);}
     if(report.audio_artifact){
       const player=element('audio');player.id='audio-preview';player.controls=true;player.preload='none';
       player.src=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(report.audio_artifact)}`;frameList.append(player);
     }
-    if(!(report.wideband_trials || []).some(t=>t.candidates?.length))frameList.append(element('p','Aucun texte Morse ou RTTY cohérent dans cet extrait.','hint'));
+    if(!(report.wideband_trials || []).some(t=>t.candidates?.length || t.messages?.length || t.frames?.length))frameList.append(element('p','Aucun contenu décodé dans cet extrait.','hint'));
   }
   if(!audioPlot)frameList.append(element('h3',`Mode S / ADS-B · ${frames.length} paquet(s) CRC valide(s)`,'frames-title'));
   if(!audioPlot && sampleRate<2e6) frameList.append(element('p','Recherche ADS-B non applicable : il faut au moins 2 Méch/s.','hint'));
@@ -346,12 +346,13 @@ function showReport(report, jobId) {
     if(trial.decoder!=='pocsag' || !trial.messages.length)continue;
     frameList.append(element('h3',`POCSAG · ${trial.messages.length} message(s) contrôlé(s)`,'frames-title'));
     frameList.append(element('p','BCH(31,21) et parité paire vérifiés, sans correction. Aucun CRC ; émetteur non authentifié.','hint pocsag-validation'));
-    if(trial.budget_exhausted || trial.input_budget_reached)frameList.append(element('p','Recherche POCSAG partielle : une limite de traitement est atteinte.','hint'));
+    if(trial.budget_exhausted || trial.input_budget_reached || trial.duration_limited || trial.edge_budget_reached)frameList.append(element('p','Recherche POCSAG partielle : une limite de traitement est atteinte.','hint'));
     for(const message of trial.messages) {
       const card=element('div',undefined,'frame pocsag-message');
       const f=message.fields;
       card.append(element('h3',`POCSAG ${message.nominal_baud} · adresse ${f.capcode}`,'pocsag-address'));
       card.append(element('p',`Fonction ${f.function} · ${message.baud.toFixed(2)} bauds · t=${message.time_seconds.toFixed(6)} s`));
+      if(message.frontend==='receiver_audio_discriminator')card.append(element('p','Audio démodulé · aucun centre RF déduit.','hint pocsag-audio-reference'));
       if(message.channel && Number.isFinite(message.channel.frequency_hz))card.append(element('p',`Canal ${formatFrequency(message.channel.frequency_hz)}`));
       if(f.message_format==='tone_only')card.append(element('p','Appel sans message.','pocsag-tone-only'));
       else if(f.text!==undefined) {

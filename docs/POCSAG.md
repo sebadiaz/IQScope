@@ -1,7 +1,8 @@
 # Réception automatique POCSAG
 
-L'analyse IQ par fichier et par instantané SDR applique désormais un parseur
-POCSAG aux candidats de la chaîne 2-FSK. Il fournit les adresses numériques
+L'analyse IQ par fichier et par instantané SDR applique un parseur
+POCSAG aux candidats de la chaîne 2-FSK. L'import audio dispose également d'un
+frontal pour les niveaux issus d'un récepteur FM démodulé. Le parseur fournit les adresses numériques
 « capcodes », les fonctions, le texte ou les chiffres et les mots reçus. Aucun
 réglage de polarité, de phase de mot ou de débit n'est demandé à l'utilisateur.
 
@@ -63,7 +64,55 @@ filtrée à 192 kéch/s vérifie la découverte du canal malgré une porteuse pl
 forte. Un autre test importe les IQ dans Chromium, contrôle le texte et les
 chiffres, télécharge le JSON et vérifie l'absence d'interprétation HTML.
 
-Ces références sont **synthétiques**. Aucun enregistrement RF POCSAG indépendant
-n'a encore été validé. La correction BCH, les alphabets nationaux, les formats
-propriétaires, le frontal audio FM, FLEX/ERMES et la continuité entre instantanés
-restent à réaliser.
+Les références IQ ci-dessus sont **synthétiques**. La correction BCH, les alphabets
+nationaux, les formats propriétaires, FLEX/ERMES et la continuité entre instantanés
+restent à réaliser. La validation audio indépendante suivante ne fournit pas les
+IQ RF d'origine.
+
+## Audio FM démodulé et références indépendantes
+
+Le mode **Audio de récepteur** essaie automatiquement POCSAG sur les niveaux du
+WAV/MP3 décodé en mono à 8 kHz. Il ajuste une horloge à partir des transitions
+pour chacun des trois débits standard ; seules les hypothèses à ±3 % et à résidu
+RMS inférieur ou égal à 0,15 symbole sont retenues. Les contrôles de lot,
+BCH/parité et terminaison restent ensuite nécessaires pour publier un message.
+Un alias d'horloge seul ne fournit donc pas de contenu. Les fréquences RF et les
+caractéristiques I/Q ne sont pas reconstruites depuis cet audio.
+
+Le frontal est borné à vingt secondes et 50 000 transitions. Il ajuste une
+horloge globale dans la fenêtre, sans recherche de salves ni suivi adaptatif du
+seuil. Un enregistrement trop silencieux, déformé, compressé ou discontinu peut
+être refusé. Huit nouveaux tests vérifient débits et polarités, écarts d'horloge,
+contenu numérique, erreur BCH, bruits/tons/AFSK négatifs, fenêtres séparées,
+bornes, import WAV et export JSON. Les tests IQ existants restent distincts.
+
+Le corpus [POCSAG-Decoder de Rob Ruark](https://github.com/rrruark/POCSAG-Decoder/tree/9c484c54d8afcde5357e1c170df43a865ac2bf7a)
+apporte huit captures de laboratoire : transmissions de test RadioLib,
+enregistrement GQRX, puis filtrage et découpage par l'auteur. Leur format est du
+WAV mono à 48 kHz ; le chemin d'import habituel réalise le rééchantillonnage.
+Chaque fichier fournit un message à contrôles BCH/parité valides, sans
+correction, vers les capcodes 1100000–1100005, 1100007 et 1100008. Le débit
+estimé est proche de 1 199,1 bauds. Cela valide ces captures audio préparées à
+1 200 bauds, sans généraliser aux réseaux en service ou à tous les récepteurs.
+
+La phrase de démonstration et le capcode 1100004 figurent dans le README de
+l'auteur. Les sorties par fichier servent de régressions de développement.
+`pager_addr5.wav` et `pager_addr7.wav` donnent des textes plus courts, terminés
+respectivement par « couple fram » et « span a » : leurs bits reçus et leurs
+terminateurs sont conservés. Le banc ne remplace pas ces sorties par la phrase
+plus longue attendue dans les autres fichiers.
+
+Le script télécharge les sources au commit figé, vérifie taille et SHA-256 avant
+analyse et conserve rapports et provenance :
+
+```sh
+python scripts/pocsag_radio_reference.py
+# Réutiliser les mêmes sources, avec nouvelle vérification des empreintes :
+python scripts/pocsag_radio_reference.py --offline
+```
+
+La CI exécute ce banc et importe une de ces captures dans Chromium, vérifie le
+texte, l'absence de centre RF, le compteur CRC et les JSON téléchargeables. Elle
+archive `pocsag-radio.png`, les rapports et leurs provenances dans
+`browser-checks`. Les sources restent liées à la
+[licence MIT du corpus](https://github.com/rrruark/POCSAG-Decoder/blob/9c484c54d8afcde5357e1c170df43a865ac2bf7a/LICENSE).
