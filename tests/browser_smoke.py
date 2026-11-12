@@ -188,7 +188,7 @@ def main():
                     assert repaired['corrections'][0]['role']=='message'
                     page.screenshot(path='browser-artifacts/pocsag-bch.png', full_page=True)
                     if os.environ.get('IQSCOPE_TEST_POCSAG_RADIO')=='1':
-                        from scripts.pocsag_radio_reference import PUBLISHED_TEXT
+                        PUBLISHED_TEXT = 'This is a test of the pager. It should span a couple frames.'
                         page.locator('#input-kind').select_option('audio')
                         page.locator('#iq-file').set_input_files('corpus-cache/pocsag-radio/lab/pager_addr0.wav')
                         page.get_by_role('button', name='Analyser automatiquement').click()
