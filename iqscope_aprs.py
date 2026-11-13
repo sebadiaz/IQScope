@@ -1,4 +1,4 @@
-"""Bounded APRS station-position syntax, without identity claims.
+"""Bounded APRS position-report syntax, without identity claims.
 
 The enclosing AX.25 decoder checks FCS before calling this payload parser.
 This module alone provides syntax interpretation, not packet validation.
@@ -159,14 +159,57 @@ def _compressed_position(result, data):
     return result
 
 
-def parse_aprs_position(payload):
-    """Interpret only !, =, /, @ station positions; retain raw source elsewhere.
+def _named_entity(payload):
+    kind = 'object' if payload[0] == ord(';') else 'item'
+    header = dict(data_type_identifier=chr(payload[0]), requested_profile=kind+'_position',
+                  position_subject='named_entity', status='invalid_entity_header',
+                  validation_scope='APRS payload syntax only; enclosing AX.25 FCS is separate; named entity and reporting station not independently verified')
+    if kind == 'object':
+        if len(payload) < 18 or payload[10] not in b'*_':
+            return header
+        name, marker, position = bytes(payload[1:10]), payload[10], bytes(payload[18:])
+        nested = b'@'+bytes(payload[11:18])+position
+    else:
+        boundary = next((i for i in range(1,min(11,len(payload))) if payload[i] in b'!_'), None)
+        if boundary is None or not 4 <= boundary <= 10:
+            return header
+        name, marker, position = bytes(payload[1:boundary]), payload[boundary], bytes(payload[boundary+1:])
+        nested = b'!'+position
+    if any(not 32 <= byte <= 126 for byte in name):
+        return header
+    killed = marker == ord('_')
+    header.update(entity=dict(kind=kind, name=name.decode('ascii'), name_hex=name.hex(),
+                              marker=chr(marker), state_reported='killed' if killed else 'live'),
+                  entity_position_hex=position.hex())
+    parsed = parse_aprs_position(nested)
+    for key in ('timestamp', 'timestamp_raw'):
+        if key in parsed:
+            header[key] = parsed[key]
+    accepted = parsed['status'] in ('decoded_position','ambiguous_position','null_position')
+    if killed:
+        # A packet may report a withdrawal without authenticating its authority.
+        # Retain the source bytes; do not expose an active point or update history.
+        return dict(header, status='retracted_entity' if accepted else 'unresolved_entity_retraction',
+                    reported_position_status=parsed['status'], reported_position_format=parsed.get('format'))
+    if parsed.get('symbol_code') == 'l' and parsed.get('symbol_table') != '/':
+        return dict(header, status='unsupported_area_entity', reported_position_status=parsed['status'])
+    # The synthetic wrapper DTI must not claim an entity's messaging capability.
+    parsed.pop('messaging_capability_reported', None)
+    status = parsed['status']
+    parsed.update(header, status=status)
+    return parsed
 
-    Uncompressed or base-91 compressed; no Mic-E/object/NMEA fallback.
+
+def parse_aprs_position(payload):
+    """Interpret station positions, objects and items; retain raw source elsewhere.
+
+    Uncompressed or base-91 compressed; no Mic-E/NMEA fallback.
     Ambiguous coordinates and the standard null position never produce a point.
     """
-    if not isinstance(payload, (bytes, bytearray)) or not payload or len(payload) > 256 or payload[0] not in b'!=/@':
+    if not isinstance(payload, (bytes, bytearray)) or not payload or len(payload) > 256 or payload[0] not in b'!=/@;)':
         return None
+    if payload[0] in b';)':
+        return _named_entity(payload)
     dti = chr(payload[0])
     result = dict(data_type_identifier=dti, requested_profile='uncompressed_station_position',
                   status='unsupported_or_malformed_position_format',

@@ -1133,3 +1133,19 @@ L'interface distingue ces sorties et garde le texte brut. Quinze nouveaux tests
 couvrent syntaxe publiée, quantification, bornes, erreurs, conflits, CRC et
 chemins IQ/audio/BPSK ; Chromium vérifie les imports WAV et les exports.
 La validation APRS indépendante sur enregistrement RF reste à réaliser.
+
+
+### APRS : objets et items ponctuels
+
+Les rapports `;` et `)` exposent le nom exact du point et son état déclaré,
+avec position normale/base 91 et horodatage partiel pour les objets. Le JSON
+et l'interface distinguent le point nommé de l'émetteur AX.25 ; aucune capacité
+de messagerie n'est déduite d'un identifiant interne au lecteur. Les retraits
+conservent leurs octets et leur statut, sans coordonnée active ni suppression
+automatique d'autres rapports. Noms invalides, timestamps incorrects, positions
+ambiguës/nulles et corps non interprétés gardent des statuts distincts.
+Les objets de zone n'exposent aucun point tant que leur géométrie n'est pas
+prise en charge. Quinze nouveaux tests couvrent syntaxe publiée, conservation
+des annonces, CRC/PID, chemins IQ/audio/BPSK et exports ; Chromium vérifie les
+objets/items actifs et retirés. Un registre interfenêtres et la validation APRS
+sur enregistrement indépendant restent à réaliser. Voir [APRS.md](APRS.md).

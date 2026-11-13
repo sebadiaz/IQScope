@@ -579,6 +579,50 @@ def main():
                         expect(page.locator('.aprs-motion')).to_have_count(0)
                         if selector!='.aprs-altitude':expect(page.locator('.aprs-altitude')).to_have_count(0)
                         expect(page.locator('#metric-frames')).to_have_text('4')
+                    from test_aprs_entities import OBJECT_UI, ITEM as APRS_ITEM, RETRACTED
+                    for payload,kind,name in ((OBJECT_UI,'object','<b>TEST  '),(APRS_ITEM,'item','AID #2')):
+                        expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                        audio,fs=afsk_fixture(payload=payload)
+                        wavfile.write(wave,fs,audio.astype(np.float32))
+                        page.locator('#iq-file').set_input_files(str(wave))
+                        page.get_by_role('button',name='Analyser automatiquement').click()
+                        expect(page.locator('.aprs-entity')).to_have_count(4,timeout=30000)
+                        expect(page.locator('.aprs-entity').first).to_contain_text(name.strip())
+                        expect(page.locator('.aprs-entity').first).to_contain_text('annoncé actif')
+                        assert page.locator('.aprs-entity').first.evaluate('el=>getComputedStyle(el).whiteSpace')=='pre-wrap'
+                        expect(page.locator('.aprs-entity-source').first).to_contain_text('Annonce de N0CALL-1')
+                        expect(page.locator('.aprs-position')).to_have_count(4)
+                        expect(page.locator('.aprs-entity b')).to_have_count(0)
+                        expect(page.locator('.ax25-text i')).to_have_count(0)
+                        expect(page.locator('.ax25-text').first).to_have_text(payload.decode())
+                        expect(page.locator('#metric-frames')).to_have_text('4')
+                        response=page.request.get(urljoin(page.url,link.get_attribute('href')))
+                        assert response.ok
+                        for frame in response.json()['frames']:
+                            fields=frame['fields'];aprs=fields['aprs']
+                            assert fields['payload_hex']==payload.hex()
+                            assert aprs['entity']['kind']==kind and aprs['entity']['name']==name
+                            assert aprs['position_subject']=='named_entity'
+                            assert 'messaging_capability_reported' not in aprs
+                        if kind=='object':page.screenshot(path='browser-artifacts/aprs-object.png',full_page=True)
+                    for payload in (RETRACTED,APRS_ITEM.replace(b'!',b'_',1)):
+                        expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                        audio,fs=afsk_fixture(payload=payload)
+                        wavfile.write(wave,fs,audio.astype(np.float32))
+                        page.locator('#iq-file').set_input_files(str(wave))
+                        page.get_by_role('button',name='Analyser automatiquement').click()
+                        expect(page.locator('.aprs-entity-retracted')).to_have_count(4,timeout=30000)
+                        expect(page.locator('.aprs-entity').first).to_contain_text('retrait déclaré')
+                        expect(page.locator('.aprs-position')).to_have_count(0)
+                        expect(page.locator('.aprs-motion')).to_have_count(0)
+                        expect(page.locator('#metric-frames')).to_have_text('4')
+                        response=page.request.get(urljoin(page.url,link.get_attribute('href')))
+                        assert response.ok
+                        for frame in response.json()['frames']:
+                            aprs=frame['fields']['aprs']
+                            assert aprs['status']=='retracted_entity' and aprs['entity']['state_reported']=='killed'
+                            assert 'latitude_deg' not in aprs and 'longitude_deg' not in aprs
+                    page.screenshot(path='browser-artifacts/aprs-retraction.png',full_page=True)
                     for payload,status,label in ((b'!4903.5 N/07201.75W>','ambiguous_position','ambiguë'),
                                                  (b'!0000.00N\\00000.00W.','null_position','inconnue')):
                         expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)

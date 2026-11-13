@@ -397,7 +397,7 @@ bit stuffing, checks the CRC-16/X-25 FCS (little-endian on air), and validates
 AX.25 UI address/control fields. Only accepted frames enter the CRC packet
 counter. The UI and JSON expose source/destination callsigns and SSIDs, path,
 PID, payload hex, line coding, channel and timestamp. PID 0xf0 also gets a safe
-UTF-8 text interpretation. Supported APRS uncompressed/base-91 station-position fields
+UTF-8 text interpretation. Supported APRS uncompressed/base-91 position-report fields
 also receive bounded syntax interpretation; see [APRS scope](docs/APRS.md).
 
 Scope: UI frames only, two to ten address fields, up to 256 information octets.
@@ -409,8 +409,10 @@ clock/rate errors and inter-window gaps can cause missed packets.
 **This does not yet implement an RF FM discriminator for AFSK1200,
 G3RUH-over-FSK, connected-mode AX.25 or KISS output.** The separate BPSK path
 supports G3RUH descrambling. APRS coverage is limited to uncompressed/base-91
-station positions, partial timestamps, course/speed and altitude. Compressed
+station and named-point positions, partial timestamps, course/speed and altitude. Compressed
 radio range and GPS fix status are received declarations, not measurements.
+Point objects/items preserve their names and live/withdrawn declarations;
+withdrawals expose no active point and do not delete other reports.
 The initial end-to-end tests use synthetic continuous direct-2-FSK recordings,
 NRZI with both polarities, independent FCS generation, stuffed payloads,
 corrupted FCS, truncation, random bits and bounded search. The BPSK path also has
@@ -522,10 +524,12 @@ are deduplicated; repeated transmissions at distinct times are retained.
 
 The UI displays callsigns/SSIDs, path, PID and payload, with frequencies labeled
 as audio. `ax25-frames.json` exports accepted frames. PID 0xf0 text is decoded
-as safe UTF-8. Supported uncompressed/base-91 APRS station positions also expose numeric
+as safe UTF-8. Supported uncompressed/base-91 APRS position reports also expose numeric
 coordinates, optional course/speed, altitude and partial timestamp components
 in the UI and JSON. Ambiguous/null positions never yield point coordinates;
-Mic-E, objects/items and telemetry remain outside this profile.
+Objects/items identify the named point separately from the reporting station;
+withdrawals never become active coordinates. Mic-E, area geometry and telemetry
+remain outside this profile.
 See [APRS details and limitations](docs/APRS.md).
 A valid CRC does not authenticate an emitter or verify its reported position.
 No RF FM discriminator, G3RUH-over-AFSK,

@@ -385,6 +385,14 @@ function showReport(report, jobId) {
     if(f.text!==undefined)card.append(element('pre',f.text,'ax25-text'));
     else card.append(element('code',f.payload_hex));
     const aprs=f.aprs;
+    if(aprs?.entity){
+      const e=aprs.entity;
+      card.append(element('p',`${e.kind==='object'?'Objet':'Item'} APRS « ${e.name} » · ${e.state_reported==='live'?'annoncé actif':'retrait déclaré'}`,'aprs-entity'));
+      card.append(element('p',`Annonce de ${address(f.source)} ; la position concerne le point nommé, pas l’émetteur. Identité et autorité non vérifiées.`,'hint aprs-entity-source'));
+    }
+    if(aprs?.status==='retracted_entity')card.append(element('p','Annonce de retrait conservée ; aucune position active affichée. Aucune suppression automatique d’autres annonces.','hint aprs-entity-retracted'));
+    else if(aprs?.status==='unresolved_entity_retraction')card.append(element('p','Marqueur de retrait reçu, contenu de position non interprété.','hint aprs-entity-unresolved'));
+    else if(aprs?.status==='unsupported_area_entity')card.append(element('p','Objet de zone : géométrie non interprétée, aucune position ponctuelle déduite.','hint aprs-entity-unresolved'));
     if(aprs?.status==='decoded_position'){
       const compressed=aprs.format==='compressed';
       const digits=compressed?6:5;

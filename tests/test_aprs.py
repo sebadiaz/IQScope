@@ -118,7 +118,7 @@ class AprsTests(unittest.TestCase):
 
     def test_other_aprs_types_and_arbitrary_text_are_not_positions(self):
         for body in (b'', b'CQ IQSCOPE', b'T#001,123,234', b':N0CALL   :message', b'>status', b'$GPGGA,...',
-                     b';OBJECT   *092345z'+POSITION, b'`mic-e', b'}third-party'):
+                     b'`mic-e', b'}third-party'):
             self.assertIsNone(parse_aprs_position(body))
         self.assertIsNone(parse_aprs_position(b'!'+POSITION+b'x'*256))
 

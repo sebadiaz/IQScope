@@ -1,4 +1,4 @@
-# APRS : positions de stations non compressées et base 91
+# APRS : positions, objets et items
 
 IQScope interprète automatiquement un premier profil APRS dans les charges
 utiles AX.25 UI de PID `0xf0`. Les trames doivent déjà avoir passé le contrôle
@@ -19,6 +19,7 @@ Un fichier audio ne fournit toujours aucun centre RF.
 | Horodatage `DDHHMMz`, `DDHHMM/` ou `HHMMSSh` | Composants et référence UTC ou heure locale de fuseau inconnu ; aucune date complète ni époque inventée |
 | Extension initiale `ccc/sss` reconnue | Route de 1 à 360 degrés depuis le nord, vitesse en nœuds et m/s |
 | Une annotation `/A=` suivie de six chiffres non signés | Altitude en pieds et mètres ; référence verticale non déterminée |
+| Objet `;` ou item `)` ponctuel | Nom exact, état déclaré actif/retiré, coordonnées non compressées ou base 91 pour les annonces actives |
 
 Les champs interprétés sont ajoutés à `frame.fields.aprs`, dans les rapports
 JSON existants. L’interface affiche les valeurs reconnues et garde le texte
@@ -44,7 +45,7 @@ restent des notions distinctes.
   produisent pas de vitesse de véhicule à partir de leur syntaxe ressemblante.
 - Plusieurs annotations d’altitude, les valeurs signées ou un nombre de
   chiffres différent restent bruts. Aucun choix arbitraire entre annotations.
-- Mic-E, objets/items, encapsulations tierces, NMEA,
+- Mic-E, géométrie des objets de zone, encapsulations tierces, NMEA,
   télémétrie, météo détaillée et extensions supplémentaires ne sont pas encore
   interprétés. Leurs charges utiles AX.25 restent exportables ; un format non
   pris en charge n’est pas présenté comme une position décodée.
@@ -55,7 +56,7 @@ restent des notions distinctes.
 ## Référence et vérifications
 
 Référence primaire : [APRS Protocol Reference v1.0.1, APRS Working Group/TAPR](https://www.aprs.org/doc/APRS101.PDF),
-chapitres 6–9 et 20. Le profil ci-dessus est volontairement limité ; cette référence
+chapitres 6–9, 11 et 20. Le profil ci-dessus est volontairement limité ; cette référence
 ne constitue pas une déclaration de conformité APRS complète.
 
 `tests/test_aprs.py` vérifie les exemples de syntaxe publiés, les quatre
@@ -92,3 +93,33 @@ les bornes, surimpressions, caractères et types invalides, conflits d'altitude
 et chemins IQ/audio/BPSK. Chromium vérifie le WAV, l'export et les affichages
 distincts de mouvement, altitude, portée et conflit. Ces références restent
 synthétiques ; aucun nouvel enregistrement RF indépendant n'est revendiqué.
+
+## Objets et items ponctuels
+
+Le nom de l'objet occupe neuf caractères ASCII imprimables ; celui de l'item
+en occupe trois à neuf. Casse, espaces et octets reçus restent conservés.
+L'objet exige un horodatage partiel valide ; l'item n'en fournit pas.
+Les marqueurs actif/retrait sont interprétés selon le type de rapport.
+
+`fields.aprs.entity` contient `kind`, `name`, `name_hex`, `marker` et
+`state_reported`. `position_subject: named_entity` indique que la position
+concerne le point nommé. Les coordonnées de l'émetteur ne sont pas déduites
+de celles de l'objet ; l'adresse source reste dans les champs AX.25 existants.
+Aucune capacité de messagerie n'est inventée par la réutilisation du lecteur
+de position. Les coordonnées ambiguës/nulles gardent leur abstention.
+
+Un retrait dont le corps est reconnu porte le statut `retracted_entity`.
+Les octets du corps, son format et son statut restent exportés, avec le nom
+et l'horodatage éventuel, mais aucune coordonnée active, vitesse ou altitude.
+Un corps non reconnu porte `unresolved_entity_retraction`. L'interface affiche
+l'annonce de retrait ; aucun autre rapport n'est supprimé ou remplacé.
+Il n'existe pas encore de registre interfenêtres des objets courants.
+L'identité de l'annonceur et son autorité sur le nom ne sont pas authentifiées.
+
+Les objets de zone restent sans point ni vitesse de véhicule déduite : le
+profil ne décode pas encore leur forme, couleur ou étendue. Les panneaux et
+autres extensions spécialisées ne reçoivent pas de nouvelle interprétation.
+Quinze tests supplémentaires vérifient ces règles, les chemins IQ/audio/BPSK
+et les exports WAV/JSON. Chromium vérifie objets/items actifs et retirés,
+le compteur CRC et l'affichage littéral des noms ressemblant à du HTML.
+La validation sur un enregistrement APRS indépendant reste à réaliser.
