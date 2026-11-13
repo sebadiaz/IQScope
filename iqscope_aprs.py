@@ -1,4 +1,4 @@
-"""Bounded APRS position-report syntax, without identity claims.
+"""Bounded APRS position and classic telemetry syntax, without identity claims.
 
 The enclosing AX.25 decoder checks FCS before calling this payload parser.
 This module alone provides syntax interpretation, not packet validation.
@@ -10,6 +10,39 @@ _LON = re.compile(r'[0-9]{3}[0-9 ]{2}\.[0-9 ]{2}[EW]')
 _TIME = re.compile(r'[0-9]{6}[zh/]')
 _COURSE_SPEED = re.compile(rb'([0-9]{3})/([0-9]{3})')
 _ALTITUDE = re.compile(rb'/A=([0-9]{6})(?![0-9])')
+_TELEMETRY = re.compile(rb'T#([0-9]{3},|MIC,?)((?:[0-9]{3},){5})([01]{8})([\s\S]*)')
+
+
+def parse_aprs_telemetry(payload):
+    """Classic five-channel unsigned 8-bit T# reports, without calibration.
+
+    Definitions in other packets are not applied. A received 1 does not imply
+    an active input, and a raw zero is a value rather than a missing sample.
+    As with position parsing, the enclosing AX.25 receiver checks FCS separately.
+    """
+    if not isinstance(payload,(bytes,bytearray)) or not payload.startswith(b'T#') or len(payload)>256:
+        return None
+    result=dict(data_type_identifier='T', requested_profile='classic_t_hash_8bit',
+                status='unsupported_or_malformed_telemetry',
+                validation_scope='APRS payload syntax only; enclosing AX.25 FCS is separate; telemetry values and sender not independently verified')
+    match=_TELEMETRY.fullmatch(payload)
+    if match is None:
+        return result
+    sequence, analog, digital, comment=match.groups()
+    values=[int(token) for token in analog.split(b',')[:-1]]
+    if any(value>255 for value in values):
+        return dict(result,status='invalid_telemetry_analog_range')
+    raw_sequence=sequence.rstrip(b',').decode('ascii')
+    counter=dict(raw=raw_sequence,kind='MIC' if raw_sequence=='MIC' else 'counter')
+    if raw_sequence!='MIC':
+        counter['value']=int(raw_sequence)
+    result.update(status='decoded_telemetry',telemetry=dict(
+        sequence=counter, analog_raw=values, digital_raw=digital.decode('ascii'),
+        digital_bits=[byte-48 for byte in digital],
+        digital_bit_order='left to right: B1 through B8; no active-bit sense applied',
+        interpretation_status='raw values only; names, units, calibration and bit sense not applied',
+        comment=comment.decode('utf-8',errors='replace'), comment_hex=comment.hex()))
+    return result
 
 
 def _timestamp(raw):

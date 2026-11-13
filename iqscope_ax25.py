@@ -1,5 +1,5 @@
 """Bounded AX.25 UI frame extraction from candidate binary-FSK tone bits."""
-from iqscope_aprs import parse_aprs_position
+from iqscope_aprs import parse_aprs_position, parse_aprs_telemetry
 
 
 def crc_x25(data):
@@ -59,6 +59,8 @@ def parse_ui(data):
         fields['text'] = ''.join(c if c.isprintable() or c in '\r\n\t' else '\ufffd'
                                  for c in payload.decode('utf-8',errors='replace'))
         aprs = parse_aprs_position(payload)
+        if aprs is None:
+            aprs = parse_aprs_telemetry(payload)
         if aprs is not None:
             fields['aprs'] = aprs
     return fields
@@ -119,7 +121,7 @@ def decode_ax25(candidates,max_frames=128,max_flag_pairs=2000):
                                'candidate_index':candidate_index,'bit_start':bit_start,
                                'time_seconds':p['first_symbol_center_seconds']+bit_start/p['baud'],
                                'channel':candidate.get('channel'),
-                               'validation_scope':'FCS and AX.25 UI structure; optional APRS fields are payload syntax, not independent position or identity verification'})
+                               'validation_scope':'FCS and AX.25 UI structure; optional APRS fields are payload syntax, not independent content or identity verification'})
             if exhausted:
                 break
         if exhausted:
@@ -131,7 +133,7 @@ def decode_ax25(candidates,max_frames=128,max_flag_pairs=2000):
             'diagnostic_scope':'Observed flags and rejection stages only; no reconstruction of missing frame boundaries.',
             'budget_exhausted':exhausted,'frame_budget':max_frames,'flag_pair_budget':max_flag_pairs,
             'limitations':['AX.25 UI only, at most ten addresses and 256 payload octets; NRZI/NRZ trials on recovered 2-FSK bits.',
-                           'No AFSK-over-FM frontend, G3RUH-over-FSK descrambler or connected-mode frames; APRS limited to uncompressed/base-91 station positions and point objects/items.',
+                           'No AFSK-over-FM frontend, G3RUH-over-FSK descrambler or connected-mode frames; APRS limited to uncompressed/base-91 positions, point objects/items and classic raw T# telemetry.',
                            'Upstream demodulation may miss frames; a valid CRC does not authenticate an emitter.',
                            'Wideband detection can merge sidelobes into a band >24 kHz and exclude even a low-baud signal.']}
 
@@ -152,7 +154,7 @@ def decode_psk_ax25(candidates):
     result=decode_ax25(inputs)
     result['frontend']='bpsk_g3ruh'
     result['limitations']=['BPSK candidates with self-synchronizing x^17+x^12+1 descrambler, then NRZI/NRZ and HDLC trials.',
-                           'AX.25 UI structure and CRC-16/X-25 only; no sender authentication or satellite telemetry semantics.',
+                           'AX.25 UI structure and CRC-16/X-25; optional APRS syntax only, no sender authentication or satellite-specific telemetry calibration.',
                            'At most eight BPSK candidates and 50000 bits per candidate; descrambler consumes the first 17 states.']
     for diagnostic in result['stream_diagnostics']:
         diagnostic['candidate_index']=indices[diagnostic['candidate_index']]

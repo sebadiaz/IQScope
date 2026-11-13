@@ -1149,3 +1149,18 @@ prise en charge. Quinze nouveaux tests couvrent syntaxe publiée, conservation
 des annonces, CRC/PID, chemins IQ/audio/BPSK et exports ; Chromium vérifie les
 objets/items actifs et retirés. Un registre interfenêtres et la validation APRS
 sur enregistrement indépendant restent à réaliser. Voir [APRS.md](APRS.md).
+
+
+### APRS : premier profil de télémétrie classique brute
+
+Les charges `T#` de trames AX.25 UI/PID `0xf0` à FCS valide exposent désormais
+séquence numérique ou MIC, cinq valeurs brutes 8 bits et huit bits B1–B8 dans
+l'ordre reçu. Le format MIC accepte les deux séparations publiées. Les zéros,
+commentaires et octets d'origine restent conservés. L'interface et le JSON
+n'appliquent ni unité, nom de capteur, calibration ni sens actif des bits.
+Champs incomplets, hors plage ou variantes étendues gardent leurs octets sans
+mesures partielles et sans retirer la trame du compteur CRC. Quinze nouveaux
+tests couvrent syntaxe, bornes, refus, CRC/PID et voies IQ/audio/BPSK ; Chromium
+vérifie WAV, affichage et export. Les définitions PARM/UNIT/EQNS/BITS, leur
+association causale, les variantes étendues et une validation APRS enregistrée
+indépendante restent à réaliser. Voir [APRS.md](APRS.md).

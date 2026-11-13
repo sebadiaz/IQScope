@@ -623,6 +623,48 @@ def main():
                             assert aprs['status']=='retracted_entity' and aprs['entity']['state_reported']=='killed'
                             assert 'latitude_deg' not in aprs and 'longitude_deg' not in aprs
                     page.screenshot(path='browser-artifacts/aprs-retraction.png',full_page=True)
+                    from test_aprs_telemetry import PAYLOAD as TELEMETRY_PAYLOAD, MIC as TELEMETRY_MIC, INVALID as TELEMETRY_INVALID
+                    for payload,sequence in ((TELEMETRY_PAYLOAD,'005'),(TELEMETRY_MIC,'MIC')):
+                        expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                        audio,fs=afsk_fixture(payload=payload)
+                        wavfile.write(wave,fs,audio.astype(np.float32))
+                        page.locator('#iq-file').set_input_files(str(wave))
+                        page.get_by_role('button',name='Analyser automatiquement').click()
+                        expect(page.locator('.aprs-telemetry')).to_have_count(4,timeout=30000)
+                        expect(page.locator('.aprs-telemetry').first).to_contain_text('séquence '+sequence)
+                        expect(page.locator('.aprs-telemetry-analog').first).to_have_text('A1=199 · A2=0 · A3=255 · A4=73 · A5=123')
+                        expect(page.locator('.aprs-telemetry-digital').first).to_have_text('B1=0 · B2=1 · B3=1 · B4=0 · B5=1 · B6=0 · B7=0 · B8=1')
+                        expect(page.locator('.aprs-telemetry-scope').first).to_contain_text('non appliqués')
+                        expect(page.locator('.aprs-position')).to_have_count(0)
+                        expect(page.locator('.aprs-telemetry-comment b')).to_have_count(0)
+                        expect(page.locator('.ax25-text').first).to_have_text(payload.decode())
+                        expect(page.locator('#metric-frames')).to_have_text('4')
+                        expect(page.locator('#center-label')).to_contain_text('aucune fréquence RF')
+                        response=page.request.get(urljoin(page.url,link.get_attribute('href')))
+                        assert response.ok
+                        for frame in response.json()['frames']:
+                            fields=frame['fields'];t=fields['aprs']['telemetry']
+                            assert fields['payload_hex']==payload.hex()
+                            assert t['analog_raw']==[199,0,255,73,123] and t['digital_raw']=='01101001'
+                            assert t['sequence']['raw']==sequence
+                            assert 'physical_values' not in t and 'digital_active' not in t
+                        if sequence=='005':
+                            expect(page.locator('.aprs-telemetry-comment').first).to_contain_text('<b>telemetry</b>')
+                            page.screenshot(path='browser-artifacts/aprs-telemetry.png',full_page=True)
+                    expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                    audio,fs=afsk_fixture(payload=TELEMETRY_INVALID)
+                    wavfile.write(wave,fs,audio.astype(np.float32))
+                    page.locator('#iq-file').set_input_files(str(wave))
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('.aprs-telemetry-unresolved')).to_have_count(4,timeout=30000)
+                    expect(page.locator('.aprs-telemetry')).to_have_count(0)
+                    expect(page.locator('.aprs-telemetry-analog')).to_have_count(0)
+                    expect(page.locator('#metric-frames')).to_have_text('4')
+                    response=page.request.get(urljoin(page.url,link.get_attribute('href')))
+                    assert response.ok
+                    for frame in response.json()['frames']:
+                        assert frame['fields']['payload_hex']==TELEMETRY_INVALID.hex()
+                        assert 'telemetry' not in frame['fields']['aprs']
                     for payload,status,label in ((b'!4903.5 N/07201.75W>','ambiguous_position','ambiguë'),
                                                  (b'!0000.00N\\00000.00W.','null_position','inconnue')):
                         expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)

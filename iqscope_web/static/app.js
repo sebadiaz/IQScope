@@ -385,6 +385,14 @@ function showReport(report, jobId) {
     if(f.text!==undefined)card.append(element('pre',f.text,'ax25-text'));
     else card.append(element('code',f.payload_hex));
     const aprs=f.aprs;
+    if(aprs?.status==='decoded_telemetry'){
+      const t=aprs.telemetry;
+      card.append(element('h3',`Télémétrie APRS · ${t.sequence.kind==='MIC'?'séquence MIC':`séquence ${t.sequence.raw}`}`,'aprs-telemetry'));
+      card.append(element('p',t.analog_raw.map((v,i)=>`A${i+1}=${v}`).join(' · '),'aprs-telemetry-analog'));
+      card.append(element('p',t.digital_bits.map((v,i)=>`B${i+1}=${v}`).join(' · '),'aprs-telemetry-digital'));
+      card.append(element('p','Valeurs brutes ; unités, calibration, noms et sens actif des bits non appliqués.','hint aprs-telemetry-scope'));
+      if(t.comment)card.append(element('pre',t.comment,'aprs-telemetry-comment'));
+    }else if(aprs?.requested_profile==='classic_t_hash_8bit')card.append(element('p','Rapport T# hors profil classique ou mal formé : aucune valeur numérique déduite.','hint aprs-telemetry-unresolved'));
     if(aprs?.entity){
       const e=aprs.entity;
       card.append(element('p',`${e.kind==='object'?'Objet':'Item'} APRS « ${e.name} » · ${e.state_reported==='live'?'annoncé actif':'retrait déclaré'}`,'aprs-entity'));
@@ -406,7 +414,7 @@ function showReport(report, jobId) {
       if(aprs.timestamp?.raw)card.append(element('p',`Horodatage APRS ${aprs.timestamp.raw} · ${aprs.timestamp.time_basis==='UTC'?'UTC':'heure locale, fuseau inconnu'} · date complète inconnue`,'aprs-timestamp'));
     }else if(aprs?.status==='ambiguous_position')card.append(element('p','Position APRS ambiguë : aucune coordonnée ponctuelle déduite.','aprs-position-unresolved'));
     else if(aprs?.status==='null_position')card.append(element('p','Position APRS signalée inconnue : aucune coordonnée déduite.','aprs-position-unresolved'));
-    card.append(element('p','CRC et structure UI vérifiés ; identité de l’émetteur et position déclarée non vérifiées indépendamment.','hint'));
+    card.append(element('p','CRC et structure UI vérifiés ; identité de l’émetteur et contenu déclaré non vérifiés indépendamment.','hint'));
     frameList.append(card);
   }
   for(const trial of report.wideband_trials || []){

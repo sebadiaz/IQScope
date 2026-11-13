@@ -1,9 +1,10 @@
-# APRS : positions, objets et items
+# APRS : positions, objets, items et télémétrie classique
 
 IQScope interprète automatiquement un premier profil APRS dans les charges
 utiles AX.25 UI de PID `0xf0`. Les trames doivent déjà avoir passé le contrôle
 CRC-16/X-25 et les vérifications de structure du décodeur englobant. La fonction
-`parse_aprs_position` seule est un lecteur de syntaxe, pas un contrôle de trame.
+`parse_aprs_position` et `parse_aprs_telemetry` lisent des syntaxes ; ces fonctions
+seules ne contrôlent pas les trames.
 
 Le même lecteur sert aux trois chemins existants : bits 2-FSK issus d’IQ,
 audio de récepteur AFSK1200 et BPSK avec débrassage G3RUH
@@ -20,6 +21,7 @@ Un fichier audio ne fournit toujours aucun centre RF.
 | Extension initiale `ccc/sss` reconnue | Route de 1 à 360 degrés depuis le nord, vitesse en nœuds et m/s |
 | Une annotation `/A=` suivie de six chiffres non signés | Altitude en pieds et mètres ; référence verticale non déterminée |
 | Objet `;` ou item `)` ponctuel | Nom exact, état déclaré actif/retiré, coordonnées non compressées ou base 91 pour les annonces actives |
+| Télémétrie classique `T#`, séquence numérique ou `MIC` | Cinq valeurs brutes 0–255 et huit bits reçus, sans conversion physique |
 
 Les champs interprétés sont ajoutés à `frame.fields.aprs`, dans les rapports
 JSON existants. L’interface affiche les valeurs reconnues et garde le texte
@@ -46,7 +48,7 @@ restent des notions distinctes.
 - Plusieurs annotations d’altitude, les valeurs signées ou un nombre de
   chiffres différent restent bruts. Aucun choix arbitraire entre annotations.
 - Mic-E, géométrie des objets de zone, encapsulations tierces, NMEA,
-  télémétrie, météo détaillée et extensions supplémentaires ne sont pas encore
+  télémétrie étendue/base 91, météo détaillée et extensions supplémentaires ne sont pas encore
   interprétés. Leurs charges utiles AX.25 restent exportables ; un format non
   pris en charge n’est pas présenté comme une position décodée.
 - Les limites et pertes possibles des récepteurs AX.25 restent applicables.
@@ -56,7 +58,7 @@ restent des notions distinctes.
 ## Référence et vérifications
 
 Référence primaire : [APRS Protocol Reference v1.0.1, APRS Working Group/TAPR](https://www.aprs.org/doc/APRS101.PDF),
-chapitres 6–9, 11 et 20. Le profil ci-dessus est volontairement limité ; cette référence
+chapitres 6–9, 11, 13 et 20. Le profil ci-dessus est volontairement limité ; cette référence
 ne constitue pas une déclaration de conformité APRS complète.
 
 `tests/test_aprs.py` vérifie les exemples de syntaxe publiés, les quatre
@@ -123,3 +125,39 @@ Quinze tests supplémentaires vérifient ces règles, les chemins IQ/audio/BPSK
 et les exports WAV/JSON. Chromium vérifie objets/items actifs et retirés,
 le compteur CRC et l'affichage littéral des noms ressemblant à du HTML.
 La validation sur un enregistrement APRS indépendant reste à réaliser.
+
+## Télémétrie classique T# : valeurs brutes
+
+Le lecteur accepte une séquence décimale à trois chiffres ou `MIC`, cinq
+canaux analogiques décimaux à trois chiffres dans 0–255, puis huit caractères
+binaires. La virgule après `MIC` peut être absente. Les zéros restent des
+valeurs, les champs manquants ne deviennent pas des zéros. Les commentaires
+et leurs octets sont conservés, y compris s'ils commencent par un chiffre.
+
+Un rapport reconnu porte `status: decoded_telemetry` et un champ `telemetry` :
+
+- `sequence` conserve la chaîne et, pour un compteur numérique, sa valeur.
+  `MIC` ne reçoit aucun compteur inventé ; aucun taux de perte n'est calculé.
+- `analog_raw` contient A1–A5, dans l'ordre reçu.
+- `digital_raw` et `digital_bits` conservent B1–B8 de gauche à droite.
+  Un bit 1 n'est pas déclaré « actif » : sa polarité peut dépendre du projet.
+- `comment` et `comment_hex` conservent le commentaire ; le texte d'origine
+  et `payload_hex` restent dans les champs AX.25.
+
+L'interface affiche les numéros des canaux et les valeurs brutes. Aucune unité,
+étiquette, équation quadratique ou conversion physique n'est appliquée. Les
+messages `PARM.`, `UNIT.`, `EQNS.` et `BITS.` restent du texte AX.25 exportable :
+leur lecture structurée et leur association causale par source/SSID restent
+à réaliser. Aucune définition future, extérieure ou issue d'un autre rapport
+ne modifie les valeurs. Cette étape n'introduit pas de registre interfenêtres.
+
+Les variantes étendues, valeurs signées/flottantes, champs raccourcis ou
+incomplets restent hors profil. Un corps non interprété ne fait pas perdre la
+trame à FCS valide et n'expose aucune mesure partielle. L'intégrité du paquet
+reste distincte de la véracité d'une mesure et de l'identité de son émetteur.
+
+Quinze tests vérifient les exemples publiés, les bornes, le format MIC, les
+bits, commentaires, refus, CRC/PID et chemins IQ/audio/BPSK. Chromium vérifie
+les imports WAV, l'affichage sûr, le compteur CRC et l'export JSON. La validation
+actuelle utilise des références synthétiques ; un enregistrement APRS
+indépendant reste à intégrer.
