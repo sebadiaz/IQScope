@@ -1098,3 +1098,22 @@ L'import audio essaie aussi POCSAG sur les niveaux FM démodulés à 8 kHz. Troi
 ### POCSAG : correction BCH conservatrice
 
 Le parseur peut corriger au plus deux bits sur l'ensemble adresse/données/terminaison d'un message, grâce au syndrome BCH(31,21) complété par la parité paire. Les 529 masques de poids 0–2 ont des syndromes distincts et le mot proposé est contrôlé. La synchronisation reste exacte ; les messages incomplets, non corrigeables ou dépassant la somme autorisée sont refusés. Les mots reçus restent exportés séparément des mots décodés, avec rôle et positions des inversions. Le mode strict reste accessible par `max_corrected_bits=0`. L'interface marque les corrections sans modifier le compteur CRC. Les tests couvrent les positions d'une/deux erreurs, le rejet de trois erreurs sur références, la limite globale et les voies IQ/audio. Cette correction n'authentifie pas l'émetteur et peut choisir un autre mot valide au-delà de son rayon. Le corpus radio existant conserve ses sorties à zéro correction ; une amélioration sur enregistrement corrompu reste à démontrer. Voir [POCSAG.md](POCSAG.md).
+
+
+### APRS : premier profil de contenu sur AX.25
+
+Les trames AX.25 UI à FCS valide et PID `0xf0` peuvent désormais recevoir un
+champ `fields.aprs` commun aux voies IQ 2-FSK, audio AFSK1200 et BPSK/G3RUH.
+Le lecteur borné aux 256 octets de charge utile interprète les positions de
+station non compressées `!`, `=`, `/`, `@`, les horodatages partiels reconnus,
+la route/vitesse initiale et une annotation d'altitude non signée à six chiffres.
+Les coordonnées, unités et octets sources restent explicites dans le JSON ;
+l'interface conserve aussi le texte reçu. Aucun compteur CRC supplémentaire.
+Les positions ambiguës et nulles n'exposent aucune coordonnée ponctuelle ; les
+champs météo/DF ne deviennent pas des vitesses de véhicule et aucune date
+complète, référence verticale ou authenticité de position n'est inventée.
+Les positions compressées, Mic-E, objets/items, NMEA, télémétrie et autres
+extensions restent à réaliser. La validation actuelle porte sur la syntaxe
+publiée et des chaînes synthétiques avec FCS indépendant, import WAV et test
+Chromium ; un enregistrement APRS indépendant reste à intégrer. Référence et
+limites détaillées : [APRS.md](APRS.md).

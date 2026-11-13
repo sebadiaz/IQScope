@@ -519,6 +519,46 @@ def main():
                     link = page.get_by_role('link',name='Télécharger les trames AX.25 validées')
                     response = page.request.get(urljoin(page.url,link.get_attribute('href')))
                     assert response.ok and len(response.json()['frames'])>=3
+                    expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                    from test_aprs import PAYLOAD as APRS_PAYLOAD
+                    audio,fs = afsk_fixture(payload=APRS_PAYLOAD)
+                    wavfile.write(wave,fs,audio.astype(np.float32))
+                    page.locator('#iq-file').set_input_files(str(wave))
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('.aprs-position')).to_have_count(4,timeout=30000)
+                    expect(page.locator('.aprs-position').first).to_have_text('Position APRS : 49.05833°, -72.02917°')
+                    expect(page.locator('.aprs-motion').first).to_contain_text('Route 88° · vitesse 36 kn (18.52 m/s)')
+                    expect(page.locator('.aprs-altitude').first).to_contain_text('1234 ft (376.1 m)')
+                    expect(page.locator('.aprs-timestamp').first).to_contain_text('092345z · UTC · date complète inconnue')
+                    expect(page.locator('.ax25-text').first).to_have_text(APRS_PAYLOAD.decode())
+                    expect(page.locator('#frame-list b')).to_have_count(0)
+                    expect(page.locator('#metric-frames')).to_have_text('4')
+                    expect(page.locator('#center-label')).to_contain_text('aucune fréquence RF')
+                    response = page.request.get(urljoin(page.url,link.get_attribute('href')))
+                    assert response.ok
+                    for frame in response.json()['frames']:
+                        fields=frame['fields'];aprs=fields['aprs']
+                        assert fields['payload_hex']==APRS_PAYLOAD.hex()
+                        assert abs(aprs['latitude_deg']-49.058333333333)<1e-9
+                        assert abs(aprs['longitude_deg']+72.029166666667)<1e-9
+                        assert (aprs['course_deg'],aprs['speed_knots'],aprs['altitude_ft'])==(88,36,1234)
+                    page.screenshot(path='browser-artifacts/aprs.png',full_page=True)
+                    for payload,status,label in ((b'!4903.5 N/07201.75W>','ambiguous_position','ambiguë'),
+                                                 (b'!0000.00N\\00000.00W.','null_position','inconnue')):
+                        expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                        audio,fs=afsk_fixture(payload=payload)
+                        wavfile.write(wave,fs,audio.astype(np.float32))
+                        page.locator('#iq-file').set_input_files(str(wave))
+                        page.get_by_role('button',name='Analyser automatiquement').click()
+                        expect(page.locator('.aprs-position-unresolved')).to_have_count(4,timeout=30000)
+                        expect(page.locator('.aprs-position-unresolved').first).to_contain_text(label)
+                        expect(page.locator('.aprs-position')).to_have_count(0)
+                        expect(page.locator('#metric-frames')).to_have_text('4')
+                        response=page.request.get(urljoin(page.url,link.get_attribute('href')))
+                        assert response.ok
+                        for frame in response.json()['frames']:
+                            aprs=frame['fields']['aprs']
+                            assert aprs['status']==status and 'latitude_deg' not in aprs and 'longitude_deg' not in aprs
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
                 if os.environ.get('IQSCOPE_TEST_PSK_RADIO')=='1':
                     import hashlib

@@ -397,7 +397,8 @@ bit stuffing, checks the CRC-16/X-25 FCS (little-endian on air), and validates
 AX.25 UI address/control fields. Only accepted frames enter the CRC packet
 counter. The UI and JSON expose source/destination callsigns and SSIDs, path,
 PID, payload hex, line coding, channel and timestamp. PID 0xf0 also gets a safe
-UTF-8 text interpretation; it does not imply valid APRS content.
+UTF-8 text interpretation. Supported APRS uncompressed station-position fields
+also receive bounded syntax interpretation; see [APRS scope](docs/APRS.md).
 
 Scope: UI frames only, two to ten address fields, up to 256 information octets.
 Search budgets are 128 accepted frames and 2000 flag pairs across all candidate
@@ -405,13 +406,16 @@ streams. FCS failures are rejected without bit correction. A valid FCS and
 address structure do not authenticate a sender. Truncated frames, upstream
 clock/rate errors and inter-window gaps can cause missed packets.
 
-**This does not yet implement a RF FM discriminator for AFSK1200, G3RUH
-scrambling/descrambling, connected-mode AX.25, KISS output or APRS field parsing.**
+**This does not yet implement an RF FM discriminator for AFSK1200,
+G3RUH-over-FSK, connected-mode AX.25 or KISS output.** The separate BPSK path
+supports G3RUH descrambling. APRS coverage is limited to uncompressed station
+positions, optional partial timestamps, course/speed and unsigned altitude.
 The initial end-to-end tests use synthetic continuous direct-2-FSK recordings,
 NRZI with both polarities, independent FCS generation, stuffed payloads,
-corrupted FCS, truncation, random bits and bounded search. No over-air AX.25
-recording has yet been validated. Existing real-IQ CI remains a regression check
-for the previously supported recordings.
+corrupted FCS, truncation, random bits and bounded search. The BPSK path also has
+[receiver-audio satellite references](docs/PSK_RADIO.md). APRS interpretation
+currently has published syntax examples and synthetic receiver fixtures;
+independent recorded APRS RF validation remains outstanding.
 
 The AX.25 synthetic IQ checks exercise direct 1200-baud NRZI and a translated
 300-baud wideband channel. The shared detector can merge sidelobes into bands
@@ -517,8 +521,13 @@ are deduplicated; repeated transmissions at distinct times are retained.
 
 The UI displays callsigns/SSIDs, path, PID and payload, with frequencies labeled
 as audio. `ax25-frames.json` exports accepted frames. PID 0xf0 text is decoded
-as safe UTF-8, without interpreting APRS positions, telemetry or other fields.
-A valid CRC does not authenticate an emitter. No RF FM discriminator, G3RUH,
+as safe UTF-8. Supported uncompressed APRS station positions also expose numeric
+coordinates, optional course/speed, altitude and partial timestamp components
+in the UI and JSON. Ambiguous/null positions never yield point coordinates;
+compressed positions, Mic-E and telemetry remain outside this profile.
+See [APRS details and limitations](docs/APRS.md).
+A valid CRC does not authenticate an emitter or verify its reported position.
+No RF FM discriminator, G3RUH-over-AFSK,
 connected-mode AX.25, speech transcription or general AFSK classifier is added.
 
 Limits: first 20 seconds, 32 phases, 6000 total flag-pair attempts and 128 unique

@@ -8,8 +8,8 @@ from iqscope_afsk import decode_afsk1200
 from test_ax25 import frame, hdlc, TEXT
 
 
-def fixture(fs=8000,inverted=False,bad=False,offset=0):
-    bits = hdlc(frame(bad=bad))*4
+def fixture(fs=8000,inverted=False,bad=False,offset=0,payload=None):
+    bits = hdlc(frame(payload=TEXT.encode() if payload is None else payload,bad=bad))*4
     state = int(inverted)
     tones = []
     for bit in bits:

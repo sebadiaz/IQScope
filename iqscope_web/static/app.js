@@ -384,7 +384,16 @@ function showReport(report, jobId) {
     card.append(element('p',`t=${frame.time_seconds.toFixed(6)} s · PID 0x${f.pid.toString(16).padStart(2,'0')}${channelLabel}`));
     if(f.text!==undefined)card.append(element('pre',f.text,'ax25-text'));
     else card.append(element('code',f.payload_hex));
-    card.append(element('p','CRC et structure UI vérifiés ; identité de l’émetteur et interprétation APRS non établies.','hint'));
+    const aprs=f.aprs;
+    if(aprs?.status==='decoded_position'){
+      card.append(element('p',`Position APRS : ${aprs.latitude_deg.toFixed(5)}°, ${aprs.longitude_deg.toFixed(5)}°`,'aprs-position'));
+      card.append(element('p','Résolution encodée : 0,01 minute d’arc ; précision réelle inconnue.','hint'));
+      if(Number.isFinite(aprs.course_deg))card.append(element('p',`Route ${aprs.course_deg}° · vitesse ${aprs.speed_knots} kn (${aprs.speed_m_s.toFixed(2)} m/s)`,'aprs-motion'));
+      if(Number.isFinite(aprs.altitude_ft))card.append(element('p',`Altitude ${aprs.altitude_ft} ft (${aprs.altitude_m.toFixed(1)} m) · référence non précisée`,'aprs-altitude'));
+      if(aprs.timestamp?.raw)card.append(element('p',`Horodatage APRS ${aprs.timestamp.raw} · ${aprs.timestamp.time_basis==='UTC'?'UTC':'heure locale, fuseau inconnu'} · date complète inconnue`,'aprs-timestamp'));
+    }else if(aprs?.status==='ambiguous_position')card.append(element('p','Position APRS ambiguë : aucune coordonnée ponctuelle déduite.','aprs-position-unresolved'));
+    else if(aprs?.status==='null_position')card.append(element('p','Position APRS signalée inconnue : aucune coordonnée déduite.','aprs-position-unresolved'));
+    card.append(element('p','CRC et structure UI vérifiés ; identité de l’émetteur et position déclarée non vérifiées indépendamment.','hint'));
     frameList.append(card);
   }
   for(const trial of report.wideband_trials || []){

@@ -40,8 +40,8 @@ def hdlc(packet):
     return '01111110'*10+out+'01111110'*10
 
 
-def fixture(fs=24000,baud=1200,coding='nrzi',inverted=False,bad=False):
-    bits = hdlc(frame(bad=bad))*4
+def fixture(fs=24000,baud=1200,coding='nrzi',inverted=False,bad=False,payload=None):
+    bits = hdlc(frame(payload=TEXT.encode() if payload is None else payload,bad=bad))*4
     if coding=='nrzi':
         state = 0
         tone_bits = []

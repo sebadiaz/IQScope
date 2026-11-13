@@ -1,4 +1,5 @@
 """Bounded AX.25 UI frame extraction from candidate binary-FSK tone bits."""
+from iqscope_aprs import parse_aprs_position
 
 
 def crc_x25(data):
@@ -54,9 +55,12 @@ def parse_ui(data):
               'control':data[cursor],'pid':data[cursor+1],'frame_type':'UI',
               'payload_hex':payload.hex()}
     if fields['pid']==0xf0:
-        # UI text is an interpretation, not proof of APRS or sender identity.
+        # Payload interpretation remains separate from FCS and sender identity.
         fields['text'] = ''.join(c if c.isprintable() or c in '\r\n\t' else '\ufffd'
                                  for c in payload.decode('utf-8',errors='replace'))
+        aprs = parse_aprs_position(payload)
+        if aprs is not None:
+            fields['aprs'] = aprs
     return fields
 
 
@@ -115,7 +119,7 @@ def decode_ax25(candidates,max_frames=128,max_flag_pairs=2000):
                                'candidate_index':candidate_index,'bit_start':bit_start,
                                'time_seconds':p['first_symbol_center_seconds']+bit_start/p['baud'],
                                'channel':candidate.get('channel'),
-                               'validation_scope':'FCS and AX.25 UI structure; sender authenticity and APRS semantics not established'})
+                               'validation_scope':'FCS and AX.25 UI structure; optional APRS fields are payload syntax, not independent position or identity verification'})
             if exhausted:
                 break
         if exhausted:
@@ -127,7 +131,7 @@ def decode_ax25(candidates,max_frames=128,max_flag_pairs=2000):
             'diagnostic_scope':'Observed flags and rejection stages only; no reconstruction of missing frame boundaries.',
             'budget_exhausted':exhausted,'frame_budget':max_frames,'flag_pair_budget':max_flag_pairs,
             'limitations':['AX.25 UI only, at most ten addresses and 256 payload octets; NRZI/NRZ trials on recovered 2-FSK bits.',
-                           'No AFSK-over-FM frontend, G3RUH descrambler, connected-mode frames or APRS field parsing.',
+                           'No AFSK-over-FM frontend, G3RUH-over-FSK descrambler or connected-mode frames; APRS limited to uncompressed station positions.',
                            'Upstream demodulation may miss frames; a valid CRC does not authenticate an emitter.',
                            'Wideband detection can merge sidelobes into a band >24 kHz and exclude even a low-baud signal.']}
 
