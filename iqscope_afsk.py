@@ -7,7 +7,7 @@ from iqscope_ax25 import decode_ax25
 
 def decode_afsk1200(audio,fs,max_seconds=20,max_frames=128,max_flag_pairs=6000):
     result = {'decoder':'afsk1200_ax25','family':'AFSK1200 / AX.25 UI','frames':[],
-              'validation_scope':'CRC-16/X-25 and AX.25 UI structure; optional uncompressed APRS fields are payload syntax, not independent position or sender verification',
+              'validation_scope':'CRC-16/X-25 and AX.25 UI structure; optional uncompressed/base-91 APRS fields are payload syntax, not independent position or sender verification',
               'limitations':['Audio frontend only: 1200 baud and 1200/2200-Hz tones, 32 fixed clock phases.',
                              'No frequency/clock tracking, RF FM discriminator, G3RUH or connected-mode AX.25.',
                              'Counts of rejected hypotheses are not a bit/frame error rate.',

@@ -386,10 +386,15 @@ function showReport(report, jobId) {
     else card.append(element('code',f.payload_hex));
     const aprs=f.aprs;
     if(aprs?.status==='decoded_position'){
-      card.append(element('p',`Position APRS : ${aprs.latitude_deg.toFixed(5)}°, ${aprs.longitude_deg.toFixed(5)}°`,'aprs-position'));
-      card.append(element('p','Résolution encodée : 0,01 minute d’arc ; précision réelle inconnue.','hint'));
-      if(Number.isFinite(aprs.course_deg))card.append(element('p',`Route ${aprs.course_deg}° · vitesse ${aprs.speed_knots} kn (${aprs.speed_m_s.toFixed(2)} m/s)`,'aprs-motion'));
-      if(Number.isFinite(aprs.altitude_ft))card.append(element('p',`Altitude ${aprs.altitude_ft} ft (${aprs.altitude_m.toFixed(1)} m) · référence non précisée`,'aprs-altitude'));
+      const compressed=aprs.format==='compressed';
+      const digits=compressed?6:5;
+      card.append(element('p',`Position APRS : ${aprs.latitude_deg.toFixed(digits)}°, ${aprs.longitude_deg.toFixed(digits)}°`,'aprs-position'));
+      card.append(element('p',compressed?'Format compressé en base 91 ; précision réelle inconnue.':'Résolution encodée : 0,01 minute d’arc ; précision réelle inconnue.','hint aprs-format'));
+      if(Number.isFinite(aprs.course_deg))card.append(element('p',`Route ${aprs.course_deg}° · vitesse ${Number.isInteger(aprs.speed_knots)?aprs.speed_knots:aprs.speed_knots.toFixed(2)} kn (${aprs.speed_m_s.toFixed(2)} m/s)`,'aprs-motion'));
+      if(Number.isFinite(aprs.altitude_ft))card.append(element('p',`Altitude ${Number.isInteger(aprs.altitude_ft)?aprs.altitude_ft:aprs.altitude_ft.toFixed(1)} ft (${aprs.altitude_m.toFixed(1)} m) · référence non précisée`,'aprs-altitude'));
+      if(aprs.altitude_status==='multiple_encodings; no value selected')card.append(element('p','Plusieurs encodages d’altitude reçus : aucune valeur sélectionnée.','hint aprs-altitude-unresolved'));
+      if(Number.isFinite(aprs.radio_range_m))card.append(element('p',`Portée radio déclarée : ${(aprs.radio_range_m/1000).toFixed(2)} km · valeur de modèle, pas une mesure de réception`,'aprs-range'));
+      if(aprs.compression_type)card.append(element('p',`Fix GPS déclaré ${aprs.compression_type.gps_fix_reported==='current'?'courant':'ancien'} · source déclarée ${aprs.compression_type.nmea_source_reported} · non vérifié indépendamment`,'hint aprs-fix'));
       if(aprs.timestamp?.raw)card.append(element('p',`Horodatage APRS ${aprs.timestamp.raw} · ${aprs.timestamp.time_basis==='UTC'?'UTC':'heure locale, fuseau inconnu'} · date complète inconnue`,'aprs-timestamp'));
     }else if(aprs?.status==='ambiguous_position')card.append(element('p','Position APRS ambiguë : aucune coordonnée ponctuelle déduite.','aprs-position-unresolved'));
     else if(aprs?.status==='null_position')card.append(element('p','Position APRS signalée inconnue : aucune coordonnée déduite.','aprs-position-unresolved'));

@@ -543,6 +543,42 @@ def main():
                         assert abs(aprs['longitude_deg']+72.029166666667)<1e-9
                         assert (aprs['course_deg'],aprs['speed_knots'],aprs['altitude_ft'])==(88,36,1234)
                     page.screenshot(path='browser-artifacts/aprs.png',full_page=True)
+                    expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                    from test_aprs_compressed import PAYLOAD as COMPRESSED_PAYLOAD
+                    audio,fs=afsk_fixture(payload=COMPRESSED_PAYLOAD)
+                    wavfile.write(wave,fs,audio.astype(np.float32))
+                    page.locator('#iq-file').set_input_files(str(wave))
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('.aprs-position')).to_have_count(4,timeout=30000)
+                    expect(page.locator('.aprs-position').first).to_have_text('Position APRS : 49.500000°, -72.750004°')
+                    expect(page.locator('.aprs-format').first).to_contain_text('compressé en base 91')
+                    expect(page.locator('.aprs-motion').first).to_contain_text('Route 88°')
+                    expect(page.locator('.aprs-fix').first).to_contain_text('courant · source déclarée RMC')
+                    expect(page.locator('.aprs-altitude')).to_have_count(0)
+                    expect(page.locator('.ax25-text').first).to_have_text(COMPRESSED_PAYLOAD.decode())
+                    expect(page.locator('#frame-list b')).to_have_count(0)
+                    expect(page.locator('#metric-frames')).to_have_text('4')
+                    response=page.request.get(urljoin(page.url,link.get_attribute('href')))
+                    assert response.ok
+                    for frame in response.json()['frames']:
+                        fields=frame['fields'];aprs=fields['aprs']
+                        assert fields['payload_hex']==COMPRESSED_PAYLOAD.hex()
+                        assert aprs['format']=='compressed' and aprs['course_deg']==88
+                        assert abs(aprs['longitude_deg']+72.75)<1/190463
+                    page.screenshot(path='browser-artifacts/aprs-compressed.png',full_page=True)
+                    for payload,selector,expected in ((b'=/5L!!<*e7OS]S compressed example','.aprs-altitude','10004.5 ft'),
+                                                      (b'=/5L!!<*e7>{?! compressed example','.aprs-range','Portée radio déclarée'),
+                                                      (b'=/5L!!<*e7OS]S/A=001234','.aprs-altitude-unresolved','aucune valeur sélectionnée')):
+                        expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                        audio,fs=afsk_fixture(payload=payload)
+                        wavfile.write(wave,fs,audio.astype(np.float32))
+                        page.locator('#iq-file').set_input_files(str(wave))
+                        page.get_by_role('button',name='Analyser automatiquement').click()
+                        expect(page.locator(selector)).to_have_count(4,timeout=30000)
+                        expect(page.locator(selector).first).to_contain_text(expected)
+                        expect(page.locator('.aprs-motion')).to_have_count(0)
+                        if selector!='.aprs-altitude':expect(page.locator('.aprs-altitude')).to_have_count(0)
+                        expect(page.locator('#metric-frames')).to_have_text('4')
                     for payload,status,label in ((b'!4903.5 N/07201.75W>','ambiguous_position','ambiguë'),
                                                  (b'!0000.00N\\00000.00W.','null_position','inconnue')):
                         expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)

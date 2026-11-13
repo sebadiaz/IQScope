@@ -1117,3 +1117,19 @@ extensions restent à réaliser. La validation actuelle porte sur la syntaxe
 publiée et des chaînes synthétiques avec FCS indépendant, import WAV et test
 Chromium ; un enregistrement APRS indépendant reste à intégrer. Référence et
 limites détaillées : [APRS.md](APRS.md).
+
+
+### APRS : positions compressées en base 91
+
+Le lecteur reconnaît aussi les blocs de position compressés de treize octets
+après les mêmes identifiants et horodatages. Le JSON conserve le bloc reçu,
+les pas de quantification par axe, les surimpressions et les déclarations du
+type de compression. Les extensions distinguent route/vitesse, altitude et
+portée radio de modèle ; aucune portée mesurée ni ancienneté GPS n'est déduite.
+Les extensions invalides ne détruisent pas des coordonnées valides. Le cas sans
+extension ignore les octets de remplissage ; les positions nulles restent sans
+point et plusieurs encodages d'altitude restent sans valeur principale choisie.
+L'interface distingue ces sorties et garde le texte brut. Quinze nouveaux tests
+couvrent syntaxe publiée, quantification, bornes, erreurs, conflits, CRC et
+chemins IQ/audio/BPSK ; Chromium vérifie les imports WAV et les exports.
+La validation APRS indépendante sur enregistrement RF reste à réaliser.

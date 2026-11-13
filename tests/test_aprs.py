@@ -75,7 +75,7 @@ class AprsTests(unittest.TestCase):
                      b'4903.50N/18100.00W>', b'4903.50N/18000.01W>', b'4903.50N/07260.00W>',
                      b'4903.50E/07201.75W>', b'4903.50N/07201.75N>', b'4903.50N!07201.75W>',
                      b'4903.50N/07201.75W ', b'4903.50N/07201.75W\x7f', b'4903,50N/07201.75W>',
-                     b'\xff903.50N/07201.75W>', b'short', b'/5L!!<*e7>7P['):
+                     b'\xff903.50N/07201.75W>', b'short'):
             value = parse_aprs_position(b'!'+body)
             self.assertNotIn('latitude_deg', value, body)
             self.assertNotIn('longitude_deg', value, body)
