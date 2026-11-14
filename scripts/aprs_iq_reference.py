@@ -5,9 +5,12 @@ import hashlib
 import io
 import json
 from pathlib import Path
+import shutil
+import subprocess
 import sys
 import urllib.request
 import zipfile
+import zlib
 
 import numpy as np
 from scipy import signal
@@ -20,7 +23,9 @@ from iqscope_formats import read_wave_iq, wave_layout
 SOURCE_URL = 'https://www.sigidwiki.com/images/6/64/APRS_IQ_145070kHz_IQ.zip'
 SOURCE_PAGE = 'https://www.sigidwiki.com/wiki/File:APRS_IQ_145070kHz_IQ.zip'
 ARCHIVE_BUDGET = 2*1024*1024
-MEMBER_BUDGET = 16*1024*1024
+MEMBER_BUDGET = 4*1024*1024
+ARCHIVE_BYTES = 622860
+ARCHIVE_SHA256 = '72342eb27b8b8bd1df53f3eda6f4d159a5c279596f2641f192bcdc2bda7cd034'
 
 
 def source_wave(root, offline=False):
@@ -33,6 +38,11 @@ def source_wave(root, offline=False):
             data = response.read(ARCHIVE_BUDGET+1)
     if len(data)>ARCHIVE_BUDGET:
         raise ValueError('APRS IQ archive exceeded download budget')
+    if len(data)!=ARCHIVE_BYTES or hashlib.sha256(data).hexdigest()!=ARCHIVE_SHA256:
+        raise ValueError('APRS IQ archive size/SHA-256 mismatch')
+    root.mkdir(parents=True, exist_ok=True)
+    if not offline:
+        archive.write_bytes(data)
     with zipfile.ZipFile(io.BytesIO(data)) as source:
         members = source.infolist()
         inventory = [dict(name=m.filename, bytes=m.file_size, compressed_bytes=m.compress_size,
@@ -46,21 +56,32 @@ def source_wave(root, offline=False):
             raise ValueError('Expected one unambiguous IQ WAV member')
         member = waves[0]
         if (member.file_size>MEMBER_BUDGET or member.flag_bits&1
-                or member.compress_type not in (zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED)):
+                or member.compress_type not in (zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED, 9)):
             raise ValueError('Unsupported or oversized APRS IQ ZIP member')
-        with source.open(member) as handle:
-            payload = handle.read(MEMBER_BUDGET+1)
-        if len(payload)!=member.file_size:
+        if member.compress_type==9:
+            # This pinned small archive uses Deflate64, absent from Python's
+            # zipfile decoder. 7-Zip writes only the selected WAV to stdout.
+            executable = shutil.which('7zz') or shutil.which('7z')
+            if not executable:
+                raise ValueError('This Deflate64 reference requires 7-Zip on PATH')
+            process = subprocess.run([executable, 'e', '-so', '-bd', '-y', str(archive), member.filename],
+                                     capture_output=True, timeout=30)
+            if process.returncode:
+                raise ValueError('7-Zip could not decode the pinned Deflate64 reference')
+            payload = process.stdout
+            backend = Path(executable).name+' Deflate64'
+        else:
+            with source.open(member) as handle:
+                payload = handle.read(MEMBER_BUDGET+1)
+            backend = 'Python zipfile'
+        if len(payload)!=member.file_size or zlib.crc32(payload)&0xffffffff!=member.CRC:
             raise ValueError('APRS IQ member is incomplete')
-    root.mkdir(parents=True, exist_ok=True)
-    if not offline:
-        archive.write_bytes(data)
     path = root/'recording.wav'
     path.write_bytes(payload)
     provenance = dict(source_url=SOURCE_URL, source_page=SOURCE_PAGE, archive_bytes=len(data),
                       archive_sha256=hashlib.sha256(data).hexdigest(), archive_member=member.filename,
                       member_bytes=len(payload), member_sha256=hashlib.sha256(payload).hexdigest(),
-                      inventory=inventory, content_oracle='not established; source page calls this APRS IQ',
+                      inventory=inventory, extraction_backend=backend, content_oracle='not established; source page calls this APRS IQ',
                       redistribution='Original archive/WAV not committed or included in the reference artifact')
     return path, provenance
 
