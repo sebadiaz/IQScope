@@ -277,6 +277,17 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(state['buffered_seconds'],8192/fs)
         self.assertIn('snapshot', result['result']['continuity_note'])
 
+    async def test_browser_fixture_injection_precedes_static_mount_and_is_not_a_production_route(self):
+        from browser_live_server import create_app as create_fixture_app
+        fixture=create_fixture_app()
+        async with fixture.router.lifespan_context(fixture):
+            async with httpx.AsyncClient(transport=httpx.ASGITransport(app=fixture),base_url='http://testserver') as client:
+                response=await client.post('/test/long-frame',headers=HEADERS)
+                self.assertEqual(response.status_code,200)
+                self.assertEqual(response.json()['buffered_seconds'],4)
+                self.assertEqual(response.json()['window_sample_limit'],1024000)
+        self.assertFalse(any(getattr(route,'path',None)=='/test/long-frame' for route in self.app.routes))
+
     async def test_live_long_fm_frame_and_kiss_use_the_retained_source_window(self):
         from test_live_afsk import long_frame_receiver, PAYLOAD
         from test_kiss import read_kiss

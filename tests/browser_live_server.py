@@ -1,6 +1,7 @@
 """Browser-test app with an injected IQ snapshot; never loaded by production."""
 import numpy as np
 from scipy import signal
+from fastapi import APIRouter
 from iqscope_web.server import create_app as base_app
 from test_lora import synchronized_preamble
 from test_lora_payload import HELLO
@@ -15,7 +16,9 @@ def create_app():
     receiver.fs=fs;receiver.frequency=100000000;receiver.connected=True
     receiver.blocks.append(x);receiver.buffered=len(x);receiver.total=100000+len(x)
 
-    @app.post('/test/long-frame')
+    test_routes=APIRouter()
+
+    @test_routes.post('/test/long-frame')
     def inject_long_frame():
         from test_live_afsk import long_frame_receiver
         replacement=long_frame_receiver()
@@ -27,4 +30,7 @@ def create_app():
         app.state.service.live_history.reset(replacement.session_id)
         return replacement.status()
 
+    # The production app mounts static files at '/'. Test endpoints must match
+    # before that catch-all mount, which otherwise answers POST with 405.
+    app.router.routes[0:0]=test_routes.routes
     return app
