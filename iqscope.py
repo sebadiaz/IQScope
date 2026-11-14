@@ -170,9 +170,12 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
         indexes = [index for index,frame in enumerate(fm_ax25['frames'])
                    if low<=frame['channel']['offset_hz']<=high]
         if indexes:
+            family='NBFM / AFSK1200 / AX.25'
             item.update(status='crc_validated_frames',validated_content=dict(
-                decoder=fm_ax25['decoder'],frame_indexes=indexes,frame_count=len(indexes),
+                decoder=fm_ax25['decoder'],family=family,frame_indexes=indexes,frame_count=len(indexes),
                 validation='AX.25 FCS and bounded control inspection; no connection-state or sender authentication'))
+            item['hypotheses']=[h for h in item['hypotheses'] if h['family']!='unknown']+[
+                dict(family=family,confidence='FCS-validated frame recovery; link mode may remain unresolved')]
     pocsag = decode_pocsag(fsk.get('candidates',[]))
     write_pocsag_artifact(pocsag, out)
     ofdm = detect_cyclic_prefix(x,fs)

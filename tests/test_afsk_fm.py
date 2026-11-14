@@ -36,6 +36,9 @@ class AfskFmTests(unittest.TestCase):
                 self.assertEqual((out/frame['wire_artifact']).read_bytes(),bytes.fromhex(frame['hex']))
                 self.assertEqual((out/frame['payload_artifact']).read_bytes(),payload)
             self.assertTrue(any(s['validated_content'] for s in report['signals']))
+            validated=next(s for s in report['signals'] if s['validated_content'])
+            self.assertIn('NBFM / AFSK1200 / AX.25',[h['family'] for h in validated['hypotheses']])
+            self.assertNotIn('unknown',[h['family'] for h in validated['hypotheses']])
 
     def test_fm_iq_recovers_crc_payload_and_rf_channel(self):
         for baud in (1200,1194.8):
