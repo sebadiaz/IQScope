@@ -528,6 +528,35 @@ def main():
                         response = page.request.get(urljoin(page.url,link.get_attribute('href')))
                         assert response.ok and response.json()==recorded_trial
                         page.screenshot(path='browser-artifacts/aprs-radio.png',full_page=True)
+                    if os.environ.get('IQSCOPE_TEST_APRS_PICO')=='1':
+                        reference = json.loads(Path('corpus-cache/aprs-pico/summary.json').read_text())
+                        page.locator('#iq-file').set_input_files('corpus-cache/aprs-pico/aprs_pico_beacon_demo.wav')
+                        page.get_by_role('button',name='Analyser automatiquement').click()
+                        expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                        expect(page.locator('.aprs-position')).to_have_count(reference['checked_frames'])
+                        expect(page.locator('.aprs-position').first).to_have_text('Position APRS : 48.755882°, 9.190105°')
+                        expect(page.locator('.aprs-altitude').first).to_contain_text('1585 ft (483.1 m)')
+                        expect(page.locator('.ax25-addresses').first).to_contain_text('DL3TG-9 → APPIPI')
+                        expect(page.locator('#metric-frames')).to_have_text(str(reference['checked_frames']))
+                        expect(page.locator('#center-label')).to_contain_text('aucune fréquence RF')
+                        expect(page.locator('.aprs-motion')).to_have_count(0)
+                        expect(page.locator('.aprs-telemetry')).to_have_count(0)
+                        response = page.request.get(urljoin(page.url,page.locator('#download').get_attribute('href')))
+                        assert response.ok
+                        pico_report = response.json()
+                        assert pico_report['source_kind']=='receiver_audio' and pico_report['center_frequency_hz'] is None
+                        pico_trial = next(t for t in pico_report['wideband_trials'] if t['decoder']=='afsk1200_ax25')
+                        assert [f['hex'] for f in pico_trial['frames']]==reference['frame_hex']
+                        for frame in pico_trial['frames']:
+                            assert frame['fcs_valid']
+                            position = frame['fields']['aprs']
+                            assert abs(position['latitude_deg']-48.755881719809096)<1e-12
+                            assert abs(position['longitude_deg']-9.190105164782665)<1e-12
+                            assert position['altitude_ft']==1585 and abs(position['altitude_m']-483.108)<1e-12
+                        link = page.get_by_role('link',name='Télécharger les trames AX.25 validées')
+                        response = page.request.get(urljoin(page.url,link.get_attribute('href')))
+                        assert response.ok and response.json()==pico_trial
+                        page.screenshot(path='browser-artifacts/aprs-pico.png',full_page=True)
                     audio,fs = afsk_fixture()
                     wave = Path(directory)/'afsk.wav'
                     mp3 = Path(directory)/'afsk.mp3'

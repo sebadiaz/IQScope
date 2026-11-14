@@ -40,6 +40,8 @@ jobs:
         run: python scripts/pocsag_radio_reference.py
       - name: Verify recorded ISS APRS audio against the independently published packet
         run: python scripts/aprs_radio_reference.py
+      - name: Verify Pico sound-card recording against published APRS position and altitude
+        run: python scripts/aprs_pico_reference.py
       - run: python tests/browser_smoke.py
         env:
           NO_PROXY: 127.0.0.1,localhost
@@ -47,6 +49,7 @@ jobs:
           IQSCOPE_TEST_PSK_RADIO: '1'
           IQSCOPE_TEST_POCSAG_RADIO: '1'
           IQSCOPE_TEST_APRS_RADIO: '1'
+          IQSCOPE_TEST_APRS_PICO: '1'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -71,6 +74,10 @@ jobs:
             corpus-cache/aprs-radio/results/provenance.json
             corpus-cache/aprs-radio/results/report.json
             corpus-cache/aprs-radio/results/ax25-frames.json
+            corpus-cache/aprs-pico/summary.json
+            corpus-cache/aprs-pico/results/provenance.json
+            corpus-cache/aprs-pico/results/report.json
+            corpus-cache/aprs-pico/results/ax25-frames.json
           if-no-files-found: ignore
   real-iq:
     runs-on: ubuntu-latest

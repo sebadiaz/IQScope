@@ -434,6 +434,9 @@ has published syntax examples and synthetic receiver fixtures, plus one
 byte against published packet bits through automatic WAV import, CRC checks,
 JSON export and the browser interface. The decoded clip is 0.79825 seconds;
 receiver-audio import accepts files of at least 0.2 seconds without padding.
+A [Pico hardware sound-card reference](docs/APRS_PICO.md) is also prepared
+for compressed coordinates and altitude against a published transmitter
+configuration; its recorded-WAV/browser checks are pending CI validation.
 This receiver-audio reference does not validate APRS positions/telemetry or
 an original RF IQ frontend.
 
