@@ -35,8 +35,8 @@ def decode_audio(path,seconds=20):
     if len(process.stdout)>seconds*8000*4:
         raise ValueError('Decoded audio exceeded duration budget')
     audio = np.frombuffer(process.stdout,dtype='<f4')
-    if len(audio)<8000 or not np.all(np.isfinite(audio)):
-        raise ValueError('Need at least one second of finite decoded audio')
+    if len(audio)<1600 or not np.all(np.isfinite(audio)):
+        raise ValueError('Need at least 0.2 seconds of finite decoded audio')
     return audio,8000
 
 

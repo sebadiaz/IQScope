@@ -11,6 +11,38 @@ from iqscope_audio import analyze_audio, decode_audio
 
 @unittest.skipUnless(shutil.which('ffmpeg'),'ffmpeg is an optional audio dependency')
 class AudioTests(unittest.TestCase):
+    def test_short_packet_audio_import_and_json_export(self):
+        from test_afsk import fixture
+        import json
+        audio, fs = fixture(payload=b'>short packet')
+        # One independently encoded packet with its opening/closing flags.
+        audio = audio[:len(audio)//4]
+        self.assertTrue(.2 <= len(audio)/fs < 1)
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)/'short.wav'
+            wavfile.write(path, fs, audio.astype(np.float32))
+            out = Path(directory)/'out'
+            report = analyze_audio(path, out)
+            self.assertEqual(report['analyzed_seconds'], len(audio)/fs)
+            trial = next(t for t in report['wideband_trials'] if t['decoder']=='afsk1200_ax25')
+            self.assertEqual(len(trial['frames']), 1)
+            self.assertEqual(trial['frames'][0]['fields']['text'], '>short packet')
+            self.assertTrue(trial['frames'][0]['fcs_valid'])
+            self.assertIsNone(report['center_frequency_hz'])
+            self.assertEqual(json.loads((out/report['frame_artifact']).read_text()), trial)
+
+    def test_short_audio_boundary_and_silence_abstention(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)/'short.wav'
+            wavfile.write(path, 8000, np.zeros(1599, dtype=np.float32))
+            with self.assertRaisesRegex(ValueError, '0.2 seconds'):
+                decode_audio(path)
+            wavfile.write(path, 8000, np.zeros(1600, dtype=np.float32))
+            report = analyze_audio(path, Path(directory)/'out')
+            self.assertEqual(report['analyzed_seconds'], .2)
+            self.assertTrue(all(not t.get('candidates') and not t.get('frames') and not t.get('messages')
+                                for t in report['wideband_trials']))
+
     def test_cw_report_keeps_audio_separate_from_rf(self):
         from test_cw import fixture,TEXT
         x,fs = fixture()

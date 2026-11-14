@@ -505,6 +505,29 @@ def main():
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
                 with tempfile.TemporaryDirectory() as directory:
                     from test_afsk import fixture as afsk_fixture, TEXT as AFSK_TEXT
+                    if os.environ.get('IQSCOPE_TEST_APRS_RADIO')=='1':
+                        recorded_text = '>ARISS - International Space Station'
+                        page.locator('#iq-file').set_input_files('corpus-cache/aprs-radio/ISSpkt.wav')
+                        page.get_by_role('button',name='Analyser automatiquement').click()
+                        expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                        expect(page.locator('.ax25-text')).to_have_text(recorded_text)
+                        expect(page.locator('.ax25-addresses')).to_contain_text('RS0ISS → CQ')
+                        expect(page.locator('#metric-frames')).to_have_text('1')
+                        expect(page.locator('#center-label')).to_contain_text('aucune fréquence RF')
+                        expect(page.locator('.aprs-position')).to_have_count(0)
+                        response = page.request.get(urljoin(page.url,page.locator('#download').get_attribute('href')))
+                        assert response.ok
+                        recorded_report = response.json()
+                        assert recorded_report['source_kind']=='receiver_audio'
+                        assert recorded_report['center_frequency_hz'] is None
+                        recorded_trial = next(t for t in recorded_report['wideband_trials'] if t['decoder']=='afsk1200_ax25')
+                        assert len(recorded_trial['frames'])==1
+                        assert recorded_trial['frames'][0]['fcs_valid']
+                        assert recorded_trial['frames'][0]['fields']['text']==recorded_text
+                        link = page.get_by_role('link',name='Télécharger les trames AX.25 validées')
+                        response = page.request.get(urljoin(page.url,link.get_attribute('href')))
+                        assert response.ok and response.json()==recorded_trial
+                        page.screenshot(path='browser-artifacts/aprs-radio.png',full_page=True)
                     audio,fs = afsk_fixture()
                     wave = Path(directory)/'afsk.wav'
                     mp3 = Path(directory)/'afsk.mp3'

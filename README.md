@@ -429,8 +429,12 @@ The initial end-to-end tests use synthetic continuous direct-2-FSK recordings,
 NRZI with both polarities, independent FCS generation, stuffed payloads,
 corrupted FCS, truncation, random bits and bounded search. The BPSK path also has
 [receiver-audio satellite references](docs/PSK_RADIO.md). APRS interpretation
-currently has published syntax examples and synthetic receiver fixtures;
-independent recorded APRS RF validation remains outstanding.
+has published syntax examples and synthetic receiver fixtures, plus one
+[independent recorded ISS status packet](docs/APRS_RADIO.md) with a prepared
+audio-import/JSON regression against published packet bits. The bits pass
+locally; execution on the WAV and browser remains pending publication to CI.
+This receiver-audio reference does not validate APRS positions/telemetry or
+an original RF IQ frontend.
 
 The AX.25 synthetic IQ checks exercise direct 1200-baud NRZI and a translated
 300-baud wideband channel. The shared detector can merge sidelobes into bands
