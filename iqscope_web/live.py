@@ -9,6 +9,9 @@ import uuid
 import numpy as np
 from scipy import signal
 
+WINDOW_SECONDS = 4
+MAX_WINDOW_SAMPLES = 8_000_000
+
 
 def receive_exact(sock, count, stop):
     data = bytearray()
@@ -89,13 +92,7 @@ class LiveReceiver:
                     data = receive_exact(sock, 65536, self.stop_event)
                     values = (np.frombuffer(data, dtype=np.uint8).astype(np.float32)-127.5)/127.5
                     iq = values[::2] + 1j*values[1::2]
-                    with self.lock:
-                        self.blocks.append(iq)
-                        self.buffered += len(iq)
-                        self.total += len(iq)
-                        while self.blocks and self.buffered-len(self.blocks[0]) >= self.fs:
-                            self.buffered -= len(self.blocks.popleft())
-                        self.last_data = time.time()
+                    self._append_samples(iq)
         except Exception as exc:
             if not self.stop_event.is_set():
                 self.error = str(exc)
@@ -103,12 +100,32 @@ class LiveReceiver:
             self.sock = None
             self.running = self.connected = False
 
+    def _append_samples(self, iq):
+        """Retain the exact latest bounded interval, including a partial oldest block."""
+        with self.lock:
+            self.blocks.append(iq)
+            self.buffered += len(iq)
+            self.total += len(iq)
+            limit = min(MAX_WINDOW_SAMPLES, int(WINDOW_SECONDS*self.fs))
+            excess = self.buffered-limit
+            while excess>0:
+                oldest = self.blocks.popleft()
+                removed = min(excess, len(oldest))
+                if removed<len(oldest):
+                    self.blocks.appendleft(oldest[removed:])
+                self.buffered -= removed
+                excess -= removed
+            self.last_data = time.time()
+
     def status(self):
         with self.lock:
             total, buffered = self.total, self.buffered
+            limit = min(MAX_WINDOW_SAMPLES, int(WINDOW_SECONDS*self.fs))
             context={'running':self.running,'connected':self.connected,'error':self.error,
                      'sample_rate':self.fs,'center_frequency_hz':self.frequency,
-                     'session_id':self.session_id,'last_data_time':self.last_data}
+                     'session_id':self.session_id,'last_data_time':self.last_data,
+                     'buffered_seconds':buffered/self.fs,
+                     'window_sample_limit':limit,'window_seconds_limit':limit/self.fs}
         return dict(context,received_samples=total,buffered_samples=buffered,
                 window_start_sample=total-buffered,
                 continuity='unknown: rtl_tcp provides no sample timestamps or overflow counters',
@@ -117,9 +134,11 @@ class LiveReceiver:
 
     def snapshot_context(self):
         with self.lock:
+            limit = min(MAX_WINDOW_SAMPLES, int(WINDOW_SECONDS*self.fs))
             return {'samples':np.concatenate(list(self.blocks)) if self.blocks else None,
                     'source_sample_start':self.total-self.buffered if self.blocks else 0,
                     'sample_rate':self.fs,'center_frequency_hz':self.frequency,
+                    'window_sample_limit':limit,'window_seconds_limit':limit/self.fs,
                     'session_id':self.session_id,'connected':self.connected}
 
     def snapshot(self):

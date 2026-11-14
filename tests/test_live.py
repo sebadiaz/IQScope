@@ -38,7 +38,7 @@ class FakeSocket:
 class LiveTests(unittest.TestCase):
     def test_wire_commands_conversion_and_bounded_window(self):
         block = bytes([255, 0]) * 32768
-        endpoint = FakeSocket(b'RTL0'+struct.pack('>II', 5, 29)+block*12)
+        endpoint = FakeSocket(b'RTL0'+struct.pack('>II', 5, 29)+block*40)
         receiver = LiveReceiver()
         receiver.fs = 256000
         receiver.frequency = 1090000000
@@ -47,8 +47,10 @@ class LiveTests(unittest.TestCase):
         self.assertEqual(bytes(endpoint.commands), b''.join(struct.pack('>BI', *v) for v in ((1,1090000000),(2,256000),(3,0))))
         data, start = receiver.snapshot()
         self.assertTrue(np.allclose(data, 1-1j))
-        self.assertLessEqual(len(data), 256000+32768)
-        self.assertEqual(start+len(data), 12*32768)
+        self.assertEqual(len(data), 4*256000)
+        self.assertEqual(start+len(data), 40*32768)
+        self.assertEqual(receiver.status()['buffered_seconds'],4)
+        self.assertEqual(receiver.status()['window_sample_limit'],4*256000)
         self.assertFalse(receiver.status()['connected'])
         self.assertIn('closed', receiver.status()['error'])
         self.assertEqual(len(receiver.spectrum()['power_db']), 1024)
@@ -59,6 +61,33 @@ class LiveTests(unittest.TestCase):
             receiver._receive(1234)
         self.assertIn('not an rtl_tcp', receiver.error)
         self.assertEqual(receiver.total, 0)
+
+    def test_exact_latest_interval_and_eight_million_sample_limit_at_all_live_rates(self):
+        for fs in (256000,1024000,2048000,2400000):
+            receiver=LiveReceiver();receiver.fs=fs
+            limit=min(4*fs,8000000)
+            count=limit+100001
+            for start in range(0,count,32768):
+                block=np.arange(start,min(count,start+32768),dtype=np.float32).astype(np.complex64)
+                receiver._append_samples(block)
+                self.assertLessEqual(receiver.buffered,limit)
+            context=receiver.snapshot_context()
+            self.assertEqual(len(context['samples']),limit)
+            self.assertEqual(context['source_sample_start'],count-limit)
+            self.assertEqual(context['samples'][0].real,count-limit)
+            self.assertEqual(context['samples'][-1].real,count-1)
+            self.assertEqual(context['window_sample_limit'],limit)
+            self.assertEqual(context['window_seconds_limit'],limit/fs)
+            self.assertAlmostEqual(receiver.status()['buffered_seconds'],limit/fs)
+
+    def test_small_partial_and_oversized_blocks_keep_every_latest_sample(self):
+        receiver=LiveReceiver();receiver.fs=256000
+        limit=4*receiver.fs
+        receiver._append_samples(np.arange(limit+17,dtype=np.float32).astype(np.complex64))
+        receiver._append_samples(np.arange(limit+17,limit+29,dtype=np.float32).astype(np.complex64))
+        data,start=receiver.snapshot()
+        self.assertEqual(start,29)
+        np.testing.assert_array_equal(data.real,np.arange(29,limit+29,dtype=np.float32))
 
     def test_stopped_receiver_does_not_wait_for_bytes(self):
         stop = threading.Event()

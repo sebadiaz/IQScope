@@ -677,6 +677,7 @@ async function pollLive() {
     for(const id of ['live-port','live-rate','live-frequency']) $(id).disabled=state.running;
     $('live-dot').style.background=state.connected ? '#64e5c1' : '#64748b';
     $('connection-text').textContent=state.connected ? `Connecté · ${(state.received_samples/1e6).toFixed(1)} Méch reçus` : state.running ? 'Connexion…' : 'SDR déconnecté';
+    $('live-buffer').textContent=`Fenêtre reçue : ${state.buffered_seconds.toFixed(3)} s · maximum ${state.window_seconds_limit.toFixed(3)} s à ce débit.`;
     if(state.error) {status(state.error,'error');return;}
     if(!state.connected) return;
     const {spectrum}=await api('/api/live/spectrum',undefined,'GET');

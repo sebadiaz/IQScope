@@ -111,11 +111,18 @@ Live rates offered: 256 kS/s, 1.024, 2.048 and 2.4 MS/s. For ADS-B, select
 **1090 MHz** with at least **2 MS/s**, using a suitable receiver and antenna.
 
 The spectrum is polled approximately four times per second while decoding runs
-on independent snapshots of the latest approximately one second, approximately
-every four seconds when enabled. CPU speed can reduce the cadence. This is a
+on independent snapshots of the latest **up to four seconds**, capped at
+8 million samples (3.906 s at 2.048 MS/s, 3.333 s at 2.4 MS/s), approximately
+every four seconds when enabled. The UI shows the retained duration and limit;
+reports preserve the source interval and window limits. CPU speed can reduce the cadence. This is a
 live analysis preview, **not guaranteed lossless continuous packet decoding**.
 There can be gaps between analyzed windows. The UI waterfall also represents
 sampled windows, not every received sample.
+
+The longer receive window can retain AX.25 frames longer than one second;
+a quantized synthetic rtl_tcp wire test and Chromium exercise this case.
+This does not establish lossless reception or a hardware SDR benchmark.
+See [live window bounds and validation](docs/LIVE_WINDOWS.md).
 
 `rtl_tcp` does not supply hardware sample timestamps, overflow counters or tuning
 readback. Received sample counts cannot prove that no upstream data was lost.

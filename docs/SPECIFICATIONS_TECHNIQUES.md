@@ -1100,6 +1100,17 @@ L'import audio essaie aussi POCSAG sur les niveaux FM démodulés à 8 kHz. Troi
 Le parseur peut corriger au plus deux bits sur l'ensemble adresse/données/terminaison d'un message, grâce au syndrome BCH(31,21) complété par la parité paire. Les 529 masques de poids 0–2 ont des syndromes distincts et le mot proposé est contrôlé. La synchronisation reste exacte ; les messages incomplets, non corrigeables ou dépassant la somme autorisée sont refusés. Les mots reçus restent exportés séparément des mots décodés, avec rôle et positions des inversions. Le mode strict reste accessible par `max_corrected_bits=0`. L'interface marque les corrections sans modifier le compteur CRC. Les tests couvrent les positions d'une/deux erreurs, le rejet de trois erreurs sur références, la limite globale et les voies IQ/audio. Cette correction n'authentifie pas l'émetteur et peut choisir un autre mot valide au-delà de son rayon. Le corpus radio existant conserve ses sorties à zéro correction ; une amélioration sur enregistrement corrompu reste à démontrer. Voir [POCSAG.md](POCSAG.md).
 
 
+### Fenêtres SDR de quatre secondes, bornées en échantillons
+
+Le tampon direct conserve jusqu'à quatre secondes et huit millions
+d'échantillons, avec coupe exacte du plus ancien bloc. L'interface affiche la
+durée reçue et son maximum ; les rapports conservent les limites et indices
+source. Une longue trame AX.25 synthétique, quantifiée au format rtl_tcp,
+est récupérée dans cette fenêtre mais reste tronquée dans la dernière seconde.
+Les quatre débits proposés, le contrat de réception en mémoire et Chromium
+sont vérifiés. Les analyses restent des instantanés indépendants, sans garantie
+de couverture continue ou de cadence matérielle. Voir [LIVE_WINDOWS.md](LIVE_WINDOWS.md).
+
 ### Export KISS des trames FM/AFSK IQ
 
 La voie IQ FM/AFSK propose un fichier KISS des trames à FCS valide, sur un

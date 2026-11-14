@@ -38,8 +38,8 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
             pass
         self.temp.cleanup()
 
-    async def wait_job(self, identifier):
-        for _ in range(150):
+    async def wait_job(self, identifier, attempts=150):
+        for _ in range(attempts):
             result = (await self.client.get(f'/api/jobs/{identifier}')).json()
             if result['status'] in ('completed','failed'):
                 return result
@@ -270,7 +270,35 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result['result']['source_sample_end'],20000)
         self.assertEqual(result['result']['source_session_id'],receiver.session_id)
         self.assertEqual(result['result']['source_sample_reference'],'received_samples_in_session')
+        self.assertEqual(result['result']['source_window_limits'],{'samples':4096000,'seconds':4})
+        state=(await self.client.get('/api/live/status')).json()
+        self.assertEqual(state['window_sample_limit'],4096000)
+        self.assertEqual(state['window_seconds_limit'],4)
+        self.assertEqual(state['buffered_seconds'],8192/fs)
         self.assertIn('snapshot', result['result']['continuity_note'])
+
+    async def test_live_long_fm_frame_and_kiss_use_the_retained_source_window(self):
+        from test_live_afsk import long_frame_receiver, PAYLOAD
+        from test_kiss import read_kiss
+        receiver=long_frame_receiver();receiver.connected=True;receiver.error=None
+        self.app.state.service.receiver=receiver
+        self.app.state.service.live_history.reset(receiver.session_id)
+        submitted=await self.client.post('/api/live/analyze',headers=HEADERS)
+        self.assertEqual(submitted.status_code,202)
+        job=await self.wait_job(submitted.json()['id'],attempts=1000)
+        self.assertEqual(job['status'],'completed',job.get('error'))
+        report=job['result']
+        self.assertGreater(report['source_sample_start'],0)
+        self.assertEqual(report['source_sample_end']-report['source_sample_start'],1024000)
+        self.assertEqual(report['source_window_limits'],{'samples':1024000,'seconds':4})
+        trial=next(t for t in report['wideband_trials'] if t['decoder']=='afsk1200_fm_ax25')
+        self.assertEqual(len(trial['frames']),1)
+        frame=trial['frames'][0]
+        self.assertTrue(frame['fcs_valid'])
+        self.assertEqual(bytes.fromhex(frame['fields']['payload_hex']),PAYLOAD)
+        response=await self.client.get(f"/api/jobs/{job['id']}/artifacts/{trial['kiss_artifact']}")
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(read_kiss(response.content),[(0,0,bytes.fromhex(frame['hex'])[:-2])])
 
     async def test_wave_and_sdriq_uploads_use_embedded_metadata(self):
         import io

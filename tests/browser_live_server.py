@@ -14,4 +14,17 @@ def create_app():
     receiver=app.state.service.receiver
     receiver.fs=fs;receiver.frequency=100000000;receiver.connected=True
     receiver.blocks.append(x);receiver.buffered=len(x);receiver.total=100000+len(x)
+
+    @app.post('/test/long-frame')
+    def inject_long_frame():
+        from test_live_afsk import long_frame_receiver
+        replacement=long_frame_receiver()
+        # The fake wire source ends after its fixture. Expose its retained
+        # snapshot as connected for UI tests; no hardware/socket is involved.
+        replacement.connected=True;replacement.error=None
+        app.state.service.receiver.stop()
+        app.state.service.receiver=replacement
+        app.state.service.live_history.reset(replacement.session_id)
+        return replacement.status()
+
     return app

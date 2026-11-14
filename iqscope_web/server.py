@@ -291,6 +291,8 @@ def create_app(root=None):
             report['source_sample_end'] = start+len(data)
             report['source_session_id'] = context['session_id']
             report['source_sample_reference'] = 'received_samples_in_session'
+            report['source_window_limits'] = {'samples':context['window_sample_limit'],
+                                              'seconds':context['window_seconds_limit']}
             report['continuity_note'] = 'Independent latest-window snapshot, not lossless continuous decoding'
             lora=next(t for t in report['wideband_trials'] if t['decoder']=='lora_preamble')
             report['live_history_summary']=service.live_history.observe(context['session_id'],lora.get('frames',[]),fs,start,start+len(data),lora.get('mode','standard'))

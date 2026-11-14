@@ -938,6 +938,7 @@ def main():
                 page.get_by_role('tab',name='SDR en direct').click()
                 assert page.locator('#live-panel').is_visible()
                 assert page.locator('#live-frequency').input_value() == '100'
+                expect(page.locator('#live-buffer')).to_contain_text('maximum 4.000 s',timeout=30000)
                 page.locator('#auto-live').uncheck()
                 expect(page.locator('#live-experimental-lora')).not_to_be_checked()
                 page.locator('#live-experimental-lora').check()
@@ -971,6 +972,27 @@ def main():
                     target=Path(download_directory)/'history-payload.bin'
                     packet_download.value.save_as(str(target))
                     assert target.read_bytes()==b'HELLO'
+
+                # A long frame crosses the former one-second receive boundary.
+                injected=page.request.post(urljoin(page.url,'/test/long-frame'),headers={'X-IQScope':'local'})
+                assert injected.ok and injected.json()['buffered_seconds']==4
+                page.locator('#auto-live').check()
+                expect(page.locator('.fm-ax25-integrity')).to_have_count(1,timeout=30000)
+                expect(page.locator('#live-buffer')).to_contain_text('4.000 s · maximum 4.000 s')
+                expect(page.locator('#live-coverage')).to_contain_text('Fenêtre analysée : 4.000 s',timeout=30000)
+                from test_live_afsk import PAYLOAD as LONG_LIVE_PAYLOAD
+                expect(page.locator('.ax25-text')).to_have_text(LONG_LIVE_PAYLOAD.decode())
+                response=page.request.get(urljoin(page.url,page.locator('#download').get_attribute('href')))
+                long_report=response.json()
+                assert long_report['source_window_limits']=={'samples':1024000,'seconds':4}
+                assert long_report['source_sample_end']-long_report['source_sample_start']==1024000
+                long_trial=next(t for t in long_report['wideband_trials'] if t['decoder']=='afsk1200_fm_ax25')
+                assert len(long_trial['frames'])==1 and long_trial['frames'][0]['fcs_valid']
+                assert bytes.fromhex(long_trial['frames'][0]['fields']['payload_hex'])==LONG_LIVE_PAYLOAD
+                response=page.request.get(urljoin(page.url,page.locator('.ax25-kiss-download').get_attribute('href')))
+                assert response.ok and response.body()==b'\xc0\x00'+bytes.fromhex(long_trial['frames'][0]['hex'])[:-2]+b'\xc0'
+                page.locator('#auto-live').uncheck()
+                page.screenshot(path='browser-artifacts/live-long-ax25.png',full_page=True)
 
                 page.set_viewport_size({'width':390,'height':844})
                 assert page.evaluate('() => document.documentElement.scrollWidth <= innerWidth')
