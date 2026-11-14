@@ -1,4 +1,4 @@
-# APRS : positions, objets, items et télémétrie classique
+# APRS : positions, objets, items et télémétrie
 
 IQScope interprète automatiquement un premier profil APRS dans les charges
 utiles AX.25 UI de PID `0xf0`. Les trames doivent déjà avoir passé le contrôle
@@ -23,6 +23,7 @@ Un fichier audio ne fournit toujours aucun centre RF.
 | Une annotation `/A=` suivie de six chiffres non signés | Altitude en pieds et mètres ; référence verticale non déterminée |
 | Objet `;` ou item `)` ponctuel | Nom exact, état déclaré actif/retiré, coordonnées non compressées ou base 91 pour les annonces actives |
 | Télémétrie classique `T#`, séquence numérique ou `MIC` | Cinq valeurs brutes 0–255, huit bits reçus et définitions antérieures éligibles avec provenance |
+| Télémétrie base 91 dans un commentaire de position de station | Compteur, un à cinq canaux bruts 0–8280 et, si présent, mot binaire avec B1 au poids faible |
 
 Les champs interprétés sont ajoutés à `frame.fields.aprs`, dans les rapports
 JSON existants. L’interface affiche les valeurs reconnues et garde le texte
@@ -49,7 +50,7 @@ restent des notions distinctes.
 - Plusieurs annotations d’altitude, les valeurs signées ou un nombre de
   chiffres différent restent bruts. Aucun choix arbitraire entre annotations.
 - Mic-E, géométrie des objets de zone, encapsulations tierces, NMEA,
-  télémétrie étendue/base 91, météo détaillée et extensions supplémentaires ne sont pas encore
+  télémétrie décimale étendue, météo détaillée et extensions supplémentaires ne sont pas encore
   interprétés. Leurs charges utiles AX.25 restent exportables ; un format non
   pris en charge n’est pas présenté comme une position décodée.
 - Les limites et pertes possibles des récepteurs AX.25 restent applicables.
@@ -150,7 +151,7 @@ peuvent ajouter des interprétations déclarées, selon les règles ci-dessous.
 Le lecteur de syntaxe seul n'applique aucune définition. Cette étape n'introduit
 pas de registre interfenêtres.
 
-Les variantes étendues, valeurs signées/flottantes, champs raccourcis ou
+Les variantes T# étendues, valeurs signées/flottantes, champs raccourcis ou
 incomplets restent hors profil. Un corps non interprété ne fait pas perdre la
 trame à FCS valide et n'expose aucune mesure partielle. L'intégrité du paquet
 reste distincte de la véracité d'une mesure et de l'identité de son émetteur.
@@ -209,3 +210,53 @@ expiration, remplacements, conflits, idempotence, données brutes et débordemen
 puis les voies IQ/audio/BPSK et WAV/JSON. Chromium vérifie l'interprétation, la
 provenance et le refus d'associer des définitions adressées à une autre station.
 La validation APRS sur enregistrement indépendant reste à réaliser.
+
+## Télémétrie base 91 dans les commentaires de position
+
+Référence primaire : [spécification de Heikki Hannikainen, OH7LZB, 2012-01-11](https://github.com/hessu/aprs-specs/blob/master/aprs-base91-comment-telemetry.txt).
+Le profil accepte un unique bloc `|…|` dans le commentaire d'une position de
+station non compressée ou compressée. Deux caractères codent chaque valeur :
+d'abord le compteur, puis un à cinq canaux analogiques. Un septième couple
+code le mot binaire. La plage codée est 0–8280 ; elle n'établit pas la résolution
+réelle d'un capteur et aucune valeur 8 bits n'est artificiellement agrandie.
+
+Le résultat complète `fields.aprs.telemetry` avec `encoding: base91_comment`.
+Le statut et les coordonnées de position restent présents, sans trame ni CRC
+supplémentaire. La télémétrie peut être lue avec une position ambiguë ou nulle,
+sans inventer de coordonnées. Les formats de position non interprétés, Mic-E
+et les commentaires d'objets/items ne reçoivent pas cette nouvelle extraction.
+
+Les canaux absents restent absents. Sans septième couple, `digital_status`
+vaut `not_transmitted` et aucun bit binaire n'est inventé. Sinon :
+
+- `digital_word_raw` conserve l'entier complet et `digital_wire_hex` ses deux
+  octets encodés ; `digital_reserved_value` conserve sa partie au-dessus de B8.
+- `digital_bits` et `digital_raw` sont en ordre **canonique B1–B8**, obtenu du
+  poids faible au poids fort. Ce n'est pas l'ordre d'affichage binaire MSB-first
+  d'un entier. Aucun canal B9 ou suivant n'est déduit des bits réservés.
+- `sequence` conserve les deux caractères et le compteur numérique. Aucun
+  enroulement particulier, débit ou taux de perte n'est supposé.
+
+Le commentaire original, son hexadécimal et les octets du bloc restent
+conservés. `extension_span` exprime des offsets **en octets du commentaire**.
+Plusieurs séparateurs, couples invalides ou tailles hors profil ne produisent
+aucune valeur partielle ; la position peut rester interprétable. Après le bloc,
+seule une fin vide ou une syntaxe DAO `!Wdd!`/`!wxx!` est reconnue et conservée,
+sans affiner les coordonnées. Les autres suffixes restent hors profil.
+
+Les octets entre séparateurs ne sont pas lus comme des annotations d'altitude,
+même s'ils ressemblent à `/A=…`. Le masquage conserve les séparations : retirer
+le bloc ne doit pas fabriquer une annotation entre deux morceaux de texte.
+Une syntaxe DAO ressemblante à l'intérieur du bloc ne modifie pas la position.
+
+La même association de définitions PARM/UNIT/EQNS/BITS reste applicable, avec
+les mêmes contraintes de source/SSID, canal, frontend, temps et fenêtre.
+Les calculs n'ajoutent pas les canaux manquants et l'ordre B1–B8 est conservé
+avant de comparer les bits au sens déclaré. Les unités ne sont pas converties
+implicitement et les valeurs brutes restent exportées.
+
+Dix-huit tests supplémentaires couvrent les exemples publiés, bornes, bits,
+octets, abstentions, annotations concurrentes, CRC/PID et voies IQ/audio/BPSK,
+puis WAV/JSON. Chromium vérifie position et télémétrie simultanées, données
+minimales, sens B1, calculs et maintien du compteur CRC. La validation sur un
+enregistrement APRS indépendant reste à réaliser.

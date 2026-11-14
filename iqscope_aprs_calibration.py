@@ -7,7 +7,7 @@ from itertools import groupby
 import math
 import re
 
-from iqscope_aprs import parse_aprs_telemetry
+from iqscope_aprs import parse_aprs_telemetry, parse_aprs_position
 
 _TARGET = re.compile(r'([A-Z0-9]{1,6})(?:-([0-9]|1[0-5]))?')
 _NUMBER = re.compile(r'[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?')
@@ -119,8 +119,12 @@ def enrich_aprs_telemetry_frames(frames,max_age_seconds=600):
             continue
         parsed=parse_aprs_telemetry(payload) or parse_aprs_definition(payload)
         if parsed is None:
-            continue
+            parsed=parse_aprs_position(payload)
+            if parsed is None:
+                continue
         fields['aprs']=parsed
+        if 'definition' not in parsed and 'telemetry' not in parsed:
+            continue
         key=_domain(frame)
         start,end=frame.get('time_seconds'),frame.get('time_end_seconds')
         timed=_finite(start) and _finite(end) and 0<=start<end
@@ -136,7 +140,7 @@ def enrich_aprs_telemetry_frames(frames,max_age_seconds=600):
                 definition['association_eligibility']='unusable_definition_timing'
                 continue
             events.append((end,1,index,key))
-        elif parsed['status']=='decoded_telemetry':
+        elif 'telemetry' in parsed:
             t=parsed['telemetry']
             t['definition_context']=dict(status='no_eligible_definitions',max_age_seconds=max_age_seconds,
                 scope='same source/SSID, frontend and channel; self-addressed definitions fully received before sample; this trial only')
@@ -191,7 +195,7 @@ def enrich_aprs_telemetry_frames(frames,max_age_seconds=600):
                 analog.append(channel)
             sense=selected.get('BITS',{}).get('definition',{}).get('sense_bits')
             digital=[]
-            for slot,raw in enumerate(t['digital_bits']):
+            for slot,raw in enumerate(t.get('digital_bits',[])):
                 channel=dict(channel=slot+1,raw_bit=raw)
                 for name,field in (('PARM','name'),('UNIT','label')):
                     value=label(name,slot+5)

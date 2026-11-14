@@ -1,4 +1,4 @@
-"""Bounded APRS position and classic telemetry syntax, without identity claims.
+"""Bounded APRS position and telemetry syntax, without identity claims.
 
 The enclosing AX.25 decoder checks FCS before calling this payload parser.
 This module alone provides syntax interpretation, not packet validation.
@@ -11,6 +11,46 @@ _TIME = re.compile(r'[0-9]{6}[zh/]')
 _COURSE_SPEED = re.compile(rb'([0-9]{3})/([0-9]{3})')
 _ALTITUDE = re.compile(rb'/A=([0-9]{6})(?![0-9])')
 _TELEMETRY = re.compile(rb'T#([0-9]{3},|MIC,?)((?:[0-9]{3},){5})([01]{8})([\s\S]*)')
+
+
+def parse_aprs_comment_telemetry(comment):
+    """Decode one base-91 telemetry block; retain comment and extension bytes.
+
+    Only an empty suffix or unapplied W/w DAO syntax is supported. Multiple
+    delimiters, malformed pairs and other suffixes never yield partial values.
+    This helper alone supplies syntax, not position or enclosing FCS validation.
+    """
+    if not isinstance(comment,(bytes,bytearray)) or len(comment)>256 or b'|' not in comment:
+        return None
+    result=dict(status='unsupported_or_malformed_comment_telemetry')
+    if comment.count(b'|')!=2:
+        return dict(result,status='ambiguous_or_incomplete_comment_telemetry')
+    start,end=comment.index(b'|'),comment.rindex(b'|')
+    block=bytes(comment[start+1:end]);suffix=bytes(comment[end+1:])
+    result.update(extension_hex=bytes(comment[start:end+1]).hex(),
+                  extension_span=dict(start=start,end=end+1,reference='position_comment_bytes'))
+    if not 4<=len(block)<=14 or len(block)%2:
+        return result
+    values=[_base91(block[i:i+2]) for i in range(0,len(block),2)]
+    if any(value is None for value in values):
+        return result
+    if suffix and not (re.fullmatch(rb'!W[0-9]{2}!',suffix) or re.fullmatch(rb'!w[!-{]{2}!',suffix)):
+        return dict(result,status='unsupported_comment_telemetry_suffix')
+    telemetry=dict(encoding='base91_comment',sequence=dict(raw=block[:2].decode('ascii'),
+        kind='base91_counter',value=values[0]),analog_raw=values[1:6],
+        interpretation_status='raw values only; names, units, calibration and bit sense not applied',
+        extension_hex=result['extension_hex'],extension_span=result['extension_span'],
+        comment=bytes(comment).decode('utf-8',errors='replace'),comment_hex=bytes(comment).hex())
+    if len(values)==7:
+        word=values[-1];bits=[(word>>bit)&1 for bit in range(8)]
+        telemetry.update(digital_word_raw=word,digital_wire_hex=block[-2:].hex(),
+            digital_bits=bits,digital_raw=''.join(map(str,bits)),digital_reserved_value=word>>8,
+            digital_bit_order='canonical B1 through B8; B1 is the least significant bit of the received word')
+    else:
+        telemetry['digital_status']='not_transmitted'
+    if suffix:
+        telemetry['trailing_extension_status']='DAO syntax retained, not applied to coordinates'
+    return dict(result,status='decoded_comment_telemetry',telemetry=telemetry)
 
 
 def parse_aprs_telemetry(payload):
@@ -79,7 +119,18 @@ def _coordinate(raw, degrees_count, maximum):
     return value, ambiguity
 
 
+def _outside_comment_telemetry(tail):
+    if b'|' not in tail:
+        return tail
+    first,last=tail.index(b'|'),tail.rindex(b'|')
+    end=len(tail) if first==last else last+1
+    # Keep offsets and separators: removing bytes could fabricate an annotation
+    # by joining text on opposite sides of a telemetry block.
+    return tail[:first]+b' '*(end-first)+tail[end:]
+
+
 def _altitude_annotation(value, tail):
+    tail=_outside_comment_telemetry(tail)
     annotations = tail.count(b'/A=')
     if annotations:
         value['altitude_status'] = 'multiple_annotations' if annotations > 1 else 'unsupported_or_malformed_annotation'
@@ -178,7 +229,7 @@ def _compressed_position(result, data):
     _compressed_extensions(result, core[10:13])
     # A textual /A= annotation and csT altitude are independent received claims.
     # Preserve both, but choose neither as the main altitude if both occur.
-    if b'/A=' in tail and 'altitude_ft' in result:
+    if b'/A=' in _outside_comment_telemetry(tail) and 'altitude_ft' in result:
         annotation = {}
         _altitude_annotation(annotation, tail)
         result['altitude_candidates'] = [
@@ -214,7 +265,7 @@ def _named_entity(payload):
     header.update(entity=dict(kind=kind, name=name.decode('ascii'), name_hex=name.hex(),
                               marker=chr(marker), state_reported='killed' if killed else 'live'),
                   entity_position_hex=position.hex())
-    parsed = parse_aprs_position(nested)
+    parsed = _parse_position_report(nested)
     for key in ('timestamp', 'timestamp_raw'):
         if key in parsed:
             header[key] = parsed[key]
@@ -233,7 +284,7 @@ def _named_entity(payload):
     return parsed
 
 
-def parse_aprs_position(payload):
+def _parse_position_report(payload):
     """Interpret station positions, objects and items; retain raw source elsewhere.
 
     Uncompressed or base-91 compressed; no Mic-E/NMEA fallback.
@@ -292,4 +343,23 @@ def parse_aprs_position(payload):
     result.update(status='decoded_position', latitude_deg=lat_value, longitude_deg=lon_value,
                   encoded_resolution_minutes=.01, coordinate_datum='WGS84 protocol default; not independently verified')
     _extensions(result, tail)
+    return result
+
+
+def parse_aprs_position(payload):
+    """Read supported positions and optional station-comment telemetry.
+
+    The comment extension is not assigned to objects/items or unsupported
+    position formats. Ambiguous/null station positions may still carry data.
+    """
+    result=_parse_position_report(payload)
+    if (result is None or 'entity' in result
+            or result['status'] not in ('decoded_position','ambiguous_position','null_position')):
+        return result
+    comment=bytes.fromhex(result.get('comment_and_extensions_hex',''))
+    extension=parse_aprs_comment_telemetry(comment)
+    if extension is not None:
+        result['comment_telemetry_status']=extension['status']
+        if 'telemetry' in extension:
+            result['telemetry']=extension['telemetry']
     return result

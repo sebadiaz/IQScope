@@ -1166,6 +1166,22 @@ association causale, les variantes étendues et une validation APRS enregistrée
 indépendante restent à réaliser. Voir [APRS.md](APRS.md).
 
 
+### APRS : télémétrie base 91 en commentaire de station
+
+Les positions normales ou compressées de stations peuvent désormais contenir
+un bloc de télémétrie base 91. Compteur, un à cinq canaux analogiques et mot
+binaire éventuel restent dans la même trame à CRC vérifié, avec position et
+commentaire d'origine. B1 provient du poids faible ; les bits supérieurs à B8
+sont conservés sans canaux supplémentaires. Les canaux manquants ne sont pas
+complétés par zéro. La politique d'association causale des définitions reste
+applicable aux valeurs 0–8280. Des séparateurs ambigus, couples incorrects ou
+suffixes non pris en charge ne produisent aucune mesure partielle. Les octets
+du bloc restent opaques aux annotations d'altitude et de précision. Dix-huit
+nouveaux tests et Chromium couvrent les voies IQ/audio/BPSK/WAV/JSON et la
+coexistence avec les positions. Mic-E, ce type d'extension sur objets/items et
+la validation APRS enregistrée indépendante restent à réaliser. Voir [APRS.md](APRS.md).
+
+
 ### APRS : définitions de télémétrie et association causale
 
 Les définitions PARM/UNIT/EQNS/BITS sont désormais structurées. Les mesures

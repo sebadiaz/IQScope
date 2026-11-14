@@ -385,11 +385,14 @@ function showReport(report, jobId) {
     if(f.text!==undefined)card.append(element('pre',f.text,'ax25-text'));
     else card.append(element('code',f.payload_hex));
     const aprs=f.aprs;
-    if(aprs?.status==='decoded_telemetry'){
+    if(aprs?.telemetry){
       const t=aprs.telemetry;
-      card.append(element('h3',`Télémétrie APRS · ${t.sequence.kind==='MIC'?'séquence MIC':`séquence ${t.sequence.raw}`}`,'aprs-telemetry'));
+      const sequence=t.sequence.kind==='MIC'?'MIC':t.encoding==='base91_comment'?t.sequence.value:t.sequence.raw;
+      card.append(element('h3',`Télémétrie APRS${t.encoding==='base91_comment'?' base 91':''} · séquence ${sequence}`,'aprs-telemetry'));
       card.append(element('p',t.analog_raw.map((v,i)=>`A${i+1}=${v}`).join(' · '),'aprs-telemetry-analog'));
-      card.append(element('p',t.digital_bits.map((v,i)=>`B${i+1}=${v}`).join(' · '),'aprs-telemetry-digital'));
+      if(t.digital_bits)card.append(element('p',t.digital_bits.map((v,i)=>`B${i+1}=${v}`).join(' · '),'aprs-telemetry-digital'));
+      else card.append(element('p','Canaux binaires non transmis.','hint aprs-telemetry-digital-missing'));
+      if(t.digital_reserved_value)card.append(element('p','Bits réservés reçus : conservés dans le JSON sans interprétation en canaux supplémentaires.','hint aprs-telemetry-reserved'));
       const associated=t.definition_context?.status==='associated_declared_metadata';
       card.append(element('p',associated?'Valeurs brutes conservées ; définitions déclarées associées avec provenance. Émetteur et mesures non authentifiés ; aucune conversion d’unité implicite.':'Valeurs brutes ; unités, calibration, noms et sens actif des bits non appliqués.','hint aprs-telemetry-scope'));
       if(associated){
@@ -404,6 +407,7 @@ function showReport(report, jobId) {
       }
       if(t.comment)card.append(element('pre',t.comment,'aprs-telemetry-comment'));
     }else if(aprs?.requested_profile==='classic_t_hash_8bit')card.append(element('p','Rapport T# hors profil classique ou mal formé : aucune valeur numérique déduite.','hint aprs-telemetry-unresolved'));
+    if(aprs?.comment_telemetry_status && aprs.comment_telemetry_status!=='decoded_comment_telemetry')card.append(element('p','Extension de télémétrie en commentaire non interprétée : aucune valeur partielle déduite.','hint aprs-comment-telemetry-unresolved'));
     if(aprs?.definition){
       const d=aprs.definition;
       card.append(element('p',`Définition APRS ${d.kind} pour « ${d.addressee_raw} » · ${aprs.status==='decoded_telemetry_definition'?'syntaxe reconnue':'hors profil ou mal formée'}`,'aprs-telemetry-definition'));

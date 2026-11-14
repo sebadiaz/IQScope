@@ -419,6 +419,12 @@ wire bits and numeric/MIC sequence fields. Eligible earlier self-addressed
 and bit-label matches, with per-definition provenance. Association stays within
 one source/SSID, frontend and channel in the current trial, with a 600-second
 age limit. Raw data is preserved; unit labels are not converted implicitly.
+Station-position comments also support one base-91 telemetry block: one to
+five raw values in 0–8280, optional eight-bit bank and a sequence counter.
+Position and telemetry share one CRC-valid frame. Missing channels remain
+absent, B1 is decoded from the word's least significant bit, and higher bits
+are retained without creating extra inputs. Eligible definitions use the same
+causal policy. See [APRS scope and limits](docs/APRS.md).
 The initial end-to-end tests use synthetic continuous direct-2-FSK recordings,
 NRZI with both polarities, independent FCS generation, stuffed payloads,
 corrupted FCS, truncation, random bits and bounded search. The BPSK path also has
@@ -536,8 +542,9 @@ in the UI and JSON. Ambiguous/null positions never yield point coordinates;
 Objects/items identify the named point separately from the reporting station;
 withdrawals never become active coordinates. Classic `T#` telemetry exposes
 raw analog values and wire bits, plus eligible declared definitions and their
-causal provenance. Mic-E, area geometry and extended/base-91 telemetry remain
-outside this profile.
+causal provenance. Station-comment base-91 telemetry is also supported for
+normal/compressed positions. Mic-E, area geometry and extended decimal `T#`
+formats remain outside this profile.
 See [APRS details and limitations](docs/APRS.md).
 A valid CRC does not authenticate an emitter or verify its reported position.
 No RF FM discriminator, G3RUH-over-AFSK,

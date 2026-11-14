@@ -139,7 +139,7 @@ def decode_ax25(candidates,max_frames=128,max_flag_pairs=2000):
             'diagnostic_scope':'Observed flags and rejection stages only; no reconstruction of missing frame boundaries.',
             'budget_exhausted':exhausted,'frame_budget':max_frames,'flag_pair_budget':max_flag_pairs,
             'limitations':['AX.25 UI only, at most ten addresses and 256 payload octets; NRZI/NRZ trials on recovered 2-FSK bits.',
-                           'No AFSK-over-FM frontend, G3RUH-over-FSK descrambler or connected-mode frames; APRS limited to supported positions, point entities and classic T# telemetry with declared definitions.',
+                           'No AFSK-over-FM frontend, G3RUH-over-FSK descrambler or connected-mode frames; APRS limited to supported positions, point entities, classic T# and station-comment base91 telemetry with declared definitions.',
                            'Telemetry definitions: self-addressed, same source/SSID, frontend and channel, fully received before sample, maximum age 600 seconds; no cross-trial/window state or implicit unit conversion.',
                            'Upstream demodulation may miss frames; a valid CRC does not authenticate an emitter.',
                            'Wideband detection can merge sidelobes into a band >24 kHz and exclude even a low-baud signal.']}

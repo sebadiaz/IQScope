@@ -709,6 +709,61 @@ def main():
                     response=page.request.get(urljoin(page.url,link.get_attribute('href')))
                     assert response.ok
                     assert 'analog_channels' not in response.json()['frames'][-1]['fields']['aprs']['telemetry']
+                    from test_aprs_comment_telemetry import PAYLOAD as COMMENT_TELEMETRY, MINIMAL as COMMENT_MINIMAL, INVALID as COMMENT_INVALID
+                    for payload,minimal in ((COMMENT_TELEMETRY,False),(COMMENT_MINIMAL,True)):
+                        expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                        audio,fs=calibration_fixture(payloads=[payload]*4)
+                        wavfile.write(wave,fs,audio.astype(np.float32))
+                        page.locator('#iq-file').set_input_files(str(wave))
+                        page.get_by_role('button',name='Analyser automatiquement').click()
+                        expect(page.locator('.aprs-telemetry')).to_have_count(4,timeout=30000)
+                        expect(page.locator('.aprs-position')).to_have_count(4)
+                        expect(page.locator('#metric-frames')).to_have_text('4')
+                        expect(page.locator('.aprs-telemetry').first).to_contain_text('base 91 · séquence '+('0' if minimal else '7544'))
+                        expect(page.locator('.aprs-telemetry-analog').first).to_have_text('A1=0' if minimal else 'A1=1472 · A2=1564 · A3=1656 · A4=1748 · A5=1840')
+                        if minimal:
+                            expect(page.locator('.aprs-telemetry-digital')).to_have_count(0)
+                            expect(page.locator('.aprs-telemetry-digital-missing')).to_have_count(4)
+                        else:
+                            expect(page.locator('.aprs-telemetry-digital').first).to_have_text('B1=1 · B2=0 · B3=0 · B4=0 · B5=0 · B6=0 · B7=0 · B8=0')
+                        expect(page.locator('.aprs-telemetry-comment b')).to_have_count(0)
+                        expect(page.locator('.ax25-text').first).to_have_text(payload.decode())
+                        response=page.request.get(urljoin(page.url,link.get_attribute('href')))
+                        assert response.ok
+                        for frame in response.json()['frames']:
+                            value=frame['fields']['aprs'];t=value['telemetry']
+                            assert value['status']=='decoded_position' and t['encoding']=='base91_comment'
+                            assert frame['fields']['payload_hex']==payload.hex()
+                            if minimal:assert 'digital_bits' not in t and len(t['analog_raw'])==1
+                            else:assert t['digital_word_raw']==1 and t['digital_raw']=='10000000'
+                    expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                    audio,fs=calibration_fixture(payloads=[*CALIBRATION_PAYLOADS[1:5],COMMENT_TELEMETRY])
+                    wavfile.write(wave,fs,audio.astype(np.float32))
+                    page.locator('#iq-file').set_input_files(str(wave))
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('.aprs-telemetry-calibrated')).to_have_count(5,timeout=30000)
+                    expect(page.locator('.aprs-telemetry-calibrated').first).to_contain_text('brut 1472 → 7654.4 v/100')
+                    expect(page.locator('.aprs-telemetry-labeled-bit').first).to_contain_text('Click : indiqué')
+                    expect(page.locator('.aprs-position')).to_have_count(1)
+                    expect(page.locator('#metric-frames')).to_have_text('5')
+                    response=page.request.get(urljoin(page.url,link.get_attribute('href')))
+                    assert response.ok
+                    value=response.json()['frames'][-1]['fields']['aprs']
+                    assert abs(value['telemetry']['analog_channels'][0]['value']-7654.4)<1e-9
+                    assert value['telemetry']['digital_channels'][0]['matches_declared_sense'] is True
+                    page.screenshot(path='browser-artifacts/aprs-comment-telemetry.png',full_page=True)
+                    expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                    audio,fs=calibration_fixture(payloads=[COMMENT_INVALID]*4)
+                    wavfile.write(wave,fs,audio.astype(np.float32))
+                    page.locator('#iq-file').set_input_files(str(wave))
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('.aprs-comment-telemetry-unresolved')).to_have_count(4,timeout=30000)
+                    expect(page.locator('.aprs-telemetry')).to_have_count(0)
+                    expect(page.locator('.aprs-position')).to_have_count(4)
+                    expect(page.locator('#metric-frames')).to_have_text('4')
+                    response=page.request.get(urljoin(page.url,link.get_attribute('href')))
+                    assert response.ok
+                    assert all('telemetry' not in f['fields']['aprs'] for f in response.json()['frames'])
                     for payload,status,label in ((b'!4903.5 N/07201.75W>','ambiguous_position','ambiguë'),
                                                  (b'!0000.00N\\00000.00W.','null_position','inconnue')):
                         expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
