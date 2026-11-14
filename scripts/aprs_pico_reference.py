@@ -1,5 +1,6 @@
 """Independent Pico line-output recording with published position/altitude; no RF claim."""
 import argparse
+import base64
 import hashlib
 import json
 import math
@@ -8,7 +9,7 @@ import sys
 import urllib.request
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from iqscope_audio import analyze_audio
+from iqscope_audio import analyze_audio, decode_audio
 from iqscope_ax25 import crc_x25
 
 PIN = 'd78e42f10dc11d6a8e983e90927b0ecc6cd9fedd'
@@ -16,6 +17,7 @@ ROOT_URL = f'https://github.com/eleccoder/raspi-pico-aprs-tnc/blob/{PIN}'
 SOURCE_URL = f'https://raw.githubusercontent.com/eleccoder/raspi-pico-aprs-tnc/{PIN}/doc/aprs_pico_beacon_demo.wav'
 SOURCE_BYTES = 639436
 SOURCE_BLOB = 'b5dfa24975035cb82390879fa75c54ca0587d080'
+SOURCE_SHA256 = '4b3119170d9e5981532ce67cd67f21f3ef99064d7f9db7a691800a1a0d9b1375'
 ENCODER = 'https://github.com/eleccoder/ax25-aprs-lib/blob/2d8a85f7b5ec1f51d31c58a27f8693ebec76ce17/src/ax25beacon.c'
 # Published transmitter parameters: 48.75588 N, 9.19011 E, 483 metres.
 # The upstream encoder floors positive compressed-coordinate words and rounds
@@ -34,9 +36,10 @@ def verified_source(root, offline=False):
         with urllib.request.urlopen(SOURCE_URL, timeout=30) as response:
             data = response.read(SOURCE_BYTES+1)
     blob = b'blob '+str(len(data)).encode('ascii')+b'\0'+data
-    if len(data) != SOURCE_BYTES or hashlib.sha1(blob).hexdigest() != SOURCE_BLOB:
-        raise ValueError('Pico APRS reference size/Git blob mismatch')
     digest = hashlib.sha256(data).hexdigest()
+    if (len(data) != SOURCE_BYTES or hashlib.sha1(blob).hexdigest() != SOURCE_BLOB
+            or digest != SOURCE_SHA256):
+        raise ValueError('Pico APRS reference size/Git blob mismatch')
     if not offline:
         root.mkdir(parents=True, exist_ok=True)
         path.write_bytes(data)
@@ -82,8 +85,19 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--cache-root', type=Path, default=Path('corpus-cache/aprs-pico'))
     parser.add_argument('--offline', action='store_true')
+    parser.add_argument('--development-audio', action='store_true',
+                        help='Print bounded decoded sample data for development; verified public Pico recording only')
     args = parser.parse_args()
     path, digest = verified_source(args.cache_root, args.offline)
+    if args.development_audio:
+        audio, rate = decode_audio(path, 20)
+        data = audio.astype('<f4', copy=False).tobytes()
+        print(json.dumps(dict(development_audio_bytes=len(data), sample_rate=rate,
+                              development_audio_sha256=hashlib.sha256(data).hexdigest(),
+                              source_sha256=digest, original_rf_iq=False)))
+        encoded = base64.b64encode(data).decode('ascii')
+        for offset in range(0, len(encoded), 4096):
+            print(f'IQSCOPE_AUDIO_F32:{offset}:{encoded[offset:offset+4096]}')
     out = args.cache_root/'results'
     report = analyze_audio(path, out, 20)
     observed = next(t for t in report['wideband_trials'] if t['decoder'] == 'afsk1200_ax25')

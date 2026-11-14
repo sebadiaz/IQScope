@@ -41,7 +41,7 @@ jobs:
       - name: Verify recorded ISS APRS audio against the independently published packet
         run: python scripts/aprs_radio_reference.py
       - name: Verify Pico sound-card recording against published APRS position and altitude
-        run: python scripts/aprs_pico_reference.py
+        run: python scripts/aprs_pico_reference.py --development-audio
       - run: python tests/browser_smoke.py
         env:
           NO_PROXY: 127.0.0.1,localhost
