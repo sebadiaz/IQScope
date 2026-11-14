@@ -20,7 +20,7 @@ from iqscope_formats import read_wave_iq, wave_layout
 SOURCE_URL = 'https://www.sigidwiki.com/images/6/64/APRS_IQ_145070kHz_IQ.zip'
 SOURCE_PAGE = 'https://www.sigidwiki.com/wiki/File:APRS_IQ_145070kHz_IQ.zip'
 ARCHIVE_BUDGET = 2*1024*1024
-MEMBER_BUDGET = 8*1024*1024
+MEMBER_BUDGET = 16*1024*1024
 
 
 def source_wave(root, offline=False):
@@ -35,6 +35,10 @@ def source_wave(root, offline=False):
         raise ValueError('APRS IQ archive exceeded download budget')
     with zipfile.ZipFile(io.BytesIO(data)) as source:
         members = source.infolist()
+        inventory = [dict(name=m.filename, bytes=m.file_size, compressed_bytes=m.compress_size,
+                          compression_method=m.compress_type, flags=m.flag_bits) for m in members]
+        print(json.dumps(dict(archive_bytes=len(data), archive_sha256=hashlib.sha256(data).hexdigest(),
+                              inventory=inventory)))
         if len(members)>16 or sum(m.file_size for m in members)>2*MEMBER_BUDGET:
             raise ValueError('APRS IQ ZIP inventory exceeds inspection budget')
         waves = [m for m in members if not m.is_dir() and m.filename.lower().endswith('.wav')]
@@ -48,7 +52,6 @@ def source_wave(root, offline=False):
             payload = handle.read(MEMBER_BUDGET+1)
         if len(payload)!=member.file_size:
             raise ValueError('APRS IQ member is incomplete')
-        inventory = [dict(name=m.filename, bytes=m.file_size, compressed_bytes=m.compress_size) for m in members]
     root.mkdir(parents=True, exist_ok=True)
     if not offline:
         archive.write_bytes(data)
