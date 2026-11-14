@@ -132,6 +132,8 @@ trames de cette capture ne produisent ni position APRS ni télémétrie.
   après débourrage HDLC ; les fanions ne sont pas inclus.
 - `fm-ax25-payload-N.bin` : uniquement les informations des trames UI dont
   le découpage est établi. Aucun tel fichier n'est fabriqué pour une trame I ambiguë.
+- `fm-ax25-frames.kiss` : toutes les trames FM validées, dans l'ordre du JSON,
+  pour les outils acceptant un fichier KISS ; détails ci-dessous.
 - `report.json` : rapport global, références des trames associées à leur bande.
 
 La CI vérifie le WAV original, ses cinq trames, les FCS recalculés, le JSON et
@@ -140,3 +142,26 @@ de la bande, les hypothèses visibles, l'absence de faux contenu APRS et les
 téléchargements. Les tests synthétiques couvrent également des positions UI
 sur FM, les canaux multiples, les temps source, les cadences décalées, les
 négatifs et les budgets. Les preuves sont publiées dans `browser-checks`.
+
+## Export KISS
+
+L'interface propose le téléchargement du fichier KISS. Chaque trame est une
+commande de données `0` sur le port virtuel `0`. Les octets AX.25 sont conservés,
+avec retrait des deux octets FCS après un nouveau contrôle CRC-16/X-25.
+Les délimiteurs sont `C0` ; l'échappement transforme `C0` en `DB DC` et `DB`
+en `DB DD`, y compris pour l'octet commande/port. Aucun autre protocole
+de commande n'est émis. Références : [spécification de Chepponis/Karn](https://www.ax25.net/kiss.aspx),
+[interface KISS de Dire Wolf](https://github.com/wb2osz/direwolf/blob/master/src/kiss.c).
+
+Le port virtuel unique ne représente pas une fréquence SDR. Les temps, canaux,
+FCS reçus et hypothèses d'interprétation restent dans `fm-afsk-frames.json` ;
+KISS ne transporte pas ces métadonnées. Les répétitions reçues séparément sont
+conservées. Une trame I ambiguë conserve son corps intact sans sélectionner
+de mode de contrôle, de PID ou de contenu applicatif. Les exports `.bin`
+complets conservent toujours le FCS.
+
+Ce profil est limité au résultat FM/AFSK IQ et au téléchargement par fichier.
+L'import KISS, la connexion TNC et l'export KISS des autres voies restent à réaliser.
+Les tests couvrent les échappements, les ports, le rejet de FCS invalide et la
+conservation des trames I/RR. La référence IQ et Chromium vérifient les octets
+du flux téléchargé ; cela ne valide pas un échange avec un logiciel tiers.

@@ -12,6 +12,18 @@ def crc_x25(data):
     return crc^0xffff
 
 
+def encode_kiss_frame(packet, port=0):
+    """Encode one received AX.25 frame as KISS data, removing its checked FCS."""
+    if type(port) is not int or not 0<=port<=15:
+        raise ValueError('KISS port must be an integer from 0 to 15')
+    if not isinstance(packet, (bytes, bytearray)) or not 17<=len(packet)<=331:
+        raise ValueError('Expected a complete supported AX.25 frame including FCS')
+    if crc_x25(packet[:-2])!=int.from_bytes(packet[-2:], 'little'):
+        raise ValueError('Cannot export an AX.25 frame with invalid FCS')
+    data = bytes([port<<4])+bytes(packet[:-2])  # Command 0: data to the host.
+    return b'\xc0'+data.replace(b'\xdb', b'\xdb\xdd').replace(b'\xc0', b'\xdb\xdc')+b'\xc0'
+
+
 def unstuff(bits):
     out,ones = [],0
     for bit in bits:

@@ -5,6 +5,7 @@ import numpy as np
 from scipy import signal
 
 from iqscope_afsk import decode_afsk1200
+from iqscope_ax25 import encode_kiss_frame
 from iqscope_aprs_calibration import enrich_aprs_telemetry_frames
 
 
@@ -109,11 +110,21 @@ def write_afsk_fm_artifact(trial, out):
     if trial['frames']:
         import json
         from pathlib import Path
+        # Build the entire stream before writing any exports: a bad FCS aborts
+        # the export rather than silently dropping or altering a received frame.
+        kiss = b''.join(encode_kiss_frame(bytes.fromhex(f['hex'])) for f in trial['frames'])
         for index,frame in enumerate(trial['frames'],1):
             frame['wire_artifact'] = f'fm-ax25-frame-{index}.bin'
             (Path(out)/frame['wire_artifact']).write_bytes(bytes.fromhex(frame['hex']))
             if frame['fields']['frame_type']=='UI':
                 frame['payload_artifact'] = f'fm-ax25-payload-{index}.bin'
                 (Path(out)/frame['payload_artifact']).write_bytes(bytes.fromhex(frame['fields']['payload_hex']))
+        trial['kiss_artifact'] = 'fm-ax25-frames.kiss'
+        trial['kiss_export'] = dict(format='KISS', command=0, port=0, frame_count=len(trial['frames']),
+                                   fcs_included=False, timestamps_included=False,
+                                   channel_mapping='single virtual receive port; RF channels and times remain in this JSON',
+                                   frame_order='same as frames; separated repetitions retained',
+                                   application_interpretation='unchanged; no link mode or application payload selected by export')
+        (Path(out)/trial['kiss_artifact']).write_bytes(kiss)
         trial['artifact'] = 'fm-afsk-frames.json'
         (Path(out)/trial['artifact']).write_text(json.dumps(trial, indent=2))

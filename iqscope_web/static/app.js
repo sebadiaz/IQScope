@@ -371,6 +371,10 @@ function showReport(report, jobId) {
     if(trial.frontend==='bpsk_g3ruh' && !trial.frames.length && trial.stream_diagnostics?.some(d=>d.flags_observed))frameList.append(element('p','BPSK : fanions HDLC observés, aucune trame AX.25 UI validée. Le rapport détaille les rejets ; aucune charge utile binaire n’est déduite.','hint psk-ax25-unresolved'));
     if(trial.frontend==='bpsk_g3ruh' && trial.artifact){const link=element('a','Télécharger le rapport AX.25 BPSK');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
     if(trial.decoder==='afsk1200_fm_ax25' && trial.artifact){const link=element('a','Télécharger les trames AX.25 reçues en FM (JSON)');link.className='fm-ax25-download';link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
+    if(trial.kiss_artifact){
+      const link=element('a','Télécharger les trames AX.25 au format KISS');link.className='ax25-kiss-download';link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(trial.kiss_artifact)}`;link.download=trial.kiss_artifact;frameList.append(link);
+      frameList.append(element('p','KISS : port de réception virtuel 0, trames sans FCS ni horodatage. Les fréquences, temps, FCS reçus et hypothèses de contenu restent dans le JSON.','hint ax25-kiss-scope'));
+    }
     if(trial.budget_exhausted)frameList.append(element('p',`Recherche AX.25 partielle : limite de trames ou de ${trial.flag_pair_budget} paires de fanions atteinte.`,'hint'));
   }
   for(const frame of ax25Frames){

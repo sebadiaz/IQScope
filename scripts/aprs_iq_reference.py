@@ -117,6 +117,11 @@ def validate_result(report, out):
             raise AssertionError('Binary full-frame export changed original bytes')
     if json.loads((out/trial['artifact']).read_text())!=trial:
         raise AssertionError('IQ AX.25 JSON export differs from report')
+    expected_kiss=b''.join(b'\xc0\x00'+bytes.fromhex(h)[:-2]+b'\xc0' for h in EXPECTED_HEX)
+    if (out/trial['kiss_artifact']).read_bytes()!=expected_kiss:
+        raise AssertionError('Recorded IQ KISS export changed frame order or bytes')
+    if trial['kiss_export']['frame_count']!=5 or trial['kiss_export']['fcs_included'] is not False:
+        raise AssertionError('Recorded IQ KISS scope is incorrect')
     if report['sample_rate']!=39062 or report['center_frequency_hz']!=0:
         raise AssertionError('Header metadata was replaced with filename assumptions')
     if not any(s['validated_content'] and s['validated_content']['frame_count']==5 for s in report['signals']):

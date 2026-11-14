@@ -56,6 +56,23 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(next(d for d in data['decoders'] if d['id']=='afsk1200_fm_ax25')['family'], 'NBFM / AFSK1200 / AX.25')
         self.assertEqual(next(d for d in data['decoders'] if d['id']=='pocsag')['family'], 'POCSAG paging')
 
+    async def test_kiss_download_preserves_received_frame_bytes(self):
+        from iqscope_afsk_fm import write_afsk_fm_artifact
+        from iqscope_ax25 import parse_ui
+        from test_ax25 import frame
+        from test_kiss import read_kiss
+        packet=frame(payload=bytes.fromhex('c0dbdcdd'))
+        trial={'frames':[{'hex':packet.hex(),'fields':parse_ui(packet[:-2])}]}
+        directory=Path(self.temp.name)/'kiss-job'
+        directory.mkdir()
+        self.app.state.service.jobs['kiss-job']={'status':'completed'}
+        write_afsk_fm_artifact(trial,directory)
+        response=await self.client.get('/api/jobs/kiss-job/artifacts/'+trial['kiss_artifact'])
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(read_kiss(response.content),[(0,0,packet[:-2])])
+        self.assertIn('attachment;',response.headers['content-disposition'])
+        self.assertEqual((await self.client.get('/api/jobs/kiss-job/artifacts/missing.kiss')).status_code,404)
+
     async def test_recording_list_and_bounded_import_artifacts(self):
         from test_formats import make_wave
         from iqscope import read_iq

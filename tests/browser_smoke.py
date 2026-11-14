@@ -499,6 +499,13 @@ def main():
                     expect(page.locator('.ax25-wire-download')).to_have_count(5)
                     response=page.request.get(urljoin(page.url,page.locator('.ax25-wire-download').first.get_attribute('href')))
                     assert response.ok and response.body()==bytes.fromhex(reference['frame_hex'][0])
+                    expect(page.locator('.ax25-kiss-download')).to_have_count(1)
+                    expect(page.locator('.ax25-kiss-scope')).to_contain_text('sans FCS ni horodatage')
+                    response=page.request.get(urljoin(page.url,page.locator('.ax25-kiss-download').get_attribute('href')))
+                    # None of this recording's five bodies requires KISS escaping.
+                    expected_kiss=b''.join(b'\xc0\x00'+bytes.fromhex(h)[:-2]+b'\xc0' for h in reference['frame_hex'])
+                    assert response.ok and response.body()==expected_kiss
+                    assert rf_trial['kiss_export']['frame_count']==5 and rf_trial['kiss_export']['fcs_included'] is False
                     page.screenshot(path='browser-artifacts/fm-ax25-iq.png',full_page=True)
                     page.locator('#seconds').fill(previous_seconds)
                 with tempfile.TemporaryDirectory() as directory:

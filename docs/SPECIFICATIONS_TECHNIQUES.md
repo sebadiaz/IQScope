@@ -1100,6 +1100,16 @@ L'import audio essaie aussi POCSAG sur les niveaux FM démodulés à 8 kHz. Troi
 Le parseur peut corriger au plus deux bits sur l'ensemble adresse/données/terminaison d'un message, grâce au syndrome BCH(31,21) complété par la parité paire. Les 529 masques de poids 0–2 ont des syndromes distincts et le mot proposé est contrôlé. La synchronisation reste exacte ; les messages incomplets, non corrigeables ou dépassant la somme autorisée sont refusés. Les mots reçus restent exportés séparément des mots décodés, avec rôle et positions des inversions. Le mode strict reste accessible par `max_corrected_bits=0`. L'interface marque les corrections sans modifier le compteur CRC. Les tests couvrent les positions d'une/deux erreurs, le rejet de trois erreurs sur références, la limite globale et les voies IQ/audio. Cette correction n'authentifie pas l'émetteur et peut choisir un autre mot valide au-delà de son rayon. Le corpus radio existant conserve ses sorties à zéro correction ; une amélioration sur enregistrement corrompu reste à démontrer. Voir [POCSAG.md](POCSAG.md).
 
 
+### Export KISS des trames FM/AFSK IQ
+
+La voie IQ FM/AFSK propose un fichier KISS des trames à FCS valide, sur un
+port virtuel unique. Le FCS est revérifié puis retiré pour KISS ; les binaires
+complets le conservent. Les métadonnées de temps/fréquence et les hypothèses
+de contrôle des trames I restent dans le JSON. Les cinq trames de la référence
+IQ, les échappements et le téléchargement Chromium sont vérifiés. L'import
+KISS, les autres voies et la connexion TNC restent à réaliser. Voir
+[AX25_FM_IQ.md](AX25_FM_IQ.md#export-kiss).
+
 ### APRS : premier profil de contenu sur AX.25
 
 Les trames AX.25 UI à FCS valide et PID `0xf0` peuvent désormais recevoir un

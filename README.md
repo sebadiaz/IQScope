@@ -135,7 +135,7 @@ not been tested in this development environment.
 | RTTY / ITA2 | Text candidates, raw character codes, automatic common baud rates/tones/polarity | Direct IQ at 1–12 kS/s or bounded stationary-channel search up to 2.4 MS/s, 5-bit LSB-first with at least 1.5 stop bits; framing only, no checksum |
 | Mode S / ADS-B | DF17/DF18 CRC-24 packets, address/type and barometric altitude; callsign, TC19 velocities and global airborne CPR position for DF17 and DF18 CF0/1 | Clean captures >=2 MS/s; TC9–18 even/odd pairs within 10 seconds in one analysis; no surface/local CPR, general Mode S parity overlays, collisions or bit-error correction |
 | POCSAG | Capcodes, numeric messages and basic IA5 text from automatic 2-FSK candidates or demodulated receiver audio; JSON export | 512/1200/2400 baud, exact batch sync and BCH/parity checks; at most two corrected bits over the complete message, received words retained; synthetic IQ plus eight laboratory audio captures; no cross-analysis state |
-| NBFM / AFSK1200 / AX.25 | Automatic IQ channel/FM/AFSK reception, CRC-valid UI plus I/S/U inspection, binary frame exports | 20 kS/s–2.4 MS/s, eight channels, bounded 20 s; I-mode/application candidates remain unresolved without connection state; one pinned original-IQ reference |
+| NBFM / AFSK1200 / AX.25 | Automatic IQ channel/FM/AFSK reception, CRC-valid UI plus I/S/U inspection, binary and KISS file exports | 20 kS/s–2.4 MS/s, eight channels, bounded 20 s; I-mode/application candidates remain unresolved without connection state; one pinned original-IQ reference |
 
 The capability registry distinguishes analog interpretations from validated
 packet integrity. A CRC does **not** authenticate a transmitter. For DF18, the

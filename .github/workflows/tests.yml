@@ -85,6 +85,7 @@ jobs:
             corpus-cache/aprs-iq/summary.json
             corpus-cache/aprs-iq/results/report.json
             corpus-cache/aprs-iq/results/fm-afsk-frames.json
+            corpus-cache/aprs-iq/results/fm-ax25-frames.kiss
             corpus-cache/aprs-iq/results/fm-ax25-frame-*.bin
             corpus-cache/aprs-iq/results/fm-ax25-payload-*.bin
           if-no-files-found: ignore
