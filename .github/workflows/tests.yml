@@ -42,6 +42,8 @@ jobs:
         run: python scripts/aprs_radio_reference.py
       - name: Verify Pico sound-card recording against published APRS position and altitude
         run: python scripts/aprs_pico_reference.py
+      - name: Inspect bounded public APRS-labelled IQ archive
+        run: python scripts/aprs_iq_reference.py
       - run: python tests/browser_smoke.py
         env:
           NO_PROXY: 127.0.0.1,localhost
@@ -78,6 +80,8 @@ jobs:
             corpus-cache/aprs-pico/results/provenance.json
             corpus-cache/aprs-pico/results/report.json
             corpus-cache/aprs-pico/results/ax25-frames.json
+            corpus-cache/aprs-iq/provenance.json
+            corpus-cache/aprs-iq/inspection.json
           if-no-files-found: ignore
   real-iq:
     runs-on: ubuntu-latest
