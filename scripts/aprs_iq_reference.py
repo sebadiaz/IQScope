@@ -1,7 +1,6 @@
-"""Bounded inspection of a public APRS-labelled original-IQ archive; no golden content yet."""
+"""Pinned original-IQ FM/AFSK AX.25 link regression; I-mode interpretations stay unresolved."""
 import argparse
 import base64
-from fractions import Fraction
 import hashlib
 import io
 import json
@@ -13,14 +12,9 @@ import urllib.request
 import zipfile
 import zlib
 
-import numpy as np
-from scipy import signal
-
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from iqscope import discover
-from iqscope_afsk import decode_afsk1200
-from iqscope_afsk_fm import search_afsk_fm
-from iqscope_formats import read_wave_iq, wave_layout
+from iqscope import analyze
+from iqscope_ax25 import crc_x25
 
 SOURCE_URL = 'https://www.sigidwiki.com/images/6/64/APRS_IQ_145070kHz_IQ.zip'
 SOURCE_PAGE = 'https://www.sigidwiki.com/wiki/File:APRS_IQ_145070kHz_IQ.zip'
@@ -28,6 +22,15 @@ ARCHIVE_BUDGET = 2*1024*1024
 MEMBER_BUDGET = 4*1024*1024
 ARCHIVE_BYTES = 622860
 ARCHIVE_SHA256 = '72342eb27b8b8bd1df53f3eda6f4d159a5c279596f2641f192bcdc2bda7cd034'
+MEMBER_SHA256 = '0df449836168ab3d6e3f470910e6401b5ad8a14a9310871239a0ad220d36cc50'
+# Development regression from FCS-valid received frames. The publisher only
+# labels the recording APRS; no independent golden packets or total are given.
+EXPECTED_HEX = [
+    '9664b2b28840f49c64a4a2404072ae6496a0a240e544f03b204b325959442d3130204445204e3252512d392028464e33304651292051544320302e2e2e0dc7ae',
+    '9c64a4a2404072ae6496a0a240e1b1373c',
+    '9664b2b28840f49c64a4a2404072ae6496a0a240e546f046460de132',
+    '9c64a4a24040f2ae6496a0a24061aaf046510de242',
+    '9664b2b28840749c64a4a24040f2ae6496a0a240e56135a6']
 
 
 def source_wave(root, offline=False):
@@ -71,7 +74,7 @@ def source_wave(root, offline=False):
             process = subprocess.run(arguments,
                                      capture_output=True, timeout=30)
             if process.returncode:
-                raise ValueError('7-Zip could not decode the pinned Deflate64 reference')
+                raise ValueError('Deflate64 reference extraction failed using '+Path(executable).name)
             payload = process.stdout
             backend = Path(executable).name+' Deflate64'
         else:
@@ -80,48 +83,45 @@ def source_wave(root, offline=False):
             backend = 'Python zipfile'
         if len(payload)!=member.file_size or zlib.crc32(payload)&0xffffffff!=member.CRC:
             raise ValueError('APRS IQ member is incomplete')
+        if hashlib.sha256(payload).hexdigest()!=MEMBER_SHA256:
+            raise ValueError('IQ WAV SHA-256 mismatch')
     path = root/'recording.wav'
     path.write_bytes(payload)
     provenance = dict(source_url=SOURCE_URL, source_page=SOURCE_PAGE, archive_bytes=len(data),
                       archive_sha256=hashlib.sha256(data).hexdigest(), archive_member=member.filename,
                       member_bytes=len(payload), member_sha256=hashlib.sha256(payload).hexdigest(),
-                      inventory=inventory, extraction_backend=backend, content_oracle='not established; source page calls this APRS IQ',
+                      inventory=inventory, extraction_backend=backend,
+                      content_oracle='development regression from FCS-valid IQ reception; no author-provided golden packets/count',
                       redistribution='Original archive/WAV not committed or included in the reference artifact')
     return path, provenance
 
 
-def inspect(path, out):
-    x, fs, center = read_wave_iq(path, seconds=20)
-    bands, _, _, _ = discover(x, fs, 9)
-    offsets = [0.]
-    for band in sorted(bands, key=lambda b:b['spectral_snr_db'], reverse=True):
-        offset = band['offset_hz']
-        if abs(offset)<fs/2-6000 and all(abs(offset-v)>1500 for v in offsets):
-            offsets.append(offset)
-        if len(offsets)>=8:
-            break
-    results = []
-    for offset in offsets:
-        mixed = x*np.exp(-2j*np.pi*offset*np.arange(len(x))/fs)
-        sos = signal.butter(6, min(10000, fs*.4), fs=fs, output='sos')
-        filtered = signal.sosfilt(sos, mixed)
-        down = max(1, int(np.ceil(fs/48000)))
-        channel = signal.resample_poly(filtered, 1, down) if down>1 else filtered
-        rate = fs/down
-        frequency = np.angle(channel[1:]*np.conj(channel[:-1]))*rate/(2*np.pi)
-        frequency -= np.median(frequency)
-        frequency = signal.sosfilt(signal.butter(5, min(3400, rate*.4), fs=rate, output='sos'), frequency)
-        ratio = Fraction(8000/rate).limit_denominator(4096)
-        audio = signal.resample_poly(frequency, ratio.numerator, ratio.denominator)
-        trial = decode_afsk1200(audio, 8000)
-        results.append(dict(offset_hz=offset, frames=trial['frames'], timing=trial.get('timing_trials'),
-                            flag_pairs=trial.get('flag_pairs_examined'), rejected_crc=trial.get('crc_rejected_across_hypotheses')))
-    report = dict(layout=wave_layout(path), samples=len(x), seconds=len(x)/fs,
-                  sample_rate=fs, center_from_header_hz=center, bands=bands,
-                  inspection_only=True, trials=results, fm_iq_trial=search_afsk_fm(x,fs,bands,center))
-    out.write_text(json.dumps(report, indent=2))
-    print(json.dumps(report))
-    return report
+def validate_result(report, out):
+    trial = next(t for t in report['wideband_trials'] if t['decoder']=='afsk1200_fm_ax25')
+    if [f['hex'] for f in trial['frames']]!=EXPECTED_HEX:
+        raise AssertionError('Recorded IQ frame bytes/count regression')
+    if [f['fields']['frame_type'] for f in trial['frames']]!=['I','S','I','I','S']:
+        raise AssertionError('Recorded control layout regression')
+    for frame in trial['frames']:
+        raw=bytes.fromhex(frame['hex'])
+        if not frame['fcs_valid'] or crc_x25(raw[:-2])!=int.from_bytes(raw[-2:],'little'):
+            raise AssertionError('Recorded IQ frame FCS failed')
+        fields=frame['fields']
+        if fields['pid'] is not None or fields['payload_hex'] or 'aprs' in fields:
+            raise AssertionError('Unresolved link content was promoted to application/APRS data')
+        if fields['frame_type']=='I' and [v['mode'] for v in fields['control_candidates']]!=['modulo_8','modulo_128']:
+            raise AssertionError('Recorded I-frame mode ambiguity was suppressed')
+        if frame['frontend']!='fm_iq_afsk1200' or frame['channel']['rf_center_known']:
+            raise AssertionError('IQ provenance or missing RF center was misrepresented')
+        if (out/frame['wire_artifact']).read_bytes()!=raw:
+            raise AssertionError('Binary full-frame export changed original bytes')
+    if json.loads((out/trial['artifact']).read_text())!=trial:
+        raise AssertionError('IQ AX.25 JSON export differs from report')
+    if report['sample_rate']!=39062 or report['center_frequency_hz']!=0:
+        raise AssertionError('Header metadata was replaced with filename assumptions')
+    if not any(s['validated_content'] and s['validated_content']['frame_count']==5 for s in report['signals']):
+        raise AssertionError('Validated FM frames were not associated with their detected band')
+    return trial
 
 
 def main():
@@ -137,7 +137,21 @@ def main():
         encoded = base64.b64encode((args.cache_root/'source.zip').read_bytes()).decode('ascii')
         for offset in range(0,len(encoded),4096):
             print(f'IQSCOPE_ZIP_B64:{offset}:{encoded[offset:offset+4096]}')
-    inspect(path, args.cache_root/'inspection.json')
+    out=args.cache_root/'results'
+    report=analyze(path,out,seconds=20)
+    trial=validate_result(report,out)
+    summary=dict(archive_sha256=provenance['archive_sha256'],member_sha256=provenance['member_sha256'],
+                 sample_rate=report['sample_rate'],analyzed_seconds=report['analyzed_seconds'],
+                 rf_center_known=False,checked_frames=len(trial['frames']),frame_hex=EXPECTED_HEX,
+                 frame_types=[f['fields']['frame_type'] for f in trial['frames']],
+                 budget_exhausted=trial['budget_exhausted'])
+    provenance.update(input_kind='publisher-provided complex IQ; stereo PCM16 WAV, I then Q',
+                      rf_center_hz=None,frequency_basis='relative; filename frequency is not applied',
+                      scope='five FCS-valid link frames observed: three I, two RR; no confirmed APRS UI, application payload, connection reassembly or independent message ground truth',
+                      observed=summary)
+    (args.cache_root/'provenance.json').write_text(json.dumps(provenance,indent=2))
+    (args.cache_root/'summary.json').write_text(json.dumps(summary,indent=2))
+    print(json.dumps(summary))
 
 
 if __name__ == '__main__':

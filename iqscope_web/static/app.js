@@ -119,7 +119,7 @@ function showReport(report, jobId) {
   }
   updateAxes();drawSpectrum();drawWaterfall();
   const frames=(report.wideband_trials || []).filter(t=>t.decoder==='adsb_1090es').flatMap(t=>t.frames || []);
-  const ax25Trials=(report.wideband_trials || []).filter(t=>(t.decoder==='ax25_ui' || t.decoder==='afsk1200_ax25'));
+  const ax25Trials=(report.wideband_trials || []).filter(t=>(t.decoder==='ax25_ui' || t.decoder==='afsk1200_ax25' || t.decoder==='afsk1200_fm_ax25'));
   const ax25Frames=ax25Trials.flatMap(t=>t.frames || []);
   const loraFrames=(report.wideband_trials || []).filter(t=>t.decoder==='lora_preamble').flatMap(t=>t.frames || []);
   $('metric-signals').textContent=signals.length;
@@ -151,7 +151,8 @@ function showReport(report, jobId) {
     details.append(summary);
     details.addEventListener('toggle',()=>{if(details.open){selectedSignal=sig.id;drawSpectrum();}});
     const content=element('div',undefined,'detail');
-    if(!sig.decoder_trials.length) content.append(element('p',sig.status==='budget_deferred' ? 'Essais différés : budget de bandes atteint.' : 'Famille inconnue. Aucun contenu validé.','unknown'));
+    if(sig.validated_content?.decoder==='afsk1200_fm_ax25')content.append(element('p',`FM → AFSK1200 · ${sig.validated_content.frame_count} trame(s) AX.25 à CRC valide. Les interprétations applicatives peuvent rester indéterminées.`,'fm-ax25-signal'));
+    else if(!sig.decoder_trials.length) content.append(element('p',sig.status==='budget_deferred' ? 'Essais différés : budget de bandes atteint.' : 'Famille inconnue. Aucun contenu validé.','unknown'));
     for(const trial of sig.decoder_trials) {
       const row=element('div',undefined,'trial');
       row.append(element('p',`${trial.family} · audio candidat, non validé`));
@@ -365,10 +366,11 @@ function showReport(report, jobId) {
     }
     if(trial.artifact){const link=element('a','Télécharger les messages POCSAG (JSON)');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
   }
-  if(ax25Frames.length)frameList.append(element('h3',`AX.25 UI · ${ax25Frames.length} trame(s) CRC valide(s)`,'frames-title'));
+  if(ax25Frames.length)frameList.append(element('h3',`AX.25${ax25Frames.some(f=>f.fields.frame_type!=='UI')?'':' UI'} · ${ax25Frames.length} trame(s) CRC valide(s)`,'frames-title'));
   for(const trial of ax25Trials){
     if(trial.frontend==='bpsk_g3ruh' && !trial.frames.length && trial.stream_diagnostics?.some(d=>d.flags_observed))frameList.append(element('p','BPSK : fanions HDLC observés, aucune trame AX.25 UI validée. Le rapport détaille les rejets ; aucune charge utile binaire n’est déduite.','hint psk-ax25-unresolved'));
     if(trial.frontend==='bpsk_g3ruh' && trial.artifact){const link=element('a','Télécharger le rapport AX.25 BPSK');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
+    if(trial.decoder==='afsk1200_fm_ax25' && trial.artifact){const link=element('a','Télécharger les trames AX.25 reçues en FM (JSON)');link.className='fm-ax25-download';link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
     if(trial.budget_exhausted)frameList.append(element('p',`Recherche AX.25 partielle : limite de trames ou de ${trial.flag_pair_budget} paires de fanions atteinte.`,'hint'));
   }
   for(const frame of ax25Frames){
@@ -377,13 +379,29 @@ function showReport(report, jobId) {
     const address=a=>`${a.callsign}${a.ssid?'-'+a.ssid:''}`;
     card.append(element('p',`${address(f.source)} → ${address(f.destination)} · ${frame.line_coding} · CRC-16/X-25 valide`,'ax25-addresses'));
     if(frame.frontend==='bpsk_g3ruh')card.append(element('p','BPSK · G3RUH · CRC vérifié par IQScope','psk-ax25-integrity'));
-    if(frame.payload_artifact){const link=element('a','Télécharger la charge utile AX.25 BPSK');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(frame.payload_artifact)}`;link.download=frame.payload_artifact;card.append(link);}
+    if(frame.frontend==='fm_iq_afsk1200')card.append(element('p','FM → AFSK1200 · CRC vérifié par IQScope','fm-ax25-integrity'));
+    if(frame.wire_artifact){const link=element('a','Télécharger la trame AX.25 complète (binaire)');link.className='ax25-wire-download';link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(frame.wire_artifact)}`;link.download=frame.wire_artifact;card.append(link);}
+    if(frame.payload_artifact){const link=element('a',frame.frontend==='fm_iq_afsk1200'?'Télécharger la charge utile AX.25 FM':'Télécharger la charge utile AX.25 BPSK');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(frame.payload_artifact)}`;link.download=frame.payload_artifact;card.append(link);}
     if(f.via.length)card.append(element('p',`Via : ${f.via.map(address).join(', ')}`));
     const channel=frame.channel;
-    const channelLabel=channel?(channel.audio_frequency_hz!==undefined?' · '+formatFrequency(channel.audio_frequency_hz)+' audio':Number.isFinite(channel.frequency_hz)?' · '+formatFrequency(channel.frequency_hz):Number.isFinite(channel.offset_hz)?' · offset '+formatFrequency(channel.offset_hz):''):'';
-    card.append(element('p',`t=${frame.time_seconds.toFixed(6)} s · PID 0x${f.pid.toString(16).padStart(2,'0')}${channelLabel}`));
-    if(f.text!==undefined)card.append(element('pre',f.text,'ax25-text'));
-    else card.append(element('code',f.payload_hex));
+    const channelLabel=channel?(channel.audio_frequency_hz!==undefined?' · '+formatFrequency(channel.audio_frequency_hz)+' audio':channel.rf_center_known===false?' · décalage '+formatFrequency(channel.offset_hz)+' (centre RF non renseigné)':Number.isFinite(channel.frequency_hz)?' · '+formatFrequency(channel.frequency_hz):Number.isFinite(channel.offset_hz)?' · offset '+formatFrequency(channel.offset_hz):''):'';
+    card.append(element('p',`t=${frame.time_seconds.toFixed(6)} s${Number.isInteger(f.pid)?' · PID 0x'+f.pid.toString(16).padStart(2,'0'):''}${channelLabel}`));
+    if(f.frame_type!=='UI'){
+      const type=f.frame_type==='S'?f.supervisory_function:f.frame_type==='U'?f.unnumbered_function:'I';
+      card.append(element('p',`Trame AX.25 ${type}${f.control_mode?' · '+f.control_mode.replace('_',' '):' · mode de contrôle non établi'}`,'ax25-link-type'));
+      if(Number.isInteger(f.n_r))card.append(element('p',`N(R)=${f.n_r} · bit P/F=${f.poll_final_bit?1:0}`,'ax25-link-sequence'));
+      card.append(element('code',f.link_body_hex,'ax25-link-body'));
+      for(const c of f.control_candidates || []){
+        card.append(element('p',`Hypothèse ${c.mode.replace('_',' ')} : N(S)=${c.n_s}, N(R)=${c.n_r}, P/F=${c.poll_final_bit?1:0}, PID 0x${c.pid.toString(16).padStart(2,'0')}`,'ax25-control-candidate'));
+        if(c.text!==undefined)card.append(element('pre',c.text,'ax25-link-text-candidate'));
+        else if(c.payload_hex!==undefined)card.append(element('code',c.payload_hex,'ax25-link-hex-candidate'));
+      }
+      card.append(element('p','État de connexion non reconstitué ; les hypothèses de trame I ne sélectionnent aucun contenu applicatif.','hint ax25-link-scope'));
+    }
+    if(f.frame_type==='UI'){
+      if(f.text!==undefined)card.append(element('pre',f.text,'ax25-text'));
+      else card.append(element('code',f.payload_hex));
+    }
     const aprs=f.aprs;
     if(aprs?.telemetry){
       const t=aprs.telemetry;
@@ -434,7 +452,7 @@ function showReport(report, jobId) {
       if(aprs.timestamp?.raw)card.append(element('p',`Horodatage APRS ${aprs.timestamp.raw} · ${aprs.timestamp.time_basis==='UTC'?'UTC':'heure locale, fuseau inconnu'} · date complète inconnue`,'aprs-timestamp'));
     }else if(aprs?.status==='ambiguous_position')card.append(element('p','Position APRS ambiguë : aucune coordonnée ponctuelle déduite.','aprs-position-unresolved'));
     else if(aprs?.status==='null_position')card.append(element('p','Position APRS signalée inconnue : aucune coordonnée déduite.','aprs-position-unresolved'));
-    card.append(element('p','CRC et structure UI vérifiés ; identité de l’émetteur et contenu déclaré non vérifiés indépendamment.','hint'));
+    card.append(element('p',f.frame_type==='UI'?'CRC et structure UI vérifiés ; identité de l’émetteur et contenu déclaré non vérifiés indépendamment.':'CRC, adresses et profil de contrôle vérifiés ; état de connexion et identité de l’émetteur non vérifiés.','hint'));
     frameList.append(card);
   }
   for(const trial of report.wideband_trials || []){

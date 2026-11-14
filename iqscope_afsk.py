@@ -49,15 +49,19 @@ def _transition_clocks(d, power):
                                     clock_groups=len(groups))
 
 
-def decode_afsk1200(audio,fs,max_seconds=20,max_frames=128,max_flag_pairs=6000):
+def decode_afsk1200(audio,fs,max_seconds=20,max_frames=128,max_flag_pairs=6000,accept_link_frames=False):
     result = {'decoder':'afsk1200_ax25','family':'AFSK1200 / AX.25 UI','frames':[],
               'validation_scope':'CRC-16/X-25 and AX.25 UI structure; optional APRS position/telemetry definitions are declared content, not independent content or sender verification',
               'limitations':['Audio frontend only: nominal 1200 baud and 1200/2200-Hz tones; 32 fixed phases plus at most 16 transition-clock fits.',
                              'Clock fits require 24 transitions over 0.1 second, rate within +/-3% and RMS residual <=0.1 symbol; power gate at 3% of peak tone energy.',
-                             'No tone-frequency estimation, intra-burst clock tracking, RF FM discriminator, G3RUH or connected-mode AX.25.',
+                             'No tone-frequency estimation, intra-burst clock tracking, RF FM discriminator, G3RUH or link-session reconstruction.',
+                             'I/S/U inspection is opt-in; ambiguous I-frame modes never select an application payload.',
                              'Counts of rejected hypotheses are not a bit/frame error rate.',
                              'Telemetry definitions are self-addressed, same source/SSID and channel, received before sample and at most 600 seconds old; no cross-window state.',
                              'Lossy MP3 compression may destroy packet symbols; uncompressed WAV is preferred.']}
+    if accept_link_frames:
+        result.update(family='AFSK1200 / AX.25 UI/I/S/U inspection',
+                      validation_scope='FCS and bounded address/control inspection; I-frame application content can remain unresolved without connection state')
     if not 8000<=fs<=48000 or len(audio)<fs*.2:
         return dict(result,status='not_applicable')
     original = len(audio)
@@ -95,7 +99,8 @@ def decode_afsk1200(audio,fs,max_seconds=20,max_frames=128,max_flag_pairs=6000):
         bits = ''.join('1' if value>0 else '0' for value in values)
         candidate = {'bits':bits,'parameters':{'baud':baud,'first_symbol_center_seconds':float(centers[0]/48000)},
                      'channel':{'audio_frequency_hz':1700}}
-        trial = decode_ax25([candidate],max_frames=max_frames,max_flag_pairs=max_flag_pairs-examined)
+        trial = decode_ax25([candidate],max_frames=max_frames,max_flag_pairs=max_flag_pairs-examined,
+                            allow_link_frames=accept_link_frames)
         examined += trial['flag_pairs_examined']
         rejected += trial['crc_rejected']
         exhausted |= trial['budget_exhausted']

@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+import tempfile
 import unittest
 import numpy as np
 
@@ -14,6 +17,26 @@ def fixture(fs=48000, offset=6500, baud=1200, bad=False, payload=b'>FM IQ refere
 
 
 class AfskFmTests(unittest.TestCase):
+    def test_automatic_wave_pipeline_keeps_numeric_ui_content_and_binary_exports(self):
+        from scipy.io import wavfile
+        from iqscope import analyze
+        payload=b'!/5n5qPkBr>   /A=001585FM test'
+        x=fixture(offset=0,payload=payload)
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);path=root/'iq.wav';out=root/'out'
+            wavfile.write(path,48000,np.column_stack((x.real,x.imag)).astype(np.float32))
+            report=analyze(path,out,seconds=20)
+            trial=next(t for t in report['wideband_trials'] if t['decoder']=='afsk1200_fm_ax25')
+            self.assertEqual(len(trial['frames']),4,trial)
+            self.assertEqual(json.loads((out/trial['artifact']).read_text()),trial)
+            for frame in trial['frames']:
+                self.assertEqual(frame['fields']['payload_hex'],payload.hex())
+                self.assertAlmostEqual(frame['fields']['aprs']['latitude_deg'],48.755881719809096,places=12)
+                self.assertEqual(frame['fields']['aprs']['altitude_ft'],1585)
+                self.assertEqual((out/frame['wire_artifact']).read_bytes(),bytes.fromhex(frame['hex']))
+                self.assertEqual((out/frame['payload_artifact']).read_bytes(),payload)
+            self.assertTrue(any(s['validated_content'] for s in report['signals']))
+
     def test_fm_iq_recovers_crc_payload_and_rf_channel(self):
         for baud in (1200,1194.8):
             x = fixture(baud=baud)

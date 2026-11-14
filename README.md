@@ -135,6 +135,7 @@ not been tested in this development environment.
 | RTTY / ITA2 | Text candidates, raw character codes, automatic common baud rates/tones/polarity | Direct IQ at 1–12 kS/s or bounded stationary-channel search up to 2.4 MS/s, 5-bit LSB-first with at least 1.5 stop bits; framing only, no checksum |
 | Mode S / ADS-B | DF17/DF18 CRC-24 packets, address/type and barometric altitude; callsign, TC19 velocities and global airborne CPR position for DF17 and DF18 CF0/1 | Clean captures >=2 MS/s; TC9–18 even/odd pairs within 10 seconds in one analysis; no surface/local CPR, general Mode S parity overlays, collisions or bit-error correction |
 | POCSAG | Capcodes, numeric messages and basic IA5 text from automatic 2-FSK candidates or demodulated receiver audio; JSON export | 512/1200/2400 baud, exact batch sync and BCH/parity checks; at most two corrected bits over the complete message, received words retained; synthetic IQ plus eight laboratory audio captures; no cross-analysis state |
+| NBFM / AFSK1200 / AX.25 | Automatic IQ channel/FM/AFSK reception, CRC-valid UI plus I/S/U inspection, binary frame exports | 20 kS/s–2.4 MS/s, eight channels, bounded 20 s; I-mode/application candidates remain unresolved without connection state; one pinned original-IQ reference |
 
 The capability registry distinguishes analog interpretations from validated
 packet integrity. A CRC does **not** authenticate a transmitter. For DF18, the
@@ -406,8 +407,9 @@ streams. FCS failures are rejected without bit correction. A valid FCS and
 address structure do not authenticate a sender. Truncated frames, upstream
 clock/rate errors and inter-window gaps can cause missed packets.
 
-**This does not yet implement an RF FM discriminator for AFSK1200,
-G3RUH-over-FSK, connected-mode AX.25 or KISS output.** The separate BPSK path
+The separate [IQ FM/AFSK frontend](docs/AX25_FM_IQ.md) adds automatic FM
+discrimination and bounded I/S/U inspection. This direct-bit path stays UI-only.
+G3RUH-over-FSK, link-session reassembly and KISS output remain outside scope. The BPSK path
 supports G3RUH descrambling. APRS coverage is limited to uncompressed/base-91
 station and named-point positions, partial timestamps, course/speed and altitude. Compressed
 radio range and GPS fix status are received declarations, not measurements.
@@ -439,7 +441,9 @@ compressed-position/altitude packets against a published transmitter profile.
 Their measured clocks are about 1194.85 baud relative to the audio sample rate;
 automatic transition-clock fits recover the packets that fixed 1200-baud
 sampling missed. The Pico reference is an analog laboratory recording;
-off-air positions/telemetry and an original RF IQ frontend remain unvalidated.
+off-air APRS positions/telemetry remain unvalidated. The separate
+[original-IQ FM reference](docs/AX25_FM_IQ.md) checks five AX.25 link frames
+with unresolved I-mode application interpretations.
 
 The AX.25 synthetic IQ checks exercise direct 1200-baud NRZI and a translated
 300-baud wideband channel. The shared detector can merge sidelobes into bands
@@ -561,16 +565,19 @@ normal/compressed positions. Mic-E, area geometry and extended decimal `T#`
 formats remain outside this profile.
 See [APRS details and limitations](docs/APRS.md).
 A valid CRC does not authenticate an emitter or verify its reported position.
-No RF FM discriminator, G3RUH-over-AFSK,
-connected-mode AX.25, speech transcription or general AFSK classifier is added.
+This receiver-audio mode stays UI-only. Original-IQ FM reception and I/S/U
+inspection use the [separate RF frontend](docs/AX25_FM_IQ.md). No session
+reconstruction, G3RUH-over-AFSK, speech transcription or general AFSK classifier is added.
 
-Limits: first 20 seconds, 32 phases, 6000 total flag-pair attempts and 128 unique
-frames. There is no frequency or clock tracking. Tests use synthetic NRZI audio
+Limits: first 20 seconds, 32 phases plus 16 clock fits, 6000 total flag-pair attempts and 128 unique
+frames. There is no tone-frequency estimation or continuous clock tracking. Tests use synthetic NRZI audio
 with both tone polarities, fractional timing, 8/44.1-kHz input, corrupted FCS,
 noise, unkeyed tone and phase deduplication. WAV and a 24-kHz/64-kbit/s MP3 fixture
 exercise import, UI and export. Aggressively compressed MP3 can destroy valid
-packets; WAV is preferable for protocol validation. No real over-air AFSK1200
-capture has yet been validated.
+packets; WAV is preferable for protocol validation. Recorded ISS receiver audio
+and Pico laboratory audio have independent expected payloads. The separate
+original-IQ reference recovers five AX.25 link frames, with development
+regression oracles rather than author-published golden packets.
 
 
 The browser releases its temporary upload after a completed or failed analysis;

@@ -1,4 +1,4 @@
-"""Bounded AX.25 UI frame extraction from candidate binary-FSK tone bits."""
+"""Bounded AX.25 extraction from recovered bits: strict UI default, optional link inspection."""
 from iqscope_aprs import parse_aprs_position, parse_aprs_telemetry
 from iqscope_aprs_calibration import parse_aprs_definition, enrich_aprs_telemetry_frames
 
@@ -27,7 +27,7 @@ def unstuff(bits):
     return bytes(sum(int(out[i+j])<<j for j in range(8)) for i in range(0,len(out),8))
 
 
-def parse_ui(data):
+def _address_header(data):
     addresses = []
     cursor = 0
     for _ in range(10):
@@ -47,7 +47,15 @@ def parse_ui(data):
             break
     else:
         return None
-    if len(addresses)<2 or len(data)<cursor+2 or data[cursor]&0xef!=3:
+    return (addresses,cursor) if len(addresses)>=2 else None
+
+
+def parse_ui(data):
+    header = _address_header(data)
+    if header is None:
+        return None
+    addresses,cursor = header
+    if len(data)<cursor+2 or data[cursor]&0xef!=3:
         return None
     payload = data[cursor+2:]
     if len(payload)>256:
@@ -69,7 +77,12 @@ def parse_ui(data):
     return fields
 
 
-def decode_ax25(candidates,max_frames=128,max_flag_pairs=2000):
+def decode_ax25(candidates,max_frames=128,max_flag_pairs=2000,allow_link_frames=False):
+    parser = parse_ui
+    if allow_link_frames:
+        from iqscope_ax25_link import parse_link
+        parser = parse_link
+    minimum, maximum = (17,331) if allow_link_frames else (18,330)
     frames = []
     examined = 0
     exhausted = False
@@ -99,27 +112,27 @@ def decode_ax25(candidates,max_frames=128,max_flag_pairs=2000):
                 diagnostic['last_flag_bit']=following
                 start,end = previous+8,following
                 previous = following
-                if not 18*8<=end-start<=330*8*6//5:
+                if not minimum*8<=end-start<=maximum*8*6//5:
                     length_rejected+=1
                     continue
                 packet = unstuff(bits[start:end])
                 if packet is None:
                     stuffing_rejected+=1
                     continue
-                if len(packet)<18 or len(packet)>330:
+                if len(packet)<minimum or len(packet)>maximum:
                     length_rejected+=1
                     continue
                 if crc_x25(packet[:-2])!=int.from_bytes(packet[-2:],'little'):
                     rejected_crc += 1
                     continue
-                fields = parse_ui(packet[:-2])
+                fields = parser(packet[:-2])
                 if fields is None:
                     structure_rejected+=1
                     continue
                 p = candidate['parameters']
                 # The NRZI bit is associated with its second tone symbol.
                 bit_start = start+origin_shift
-                frames.append({'decoder':'ax25_ui','hex':packet.hex(),'fields':fields,
+                frames.append({'decoder':'ax25_ui' if fields['frame_type']=='UI' else 'ax25_link','hex':packet.hex(),'fields':fields,
                                'line_coding':coding,'fcs':'CRC-16/X-25','fcs_valid':True,
                                'candidate_index':candidate_index,'bit_start':bit_start,
                                'time_seconds':p['first_symbol_center_seconds']+bit_start/p['baud'],
@@ -127,19 +140,23 @@ def decode_ax25(candidates,max_frames=128,max_flag_pairs=2000):
                                # center; the next packet may share this flag.
                                'time_end_seconds':p['first_symbol_center_seconds']+(end+7.5+origin_shift)/p['baud'],
                                'channel':candidate.get('channel'),
-                               'validation_scope':'FCS and AX.25 UI structure; optional APRS fields are payload syntax, not independent content or identity verification'})
+                               'validation_scope':('FCS and AX.25 UI structure; optional APRS fields are payload syntax, not independent content or identity verification'
+                                   if fields['frame_type']=='UI' else 'FCS, address structure and bounded I/S/U layout; I-frame control/PID/payload remain unselected hypotheses without link state')})
             if exhausted:
                 break
         if exhausted:
             break
-    return {'decoder':'ax25_ui','family':'AX.25 UI','status':'validated_frames' if frames else 'no_valid_frames',
+    return {'decoder':'ax25_link' if allow_link_frames else 'ax25_ui',
+            'family':'AX.25 UI/I/S/U inspection' if allow_link_frames else 'AX.25 UI',
+            'status':'validated_frames' if frames else 'no_valid_frames',
             'frames':enrich_aprs_telemetry_frames(frames),'flag_pairs_examined':examined,'crc_rejected':rejected_crc,
             'length_rejected':length_rejected,'stuffing_rejected':stuffing_rejected,
             'structure_rejected':structure_rejected,'stream_diagnostics':stream_diagnostics,
             'diagnostic_scope':'Observed flags and rejection stages only; no reconstruction of missing frame boundaries.',
             'budget_exhausted':exhausted,'frame_budget':max_frames,'flag_pair_budget':max_flag_pairs,
-            'limitations':['AX.25 UI only, at most ten addresses and 256 payload octets; NRZI/NRZ trials on recovered 2-FSK bits.',
-                           'No AFSK-over-FM frontend, G3RUH-over-FSK descrambler or connected-mode frames; APRS limited to supported positions, point entities, classic T# and station-comment base91 telemetry with declared definitions.',
+            'limitations':['At most ten addresses and 256 information octets; NRZI/NRZ trials on recovered bits.',
+                           ('I/S/U inspection enabled; no link-state inference, sequence reassembly or selected application payload for ambiguous I-frame modes.' if allow_link_frames else 'AX.25 UI only; connected-mode frames are not accepted.'),
+                           'No RF FM frontend in this bit-stream extractor or G3RUH-over-FSK descrambler; optional APRS interpretation is confined to UI PID 0xf0.',
                            'Telemetry definitions: self-addressed, same source/SSID, frontend and channel, fully received before sample, maximum age 600 seconds; no cross-trial/window state or implicit unit conversion.',
                            'Upstream demodulation may miss frames; a valid CRC does not authenticate an emitter.',
                            'Wideband detection can merge sidelobes into a band >24 kHz and exclude even a low-baud signal.']}

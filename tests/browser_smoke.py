@@ -465,6 +465,42 @@ def main():
                     assert binary.ok and binary.body()==b'HELLO'
                     page.locator('#experimental-lora').uncheck()
                 expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                if os.environ.get('IQSCOPE_TEST_AX25_IQ')=='1':
+                    reference=json.loads(Path('corpus-cache/aprs-iq/summary.json').read_text())
+                    previous_seconds=page.locator('#seconds').input_value()
+                    page.locator('#input-kind').select_option('iq')
+                    page.locator('#seconds').fill('20')
+                    page.locator('#meta-file').set_input_files([])
+                    page.locator('#iq-file').set_input_files('corpus-cache/aprs-iq/recording.wav')
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                    expect(page.locator('#metric-frames')).to_have_text('5')
+                    expect(page.locator('#center-label')).to_have_text('Fréquences relatives à la capture')
+                    expect(page.locator('.fm-ax25-integrity')).to_have_count(5)
+                    expect(page.locator('.ax25-link-type')).to_have_count(5)
+                    expect(page.locator('.ax25-link-type').filter(has_text='AX.25 RR')).to_have_count(2)
+                    expect(page.locator('.ax25-control-candidate')).to_have_count(6)
+                    expect(page.locator('.ax25-link-text-candidate')).to_have_count(3)
+                    expect(page.locator('.ax25-link-text-candidate').first).to_contain_text('K2YYD-10 DE N2RQ-9')
+                    expect(page.locator('.ax25-text')).to_have_count(0)
+                    expect(page.locator('.aprs-position')).to_have_count(0)
+                    page.locator('#signal-list details').first.locator('summary').click()
+                    expect(page.locator('.fm-ax25-signal')).to_be_visible()
+                    response=page.request.get(urljoin(page.url,page.locator('#download').get_attribute('href')))
+                    assert response.ok
+                    rf_report=response.json()
+                    assert rf_report['sample_rate']==39062 and rf_report['center_frequency_hz']==0
+                    rf_trial=next(t for t in rf_report['wideband_trials'] if t['decoder']=='afsk1200_fm_ax25')
+                    assert [f['hex'] for f in rf_trial['frames']]==reference['frame_hex']
+                    assert all(f['fcs_valid'] and f['fields']['pid'] is None and not f['fields']['payload_hex']
+                               and not f['channel']['rf_center_known'] for f in rf_trial['frames'])
+                    response=page.request.get(urljoin(page.url,page.locator('.fm-ax25-download').get_attribute('href')))
+                    assert response.ok and response.json()==rf_trial
+                    expect(page.locator('.ax25-wire-download')).to_have_count(5)
+                    response=page.request.get(urljoin(page.url,page.locator('.ax25-wire-download').first.get_attribute('href')))
+                    assert response.ok and response.body()==bytes.fromhex(reference['frame_hex'][0])
+                    page.screenshot(path='browser-artifacts/fm-ax25-iq.png',full_page=True)
+                    page.locator('#seconds').fill(previous_seconds)
                 with tempfile.TemporaryDirectory() as directory:
                     from test_cw import fixture as audio_fixture, TEXT as AUDIO_TEXT
                     from scipy.io import wavfile

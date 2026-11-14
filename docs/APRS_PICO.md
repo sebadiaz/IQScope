@@ -103,5 +103,6 @@ l'absence de mouvement/télémétrie inventés et les exports JSON. Les preuves
 et la capture automatisée de l'interface vont dans `browser-checks`.
 
 Cette référence vise un profil de position compressée avec altitude sur
-liaison audio analogique. La validation de positions sur une réception RF,
-de la télémétrie enregistrée et du frontal FM sur IQ reste à faire.
+liaison audio analogique. La validation de positions APRS sur une réception RF
+et de télémétrie enregistrée reste à faire. Le [frontal FM sur IQ séparé](AX25_FM_IQ.md)
+dispose d'une référence de trames de liaison I/RR, sans position APRS sélectionnée.

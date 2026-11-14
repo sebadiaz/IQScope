@@ -1,4 +1,4 @@
-"""Bounded narrowband-FM IQ to AFSK1200/AX.25 UI trials, accepted only by FCS."""
+"""Bounded NBFM IQ to AFSK1200/AX.25 frames, with strict FCS and control-layout inspection."""
 from fractions import Fraction
 import math
 import numpy as np
@@ -34,14 +34,14 @@ def _demodulate(x, fs, offset):
 
 def search_afsk_fm(x, fs, bands, center_hz=0, max_channels=8, max_seconds=20,
                    max_frames=128, max_flag_pairs=6000):
-    result = dict(decoder='afsk1200_fm_ax25', family='Narrowband FM / AFSK1200 / AX.25 UI',
+    result = dict(decoder='afsk1200_fm_ax25', family='Narrowband FM / AFSK1200 / AX.25 UI/I/S/U',
                   frames=[], channels_examined=[], frequency_reference='input_iq_center',
-                  validation_scope='AX.25 UI structure and CRC-16/X-25; APRS fields remain declared payload content',
+                  validation_scope='CRC-16/X-25 plus bounded UI/I/S/U address/control inspection; I-frame mode and application payload can remain unresolved',
                   limitations=['Complex IQ at 20 kS/s to 2.4 MS/s; at most 20 seconds and 8 million input samples.',
                                'At most eight detected bands of 2-24 kHz, plus a baseband fallback within that budget for input <=96 kS/s.',
                                'Shared stationary detector may miss weak, overlapping or short bursts; FM channel low-pass at at most 8 kHz.',
                                'FM discriminator, compensated FIR/resampling and 1% of p99 channel-power squelch; no FM deemphasis or adjacent-channel cancellation.',
-                               'AFSK clock fits within +/-3% of 1200 baud; no tone-frequency estimation, connected-mode AX.25 or G3RUH-over-FM.',
+                               'AFSK clock fits within +/-3% of 1200 baud; no tone-frequency estimation, link-session reconstruction or G3RUH-over-FM.',
                                'Spectral/DC frequency estimates and declared RF center do not authenticate a transmitter.'])
     if (not math.isfinite(fs) or not 20000<=fs<=2400000 or not math.isfinite(center_hz)
             or len(x)<fs*.2 or not np.iscomplexobj(x)):
@@ -71,7 +71,7 @@ def search_afsk_fm(x, fs, bands, center_hz=0, max_channels=8, max_seconds=20,
         # Reserve a share of the global flag budget for each remaining channel.
         quota = max(1, (max_flag_pairs-examined)//(len(selected)-index))
         trial = decode_afsk1200(audio, audio_rate, max_seconds=20,
-                                max_frames=max_frames-len(frames), max_flag_pairs=quota)
+                                max_frames=max_frames-len(frames), max_flag_pairs=quota,accept_link_frames=True)
         examined += trial.get('flag_pairs_examined',0)
         exhausted |= trial.get('budget_exhausted',False)
         result['channels_examined'].append(dict(channel, status=trial['status'],
@@ -109,5 +109,11 @@ def write_afsk_fm_artifact(trial, out):
     if trial['frames']:
         import json
         from pathlib import Path
+        for index,frame in enumerate(trial['frames'],1):
+            frame['wire_artifact'] = f'fm-ax25-frame-{index}.bin'
+            (Path(out)/frame['wire_artifact']).write_bytes(bytes.fromhex(frame['hex']))
+            if frame['fields']['frame_type']=='UI':
+                frame['payload_artifact'] = f'fm-ax25-payload-{index}.bin'
+                (Path(out)/frame['payload_artifact']).write_bytes(bytes.fromhex(frame['fields']['payload_hex']))
         trial['artifact'] = 'fm-afsk-frames.json'
         (Path(out)/trial['artifact']).write_text(json.dumps(trial, indent=2))

@@ -17,6 +17,7 @@ from iqscope_ao40 import search_ao40_samples, write_ao40_artifacts
 from iqscope_qam import search_qam16, write_qam_artifacts
 from iqscope_psk import search_psk, write_psk_artifacts
 from iqscope_ax25 import decode_ax25, decode_psk_ax25, write_psk_ax25_artifacts
+from iqscope_afsk_fm import search_afsk_fm, write_afsk_fm_artifact
 from iqscope_pocsag import decode_pocsag, write_pocsag_artifact
 from iqscope_ofdm import detect_cyclic_prefix
 from iqscope_lora import detect_lora_preamble
@@ -162,6 +163,16 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
     psk_ax25 = decode_psk_ax25(psk['candidates'])
     write_psk_ax25_artifacts(psk_ax25, out)
     ax25 = decode_ax25(fsk.get('candidates',[]))
+    fm_ax25 = search_afsk_fm(x,fs,detections,center)
+    write_afsk_fm_artifact(fm_ax25,out)
+    for item in results:
+        low,high = item['band_edges_hz']
+        indexes = [index for index,frame in enumerate(fm_ax25['frames'])
+                   if low<=frame['channel']['offset_hz']<=high]
+        if indexes:
+            item.update(status='crc_validated_frames',validated_content=dict(
+                decoder=fm_ax25['decoder'],frame_indexes=indexes,frame_count=len(indexes),
+                validation='AX.25 FCS and bounded control inspection; no connection-state or sender authentication'))
     pocsag = decode_pocsag(fsk.get('candidates',[]))
     write_pocsag_artifact(pocsag, out)
     ofdm = detect_cyclic_prefix(x,fs)
@@ -180,9 +191,9 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
               'center_frequency_hz': center, 'analyzed_seconds': len(x) / fs,
               'noise_floor_db_per_hz': noise, 'capabilities': capabilities(),
               'limitations': ['Stationary spectral detector; overlapping, hopping and weak bursts may be missed.',
-                             'AM/FM audio are unvalidated candidates. ADS-B, AX.25 UI and supported LoRa PHY frames have CRC checks; RTTY/CW text candidates have timing or framing evidence only.',
+                             'AM/FM audio are unvalidated candidates. ADS-B, AX.25 and supported LoRa PHY frames have CRC checks; RTTY/CW text candidates have timing or framing evidence only.',
                              'At most 12 spectral bands receive audio trials; other detections remain visible.'],
-              'signals': results, 'wideband_trials': [digital, rtty, cw, fsk, fsk4, ax25, ofdm, lora, rtl433, psk, psk_ax25, ao40, qam, pocsag],
+              'signals': results, 'wideband_trials': [digital, rtty, cw, fsk, fsk4, ax25, fm_ax25, ofdm, lora, rtl433, psk, psk_ax25, ao40, qam, pocsag],
               'spectrum': {'frequency_hz': frequencies.tolist(), 'power_db': spectrum.tolist()},
               'waterfall': {'power_db': waterfall.tolist(), 'time_seconds': (starts/fs).tolist(),
                             'sampled_windows': True}}
