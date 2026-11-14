@@ -1,5 +1,6 @@
 """Bounded inspection of a public APRS-labelled original-IQ archive; no golden content yet."""
 import argparse
+import base64
 from fractions import Fraction
 import hashlib
 import io
@@ -18,6 +19,7 @@ from scipy import signal
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from iqscope import discover
 from iqscope_afsk import decode_afsk1200
+from iqscope_afsk_fm import search_afsk_fm
 from iqscope_formats import read_wave_iq, wave_layout
 
 SOURCE_URL = 'https://www.sigidwiki.com/images/6/64/APRS_IQ_145070kHz_IQ.zip'
@@ -61,10 +63,12 @@ def source_wave(root, offline=False):
         if member.compress_type==9:
             # This pinned small archive uses Deflate64, absent from Python's
             # zipfile decoder. 7-Zip writes only the selected WAV to stdout.
-            executable = shutil.which('7zz') or shutil.which('7z')
+            executable = shutil.which('7zz') or shutil.which('7z') or shutil.which('unzip')
             if not executable:
-                raise ValueError('This Deflate64 reference requires 7-Zip on PATH')
-            process = subprocess.run([executable, 'e', '-so', '-bd', '-y', str(archive), member.filename],
+                raise ValueError('This Deflate64 reference requires 7-Zip or Info-ZIP with Deflate64 support')
+            arguments = ([executable, '-p', str(archive), member.filename] if Path(executable).name=='unzip'
+                         else [executable, 'e', '-so', '-bd', '-y', str(archive), member.filename])
+            process = subprocess.run(arguments,
                                      capture_output=True, timeout=30)
             if process.returncode:
                 raise ValueError('7-Zip could not decode the pinned Deflate64 reference')
@@ -114,7 +118,7 @@ def inspect(path, out):
                             flag_pairs=trial.get('flag_pairs_examined'), rejected_crc=trial.get('crc_rejected_across_hypotheses')))
     report = dict(layout=wave_layout(path), samples=len(x), seconds=len(x)/fs,
                   sample_rate=fs, center_from_header_hz=center, bands=bands,
-                  inspection_only=True, trials=results)
+                  inspection_only=True, trials=results, fm_iq_trial=search_afsk_fm(x,fs,bands,center))
     out.write_text(json.dumps(report, indent=2))
     print(json.dumps(report))
     return report
@@ -124,10 +128,15 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--cache-root', type=Path, default=Path('corpus-cache/aprs-iq'))
     parser.add_argument('--offline', action='store_true')
+    parser.add_argument('--development-archive', action='store_true', help='Print the verified small public ZIP for offline receiver development')
     args = parser.parse_args()
     path, provenance = source_wave(args.cache_root, args.offline)
     (args.cache_root/'provenance.json').write_text(json.dumps(provenance, indent=2))
     print(json.dumps(provenance))
+    if args.development_archive:
+        encoded = base64.b64encode((args.cache_root/'source.zip').read_bytes()).decode('ascii')
+        for offset in range(0,len(encoded),4096):
+            print(f'IQSCOPE_ZIP_B64:{offset}:{encoded[offset:offset+4096]}')
     inspect(path, args.cache_root/'inspection.json')
 
 
