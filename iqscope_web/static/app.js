@@ -390,9 +390,25 @@ function showReport(report, jobId) {
       card.append(element('h3',`Télémétrie APRS · ${t.sequence.kind==='MIC'?'séquence MIC':`séquence ${t.sequence.raw}`}`,'aprs-telemetry'));
       card.append(element('p',t.analog_raw.map((v,i)=>`A${i+1}=${v}`).join(' · '),'aprs-telemetry-analog'));
       card.append(element('p',t.digital_bits.map((v,i)=>`B${i+1}=${v}`).join(' · '),'aprs-telemetry-digital'));
-      card.append(element('p','Valeurs brutes ; unités, calibration, noms et sens actif des bits non appliqués.','hint aprs-telemetry-scope'));
+      const associated=t.definition_context?.status==='associated_declared_metadata';
+      card.append(element('p',associated?'Valeurs brutes conservées ; définitions déclarées associées avec provenance. Émetteur et mesures non authentifiés ; aucune conversion d’unité implicite.':'Valeurs brutes ; unités, calibration, noms et sens actif des bits non appliqués.','hint aprs-telemetry-scope'));
+      if(associated){
+        if(t.project_title)card.append(element('p',`Projet déclaré : ${t.project_title}`,'aprs-telemetry-project'));
+        for(const c of t.analog_channels || []){
+          if(c.name || c.unit || Number.isFinite(c.value))card.append(element('p',`A${c.channel}${c.name?` « ${c.name} »`:''} · brut ${c.raw_value}${Number.isFinite(c.value)?` → ${Number(c.value.toPrecision(10))}${c.unit?` ${c.unit}`:' · unité inconnue'}`:c.unit?` · unité déclarée ${c.unit}, conversion non disponible`:' · unité inconnue'}`,'aprs-telemetry-calibrated'));
+          if(c.value_status==='non_finite_result; no value selected')card.append(element('p',`A${c.channel} : résultat non fini, aucune valeur calculée sélectionnée.`,'hint aprs-telemetry-calibration-unresolved'));
+        }
+        for(const c of t.digital_channels || [])if(c.label && typeof c.matches_declared_sense==='boolean')card.append(element('p',`B${c.channel}${c.name?` « ${c.name} »`:''} · ${c.label} : ${c.matches_declared_sense?'indiqué':'non indiqué'} par le sens déclaré`,'aprs-telemetry-labeled-bit'));
+        const provenance=Object.entries(t.definition_context.definitions).map(([kind,d])=>`${kind} : trame ${d.frame_index+1}, reçue jusqu’à ${d.received_end_seconds.toFixed(6)} s, âge ${d.age_seconds.toFixed(3)} s`).join(' · ');
+        card.append(element('p',provenance,'hint aprs-telemetry-provenance'));
+      }
       if(t.comment)card.append(element('pre',t.comment,'aprs-telemetry-comment'));
     }else if(aprs?.requested_profile==='classic_t_hash_8bit')card.append(element('p','Rapport T# hors profil classique ou mal formé : aucune valeur numérique déduite.','hint aprs-telemetry-unresolved'));
+    if(aprs?.definition){
+      const d=aprs.definition;
+      card.append(element('p',`Définition APRS ${d.kind} pour « ${d.addressee_raw} » · ${aprs.status==='decoded_telemetry_definition'?'syntaxe reconnue':'hors profil ou mal formée'}`,'aprs-telemetry-definition'));
+      card.append(element('p',d.association_eligibility==='self_addressed_claim'?'Annonce adressée au même indicatif/SSID ; association limitée au même canal et aux mesures ultérieures.':'Définition conservée sans association automatique à cette source.','hint'));
+    }
     if(aprs?.entity){
       const e=aprs.entity;
       card.append(element('p',`${e.kind==='object'?'Objet':'Item'} APRS « ${e.name} » · ${e.state_reported==='live'?'annoncé actif':'retrait déclaré'}`,'aprs-entity'));

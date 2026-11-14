@@ -665,6 +665,50 @@ def main():
                     for frame in response.json()['frames']:
                         assert frame['fields']['payload_hex']==TELEMETRY_INVALID.hex()
                         assert 'telemetry' not in frame['fields']['aprs']
+                    expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                    from test_aprs_calibration import receiver_fixture as calibration_fixture, PAYLOADS as CALIBRATION_PAYLOADS
+                    audio,fs=calibration_fixture()
+                    wavfile.write(wave,fs,audio.astype(np.float32))
+                    page.locator('#iq-file').set_input_files(str(wave))
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('.aprs-telemetry')).to_have_count(2,timeout=30000)
+                    expect(page.locator('.aprs-telemetry-definition')).to_have_count(4)
+                    expect(page.locator('.aprs-telemetry-calibrated')).to_have_count(5)
+                    expect(page.locator('.aprs-telemetry-calibrated').first).to_contain_text('Battery » · brut 199 → 1034.8 v/100')
+                    expect(page.locator('.aprs-telemetry-calibrated').nth(1)).to_contain_text('brut 0 → -32 deg.F')
+                    expect(page.locator('.aprs-telemetry-project')).to_have_text('Projet déclaré : Balloon <b>')
+                    expect(page.locator('.aprs-telemetry-project b')).to_have_count(0)
+                    expect(page.locator('.aprs-telemetry-labeled-bit').first).to_contain_text('Click : non indiqué')
+                    expect(page.locator('.aprs-telemetry-provenance')).to_contain_text('EQNS : trame 4')
+                    expect(page.locator('#metric-frames')).to_have_text('6')
+                    expect(page.locator('#center-label')).to_contain_text('aucune fréquence RF')
+                    response=page.request.get(urljoin(page.url,link.get_attribute('href')))
+                    assert response.ok
+                    calibrated_frames=response.json()['frames']
+                    assert len(calibrated_frames)==6
+                    before=calibrated_frames[0]['fields']['aprs']['telemetry']
+                    after=calibrated_frames[-1]['fields']['aprs']['telemetry']
+                    assert 'analog_channels' not in before
+                    assert before['analog_raw']==after['analog_raw']==[199,0,255,73,123]
+                    assert abs(after['analog_channels'][0]['value']-1034.8)<1e-9
+                    assert after['analog_channels'][0]['unit']=='v/100'
+                    assert after['definition_context']['definitions']['EQNS']['frame_hex']==calibrated_frames[3]['hex']
+                    assert after['definition_context']['definitions']['EQNS']['received_end_seconds']<calibrated_frames[-1]['time_seconds']
+                    page.screenshot(path='browser-artifacts/aprs-calibration.png',full_page=True)
+                    expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                    unrelated=[p.replace(b'N0CALL-1 ',b'SECOND   ') for p in CALIBRATION_PAYLOADS]
+                    audio,fs=calibration_fixture(payloads=unrelated)
+                    wavfile.write(wave,fs,audio.astype(np.float32))
+                    page.locator('#iq-file').set_input_files(str(wave))
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('.aprs-telemetry')).to_have_count(2,timeout=30000)
+                    expect(page.locator('.aprs-telemetry-definition')).to_have_count(4)
+                    expect(page.locator('.aprs-telemetry-calibrated')).to_have_count(0)
+                    expect(page.locator('.aprs-telemetry-project')).to_have_count(0)
+                    expect(page.locator('#metric-frames')).to_have_text('6')
+                    response=page.request.get(urljoin(page.url,link.get_attribute('href')))
+                    assert response.ok
+                    assert 'analog_channels' not in response.json()['frames'][-1]['fields']['aprs']['telemetry']
                     for payload,status,label in ((b'!4903.5 N/07201.75W>','ambiguous_position','ambiguë'),
                                                  (b'!0000.00N\\00000.00W.','null_position','inconnue')):
                         expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)

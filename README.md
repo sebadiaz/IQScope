@@ -413,9 +413,12 @@ station and named-point positions, partial timestamps, course/speed and altitude
 radio range and GPS fix status are received declarations, not measurements.
 Point objects/items preserve their names and live/withdrawn declarations;
 withdrawals expose no active point and do not delete other reports.
-Classic APRS `T#` telemetry also exports five raw unsigned 8-bit channels,
-eight wire bits and numeric/MIC sequence fields. Channel definitions,
-engineering-unit calibration and active-bit sense are not applied.
+Classic APRS `T#` telemetry exports five raw unsigned 8-bit channels, eight
+wire bits and numeric/MIC sequence fields. Eligible earlier self-addressed
+`PARM/UNIT/EQNS/BITS` definitions add declared names, units, polynomial values
+and bit-label matches, with per-definition provenance. Association stays within
+one source/SSID, frontend and channel in the current trial, with a 600-second
+age limit. Raw data is preserved; unit labels are not converted implicitly.
 The initial end-to-end tests use synthetic continuous direct-2-FSK recordings,
 NRZI with both polarities, independent FCS generation, stuffed payloads,
 corrupted FCS, truncation, random bits and bounded search. The BPSK path also has
@@ -532,8 +535,8 @@ coordinates, optional course/speed, altitude and partial timestamp components
 in the UI and JSON. Ambiguous/null positions never yield point coordinates;
 Objects/items identify the named point separately from the reporting station;
 withdrawals never become active coordinates. Classic `T#` telemetry exposes
-raw analog values and wire bits; names, units, equations and bit polarity are
-not applied. Mic-E, area geometry and extended/base-91 telemetry remain
+raw analog values and wire bits, plus eligible declared definitions and their
+causal provenance. Mic-E, area geometry and extended/base-91 telemetry remain
 outside this profile.
 See [APRS details and limitations](docs/APRS.md).
 A valid CRC does not authenticate an emitter or verify its reported position.

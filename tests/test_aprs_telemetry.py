@@ -94,16 +94,19 @@ class AprsTelemetryTests(unittest.TestCase):
         self.assertEqual(parse_aprs_telemetry(SAMPLE+b'x'*(256-len(SAMPLE)))['status'],'decoded_telemetry')
         self.assertIsNone(parse_aprs_telemetry(SAMPLE+b'x'*(257-len(SAMPLE))))
 
-    def test_definition_messages_and_comment_labels_do_not_supply_calibration(self):
+    def test_definition_messages_keep_raw_values_and_cannot_rewrite_previous_samples(self):
         definitions=[b':N0CALL-1 :PARM.Battery,Temp',b':N0CALL-1 :UNIT.v/100,deg.F',
                      b':N0CALL-1 :EQNS.0,5.2,0,0,.53,-32',b':N0CALL-1 :BITS.10110000,Project']
         source=[candidate(''.join(hdlc(frame(payload=p)) for p in [SAMPLE,*definitions,SAMPLE]))]
         frames=decode_ax25(source)['frames']
         self.assertEqual(len(frames),6)
-        self.assertEqual(frames[0]['fields']['aprs'],frames[-1]['fields']['aprs'])
-        for decoded in frames[1:-1]:self.assertNotIn('aprs',decoded['fields'])
+        before=frames[0]['fields']['aprs']['telemetry']
+        self.assertNotIn('analog_channels',before)
+        for decoded in frames[1:-1]:self.assertEqual(decoded['fields']['aprs']['status'],'decoded_telemetry_definition')
         raw=frames[-1]['fields']['aprs']['telemetry']
         self.assertEqual(raw['analog_raw'][0],199)
+        self.assertEqual(raw['analog_raw'],before['analog_raw'])
+        self.assertAlmostEqual(raw['analog_channels'][0]['value'],1034.8)
         for key in ('units','names','coefficients','physical_values','digital_active'):
             self.assertNotIn(key,raw)
 

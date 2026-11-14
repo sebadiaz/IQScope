@@ -1164,3 +1164,20 @@ tests couvrent syntaxe, bornes, refus, CRC/PID et voies IQ/audio/BPSK ; Chromium
 vérifie WAV, affichage et export. Les définitions PARM/UNIT/EQNS/BITS, leur
 association causale, les variantes étendues et une validation APRS enregistrée
 indépendante restent à réaliser. Voir [APRS.md](APRS.md).
+
+
+### APRS : définitions de télémétrie et association causale
+
+Les définitions PARM/UNIT/EQNS/BITS sont désormais structurées. Les mesures
+gardent leurs valeurs brutes et peuvent recevoir noms, unités, résultats
+polynomiaux et correspondance au sens binaire déclaré, avec provenance de
+chaque type. La politique automatique exige une annonce adressée à la même
+source/SSID, sur le même frontend/canal, entièrement reçue avant la mesure et
+vieille d'au plus 600 secondes. Les heures de fin de trame incluent le fanion
+de fermeture. Types expirés, remplacements invalides, champs manquants et
+conflits temporels ne reprennent pas de valeurs anciennes. Les résultats non
+finis restent sans valeur calculée. L'interface distingue brut et interprété,
+sans conversion d'unité implicite. Vingt nouveaux tests et Chromium couvrent
+ces règles et les voies IQ/audio/BPSK/WAV/JSON. L'authenticité, les annonces
+de définition tierces, le contexte interfenêtres et une validation APRS radio
+indépendante restent hors portée. Voir [APRS.md](APRS.md).

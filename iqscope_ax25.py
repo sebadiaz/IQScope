@@ -1,5 +1,6 @@
 """Bounded AX.25 UI frame extraction from candidate binary-FSK tone bits."""
 from iqscope_aprs import parse_aprs_position, parse_aprs_telemetry
+from iqscope_aprs_calibration import parse_aprs_definition, enrich_aprs_telemetry_frames
 
 
 def crc_x25(data):
@@ -61,6 +62,8 @@ def parse_ui(data):
         aprs = parse_aprs_position(payload)
         if aprs is None:
             aprs = parse_aprs_telemetry(payload)
+        if aprs is None:
+            aprs = parse_aprs_definition(payload)
         if aprs is not None:
             fields['aprs'] = aprs
     return fields
@@ -120,6 +123,9 @@ def decode_ax25(candidates,max_frames=128,max_flag_pairs=2000):
                                'line_coding':coding,'fcs':'CRC-16/X-25','fcs_valid':True,
                                'candidate_index':candidate_index,'bit_start':bit_start,
                                'time_seconds':p['first_symbol_center_seconds']+bit_start/p['baud'],
+                               # End is half a symbol after the last closing-flag
+                               # center; the next packet may share this flag.
+                               'time_end_seconds':p['first_symbol_center_seconds']+(end+7.5+origin_shift)/p['baud'],
                                'channel':candidate.get('channel'),
                                'validation_scope':'FCS and AX.25 UI structure; optional APRS fields are payload syntax, not independent content or identity verification'})
             if exhausted:
@@ -127,13 +133,14 @@ def decode_ax25(candidates,max_frames=128,max_flag_pairs=2000):
         if exhausted:
             break
     return {'decoder':'ax25_ui','family':'AX.25 UI','status':'validated_frames' if frames else 'no_valid_frames',
-            'frames':frames,'flag_pairs_examined':examined,'crc_rejected':rejected_crc,
+            'frames':enrich_aprs_telemetry_frames(frames),'flag_pairs_examined':examined,'crc_rejected':rejected_crc,
             'length_rejected':length_rejected,'stuffing_rejected':stuffing_rejected,
             'structure_rejected':structure_rejected,'stream_diagnostics':stream_diagnostics,
             'diagnostic_scope':'Observed flags and rejection stages only; no reconstruction of missing frame boundaries.',
             'budget_exhausted':exhausted,'frame_budget':max_frames,'flag_pair_budget':max_flag_pairs,
             'limitations':['AX.25 UI only, at most ten addresses and 256 payload octets; NRZI/NRZ trials on recovered 2-FSK bits.',
-                           'No AFSK-over-FM frontend, G3RUH-over-FSK descrambler or connected-mode frames; APRS limited to uncompressed/base-91 positions, point objects/items and classic raw T# telemetry.',
+                           'No AFSK-over-FM frontend, G3RUH-over-FSK descrambler or connected-mode frames; APRS limited to supported positions, point entities and classic T# telemetry with declared definitions.',
+                           'Telemetry definitions: self-addressed, same source/SSID, frontend and channel, fully received before sample, maximum age 600 seconds; no cross-trial/window state or implicit unit conversion.',
                            'Upstream demodulation may miss frames; a valid CRC does not authenticate an emitter.',
                            'Wideband detection can merge sidelobes into a band >24 kHz and exclude even a low-baud signal.']}
 
@@ -164,6 +171,7 @@ def decode_psk_ax25(candidates):
         frame['bit_start']+=17
         frame['frontend']='bpsk_g3ruh'
         frame['descrambler']='G3RUH x^17+x^12+1'
+    result['frames']=enrich_aprs_telemetry_frames(result['frames'])
     return result
 
 

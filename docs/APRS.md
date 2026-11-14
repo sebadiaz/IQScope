@@ -4,7 +4,8 @@ IQScope interprète automatiquement un premier profil APRS dans les charges
 utiles AX.25 UI de PID `0xf0`. Les trames doivent déjà avoir passé le contrôle
 CRC-16/X-25 et les vérifications de structure du décodeur englobant. La fonction
 `parse_aprs_position` et `parse_aprs_telemetry` lisent des syntaxes ; ces fonctions
-seules ne contrôlent pas les trames.
+seules ne contrôlent pas les trames. `parse_aprs_definition` lit les définitions ;
+`enrich_aprs_telemetry_frames` associe les déclarations sous conditions explicites.
 
 Le même lecteur sert aux trois chemins existants : bits 2-FSK issus d’IQ,
 audio de récepteur AFSK1200 et BPSK avec débrassage G3RUH
@@ -21,7 +22,7 @@ Un fichier audio ne fournit toujours aucun centre RF.
 | Extension initiale `ccc/sss` reconnue | Route de 1 à 360 degrés depuis le nord, vitesse en nœuds et m/s |
 | Une annotation `/A=` suivie de six chiffres non signés | Altitude en pieds et mètres ; référence verticale non déterminée |
 | Objet `;` ou item `)` ponctuel | Nom exact, état déclaré actif/retiré, coordonnées non compressées ou base 91 pour les annonces actives |
-| Télémétrie classique `T#`, séquence numérique ou `MIC` | Cinq valeurs brutes 0–255 et huit bits reçus, sans conversion physique |
+| Télémétrie classique `T#`, séquence numérique ou `MIC` | Cinq valeurs brutes 0–255, huit bits reçus et définitions antérieures éligibles avec provenance |
 
 Les champs interprétés sont ajoutés à `frame.fields.aprs`, dans les rapports
 JSON existants. L’interface affiche les valeurs reconnues et garde le texte
@@ -58,7 +59,7 @@ restent des notions distinctes.
 ## Référence et vérifications
 
 Référence primaire : [APRS Protocol Reference v1.0.1, APRS Working Group/TAPR](https://www.aprs.org/doc/APRS101.PDF),
-chapitres 6–9, 11, 13 et 20. Le profil ci-dessus est volontairement limité ; cette référence
+chapitres 6–9, 11, 13–14 et 20. Le profil ci-dessus est volontairement limité ; cette référence
 ne constitue pas une déclaration de conformité APRS complète.
 
 `tests/test_aprs.py` vérifie les exemples de syntaxe publiés, les quatre
@@ -144,12 +145,10 @@ Un rapport reconnu porte `status: decoded_telemetry` et un champ `telemetry` :
 - `comment` et `comment_hex` conservent le commentaire ; le texte d'origine
   et `payload_hex` restent dans les champs AX.25.
 
-L'interface affiche les numéros des canaux et les valeurs brutes. Aucune unité,
-étiquette, équation quadratique ou conversion physique n'est appliquée. Les
-messages `PARM.`, `UNIT.`, `EQNS.` et `BITS.` restent du texte AX.25 exportable :
-leur lecture structurée et leur association causale par source/SSID restent
-à réaliser. Aucune définition future, extérieure ou issue d'un autre rapport
-ne modifie les valeurs. Cette étape n'introduit pas de registre interfenêtres.
+L'interface conserve ces numéros et valeurs brutes. Les définitions éligibles
+peuvent ajouter des interprétations déclarées, selon les règles ci-dessous.
+Le lecteur de syntaxe seul n'applique aucune définition. Cette étape n'introduit
+pas de registre interfenêtres.
 
 Les variantes étendues, valeurs signées/flottantes, champs raccourcis ou
 incomplets restent hors profil. Un corps non interprété ne fait pas perdre la
@@ -161,3 +160,52 @@ bits, commentaires, refus, CRC/PID et chemins IQ/audio/BPSK. Chromium vérifie
 les imports WAV, l'affichage sûr, le compteur CRC et l'export JSON. La validation
 actuelle utilise des références synthétiques ; un enregistrement APRS
 indépendant reste à intégrer.
+
+## Définitions et interprétation déclarée
+
+Les messages `PARM.`, `UNIT.`, `EQNS.` et `BITS.` sont lus avec leur adresse
+fixe, leurs données et l'identifiant de message éventuel. Les noms/unités
+conservent les champs vides et les limites de largeur du profil classique.
+Une équation exige trois coefficients explicites pour produire une valeur :
+`a*v*v + b*v + c`. Les bits sont comparés au sens transmis ; une correspondance
+porte sur l'étiquette déclarée, pas sur une notion universelle d'entrée active.
+
+L'association automatique est une politique prudente d'IQScope :
+
+- Même source et SSID, même frontend et même canal. Sans fréquence connue,
+  l'indice du candidat distingue les flux. Seules les définitions adressées
+  à la source elle-même sont utilisées ; les annonces tierces restent lisibles.
+- La trame de définition doit avoir une FCS valide et être entièrement reçue
+  **avant** le premier centre de symbole de la mesure. `time_end_seconds`
+  correspond à la fin du symbole du dernier bit du fanion de fermeture ;
+  deux paquets peuvent donc partager ce fanion sans perdre l'association.
+  Aucune définition future, simultanée ou temporellement indéterminée n'est
+  utilisée comme nouvelle définition de la mesure.
+- Chaque type expire séparément après 600 secondes par défaut. C'est une
+  limite d'implémentation, pas une durée imposée par APRS. Le lecteur public
+  accepte un budget fini de 0 à 3600 secondes ; les voies automatiques utilisent 600.
+- Le dernier message d'un type remplace ses champs ; les champs manquants ne
+  reprennent pas ceux d'un ancien message. Un remplacement mal formé bloque
+  l'ancien type. Des définitions différentes finissant exactement au même
+  instant restent en conflit jusqu'à une nouvelle annonce ultérieure.
+- Le contexte est local à l'essai. Les phases AFSK sont réassociées après
+  déduplication et les trames BPSK après ajustement de leurs références. Aucun
+  contexte ne traverse une fenêtre ou un nouvel appel d'analyse.
+
+Les sorties `analog_channels`, `digital_channels` et `definition_context`
+complètent `telemetry` sans modifier `analog_raw`, `digital_raw` ou les octets
+du paquet. Chaque type retenu renvoie à l'indice, aux octets, à la fin de
+réception et à l'âge de sa trame. Noms, unités et coefficients peuvent être
+disponibles indépendamment. Une unité seule ne calibre pas une valeur brute.
+Un résultat non fini n'est jamais exporté comme valeur numérique.
+
+Exemple de portée des unités : une valeur calculée de 1034,8 avec l'étiquette
+`v/100` reste **1034,8 v/100** ; IQScope ne la transforme pas implicitement
+en volts. Les coefficients et étiquettes sont des déclarations non authentifiées,
+pas une calibration de capteur vérifiée indépendamment.
+
+Vingt tests supplémentaires couvrent syntaxe publiée, causalité, isolement,
+expiration, remplacements, conflits, idempotence, données brutes et débordement,
+puis les voies IQ/audio/BPSK et WAV/JSON. Chromium vérifie l'interprétation, la
+provenance et le refus d'associer des définitions adressées à une autre station.
+La validation APRS sur enregistrement indépendant reste à réaliser.

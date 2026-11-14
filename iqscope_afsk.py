@@ -3,14 +3,16 @@ from fractions import Fraction
 import numpy as np
 from scipy import signal
 from iqscope_ax25 import decode_ax25
+from iqscope_aprs_calibration import enrich_aprs_telemetry_frames
 
 
 def decode_afsk1200(audio,fs,max_seconds=20,max_frames=128,max_flag_pairs=6000):
     result = {'decoder':'afsk1200_ax25','family':'AFSK1200 / AX.25 UI','frames':[],
-              'validation_scope':'CRC-16/X-25 and AX.25 UI structure; optional APRS position or classic raw telemetry fields are payload syntax, not independent content or sender verification',
+              'validation_scope':'CRC-16/X-25 and AX.25 UI structure; optional APRS position/telemetry definitions are declared content, not independent content or sender verification',
               'limitations':['Audio frontend only: 1200 baud and 1200/2200-Hz tones, 32 fixed clock phases.',
                              'No frequency/clock tracking, RF FM discriminator, G3RUH or connected-mode AX.25.',
                              'Counts of rejected hypotheses are not a bit/frame error rate.',
+                             'Telemetry definitions are self-addressed, same source/SSID and channel, received before sample and at most 600 seconds old; no cross-window state.',
                              'Lossy MP3 compression may destroy packet symbols; uncompressed WAV is preferred.']}
     if not 8000<=fs<=48000 or len(audio)<fs*.2:
         return dict(result,status='not_applicable')
@@ -58,7 +60,7 @@ def decode_afsk1200(audio,fs,max_seconds=20,max_frames=128,max_flag_pairs=6000):
             frame['tone_frequencies_hz'] = [1200,2200]
             frames.append(frame)
     frames.sort(key=lambda f:f['time_seconds'])
-    result.update(status='validated_frames' if frames else 'no_valid_frames',frames=frames,
+    result.update(status='validated_frames' if frames else 'no_valid_frames',frames=enrich_aprs_telemetry_frames(frames),
                   analyzed_seconds=len(audio)/fs,duration_limited=len(audio)<original,
                   phase_trials=phase_trials,phase_budget=32,flag_pairs_examined=examined,
                   flag_pair_budget=max_flag_pairs,crc_rejected_across_hypotheses=rejected,
