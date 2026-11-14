@@ -13,6 +13,7 @@ from iqscope_ax25 import crc_x25
 PIN = 'bb0f4dfdc876f4b13d75c25621766895bb4d2ad0'
 SOURCE_BYTES = 70444
 SOURCE_BLOB = '7333932b16fc2c4bfa7bfef5a5301922370f6b91'
+SOURCE_SHA256 = '435829ea660dfb634f38b96b5a8c858ec4ba33c9bf866efd6463bf66016c4f68'
 SOURCE_URL = f'https://raw.githubusercontent.com/lm-t/ee123-labs/{PIN}/lab5/ISSpkt.wav'
 NOTEBOOK = f'https://github.com/lm-t/ee123-labs/blob/{PIN}/lab5/Lab5-APRS.ipynb'
 COURSE = 'https://www-inst.cs.berkeley.edu/~ee123/sp17/lab/lab5/Lab5_Part_C-APRS.html'
@@ -25,9 +26,11 @@ EXPECTED_TEXT = '>ARISS - International Space Station'
 
 def verify_source(data):
     git_blob = b'blob '+str(len(data)).encode('ascii')+b'\0'+data
-    if len(data) != SOURCE_BYTES or hashlib.sha1(git_blob).hexdigest() != SOURCE_BLOB:
-        raise ValueError('APRS reference size/Git blob SHA-1 mismatch')
-    return hashlib.sha256(data).hexdigest()
+    digest = hashlib.sha256(data).hexdigest()
+    if (len(data) != SOURCE_BYTES or hashlib.sha1(git_blob).hexdigest() != SOURCE_BLOB
+            or digest != SOURCE_SHA256):
+        raise ValueError('APRS reference size/Git blob SHA-1/SHA-256 mismatch')
+    return digest
 
 
 def verified_source(root, offline=False):

@@ -260,6 +260,7 @@ octets, abstentions, annotations concurrentes, CRC/PID et voies IQ/audio/BPSK,
 puis WAV/JSON. Chromium vérifie position et télémétrie simultanées, données
 minimales, sens B1, calculs et maintien du compteur CRC. La validation sur un
 enregistrement indépendant des positions et de la télémétrie reste à réaliser.
-Le contrôle d'une [référence audio APRS de l'ISS](APRS_RADIO.md) est préparé
-pour un paquet de statut, avec comparaison aux bits publiés, CRC et exports
-JSON. Les bits passent localement ; l'exécution sur le WAV reste en attente.
+Une [référence audio APRS de l'ISS](APRS_RADIO.md) vérifie un paquet de statut
+enregistré, avec comparaison aux octets publiés, CRC et exports JSON. Le WAV
+réel et son import dans Chromium passent en CI. Il ne valide pas les positions
+ou la télémétrie APRS sur enregistrement.

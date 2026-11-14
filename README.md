@@ -430,9 +430,10 @@ NRZI with both polarities, independent FCS generation, stuffed payloads,
 corrupted FCS, truncation, random bits and bounded search. The BPSK path also has
 [receiver-audio satellite references](docs/PSK_RADIO.md). APRS interpretation
 has published syntax examples and synthetic receiver fixtures, plus one
-[independent recorded ISS status packet](docs/APRS_RADIO.md) with a prepared
-audio-import/JSON regression against published packet bits. The bits pass
-locally; execution on the WAV and browser remains pending publication to CI.
+[independent recorded ISS status packet](docs/APRS_RADIO.md) checked byte for
+byte against published packet bits through automatic WAV import, CRC checks,
+JSON export and the browser interface. The decoded clip is 0.79825 seconds;
+receiver-audio import accepts files of at least 0.2 seconds without padding.
 This receiver-audio reference does not validate APRS positions/telemetry or
 an original RF IQ frontend.
 

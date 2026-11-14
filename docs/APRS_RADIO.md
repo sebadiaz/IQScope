@@ -1,9 +1,14 @@
 # Référence APRS enregistrée : paquet ISS
 
-État : les bits publiés ont été vérifiés localement avec CRC correct. Le
-contrôle du WAV et celui du navigateur sont préparés, mais n'ont pas encore
-été exécutés : le téléchargement binaire local et la publication vers la CI
-n'ont pas abouti. Leur réussite n'est donc pas revendiquée ici.
+Le [contrôle CI du commit 4b1bce1](https://github.com/sebadiaz/IQScope/actions/runs/43600220642)
+a récupéré une trame depuis le WAV réel, identique aux octets publiés avec
+CRC correct. L'import dans Chromium, les adresses, le texte, le compteur
+CRC et les exports JSON passent aussi. L'audio décodé dure 0,79825 seconde :
+il était rejeté par l'ancien minimum d'import d'une seconde.
+Les 518 tests passent sur Python 3.10, 3.12 et 3.13, avec 18 tests audio
+optionnels sautés dans ces jobs ; le job navigateur installe ffmpeg et
+exécute les références audio. Le contrôle IQ SDRangel du même run a échoué
+sur une réponse ZIP invalide, séparément de cette référence APRS réussie.
 
 `python scripts/aprs_radio_reference.py` télécharge une seule capture audio
 AFSK1200 de 70 444 octets, puis appelle l'import audio automatique complet.
@@ -15,8 +20,10 @@ décrit `ISSpkt.wav` comme un paquet enregistré lors d'un passage de l'ISS.
 Le fichier est téléchargé depuis un [miroir étudiant du cours](https://github.com/lm-t/ee123-labs/tree/bb0f4dfdc876f4b13d75c25621766895bb4d2ad0/lab5),
 épinglé au commit `bb0f4dfdc876f4b13d75c25621766895bb4d2ad0`.
 Son objet Git vaut `7333932b16fc2c4bfa7bfef5a5301922370f6b91`.
-La taille et le SHA-1 de l'objet Git complet sont contrôlés avant l'import ;
-le SHA-256 du WAV est ensuite conservé dans les résultats. Aucune licence
+La taille, le SHA-1 de l'objet Git complet et le SHA-256 du WAV sont contrôlés
+avant l'import. Le SHA-256 observé puis épinglé vaut
+`435829ea660dfb634f38b96b5a8c858ec4ba33c9bf866efd6463bf66016c4f68`.
+Il est aussi conservé dans les résultats. Aucune licence
 explicite de redistribution de l'enregistrement n'a été identifiée dans ce
 miroir : le WAV n'est pas incorporé au dépôt ni aux artefacts de référence.
 
