@@ -549,6 +549,8 @@ def main():
                         assert [f['hex'] for f in pico_trial['frames']]==reference['frame_hex']
                         for frame in pico_trial['frames']:
                             assert frame['fcs_valid']
+                            assert frame['clock_recovery']=='transition_fit' and 1194<frame['clock_baud']<1196
+                            assert frame['timing_evidence']['residual_rms_symbols']<=.1
                             position = frame['fields']['aprs']
                             assert abs(position['latitude_deg']-48.755881719809096)<1e-12
                             assert abs(position['longitude_deg']-9.190105164782665)<1e-12

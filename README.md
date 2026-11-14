@@ -434,11 +434,12 @@ has published syntax examples and synthetic receiver fixtures, plus one
 byte against published packet bits through automatic WAV import, CRC checks,
 JSON export and the browser interface. The decoded clip is 0.79825 seconds;
 receiver-audio import accepts files of at least 0.2 seconds without padding.
-A [Pico hardware sound-card reference](docs/APRS_PICO.md) is also prepared
-for compressed coordinates and altitude against a published transmitter
-configuration; its recorded-WAV/browser checks are pending CI validation.
-This receiver-audio reference does not validate APRS positions/telemetry or
-an original RF IQ frontend.
+A [Pico hardware sound-card reference](docs/APRS_PICO.md) checks three recorded
+compressed-position/altitude packets against a published transmitter profile.
+Their measured clocks are about 1194.85 baud relative to the audio sample rate;
+automatic transition-clock fits recover the packets that fixed 1200-baud
+sampling missed. The Pico reference is an analog laboratory recording;
+off-air positions/telemetry and an original RF IQ frontend remain unvalidated.
 
 The AX.25 synthetic IQ checks exercise direct 1200-baud NRZI and a translated
 300-baud wideband channel. The shared detector can merge sidelobes into bands
@@ -536,11 +537,16 @@ is provided.
 
 ## AFSK1200 audio to AX.25 UI
 
-Receiver-audio mode now also tests 1200-baud AFSK with nominal 1200/2200-Hz tones.
-A noncoherent two-tone receiver tries 32 fixed sampling phases, then reuses HDLC,
+Receiver-audio mode also tests nominal-1200-baud AFSK with 1200/2200-Hz tones.
+A noncoherent two-tone receiver fits up to 16 transition clocks within ±3% of
+1200 baud, with a timing-residual gate, and retains 32 nominal sampling phases.
+Each hypothesis reuses HDLC,
 NRZI/NRZ, bit-unstuffing, CRC-16/X-25 and AX.25 UI structure checks. Only accepted
 frames enter the CRC counter. Phase copies of the same frame at the same time
 are deduplicated; repeated transmissions at distinct times are retained.
+Fitted clocks and residuals are exported with each accepted frame; the original
+128-frame/6000-flag-pair limits are shared by both timing paths. Clock fitting
+does not correct bits or relax FCS checks. See [timing and recorded evidence](docs/APRS_PICO.md).
 
 The UI displays callsigns/SSIDs, path, PID and payload, with frequencies labeled
 as audio. `ax25-frames.json` exports accepted frames. PID 0xf0 text is decoded

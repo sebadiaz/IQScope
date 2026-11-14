@@ -26,6 +26,13 @@ ENCODER = 'https://github.com/eleccoder/ax25-aprs-lib/blob/2d8a85f7b5ec1f51d31c5
 EXPECTED_PAYLOAD = b'!/5n5qPkBr>   /A=001585APRS by RPi-Pico - https://github.com/eleccoder/raspi-pico-aprs-tnc'
 EXPECTED_LATITUDE = 90-15710957/380926
 EXPECTED_LONGITUDE = -180+36033715/190463
+# Development regression from the three separately timed, FCS-valid received
+# copies; upstream publishes the transmitter profile, not these full wire bytes.
+EXPECTED_FRAME_COUNT = 3
+EXPECTED_FRAME_HEX = ('82a0a092a09260889866a88e4072ae92888a624062ae92888a64406503f0'
+                      '212f356e3571506b42723e2020202f413d30303135383541505253206279205250692d'
+                      '5069636f202d2068747470733a2f2f6769746875622e636f6d2f656c6563636f6465'
+                      '722f72617370692d7069636f2d617072732d746e638043')
 
 
 def verified_source(root, offline=False):
@@ -48,12 +55,13 @@ def verified_source(root, offline=False):
 
 def validate_result(report, out):
     trial = next(t for t in report['wideband_trials'] if t['decoder'] == 'afsk1200_ax25')
-    if not trial['frames']:
-        raise AssertionError('No CRC-valid packet recovered from Pico hardware recording')
+    if len(trial['frames']) != EXPECTED_FRAME_COUNT:
+        raise AssertionError(f"Expected three Pico hardware packets, got {len(trial['frames'])}")
     for frame in trial['frames']:
         raw = bytes.fromhex(frame['hex'])
         fields = frame['fields']
-        if not frame['fcs_valid'] or crc_x25(raw[:-2]) != int.from_bytes(raw[-2:], 'little'):
+        if (frame['hex'] != EXPECTED_FRAME_HEX or not frame['fcs_valid']
+                or crc_x25(raw[:-2]) != int.from_bytes(raw[-2:], 'little')):
             raise AssertionError('Pico recorded frame has invalid original FCS')
         addresses = [fields['source'], fields['destination'], *fields['via']]
         if [(a['callsign'], a['ssid']) for a in addresses] != [('DL3TG', 9), ('APPIPI', 0), ('WIDE1', 1), ('WIDE2', 2)]:
@@ -108,6 +116,8 @@ def main():
     trial = validate_result(report, out)
     summary = dict(source_sha256=digest, analyzed_seconds=report['analyzed_seconds'],
                    checked_frames=len(trial['frames']), frame_hex=[f['hex'] for f in trial['frames']],
+                   clock_baud=[f['clock_baud'] for f in trial['frames']],
+                   clock_recovery=[f['clock_recovery'] for f in trial['frames']],
                    latitude_deg=EXPECTED_LATITUDE, longitude_deg=EXPECTED_LONGITUDE,
                    altitude_ft=1585, altitude_m=483.108)
     provenance = dict(source_url=SOURCE_URL, source_commit=PIN, source_bytes=SOURCE_BYTES,
@@ -119,7 +129,8 @@ def main():
                       oracle_basis='published transmitter configuration and independent base91/altitude encoder, not received geographic ground truth',
                       declared_transmitter_values=dict(latitude_deg=48.75588, longitude_deg=9.19011, altitude_m=483),
                       expected_payload_hex=EXPECTED_PAYLOAD.hex(), observed=summary,
-                      input_processing='unmodified WAV imported automatically; ffmpeg mono resampling to 8 kHz; existing fixed-phase AFSK1200 trials',
+                      input_processing='unmodified WAV imported automatically; ffmpeg mono resampling to 8 kHz; automatic transition-clock fits and nominal-phase AFSK1200 trials',
+                      full_frame_count_oracle='development regression from three independently timed FCS-valid copies; no independently published total/golden full-frame bytes',
                       scope='one static compressed-position profile and textual altitude through actual analog hardware; no RF link, telemetry, motion, live reception or verified geographic location')
     (out/'provenance.json').write_text(json.dumps(provenance, indent=2))
     (args.cache_root/'summary.json').write_text(json.dumps(summary, indent=2))

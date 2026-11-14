@@ -72,9 +72,10 @@ synthétiques avec FCS généré indépendamment du décodeur. Le test Chromium
 importe le WAV, vérifie les valeurs et les exports, puis les abstentions
 ambiguë/nulle et l’affichage littéral du texte.
 
-Il manque encore un enregistrement APRS indépendant avec position attendue
-vérifiable. Les captures satellitaires BPSK existantes valident leur propre
-chaîne AX.25, pas ce nouveau profil APRS.
+Une [capture matérielle Pico](APRS_PICO.md) ajoute une position compressée et
+une altitude attendues d'après une configuration publiée. Il manque encore
+une position attendue vérifiable sur réception RF. Les captures satellitaires
+BPSK existantes valident leur propre chaîne AX.25.
 
 ## Ajout du format compressé
 
@@ -126,7 +127,7 @@ autres extensions spécialisées ne reçoivent pas de nouvelle interprétation.
 Quinze tests supplémentaires vérifient ces règles, les chemins IQ/audio/BPSK
 et les exports WAV/JSON. Chromium vérifie objets/items actifs et retirés,
 le compteur CRC et l'affichage littéral des noms ressemblant à du HTML.
-La validation sur un enregistrement APRS indépendant reste à réaliser.
+La validation de ces objets/items sur un enregistrement indépendant reste à réaliser.
 
 ## Télémétrie classique T# : valeurs brutes
 
@@ -159,7 +160,7 @@ reste distincte de la véracité d'une mesure et de l'identité de son émetteur
 Quinze tests vérifient les exemples publiés, les bornes, le format MIC, les
 bits, commentaires, refus, CRC/PID et chemins IQ/audio/BPSK. Chromium vérifie
 les imports WAV, l'affichage sûr, le compteur CRC et l'export JSON. La validation
-actuelle utilise des références synthétiques ; un enregistrement APRS
+actuelle utilise des références synthétiques ; un enregistrement de télémétrie T#
 indépendant reste à intégrer.
 
 ## Définitions et interprétation déclarée
@@ -209,7 +210,7 @@ Vingt tests supplémentaires couvrent syntaxe publiée, causalité, isolement,
 expiration, remplacements, conflits, idempotence, données brutes et débordement,
 puis les voies IQ/audio/BPSK et WAV/JSON. Chromium vérifie l'interprétation, la
 provenance et le refus d'associer des définitions adressées à une autre station.
-La validation APRS sur enregistrement indépendant reste à réaliser.
+La validation des définitions et de leur association sur enregistrement indépendant reste à réaliser.
 
 ## Télémétrie base 91 dans les commentaires de position
 
@@ -259,8 +260,11 @@ Dix-huit tests supplémentaires couvrent les exemples publiés, bornes, bits,
 octets, abstentions, annotations concurrentes, CRC/PID et voies IQ/audio/BPSK,
 puis WAV/JSON. Chromium vérifie position et télémétrie simultanées, données
 minimales, sens B1, calculs et maintien du compteur CRC. La validation sur un
-enregistrement indépendant des positions et de la télémétrie reste à réaliser.
+enregistrement de positions reçues en RF et de télémétrie reste à réaliser.
 Une [référence audio APRS de l'ISS](APRS_RADIO.md) vérifie un paquet de statut
 enregistré, avec comparaison aux octets publiés, CRC et exports JSON. Le WAV
 réel et son import dans Chromium passent en CI. Il ne valide pas les positions
 ou la télémétrie APRS sur enregistrement.
+La [capture de sortie analogique Pico](APRS_PICO.md) complète cette couverture
+avec trois répétitions d'une position compressée et son altitude, une horloge ajustée
+automatiquement et les exports. Elle reste une référence de laboratoire.
