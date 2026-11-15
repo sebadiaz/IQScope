@@ -21,7 +21,7 @@ from iqscope_web.live_history import LiveLoRaHistory
 from iqscope_decoders import capabilities
 from iqscope_audio import analyze_audio
 from iqscope_recordings import recordings, import_vksdr
-from .live import LiveReceiver
+from .live import LiveReceiver, live_analysis_schedule
 
 MAX_UPLOAD = 128 * 1024 * 1024
 
@@ -56,6 +56,7 @@ class AnalysisService:
         self.lock = threading.Lock()
         self.pool = ThreadPoolExecutor(max_workers=1)
         self.receiver = LiveReceiver()
+        self.live_cursor = None
         self.live_history=LiveLoRaHistory(self.receiver.session_id)
 
     def submit(self, function):
@@ -255,6 +256,8 @@ def create_app(root=None):
             raise HTTPException(400, 'Supported rates: 256000, 1024000, 2048000, 2400000')
         service.receiver.start(body.port, body.frequency_hz, body.sample_rate)
         service.live_history.reset(service.receiver.session_id)
+        with service.lock:
+            service.live_cursor = None
         return service.receiver.status()
 
     @app.post('/api/live/stop')
@@ -263,8 +266,12 @@ def create_app(root=None):
         return service.receiver.status()
 
     @app.get('/api/live/status')
-    def live_status():
-        return dict(service.receiver.status(),history_revision=service.live_history.version())
+    def live_status(experimental_lora: bool = False):
+        state=service.receiver.status()
+        with service.lock:
+            cursor=service.live_cursor
+        return dict(state,history_revision=service.live_history.version(),
+                    analysis_schedule=live_analysis_schedule(state,cursor,experimental_lora))
 
     @app.get('/api/live/frames')
     def live_frames():
@@ -299,6 +306,9 @@ def create_app(root=None):
             if report.get('lora_artifact'):
                 (out/report['lora_artifact']).write_text(json.dumps(lora,indent=2))
             (out / 'report.json').write_text(json.dumps(report, indent=2))
+            with service.lock:
+                service.live_cursor=dict(session_id=context['session_id'],sample_rate=fs,
+                                         end_sample=start+len(data),experimental_lora=experimental_lora)
             return report
         return service.submit(process)
 

@@ -112,8 +112,10 @@ Live rates offered: 256 kS/s, 1.024, 2.048 and 2.4 MS/s. For ADS-B, select
 
 The spectrum is polled approximately four times per second while decoding runs
 on independent snapshots of the latest **up to four seconds**, capped at
-8 million samples (3.906 s at 2.048 MS/s, 3.333 s at 2.4 MS/s), approximately
-every four seconds when enabled. The UI shows the retained duration and limit;
+8 million samples (3.906 s at 2.048 MS/s, 3.333 s at 2.4 MS/s). When enabled,
+automatic analysis waits for half a window of new received samples after the
+last successful analysis, targeting 50% overlap (a 2 s step at the lower rates).
+The UI shows this target alongside the retained duration and limit;
 reports preserve the source interval and window limits. CPU speed can reduce the cadence. This is a
 live analysis preview, **not guaranteed lossless continuous packet decoding**.
 There can be gaps between analyzed windows. The UI waterfall also represents
@@ -121,6 +123,8 @@ sampled windows, not every received sample.
 
 The longer receive window can retain AX.25 frames longer than one second;
 a quantized synthetic rtl_tcp wire test and Chromium exercise this case.
+An overlapping window also recovers a synthetic frame cut by two adjacent
+disjoint windows. Actual processing speed can prevent the target overlap.
 This does not establish lossless reception or a hardware SDR benchmark.
 See [live window bounds and validation](docs/LIVE_WINDOWS.md).
 

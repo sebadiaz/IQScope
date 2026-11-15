@@ -13,6 +13,30 @@ WINDOW_SECONDS = 4
 MAX_WINDOW_SAMPLES = 8_000_000
 
 
+def live_analysis_schedule(state, previous=None, experimental_lora=False):
+    """Sample-clock policy for overlapping snapshots; never a real-time guarantee."""
+    fs,limit=state['sample_rate'],state['window_sample_limit']
+    step=max(1,limit//2)
+    minimum=max(1024,int(np.ceil(fs*.25)))
+    result=dict(step_samples=step,step_seconds=step/fs,
+                target_overlap_samples=limit-step,target_overlap_seconds=(limit-step)/fs,
+                minimum_buffer_samples=minimum)
+    reason='first_window'
+    target=minimum
+    if previous and previous['session_id']==state['session_id'] and previous['sample_rate']==fs:
+        if previous['experimental_lora']!=experimental_lora:
+            reason='mode_changed'
+        else:
+            target=previous['end_sample']+step
+            reason='sample_step_available' if state['received_samples']>=target else 'waiting_for_samples'
+    due=state['received_samples']>=target
+    if not state['connected']:
+        due,reason=False,'disconnected'
+    elif state['buffered_samples']<minimum:
+        due,reason=False,'filling_window'
+    return dict(result,due=due,reason=reason,next_end_sample=target)
+
+
 def receive_exact(sock, count, stop):
     data = bytearray()
     while len(data) < count:

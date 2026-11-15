@@ -310,6 +310,24 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         response=await self.client.get(f"/api/jobs/{job['id']}/artifacts/{trial['kiss_artifact']}")
         self.assertEqual(response.status_code,200)
         self.assertEqual(read_kiss(response.content),[(0,0,bytes.fromhex(frame['hex'])[:-2])])
+        schedule=(await self.client.get('/api/live/status')).json()['analysis_schedule']
+        self.assertFalse(schedule['due'])
+        self.assertEqual(schedule['step_samples'],512000)
+        changed=(await self.client.get('/api/live/status?experimental_lora=true')).json()['analysis_schedule']
+        self.assertTrue(changed['due'])
+        self.assertEqual(changed['reason'],'mode_changed')
+
+    async def test_failed_live_job_does_not_advance_the_sample_cursor(self):
+        receiver=self.app.state.service.receiver
+        receiver.fs=256000;receiver.connected=True
+        receiver._append_samples(np.zeros(64000,dtype=np.complex64))
+        self.assertTrue((await self.client.get('/api/live/status')).json()['analysis_schedule']['due'])
+        with patch('iqscope_web.server.analyze_samples',side_effect=RuntimeError('test decoder failure')):
+            submitted=await self.client.post('/api/live/analyze',headers=HEADERS)
+            job=await self.wait_job(submitted.json()['id'])
+        self.assertEqual(job['status'],'failed')
+        self.assertIsNone(self.app.state.service.live_cursor)
+        self.assertTrue((await self.client.get('/api/live/status')).json()['analysis_schedule']['due'])
 
     async def test_wave_and_sdriq_uploads_use_embedded_metadata(self):
         import io

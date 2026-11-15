@@ -994,6 +994,38 @@ def main():
                 page.locator('#auto-live').uncheck()
                 page.screenshot(path='browser-artifacts/live-long-ax25.png',full_page=True)
 
+                # A packet crossing t=4 s is cut in both disjoint [0,4]/[4,8]
+                # windows. Automatic sample-clock overlap must examine [2,6].
+                injected=page.request.post(urljoin(page.url,'/test/boundary/start'),headers={'X-IQScope':'local'})
+                assert injected.ok and injected.json()['received_samples']==4*256000
+                with page.expect_request(lambda request: request.url.endswith('/api/live/analyze') and request.method=='POST',timeout=30000):
+                    page.locator('#auto-live').check()
+                expect(page.locator('.fm-ax25-integrity')).to_have_count(0,timeout=30000)
+                response=page.request.get(urljoin(page.url,page.locator('#download').get_attribute('href')))
+                first_boundary_report=response.json()
+                assert first_boundary_report['source_sample_start']==0 and first_boundary_report['source_sample_end']==4*256000
+                expect(page.locator('#live-schedule')).to_contain_text('recouvrement visé 2.000 s')
+                count_before_step=len(live_requests)
+                advanced=page.request.post(urljoin(page.url,'/test/boundary/advance'),headers={'X-IQScope':'local'})
+                assert advanced.ok and advanced.json()['received_samples']==5*256000
+                page.wait_for_timeout(1250)
+                assert len(live_requests)==count_before_step,'Less than half a window triggered another automatic job'
+                with page.expect_request(lambda request: request.url.endswith('/api/live/analyze') and request.method=='POST',timeout=30000):
+                    advanced=page.request.post(urljoin(page.url,'/test/boundary/advance'),headers={'X-IQScope':'local'})
+                assert advanced.ok and advanced.json()['received_samples']==6*256000
+                expect(page.locator('.fm-ax25-integrity')).to_have_count(1,timeout=30000)
+                expect(page.locator('.ax25-text')).to_have_text(LONG_LIVE_PAYLOAD.decode())
+                expect(page.locator('#live-coverage')).to_contain_text('Recouvrement avec la précédente : 2.000 s.',timeout=30000)
+                response=page.request.get(urljoin(page.url,page.locator('#download').get_attribute('href')))
+                overlap_report=response.json()
+                assert overlap_report['source_sample_start']==2*256000 and overlap_report['source_sample_end']==6*256000
+                overlap_frame=next(t for t in overlap_report['wideband_trials'] if t['decoder']=='afsk1200_fm_ax25')['frames'][0]
+                assert overlap_frame['fcs_valid'] and bytes.fromhex(overlap_frame['fields']['payload_hex'])==LONG_LIVE_PAYLOAD
+                response=page.request.get(urljoin(page.url,page.locator('.ax25-kiss-download').get_attribute('href')))
+                assert response.ok and response.body()==b'\xc0\x00'+bytes.fromhex(overlap_frame['hex'])[:-2]+b'\xc0'
+                page.locator('#auto-live').uncheck()
+                page.screenshot(path='browser-artifacts/live-overlap-ax25.png',full_page=True)
+
                 page.set_viewport_size({'width':390,'height':844})
                 assert page.evaluate('() => document.documentElement.scrollWidth <= innerWidth')
                 page.screenshot(path='browser-artifacts/mobile.png', full_page=True)

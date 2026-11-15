@@ -670,7 +670,8 @@ async function pollLive() {
   if(!liveMode || pollingLive) return;
   pollingLive=true;
   try {
-    const state=await api('/api/live/status',undefined,'GET');
+    const experimental=$('live-experimental-lora').checked;
+    const state=await api(`/api/live/status?experimental_lora=${experimental}`,undefined,'GET');
     liveConnected=state.connected;currentLiveSession=state.session_id;
     if(liveHistorySession!==state.session_id || liveHistoryRevision!==state.history_revision)await refreshLiveHistory(state.session_id);
     $('connect').disabled=state.running;$('disconnect').disabled=!state.running;
@@ -678,6 +679,7 @@ async function pollLive() {
     $('live-dot').style.background=state.connected ? '#64e5c1' : '#64748b';
     $('connection-text').textContent=state.connected ? `Connecté · ${(state.received_samples/1e6).toFixed(1)} Méch reçus` : state.running ? 'Connexion…' : 'SDR déconnecté';
     $('live-buffer').textContent=`Fenêtre reçue : ${state.buffered_seconds.toFixed(3)} s · maximum ${state.window_seconds_limit.toFixed(3)} s à ce débit.`;
+    $('live-schedule').textContent=`Analyse visée tous les ${state.analysis_schedule.step_seconds.toFixed(3)} s reçues · recouvrement visé ${state.analysis_schedule.target_overlap_seconds.toFixed(3)} s. Le temps de calcul peut réduire cette couverture.`;
     if(state.error) {status(state.error,'error');return;}
     if(!state.connected) return;
     const {spectrum}=await api('/api/live/spectrum',undefined,'GET');
@@ -689,9 +691,10 @@ async function pollLive() {
       $('waterfall-label').textContent='Direct · fenêtres reçues, plus récente en haut';
       $('source-badge').textContent='SDR · direct';updateAxes();drawSpectrum();drawWaterfall();
     }
-    const experimental=$('live-experimental-lora').checked;
-    const fresh=!lastLiveAnalysis || lastLiveAnalysis.session!==state.session_id || lastLiveAnalysis.experimental!==experimental || state.received_samples>lastLiveAnalysis.end;
-    if($('auto-live').checked && fresh && !busy && Date.now()-lastSnapshot>4000 && state.buffered_samples>state.sample_rate*.25) {
+    const fresh=state.analysis_schedule.due;
+    // Sample progress controls normal cadence. The one-second wall-clock floor
+    // also bounds retries if a job fails before advancing the server cursor.
+    if($('auto-live').checked && fresh && !busy && Date.now()-lastSnapshot>1000) {
       lastSnapshot=Date.now();setBusy(true);status('Réception active · analyse de la fenêtre récente…','busy');
       api('/api/live/analyze',{experimental_lora:experimental}).then(followJob).then(async result=>{
         const previous=lastLiveAnalysis;

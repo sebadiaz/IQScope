@@ -39,7 +39,40 @@ def long_frame_receiver():
     return receiver
 
 
+def boundary_iq():
+    """Eight quantized seconds, with the frame straddling the four-second cut."""
+    iq,fs=long_frame_iq()
+    rng=np.random.default_rng(822)
+    count=8*fs-len(iq)
+    iq=np.r_[iq,.01*(rng.normal(size=count)+1j*rng.normal(size=count))]
+    values=np.clip(np.rint(127.5+127.5*np.column_stack((iq.real,iq.imag))),0,255)
+    values=(values.astype(np.float32)-127.5)/127.5
+    return (values[:,0]+1j*values[:,1]).astype(np.complex64),fs
+
+
+def append_interval(receiver, samples):
+    for start in range(0,len(samples),32768):
+        receiver._append_samples(samples[start:start+32768].copy())
+
+
 class LiveAfskTests(unittest.TestCase):
+    def test_overlap_recovers_a_frame_split_between_disjoint_windows(self):
+        from iqscope import discover
+        iq,fs=boundary_iq()
+        receiver=LiveReceiver();receiver.fs=fs;receiver.frequency=145000000
+        counts=[];previous=0
+        for end in (4*fs,6*fs,8*fs):
+            append_interval(receiver,iq[previous:end]);previous=end
+            context=receiver.snapshot_context();x=context['samples']
+            trial=search_afsk_fm(x,fs,discover(x,fs)[0],receiver.frequency)
+            counts.append(len(trial['frames']))
+            if end==6*fs:
+                frame=trial['frames'][0]
+                self.assertEqual(bytes.fromhex(frame['fields']['payload_hex']),PAYLOAD)
+                self.assertTrue(frame['fcs_valid'])
+                self.assertAlmostEqual(context['source_sample_start']/fs+frame['time_seconds'],3+80/1194.8,delta=2/1194.8)
+        self.assertEqual(counts,[0,1,0])
+
     def test_long_frame_survives_live_window_where_one_second_was_incomplete(self):
         receiver=long_frame_receiver();fs=receiver.fs
         context=receiver.snapshot_context()

@@ -17,6 +17,28 @@ def create_app():
     receiver.blocks.append(x);receiver.buffered=len(x);receiver.total=100000+len(x)
 
     test_routes=APIRouter()
+    boundary_state={}
+
+    @test_routes.post('/test/boundary/start')
+    def inject_boundary_start():
+        from test_live_afsk import boundary_iq,append_interval
+        from iqscope_web.live import LiveReceiver
+        iq,fs=boundary_iq()
+        replacement=LiveReceiver();replacement.fs=fs;replacement.frequency=145000000
+        append_interval(replacement,iq[:4*fs]);replacement.connected=True
+        app.state.service.receiver.stop();app.state.service.receiver=replacement
+        app.state.service.live_history.reset(replacement.session_id)
+        boundary_state.update(samples=iq,next_sample=4*fs)
+        return replacement.status()
+
+    @test_routes.post('/test/boundary/advance')
+    def advance_boundary():
+        from test_live_afsk import append_interval
+        receiver=app.state.service.receiver
+        start=boundary_state['next_sample'];end=start+receiver.fs
+        append_interval(receiver,boundary_state['samples'][start:end])
+        boundary_state['next_sample']=end
+        return receiver.status()
 
     @test_routes.post('/test/long-frame')
     def inject_long_frame():

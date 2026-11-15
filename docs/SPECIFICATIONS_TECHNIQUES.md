@@ -1100,6 +1100,17 @@ L'import audio essaie aussi POCSAG sur les niveaux FM démodulés à 8 kHz. Troi
 Le parseur peut corriger au plus deux bits sur l'ensemble adresse/données/terminaison d'un message, grâce au syndrome BCH(31,21) complété par la parité paire. Les 529 masques de poids 0–2 ont des syndromes distincts et le mot proposé est contrôlé. La synchronisation reste exacte ; les messages incomplets, non corrigeables ou dépassant la somme autorisée sont refusés. Les mots reçus restent exportés séparément des mots décodés, avec rôle et positions des inversions. Le mode strict reste accessible par `max_corrected_bits=0`. L'interface marque les corrections sans modifier le compteur CRC. Les tests couvrent les positions d'une/deux erreurs, le rejet de trois erreurs sur références, la limite globale et les voies IQ/audio. Cette correction n'authentifie pas l'émetteur et peut choisir un autre mot valide au-delà de son rayon. Le corpus radio existant conserve ses sorties à zéro correction ; une amélioration sur enregistrement corrompu reste à démontrer. Voir [POCSAG.md](POCSAG.md).
 
 
+### Analyse SDR avec recouvrement visé de 50 %
+
+Le déclenchement automatique attend une demi-fenêtre de nouveaux échantillons
+après la dernière analyse réussie, avec isolation par session/débit/mode. Une
+régression simulée vérifie qu'une trame coupée dans `[0,4]` et `[4,8]` est
+récupérée dans `[2,6]`. Le serveur expose la décision de cadence et l'interface
+affiche le recouvrement visé ainsi que la couverture réellement observée.
+Un échec ne déplace pas le curseur. Le temps de calcul peut empêcher d'atteindre
+le recouvrement demandé ; aucune continuité matérielle n'est garantie.
+Voir [LIVE_WINDOWS.md](LIVE_WINDOWS.md#déclenchement-à-recouvrement-visé-de-50-).
+
 ### Fenêtres SDR de quatre secondes, bornées en échantillons
 
 Le tampon direct conserve jusqu'à quatre secondes et huit millions
