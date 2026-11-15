@@ -83,3 +83,50 @@ n'est garantie. Une trame coupée à une frontière, la perte entre deux fenêtr
 les pertes matérielles, les paramètres RF sans lecture de retour et les limites
 propres à chaque décodeur restent possibles. Aucun état DSP n'est poursuivi
 entre fenêtres. Ce changement ne fournit ni capture continue ni balayage RF.
+
+## Historique AX.25 FM entre fenêtres
+
+Le direct conserve jusqu'à 128 événements AX.25 FM estimés, indépendamment
+de l'historique LoRa. Chaque trame doit porter la provenance FM/AFSK IQ,
+un intervalle complet dans la fenêtre et un FCS valide, recalculé sans
+correction avant conservation. Les adresses et le contrôle sont reparsés
+depuis les octets : aucun mode de liaison n'est déduit entre fenêtres et
+aucune calibration APRS n'est propagée par cet historique.
+
+Deux observations peuvent désigner le même événement si leurs octets complets
+avec FCS, débit et centre RF correspondent, si leurs débuts estimés sont à
+deux symboles nominaux de 1 200 bauds au plus et si leurs offsets de canal
+diffèrent de 500 Hz au plus. La comparaison reste ancrée à la première
+observation conservée, afin d'éviter une dérive par fusions successives.
+Les répétitions à des temps distincts restent séparées. Cette règle est
+heuristique : des émetteurs simultanés indiscernables peuvent être fusionnés.
+
+- `GET /api/live/ax25/frames` : événements du plus récent au plus ancien,
+  indices/temps estimés dans la session, champs de liaison, octets avec FCS,
+  nombre d'observations et compteur d'éviction.
+- `GET /api/live/ax25/frames.kiss` : événements conservés dans l'ordre
+  chronologique, port virtuel 0, FCS retirés après vérification. Les temps
+  et fréquences restent dans le JSON.
+- `GET /api/live/status` : champ `ax25_history_revision` pour actualiser
+  l'interface uniquement quand l'historique change.
+
+L'interface affiche les douze événements les plus récents et permet aussi
+le téléchargement individuel des octets complets avec FCS. Une analyse suivante
+sans paquet n'efface pas les événements. Les octets conservés ne dépendent pas
+des fichiers temporaires des jobs et restent exportables après leur éviction.
+Le redémarrage du récepteur vide l'historique ; un ancien job qui se termine
+après ce redémarrage ne peut pas remplir la nouvelle session. À capacité
+atteinte, les événements aux indices source les plus anciens sont écartés.
+
+Les tests couvrent recouvrement, répétitions, canaux distincts, contrôles de
+validité, éviction, réinitialisation, interprétations I/RR et exports. Chromium
+réanalyse une fenêtre simulée, vérifie un événement à deux observations, puis
+une fenêtre sans paquet : l'événement reste affiché et téléchargeable en
+binaire et KISS. Cet historique en mémoire ne fournit pas un enregistrement
+continu ni une reconstruction de connexion AX.25.
+
+La référence IQ épinglée est également rejouée au niveau des trames déjà
+décodées : ses trois I et deux RR donnent cinq événements puis cinq observations
+fusionnées, sans sélectionner de charge applicative. Les exports
+`fm-ax25-history-replay.json` et `.kiss` sont vérifiés en CI. Il s'agit d'une
+régression de l'historique sur ces octets reçus, pas d'un test matériel en direct.

@@ -128,6 +128,13 @@ disjoint windows. Actual processing speed can prevent the target overlap.
 This does not establish lossless reception or a hardware SDR benchmark.
 See [live window bounds and validation](docs/LIVE_WINDOWS.md).
 
+Live FM/AFSK AX.25 reception also keeps a bounded, memory-only history of up to
+128 event estimates across snapshots. Overlapping observations merge using full
+frame bytes, source timing and channel proximity; separated retransmissions stay
+distinct. The UI retains these results when the latest window has no packet,
+with JSON, full-frame binary and chronological KISS downloads. Receiver restart
+clears the history. This does not reconstruct AX.25 connection state.
+
 `rtl_tcp` does not supply hardware sample timestamps, overflow counters or tuning
 readback. Received sample counts cannot prove that no upstream data was lost.
 Frequency and rate in this first adapter are requested settings. There is no

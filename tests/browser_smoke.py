@@ -1026,6 +1026,44 @@ def main():
                 page.locator('#auto-live').uncheck()
                 page.screenshot(path='browser-artifacts/live-overlap-ax25.png',full_page=True)
 
+                expect(page.locator('#live-ax25-list .live-ax25-event')).to_have_count(1,timeout=30000)
+                expect(page.locator('.live-ax25-content')).to_have_text(LONG_LIVE_PAYLOAD.decode())
+                retained=page.request.get(urljoin(page.url,'/api/live/ax25/frames')).json()
+                event_id=retained['events'][0]['id']
+                assert retained['events'][0]['hex']==overlap_frame['hex']
+                # Explicitly repeat this snapshot to check event merging without
+                # changing the automatic sample-clock cadence.
+                repeated=page.request.post(urljoin(page.url,'/api/live/analyze'),headers={'X-IQScope':'local'},data={})
+                assert repeated.status==202
+                repeated_id=repeated.json()['id']
+                for _ in range(120):
+                    repeated_job=page.request.get(urljoin(page.url,f'/api/jobs/{repeated_id}')).json()
+                    if repeated_job['status'] in ('completed','failed'):break
+                    page.wait_for_timeout(250)
+                assert repeated_job['status']=='completed',repeated_job
+                expect(page.locator('.live-ax25-observations')).to_contain_text('2 observation(s)',timeout=30000)
+                retained=page.request.get(urljoin(page.url,'/api/live/ax25/frames')).json()
+                assert len(retained['events'])==1 and retained['events'][0]['id']==event_id
+                history_kiss=page.get_by_role('link',name='Télécharger l’historique AX.25 (KISS)',exact=True)
+                response=page.request.get(urljoin(page.url,history_kiss.get_attribute('href')))
+                assert response.ok and response.body()==b'\xc0\x00'+bytes.fromhex(overlap_frame['hex'])[:-2]+b'\xc0'
+                # The next disjoint tail has no complete packet. The history
+                # must still display and export the earlier received frame.
+                page.locator('#auto-live').check()
+                for _ in range(2):
+                    advanced=page.request.post(urljoin(page.url,'/test/boundary/advance'),headers={'X-IQScope':'local'})
+                    assert advanced.ok
+                expect(page.locator('.fm-ax25-integrity')).to_have_count(0,timeout=30000)
+                expect(page.locator('#live-ax25-list .live-ax25-event')).to_have_count(1)
+                with page.expect_download() as history_frame_download:
+                    page.get_by_role('link',name='Télécharger cette trame AX.25',exact=True).click()
+                assert Path(history_frame_download.value.path()).read_bytes()==bytes.fromhex(overlap_frame['hex'])
+                page.locator('#auto-live').uncheck()
+                page.screenshot(path='browser-artifacts/live-ax25-history.png',full_page=True)
+                reset=page.request.post(urljoin(page.url,'/test/boundary/start'),headers={'X-IQScope':'local'})
+                assert reset.ok
+                expect(page.locator('#live-ax25-list .live-ax25-event')).to_have_count(0,timeout=30000)
+
                 page.set_viewport_size({'width':390,'height':844})
                 assert page.evaluate('() => document.documentElement.scrollWidth <= innerWidth')
                 page.screenshot(path='browser-artifacts/mobile.png', full_page=True)

@@ -1,6 +1,7 @@
 """Pinned original-IQ FM/AFSK AX.25 link regression; I-mode interpretations stay unresolved."""
 import argparse
 import base64
+from copy import deepcopy
 import hashlib
 import io
 import json
@@ -126,6 +127,21 @@ def validate_result(report, out):
         raise AssertionError('Header metadata was replaced with filename assumptions')
     if not any(s['validated_content'] and s['validated_content']['frame_count']==5 for s in report['signals']):
         raise AssertionError('Validated FM frames were not associated with their detected band')
+    from iqscope_web.live_ax25_history import LiveAX25History
+    history=LiveAX25History('recorded-iq-replay')
+    end=round(report['sample_rate']*report['analyzed_seconds'])
+    first=history.observe('recorded-iq-replay',deepcopy(trial['frames']),report['sample_rate'],0,0,end)
+    second=history.observe('recorded-iq-replay',deepcopy(trial['frames']),report['sample_rate'],0,0,end)
+    snapshot=history.snapshot()
+    if first['new_event_estimates']!=5 or second['merged_observations']!=5:
+        raise AssertionError('Recorded IQ history replay lost or duplicated link frames')
+    if [e['hex'] for e in reversed(snapshot['events'])]!=EXPECTED_HEX or history.kiss()!=expected_kiss:
+        raise AssertionError('Recorded IQ history replay changed frame order or KISS bytes')
+    if any(e['fields']['pid'] is not None or e['fields']['payload_hex'] or 'aprs' in e['fields'] for e in snapshot['events']):
+        raise AssertionError('Recorded IQ history replay selected ambiguous application data')
+    snapshot['reference_scope']='Replay of decoded frames from pinned original IQ; not a hardware live-receiver test'
+    (out/'fm-ax25-history-replay.json').write_text(json.dumps(snapshot,indent=2))
+    (out/'fm-ax25-history-replay.kiss').write_bytes(history.kiss())
     return trial
 
 

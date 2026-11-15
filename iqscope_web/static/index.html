@@ -34,6 +34,7 @@
 <p id="live-schedule" class="hint">Analyses à recouvrement visé de 50 %, selon le temps de calcul.</p>
 <p id="live-coverage" class="hint">Aucune fenêtre SDR analysée.</p>
 <section class="live-history"><h3>Historique LoRa à CRC valide</h3><p id="live-history-summary" class="hint">Aucun événement estimé conservé.</p><div id="live-packet-list"></div><a href="/api/live/frames" download="iqscope-live-lora-history.json">Télécharger l’historique JSON</a></section>
+<section class="live-history"><h3>Historique AX.25 FM à FCS valide</h3><p id="live-ax25-summary" class="hint">Aucune trame conservée.</p><div id="live-ax25-list"></div><a href="/api/live/ax25/frames" download="iqscope-live-ax25-history.json">Télécharger l’historique AX.25 (JSON)</a> <a href="/api/live/ax25/frames.kiss" download="iqscope-live-ax25.kiss">Télécharger l’historique AX.25 (KISS)</a><p class="hint">Historique temporaire de 128 événements estimés au plus. Les répétitions à des temps distincts restent séparées ; un redémarrage du récepteur vide l’historique.</p></section>
 <p class="hint">Aperçu actualisé ~4 fois/s. Le décodage analyse des fenêtres récentes : il peut manquer des paquets entre deux analyses. rtl_tcp ne fournit pas les pertes matérielles ni la fréquence effective.</p>
 </section>
 <div class="source-footer"><span>15 capacités disponibles</span><button id="capabilities" class="text-button">Voir les capacités ↗</button><button id="datasets" class="text-button">Explorer les jeux de données ↗</button></div>

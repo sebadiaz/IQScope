@@ -4,6 +4,7 @@ let audioPlot = false;
 let busy = false, liveMode = false, liveConnected = false, pollingLive = false;
 let lastLiveAnalysis = null, lastLiveSpectrumSession = null;
 let currentLiveSession=null,liveHistorySession=null,liveHistoryRevision=-1;
+let ax25HistorySession=null,ax25HistoryRevision=-1;
 let currentSpectrum = null, waterfallRows = [], selectedSignal = null, signals = [];
 let center = 0, sampleRate = 0, lastSnapshot = 0, lastLiveSample = -1, reportJob = null;
 const api = async (url, body, method = 'POST') => {
@@ -640,6 +641,8 @@ $('connect').onclick=async()=>{
     waterfallRows=[];signals=[];lastLiveSample=-1;lastSnapshot=0;lastLiveAnalysis=null;lastLiveSpectrumSession=null;
     $('live-coverage').textContent='Aucune fenêtre SDR analysée.';
     currentLiveSession=null;liveHistorySession=null;liveHistoryRevision=-1;
+    ax25HistorySession=null;ax25HistoryRevision=-1;
+    $('live-ax25-list').replaceChildren();$('live-ax25-summary').textContent='Aucune trame conservée.';
     $('live-packet-list').replaceChildren();$('live-history-summary').textContent='Aucun événement estimé conservé.';
   } catch(error) {status(error.message,'error');}
 };
@@ -666,6 +669,30 @@ async function refreshLiveHistory(expectedSession){
   }
 }
 
+async function refreshLiveAX25History(expectedSession){
+  if(expectedSession!==currentLiveSession)return;
+  const history=await api('/api/live/ax25/frames',undefined,'GET');
+  if(history.session_id!==expectedSession || currentLiveSession!==expectedSession)return;
+  if(ax25HistorySession===history.session_id && ax25HistoryRevision>=history.revision)return;
+  ax25HistorySession=history.session_id;ax25HistoryRevision=history.revision;
+  const events=history.events || [],shown=events.slice(0,12);
+  $('live-ax25-summary').textContent=`${events.length} événements AX.25 estimés conservés · ${shown.length} affichés · ${history.evicted_events} anciens écartés.`;
+  const list=$('live-ax25-list');list.replaceChildren();
+  for(const event of shown){
+    const card=element('div',undefined,'frame live-ax25-event');card.dataset.eventId=event.id;
+    const f=event.fields,address=a=>`${a.callsign}${a.ssid?'-'+a.ssid:''}`;
+    card.append(element('p',`${address(f.source)} → ${address(f.destination)} · AX.25 ${f.supervisory_function || f.unnumbered_function || f.frame_type}`));
+    card.append(element('p',`t ≈ ${event.time_seconds_estimate.toFixed(6)} s dans la session reçue · ${event.rf_center_known?formatFrequency(event.frequency_hz):formatFrequency(event.channel_offset_hz)+' relatif'}`));
+    card.append(element('p',`${event.observation_count} observation(s) · FCS vérifié`,'live-ax25-observations'));
+    card.append(element('pre',f.text===undefined?event.hex:f.text,'live-ax25-content'));
+    if(f.frame_type==='I')card.append(element('p','Mode de contrôle indéterminé ; aucune charge applicative sélectionnée.','hint live-ax25-unresolved'));
+    const link=element('a','Télécharger cette trame AX.25');
+    const binary=event.hex.match(/../g).map(hex=>String.fromCharCode(parseInt(hex,16))).join('');
+    link.href=`data:application/octet-stream;base64,${btoa(binary)}`;link.download=`ax25-live-${event.id}.bin`;
+    card.append(link);list.append(card);
+  }
+}
+
 async function pollLive() {
   if(!liveMode || pollingLive) return;
   pollingLive=true;
@@ -674,6 +701,7 @@ async function pollLive() {
     const state=await api(`/api/live/status?experimental_lora=${experimental}`,undefined,'GET');
     liveConnected=state.connected;currentLiveSession=state.session_id;
     if(liveHistorySession!==state.session_id || liveHistoryRevision!==state.history_revision)await refreshLiveHistory(state.session_id);
+    if(ax25HistorySession!==state.session_id || ax25HistoryRevision!==state.ax25_history_revision)await refreshLiveAX25History(state.session_id);
     $('connect').disabled=state.running;$('disconnect').disabled=!state.running;
     for(const id of ['live-port','live-rate','live-frequency']) $(id).disabled=state.running;
     $('live-dot').style.background=state.connected ? '#64e5c1' : '#64748b';
@@ -708,6 +736,7 @@ async function pollLive() {
         lastLiveAnalysis={session,end,experimental};
         $('live-coverage').textContent=`Fenêtre analysée : ${((end-start)/fs).toFixed(3)} s. ${detail}`;
         await refreshLiveHistory(session);
+        await refreshLiveAX25History(session);
         status('Réception active · dernière fenêtre analysée.','success');
       }).catch(error=>status(error.message,'error')).finally(()=>setBusy(false));
     } else if(!busy) status(fresh ? 'Réception active · spectre actualisé.' : 'Réception active · en attente de nouveaux échantillons.','success');

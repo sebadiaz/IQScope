@@ -1100,6 +1100,17 @@ L'import audio essaie aussi POCSAG sur les niveaux FM démodulés à 8 kHz. Troi
 Le parseur peut corriger au plus deux bits sur l'ensemble adresse/données/terminaison d'un message, grâce au syndrome BCH(31,21) complété par la parité paire. Les 529 masques de poids 0–2 ont des syndromes distincts et le mot proposé est contrôlé. La synchronisation reste exacte ; les messages incomplets, non corrigeables ou dépassant la somme autorisée sont refusés. Les mots reçus restent exportés séparément des mots décodés, avec rôle et positions des inversions. Le mode strict reste accessible par `max_corrected_bits=0`. L'interface marque les corrections sans modifier le compteur CRC. Les tests couvrent les positions d'une/deux erreurs, le rejet de trois erreurs sur références, la limite globale et les voies IQ/audio. Cette correction n'authentifie pas l'émetteur et peut choisir un autre mot valide au-delà de son rayon. Le corpus radio existant conserve ses sorties à zéro correction ; une amélioration sur enregistrement corrompu reste à démontrer. Voir [POCSAG.md](POCSAG.md).
 
 
+### Historique AX.25 FM entre analyses SDR
+
+Un historique en mémoire conserve au plus 128 événements AX.25 FM estimés,
+avec FCS revérifié, octets indépendants des jobs et dédoublonnage borné par
+temps/canal sur les fenêtres recouvrantes. Les répétitions séparées restent
+distinctes. L'interface garde ces résultats lorsqu'une fenêtre suivante ne
+contient aucun paquet, et fournit JSON, binaire complet et KISS chronologique.
+Le redémarrage du récepteur réinitialise cet historique ; aucune connexion
+AX.25 ou calibration APRS n'est reconstruite entre fenêtres. Voir
+[LIVE_WINDOWS.md](LIVE_WINDOWS.md#historique-ax25-fm-entre-fenêtres).
+
 ### Analyse SDR avec recouvrement visé de 50 %
 
 Le déclenchement automatique attend une demi-fenêtre de nouveaux échantillons

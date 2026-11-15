@@ -28,6 +28,7 @@ def create_app():
         append_interval(replacement,iq[:4*fs]);replacement.connected=True
         app.state.service.receiver.stop();app.state.service.receiver=replacement
         app.state.service.live_history.reset(replacement.session_id)
+        app.state.service.live_ax25_history.reset(replacement.session_id)
         boundary_state.update(samples=iq,next_sample=4*fs)
         return replacement.status()
 
@@ -50,6 +51,7 @@ def create_app():
         app.state.service.receiver.stop()
         app.state.service.receiver=replacement
         app.state.service.live_history.reset(replacement.session_id)
+        app.state.service.live_ax25_history.reset(replacement.session_id)
         return replacement.status()
 
     # The production app mounts static files at '/'. Test endpoints must match

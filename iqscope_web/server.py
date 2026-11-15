@@ -12,12 +12,13 @@ import uuid
 from urllib.parse import unquote
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from iqscope import analyze, analyze_samples, demo
 from iqscope_web.live_history import LiveLoRaHistory
+from iqscope_web.live_ax25_history import LiveAX25History
 from iqscope_decoders import capabilities
 from iqscope_audio import analyze_audio
 from iqscope_recordings import recordings, import_vksdr
@@ -58,6 +59,7 @@ class AnalysisService:
         self.receiver = LiveReceiver()
         self.live_cursor = None
         self.live_history=LiveLoRaHistory(self.receiver.session_id)
+        self.live_ax25_history=LiveAX25History(self.receiver.session_id)
 
     def submit(self, function):
         with self.lock:
@@ -256,6 +258,7 @@ def create_app(root=None):
             raise HTTPException(400, 'Supported rates: 256000, 1024000, 2048000, 2400000')
         service.receiver.start(body.port, body.frequency_hz, body.sample_rate)
         service.live_history.reset(service.receiver.session_id)
+        service.live_ax25_history.reset(service.receiver.session_id)
         with service.lock:
             service.live_cursor = None
         return service.receiver.status()
@@ -270,12 +273,21 @@ def create_app(root=None):
         state=service.receiver.status()
         with service.lock:
             cursor=service.live_cursor
-        return dict(state,history_revision=service.live_history.version(),
+        return dict(state,history_revision=service.live_history.version(),ax25_history_revision=service.live_ax25_history.version(),
                     analysis_schedule=live_analysis_schedule(state,cursor,experimental_lora))
 
     @app.get('/api/live/frames')
     def live_frames():
         return service.live_history.snapshot()
+
+    @app.get('/api/live/ax25/frames')
+    def live_ax25_frames():
+        return service.live_ax25_history.snapshot()
+
+    @app.get('/api/live/ax25/frames.kiss')
+    def live_ax25_kiss():
+        return Response(service.live_ax25_history.kiss(),media_type='application/octet-stream',
+                        headers={'Content-Disposition':'attachment; filename="iqscope-live-ax25.kiss"'})
 
     @app.get('/api/live/spectrum')
     def live_spectrum():
@@ -305,6 +317,11 @@ def create_app(root=None):
             report['live_history_summary']=service.live_history.observe(context['session_id'],lora.get('frames',[]),fs,start,start+len(data),lora.get('mode','standard'))
             if report.get('lora_artifact'):
                 (out/report['lora_artifact']).write_text(json.dumps(lora,indent=2))
+            fm=next(t for t in report['wideband_trials'] if t['decoder']=='afsk1200_fm_ax25')
+            report['live_ax25_history_summary']=service.live_ax25_history.observe(
+                context['session_id'],fm['frames'],fs,frequency,start,start+len(data))
+            if fm.get('artifact'):
+                (out/fm['artifact']).write_text(json.dumps(fm,indent=2))
             (out / 'report.json').write_text(json.dumps(report, indent=2))
             with service.lock:
                 service.live_cursor=dict(session_id=context['session_id'],sample_rate=fs,

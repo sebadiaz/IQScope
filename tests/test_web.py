@@ -294,6 +294,7 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         receiver=long_frame_receiver();receiver.connected=True;receiver.error=None
         self.app.state.service.receiver=receiver
         self.app.state.service.live_history.reset(receiver.session_id)
+        self.app.state.service.live_ax25_history.reset(receiver.session_id)
         submitted=await self.client.post('/api/live/analyze',headers=HEADERS)
         self.assertEqual(submitted.status_code,202)
         job=await self.wait_job(submitted.json()['id'],attempts=1000)
@@ -316,6 +317,37 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         changed=(await self.client.get('/api/live/status?experimental_lora=true')).json()['analysis_schedule']
         self.assertTrue(changed['due'])
         self.assertEqual(changed['reason'],'mode_changed')
+        history=(await self.client.get('/api/live/ax25/frames')).json()
+        self.assertEqual(len(history['events']),1)
+        event=history['events'][0]
+        self.assertEqual(event['hex'],frame['hex'])
+        self.assertEqual(event['id'],frame['live_event_id'])
+        self.assertEqual(report['live_ax25_history_summary']['new_event_estimates'],1)
+        saved=(await self.client.get(f"/api/jobs/{job['id']}/artifacts/{trial['artifact']}")).json()
+        self.assertEqual(saved['frames'][0]['live_event_id'],event['id'])
+        # The bounded event history owns its bytes; it outlives evicted jobs.
+        self.app.state.service.jobs.pop(job['id'])
+        shutil.rmtree(Path(self.temp.name)/job['id'])
+        retained=await self.client.get('/api/live/ax25/frames.kiss')
+        self.assertEqual(retained.status_code,200)
+        self.assertEqual(read_kiss(retained.content),[(0,0,bytes.fromhex(frame['hex'])[:-2])])
+
+    async def test_live_ax25_history_empty_exports_and_receiver_restart(self):
+        from test_live_ax25_history import received
+        initial=(await self.client.get('/api/live/ax25/frames')).json()
+        self.assertEqual(initial['events'],[])
+        self.assertEqual((await self.client.get('/api/live/ax25/frames.kiss')).content,b'')
+        service=self.app.state.service
+        service.live_ax25_history.observe(service.receiver.session_id,[received()],10000,145000000,0,20000)
+        self.assertEqual(len((await self.client.get('/api/live/ax25/frames')).json()['events']),1)
+        with patch('iqscope_web.live.threading.Thread') as thread:
+            thread.return_value.is_alive.return_value=False
+            response=await self.client.post('/api/live/start',json={'sample_rate':256000},headers=HEADERS)
+        self.assertEqual(response.status_code,200)
+        restarted=(await self.client.get('/api/live/ax25/frames')).json()
+        self.assertNotEqual(restarted['session_id'],initial['session_id'])
+        self.assertEqual(restarted['events'],[])
+        self.assertEqual((await self.client.get('/api/live/ax25/frames.kiss')).content,b'')
 
     async def test_failed_live_job_does_not_advance_the_sample_cursor(self):
         receiver=self.app.state.service.receiver
