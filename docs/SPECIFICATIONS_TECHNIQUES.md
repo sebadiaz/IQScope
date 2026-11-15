@@ -1100,6 +1100,16 @@ L'import audio essaie aussi POCSAG sur les niveaux FM démodulés à 8 kHz. Troi
 Le parseur peut corriger au plus deux bits sur l'ensemble adresse/données/terminaison d'un message, grâce au syndrome BCH(31,21) complété par la parité paire. Les 529 masques de poids 0–2 ont des syndromes distincts et le mot proposé est contrôlé. La synchronisation reste exacte ; les messages incomplets, non corrigeables ou dépassant la somme autorisée sont refusés. Les mots reçus restent exportés séparément des mots décodés, avec rôle et positions des inversions. Le mode strict reste accessible par `max_corrected_bits=0`. L'interface marque les corrections sans modifier le compteur CRC. Les tests couvrent les positions d'une/deux erreurs, le rejet de trois erreurs sur références, la limite globale et les voies IQ/audio. Cette correction n'authentifie pas l'émetteur et peut choisir un autre mot valide au-delà de son rayon. Le corpus radio existant conserve ses sorties à zéro correction ; une amélioration sur enregistrement corrompu reste à démontrer. Voir [POCSAG.md](POCSAG.md).
 
 
+### Relecture des historiques AX.25 sauvegardés
+
+L'onglet Historique ouvre un JSON AX.25 FM exporté précédemment, jusqu'à
+128 événements et 1 Mio. Les FCS sont revérifiés et les champs dérivés reparsés
+depuis les octets ; les métadonnées de temps/RF restent déclaratives. Les
+téléchargements JSON, binaire et KISS sont disponibles sans IQ source. La
+relecture ne modifie pas le direct et ne conserve pas de fichier sur le serveur.
+La sauvegarde reste un téléchargement manuel, pas un journal automatique.
+Voir [AX25_ARCHIVES.md](AX25_ARCHIVES.md).
+
 ### Historique AX.25 FM entre analyses SDR
 
 Un historique en mémoire conserve au plus 128 événements AX.25 FM estimés,

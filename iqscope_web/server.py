@@ -19,6 +19,7 @@ from pydantic import BaseModel, Field
 from iqscope import analyze, analyze_samples, demo
 from iqscope_web.live_history import LiveLoRaHistory
 from iqscope_web.live_ax25_history import LiveAX25History
+from iqscope_web.ax25_archive import MAX_ARCHIVE_BYTES, open_ax25_archive
 from iqscope_decoders import capabilities
 from iqscope_audio import analyze_audio
 from iqscope_recordings import recordings, import_vksdr
@@ -288,6 +289,18 @@ def create_app(root=None):
     def live_ax25_kiss():
         return Response(service.live_ax25_history.kiss(),media_type='application/octet-stream',
                         headers={'Content-Disposition':'attachment; filename="iqscope-live-ax25.kiss"'})
+
+    @app.post('/api/archives/ax25/open')
+    async def open_ax25_history(request: Request):
+        data=bytearray()
+        async for chunk in request.stream():
+            if len(data)+len(chunk)>MAX_ARCHIVE_BYTES:
+                raise HTTPException(413,'AX.25 archive exceeds 1 MiB')
+            data.extend(chunk)
+        try:
+            return open_ax25_archive(bytes(data))
+        except ValueError as error:
+            raise HTTPException(400,str(error)) from error
 
     @app.get('/api/live/spectrum')
     def live_spectrum():

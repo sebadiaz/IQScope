@@ -1060,9 +1060,52 @@ def main():
                 assert Path(history_frame_download.value.path()).read_bytes()==bytes.fromhex(overlap_frame['hex'])
                 page.locator('#auto-live').uncheck()
                 page.screenshot(path='browser-artifacts/live-ax25-history.png',full_page=True)
+                with page.expect_download() as archived_json_download:
+                    page.get_by_role('link',name='Télécharger l’historique AX.25 (JSON)',exact=True).click()
+                saved_history_bytes=Path(archived_json_download.value.path()).read_bytes()
                 reset=page.request.post(urljoin(page.url,'/test/boundary/start'),headers={'X-IQScope':'local'})
                 assert reset.ok
                 expect(page.locator('#live-ax25-list .live-ax25-event')).to_have_count(0,timeout=30000)
+
+                with tempfile.TemporaryDirectory() as archive_directory:
+                    archived_path=Path(archive_directory)/'historique-été.json'
+                    archived_path.write_bytes(saved_history_bytes)
+                    page.get_by_role('tab',name='Historique',exact=True).click()
+                    page.locator('#archive-file').set_input_files(str(archived_path))
+                    page.get_by_role('button',name='Ouvrir l’historique',exact=True).click()
+                    expect(page.locator('.archive-ax25-event')).to_have_count(1,timeout=30000)
+                    expect(page.locator('.archive-ax25-content')).to_have_text(LONG_LIVE_PAYLOAD.decode())
+                    expect(page.locator('#archive-summary')).to_contain_text('historique-été.json')
+                    expect(page.locator('#analysis-plots')).not_to_be_visible()
+                    assert page.request.get(urljoin(page.url,'/api/live/ax25/frames')).json()['events']==[]
+                    with page.expect_download() as restored_kiss:
+                        page.get_by_role('link',name='Télécharger l’historique relu (KISS)',exact=True).click()
+                    assert Path(restored_kiss.value.path()).read_bytes()==b'\xc0\x00'+bytes.fromhex(overlap_frame['hex'])[:-2]+b'\xc0'
+                    with page.expect_download() as restored_wire:
+                        page.get_by_role('link',name='Télécharger la trame archivée',exact=True).click()
+                    assert Path(restored_wire.value.path()).read_bytes()==bytes.fromhex(overlap_frame['hex'])
+                    corrupt=json.loads(saved_history_bytes)
+                    h=corrupt['events'][0]['hex'];corrupt['events'][0]['hex']=h[:-2]+('00' if h[-2:]!='00' else '01')
+                    archived_path.write_text(json.dumps(corrupt))
+                    page.locator('#archive-file').set_input_files(str(archived_path))
+                    page.get_by_role('button',name='Ouvrir l’historique',exact=True).click()
+                    expect(page.locator('#status-text')).to_contain_text('invalid FCS',timeout=30000)
+                    expect(page.locator('.archive-ax25-event')).to_have_count(0)
+                    expect(page.locator('#archive-kiss')).not_to_be_visible()
+                    archived_path.write_bytes(saved_history_bytes)
+                    page.locator('#archive-file').set_input_files(str(archived_path))
+                    page.get_by_role('button',name='Ouvrir l’historique',exact=True).click()
+                    expect(page.locator('.archive-ax25-event')).to_have_count(1,timeout=30000)
+                if os.environ.get('IQSCOPE_TEST_AX25_IQ')=='1':
+                    page.locator('#archive-file').set_input_files('corpus-cache/aprs-iq/results/fm-ax25-history-replay.json')
+                    page.get_by_role('button',name='Ouvrir l’historique',exact=True).click()
+                    expect(page.locator('.archive-ax25-event')).to_have_count(5,timeout=30000)
+                    expect(page.locator('.archive-ax25-unresolved')).to_have_count(3)
+                    with page.expect_download() as reviewed_json:
+                        page.get_by_role('link',name='Télécharger l’historique relu (JSON)',exact=True).click()
+                    reviewed_history=json.loads(Path(reviewed_json.value.path()).read_text())
+                    assert all(e['fcs_valid'] and e['fields']['pid'] is None and not e['fields']['payload_hex'] for e in reviewed_history['events'])
+                page.screenshot(path='browser-artifacts/ax25-archive.png',full_page=True)
 
                 page.set_viewport_size({'width':390,'height':844})
                 assert page.evaluate('() => document.documentElement.scrollWidth <= innerWidth')

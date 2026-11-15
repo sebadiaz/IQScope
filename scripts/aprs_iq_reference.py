@@ -142,6 +142,13 @@ def validate_result(report, out):
     snapshot['reference_scope']='Replay of decoded frames from pinned original IQ; not a hardware live-receiver test'
     (out/'fm-ax25-history-replay.json').write_text(json.dumps(snapshot,indent=2))
     (out/'fm-ax25-history-replay.kiss').write_bytes(history.kiss())
+    from iqscope_web.ax25_archive import open_ax25_archive
+    reviewed=open_ax25_archive(json.dumps(snapshot).encode('utf-8'))
+    if base64.b64decode(reviewed['kiss_base64'])!=expected_kiss:
+        raise AssertionError('Reopened recorded-IQ archive changed KISS frame bytes')
+    if any(e['fields']['pid'] is not None or e['fields']['payload_hex'] for e in reviewed['history']['events']):
+        raise AssertionError('Reopened recorded-IQ archive selected ambiguous I-frame content')
+    (out/'fm-ax25-archive-review.json').write_text(json.dumps(reviewed,indent=2))
     return trial
 
 

@@ -19,7 +19,7 @@ const api = async (url, body, method = 'POST') => {
 function status(text, kind = '') { $('status-text').textContent = text; $('status-dot').className = `dot ${kind}`; }
 function setBusy(value) {
   busy = value;
-  for (const id of ['analyze','demo','tab-file','tab-live','input-kind','experimental-lora','live-experimental-lora']) $(id).disabled = value;
+  for (const id of ['analyze','demo','tab-file','tab-live','tab-archive','open-archive','archive-file','input-kind','experimental-lora','live-experimental-lora']) $(id).disabled = value;
 }
 function element(tag, text, className) {
   const item = document.createElement(tag);
@@ -609,14 +609,37 @@ async function runFile(isDemo) {
     setBusy(false);
   }
 }
-async function switchTab(live) {
+async function switchTab(mode) {
   if(busy) return;
+  const live=mode==='live',archive=mode==='archive';
   if(!live && liveMode) {try {await api('/api/live/stop');} catch(error) {status(error.message,'error');}}
   liveMode=live;
-  for(const [id,on] of [['tab-live',live],['tab-file',!live]]) {$(id).classList.toggle('active',on);$(id).setAttribute('aria-selected',String(on));}
-  $('file-panel').hidden=live;$('live-panel').hidden=!live;
+  for(const [id,on] of [['tab-live',live],['tab-file',mode==='file'],['tab-archive',archive]]) {$(id).classList.toggle('active',on);$(id).setAttribute('aria-selected',String(on));}
+  $('file-panel').hidden=mode!=='file';$('live-panel').hidden=!live;$('archive-panel').hidden=!archive;
+  for(const id of ['analysis-plots','analysis-metrics','analysis-results'])$(id).hidden=archive;
+  $('archive-results').hidden=!archive;
 }
-$('tab-file').onclick=()=>switchTab(false);$('tab-live').onclick=()=>switchTab(true);
+$('tab-file').onclick=()=>switchTab('file');$('tab-live').onclick=()=>switchTab('live');$('tab-archive').onclick=()=>switchTab('archive');
+$('open-archive').onclick=async()=>{
+  if(busy)return;
+  $('archive-list').replaceChildren();$('archive-json').hidden=true;$('archive-kiss').hidden=true;
+  $('archive-summary').textContent='Aucun historique chargé.';
+  const file=$('archive-file').files[0];
+  if(!file){status('Choisissez un historique AX.25 JSON.','error');return;}
+  if(file.size>1024*1024){status('L’historique dépasse la limite de 1 Mio.','error');return;}
+  setBusy(true);status('Ouverture et vérification de l’historique…','busy');
+  try{
+    const archive=await api('/api/archives/ax25/open',file);
+    renderAX25Events($('archive-list'),archive.history.events,true);
+    $('archive-summary').textContent=`${file.name} · ${archive.history.events.length} événement(s) archivé(s), FCS revérifiés · ${archive.history.evicted_events} événements déjà écartés avant sauvegarde.`;
+    const jsonBytes=new TextEncoder().encode(JSON.stringify(archive.history,null,2));
+    const jsonBinary=Array.from(jsonBytes,v=>String.fromCharCode(v)).join('');
+    $('archive-json').href=`data:application/json;base64,${btoa(jsonBinary)}`;$('archive-json').download='iqscope-ax25-history-reviewed.json';$('archive-json').hidden=false;
+    $('archive-kiss').href=`data:application/octet-stream;base64,${archive.kiss_base64}`;$('archive-kiss').download='iqscope-ax25-history-reviewed.kiss';$('archive-kiss').hidden=false;
+    status('Historique chargé · FCS revérifiés.','success');
+  }catch(error){status(error.message,'error');}
+  finally{setBusy(false);}
+};
 function updateFileInput(){
   const file=$('iq-file').files[0];
   const audio=$('input-kind').value==='audio';
@@ -678,17 +701,21 @@ async function refreshLiveAX25History(expectedSession){
   const events=history.events || [],shown=events.slice(0,12);
   $('live-ax25-summary').textContent=`${events.length} événements AX.25 estimés conservés · ${shown.length} affichés · ${history.evicted_events} anciens écartés.`;
   const list=$('live-ax25-list');list.replaceChildren();
-  for(const event of shown){
-    const card=element('div',undefined,'frame live-ax25-event');card.dataset.eventId=event.id;
+  renderAX25Events(list,shown);
+}
+function renderAX25Events(list,events,archive=false){
+  const prefix=archive?'archive-ax25':'live-ax25';
+  for(const event of events){
+    const card=element('div',undefined,`frame ${prefix}-event`);card.dataset.eventId=event.id;
     const f=event.fields,address=a=>`${a.callsign}${a.ssid?'-'+a.ssid:''}`;
     card.append(element('p',`${address(f.source)} → ${address(f.destination)} · AX.25 ${f.supervisory_function || f.unnumbered_function || f.frame_type}`));
     card.append(element('p',`t ≈ ${event.time_seconds_estimate.toFixed(6)} s dans la session reçue · ${event.rf_center_known?formatFrequency(event.frequency_hz):formatFrequency(event.channel_offset_hz)+' relatif'}`));
-    card.append(element('p',`${event.observation_count} observation(s) · FCS vérifié`,'live-ax25-observations'));
-    card.append(element('pre',f.text===undefined?event.hex:f.text,'live-ax25-content'));
-    if(f.frame_type==='I')card.append(element('p','Mode de contrôle indéterminé ; aucune charge applicative sélectionnée.','hint live-ax25-unresolved'));
-    const link=element('a','Télécharger cette trame AX.25');
+    card.append(element('p',`${event.observation_count} observation(s) · FCS ${archive?'revérifié':'vérifié'}`,`${prefix}-observations`));
+    card.append(element('pre',f.text===undefined?event.hex:f.text,`${prefix}-content`));
+    if(f.frame_type==='I')card.append(element('p','Mode de contrôle indéterminé ; aucune charge applicative sélectionnée.',`hint ${prefix}-unresolved`));
+    const link=element('a',archive?'Télécharger la trame archivée':'Télécharger cette trame AX.25');
     const binary=event.hex.match(/../g).map(hex=>String.fromCharCode(parseInt(hex,16))).join('');
-    link.href=`data:application/octet-stream;base64,${btoa(binary)}`;link.download=`ax25-live-${event.id}.bin`;
+    link.href=`data:application/octet-stream;base64,${btoa(binary)}`;link.download=`ax25-${archive?'archive':'live'}-${event.id}.bin`;
     card.append(link);list.append(card);
   }
 }

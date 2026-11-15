@@ -135,6 +135,12 @@ distinct. The UI retains these results when the latest window has no packet,
 with JSON, full-frame binary and chronological KISS downloads. Receiver restart
 clears the history. This does not reconstruct AX.25 connection state.
 
+To keep an AX.25 history after closing IQScope, download its JSON and reopen it
+through the **Historique** tab. Archived frame FCS and address/control layouts
+are checked again; derived fields are rebuilt from bytes. This read-only view
+offers JSON, binary and KISS downloads without modifying the live history.
+Timing and RF settings remain archive declarations. See [saved AX.25 histories](docs/AX25_ARCHIVES.md).
+
 `rtl_tcp` does not supply hardware sample timestamps, overflow counters or tuning
 readback. Received sample counts cannot prove that no upstream data was lost.
 Frequency and rate in this first adapter are requested settings. There is no

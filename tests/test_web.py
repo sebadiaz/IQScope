@@ -332,6 +332,33 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(retained.status_code,200)
         self.assertEqual(read_kiss(retained.content),[(0,0,bytes.fromhex(frame['hex'])[:-2])])
 
+    async def test_saved_ax25_history_reopens_in_another_application_without_live_mutation(self):
+        from test_live_ax25_history import received
+        from test_kiss import read_kiss
+        from test_ax25 import frame
+        import base64
+        with tempfile.TemporaryDirectory() as old_root:
+            old_app=create_app(old_root)
+            async with old_app.router.lifespan_context(old_app):
+                old_service=old_app.state.service
+                old_service.live_ax25_history.observe(old_service.receiver.session_id,[received()],48000,145000000,0,96000)
+                async with httpx.AsyncClient(transport=httpx.ASGITransport(app=old_app),base_url='http://testserver') as old_client:
+                    archive=(await old_client.get('/api/live/ax25/frames')).content
+        response=await self.client.post('/api/archives/ax25/open',content=archive,headers=HEADERS)
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.json()['history']['events'][0]['hex'],frame().hex())
+        self.assertEqual(read_kiss(base64.b64decode(response.json()['kiss_base64'])),[(0,0,frame()[:-2])])
+        self.assertEqual((await self.client.get('/api/live/ax25/frames')).json()['events'],[])
+        self.assertEqual(self.app.state.service.jobs,{})
+        self.assertEqual(list(Path(self.temp.name).iterdir()),[])
+
+    async def test_invalid_and_oversized_archive_uploads_are_rejected(self):
+        response=await self.client.post('/api/archives/ax25/open',content=b'bad JSON',headers=HEADERS)
+        self.assertEqual(response.status_code,400)
+        response=await self.client.post('/api/archives/ax25/open',content=b'x'*(1024*1024+1),headers=HEADERS)
+        self.assertEqual(response.status_code,413)
+        self.assertEqual((await self.client.get('/api/live/ax25/frames')).json()['events'],[])
+
     async def test_live_ax25_history_empty_exports_and_receiver_restart(self):
         from test_live_ax25_history import received
         initial=(await self.client.get('/api/live/ax25/frames')).json()
