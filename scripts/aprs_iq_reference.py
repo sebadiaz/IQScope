@@ -168,11 +168,21 @@ def main():
     out=args.cache_root/'results'
     report=analyze(path,out,seconds=20)
     trial=validate_result(report,out)
+    tail_out=args.cache_root/'tail-results'
+    tail_report=analyze(path,tail_out,seconds=10,start_seconds=10)
+    tail=next(t for t in tail_report['wideband_trials'] if t['decoder']=='afsk1200_fm_ax25')
+    if [f['hex'] for f in tail['frames']]!=EXPECTED_HEX[3:]:
+        raise AssertionError('Seeked IQ tail did not recover its two expected link frames')
+    if tail_report['source_window']['start_sample']!=390620 or tail_report['source_window']['end_sample']!=734328:
+        raise AssertionError('Seeked recorded-IQ sample coordinates changed')
+    if tail['source_window_reference']['start_sample']!=390620 or json.loads((tail_out/tail['artifact']).read_text())!=tail:
+        raise AssertionError('Seeked decoder JSON lost the original-file origin')
     summary=dict(archive_sha256=provenance['archive_sha256'],member_sha256=provenance['member_sha256'],
                  sample_rate=report['sample_rate'],analyzed_seconds=report['analyzed_seconds'],
                  rf_center_known=False,checked_frames=len(trial['frames']),frame_hex=EXPECTED_HEX,
                  frame_types=[f['fields']['frame_type'] for f in trial['frames']],
-                 budget_exhausted=trial['budget_exhausted'])
+                 budget_exhausted=trial['budget_exhausted'],seeked_tail_frames=len(tail['frames']),
+                 seeked_tail_start_sample=tail_report['source_window']['start_sample'])
     provenance.update(input_kind='publisher-provided complex IQ; stereo PCM16 WAV, I then Q',
                       rf_center_hz=None,frequency_basis='relative; filename frequency is not applied',
                       scope='five FCS-valid link frames observed: three I, two RR; no confirmed APRS UI, application payload, connection reassembly or independent message ground truth',

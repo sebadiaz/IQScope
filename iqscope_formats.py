@@ -17,7 +17,7 @@ MAX_SAMPLES = 8_000_000
 def sample_count(fs, seconds):
     if not math.isfinite(fs) or fs <= 0 or not math.isfinite(seconds) or seconds <= 0:
         raise ValueError('Sample rate and duration must be positive and finite')
-    return min(MAX_SAMPLES, int(fs * seconds))
+    return MAX_SAMPLES if fs*seconds>=MAX_SAMPLES else int(fs*seconds)
 
 
 def check_samples(x):
@@ -94,12 +94,16 @@ def wave_layout(path, allow_prefix=False):
     raise ValueError('WAV contains no supported IQ data chunk')
 
 
-def read_wave_iq(path, seconds=10, allow_prefix=False):
+def read_wave_iq(path, seconds=10, allow_prefix=False, start_sample=0):
     layout = wave_layout(path, allow_prefix=allow_prefix)
     fs, bits = layout['sample_rate'], layout['bits']
-    count = min(sample_count(fs, seconds), layout['data_bytes']//layout['block_align'])
+    if type(start_sample) is not int or start_sample<0:
+        raise ValueError('Start sample must be a nonnegative integer')
+    count = min(sample_count(fs, seconds), max(0,layout['data_bytes']//layout['block_align']-start_sample))
+    if count<1024:
+        raise ValueError('Need at least 1024 complex samples after the requested start')
     with Path(path).open('rb') as handle:
-        handle.seek(layout['data_offset'])
+        handle.seek(layout['data_offset']+start_sample*layout['block_align'])
         payload = handle.read(count*layout['block_align'])
     if layout['encoding'] == 3:
         values = np.frombuffer(payload, dtype=f'<f{bits//8}').astype(np.float32)
@@ -115,7 +119,7 @@ def read_wave_iq(path, seconds=10, allow_prefix=False):
     return check_samples(x), float(fs), float(layout['center_frequency_hz'])
 
 
-def read_sdriq(path, seconds=10):
+def sdriq_layout(path):
     path = Path(path)
     with path.open('rb') as handle:
         header = handle.read(32)
@@ -135,7 +139,22 @@ def read_sdriq(path, seconds=10):
         width = 2 if bits == 16 else 4
         if (path.stat().st_size-32) % (2*width):
             raise ValueError('SDRangel file ends with an incomplete IQ sample')
-        count = sample_count(fs, seconds)
+        return dict(sample_rate=float(fs),center_frequency_hz=float(center),bits=bits,
+                    endian=endian,width=width,data_offset=32,block_align=2*width,
+                    data_bytes=path.stat().st_size-32)
+
+
+def read_sdriq(path, seconds=10, start_sample=0):
+    layout=sdriq_layout(path)
+    if type(start_sample) is not int or start_sample<0:
+        raise ValueError('Start sample must be a nonnegative integer')
+    fs,center,bits=layout['sample_rate'],layout['center_frequency_hz'],layout['bits']
+    width,endian=layout['width'],layout['endian']
+    count=min(sample_count(fs,seconds),max(0,layout['data_bytes']//layout['block_align']-start_sample))
+    if count<1024:
+        raise ValueError('Need at least 1024 complex samples after the requested start')
+    with Path(path).open('rb') as handle:
+        handle.seek(layout['data_offset']+start_sample*layout['block_align'])
         raw = np.fromfile(handle, dtype=endian+f'i{width}', count=2*count)
         if bits == 24 and np.any((raw < -8388608) | (raw > 8388607)):
             raise ValueError('SDRangel samples exceed the declared signed 24-bit range')

@@ -507,6 +507,29 @@ def main():
                     assert response.ok and response.body()==expected_kiss
                     assert rf_trial['kiss_export']['frame_count']==5 and rf_trial['kiss_export']['fcs_included'] is False
                     page.screenshot(path='browser-artifacts/fm-ax25-iq.png',full_page=True)
+                    page.locator('#seconds').fill('10')
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('#metric-frames')).to_have_text('3',timeout=30000)
+                    expect(page.locator('#file-previous')).to_be_disabled()
+                    expect(page.locator('#file-next')).to_be_enabled()
+                    page.get_by_role('button',name='Fenêtre suivante',exact=True).click()
+                    expect(page.locator('#metric-frames')).to_have_text('2',timeout=30000)
+                    expect(page.locator('#file-window-info')).to_contain_text('[390620, 734328)')
+                    expect(page.locator('#file-start')).to_have_value('10')
+                    expect(page.locator('#file-next')).to_be_disabled()
+                    expect(page.locator('#file-previous')).to_be_enabled()
+                    response=page.request.get(urljoin(page.url,page.locator('#download').get_attribute('href')))
+                    tail_report=response.json()
+                    assert tail_report['source_sample_start']==390620 and tail_report['source_sample_end']==734328
+                    tail=next(t for t in tail_report['wideband_trials'] if t['decoder']=='afsk1200_fm_ax25')
+                    assert [f['hex'] for f in tail['frames']]==reference['frame_hex'][3:]
+                    response=page.request.get(urljoin(page.url,page.locator('.fm-ax25-download').get_attribute('href')))
+                    assert response.ok and response.json()==tail and tail['source_window_reference']['start_sample']==390620
+                    page.get_by_role('button',name='Fenêtre précédente',exact=True).click()
+                    expect(page.locator('#metric-frames')).to_have_text('3',timeout=30000)
+                    expect(page.locator('#file-start')).to_have_value('0')
+                    expect(page.locator('#file-previous')).to_be_disabled()
+                    page.screenshot(path='browser-artifacts/iq-file-windows.png',full_page=True)
                     page.locator('#seconds').fill(previous_seconds)
                 with tempfile.TemporaryDirectory() as directory:
                     from test_cw import fixture as audio_fixture, TEXT as AUDIO_TEXT

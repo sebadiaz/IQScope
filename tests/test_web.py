@@ -142,6 +142,38 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(artifact.content[:4],b'RIFF')
         self.assertGreater(len(job['result']['waterfall']['power_db']),1)
 
+    async def test_iq_file_windows_seek_and_navigate_by_exact_sample_index(self):
+        from test_formats import make_wave
+        data=np.arange(20000,dtype='<i2').tobytes()
+        identifier=(await self.client.post('/api/uploads',content=make_wave(data),headers={**HEADERS,'X-IQScope-Filename':'window.wav'})).json()['upload_id']
+        response=await self.client.post('/api/analyses',json={'upload_id':identifier,'seconds':.1,'start_seconds':.2},headers=HEADERS)
+        job=await self.wait_job(response.json()['id'])
+        self.assertEqual(job['status'],'completed',job.get('error'))
+        report=job['result'];window=report['source_window']
+        self.assertEqual((window['start_sample'],window['end_sample'],window['total_samples']),(4800,7200,10000))
+        saved=(await self.client.get(f"/api/jobs/{job['id']}/artifacts/report.json")).json()
+        self.assertEqual(saved,report)
+        response=await self.client.post('/api/analyses',json={'upload_id':identifier,'seconds':.1,'start_sample':window['next_start_sample']},headers=HEADERS)
+        second=await self.wait_job(response.json()['id'])
+        self.assertEqual(second['status'],'completed',second.get('error'))
+        self.assertEqual((second['result']['source_sample_start'],second['result']['source_sample_end']),(7200,9600))
+        self.assertIsNone(second['result']['source_window']['next_start_sample'])
+        self.assertEqual(second['result']['source_window']['remaining_samples'],400)
+        response=await self.client.post('/api/analyses',json={'upload_id':identifier,'start_sample':9999},headers=HEADERS)
+        last=await self.wait_job(response.json()['id'])
+        self.assertEqual(last['status'],'failed')
+        self.assertIn('remaining',last['error'])
+
+    async def test_unsupported_seek_modes_and_noninteger_sample_offsets_are_rejected(self):
+        response=await self.client.post('/api/analyses',json={'demo':True,'start_seconds':1},headers=HEADERS)
+        self.assertEqual(response.status_code,400)
+        identifier=(await self.client.post('/api/uploads',content=b'x'*2048,headers={**HEADERS,'X-IQScope-Filename':'audio.wav'})).json()['upload_id']
+        response=await self.client.post('/api/analyses',json={'upload_id':identifier,'input_kind':'audio','start_seconds':1},headers=HEADERS)
+        self.assertEqual(response.status_code,400)
+        for value in (True,1.5,-1):
+            response=await self.client.post('/api/analyses',json={'upload_id':identifier,'start_sample':value},headers=HEADERS)
+            self.assertEqual(response.status_code,422)
+
     async def test_upload_raw_iq(self):
         rng=np.random.default_rng(13)
         x=(rng.normal(size=4096)+1j*rng.normal(size=4096)).astype('<c8')

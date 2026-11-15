@@ -8,6 +8,7 @@ import numpy as np
 from scipy import ndimage, signal
 from iqscope_decoders import analog_trials, capabilities, decode_adsb
 from iqscope_formats import read_wave_iq, read_sdriq
+from iqscope_iq_windows import read_iq_window
 from iqscope_rtl433 import search_rtl433
 from iqscope_rtty import search_rtty
 from iqscope_cw import search_cw
@@ -23,59 +24,9 @@ from iqscope_ofdm import detect_cyclic_prefix
 from iqscope_lora import detect_lora_preamble
 
 
-def read_iq(path, sample_rate=None, limit_seconds=10):
-    path = Path(path)
-    if path.suffix.lower() == '.wav':
-        return read_wave_iq(path, limit_seconds)
-    if path.suffix.lower() == '.sdriq':
-        return read_sdriq(path, limit_seconds)
-    meta_path = path if path.suffix == '.sigmf-meta' else path.with_suffix('.sigmf-meta')
-    center = 0.0
-    dtype = '<c8'
-    if meta_path.exists():
-        meta = json.loads(meta_path.read_text())
-        glob = meta['global']
-        if glob.get('core:offset', 0) or glob.get('core:num_channels', 1) != 1:
-            raise ValueError('Only single-channel, zero-offset SigMF data is supported')
-        if len(meta.get('captures', [])) > 1:
-            raise ValueError('Multiple capture segments are not supported yet')
-        sample_rate = float(glob['core:sample_rate'])
-        datatype = glob['core:datatype']
-        types = {'cf32_le': '<c8', 'cf32_be': '>c8', 'ci16_le': '<i2', 'ci16_be': '>i2', 'cu8': 'u1'}
-        if datatype not in types:
-            raise ValueError(f'Unsupported SigMF datatype: {datatype}')
-        dtype = types[datatype]
-        captures = meta.get('captures', [])
-        if captures:
-            center = float(captures[0].get('core:frequency', 0))
-            if captures[0].get('core:sample_start', 0):
-                raise ValueError('Capture must start at sample zero')
-        path = meta_path.with_suffix('.sigmf-data')
-    if sample_rate is None or not math.isfinite(sample_rate) or sample_rate <= 0:
-        raise ValueError('Raw cf32 IQ requires a positive --sample-rate; use SigMF for automatic metadata')
-    if not math.isfinite(limit_seconds) or limit_seconds <= 0:
-        raise ValueError('Analysis duration must be positive and finite')
-    if not math.isfinite(center):
-        raise ValueError('Center frequency must be finite')
-    bytes_per_sample = np.dtype(dtype).itemsize * (1 if np.dtype(dtype).kind == 'c' else 2)
-    if path.stat().st_size % bytes_per_sample:
-        raise ValueError('File ends with an incomplete IQ sample')
-    count = min(8_000_000, int(sample_rate * limit_seconds))
-    if np.dtype(dtype).kind != 'c':
-        raw = np.fromfile(path, dtype=dtype, count=2 * count)
-        if len(raw) % 2:
-            raise ValueError('Incomplete interleaved IQ sample')
-        raw = raw.astype(np.float32)
-        if dtype == 'u1':
-            raw = (raw - 127.5) / 127.5
-        else:
-            raw /= 32768
-        x = raw[::2] + 1j * raw[1::2]
-    else:
-        x = np.fromfile(path, dtype=dtype, count=count)
-    if len(x) < 1024 or not np.all(np.isfinite(x)):
-        raise ValueError('Need at least 1024 finite complex samples')
-    return x, sample_rate, center
+def read_iq(path, sample_rate=None, limit_seconds=10, start_seconds=0, start_sample=None):
+    x,fs,center,_=read_iq_window(path,sample_rate,limit_seconds,start_seconds,start_sample)
+    return x,fs,center
 
 
 def discover(x, fs, threshold_db=9):
@@ -233,9 +184,16 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
     return report
 
 
-def analyze(path, out, sample_rate=None, seconds=10, threshold_db=9, experimental_lora=False):
-    x, fs, center = read_iq(path, sample_rate, seconds)
+def analyze(path, out, sample_rate=None, seconds=10, threshold_db=9, experimental_lora=False, start_seconds=0, start_sample=None):
+    x, fs, center, window = read_iq_window(path, sample_rate, seconds, start_seconds, start_sample)
     report = analyze_samples(x, fs, center, out, source=path, threshold_db=threshold_db,experimental_lora=experimental_lora)
+    report['source_window']=window
+    report['source_sample_start']=window['start_sample']
+    report['source_sample_end']=window['end_sample']
+    report['source_sample_reference']='original_file_complex_samples'
+    for trial in report['wideband_trials']:
+        trial['source_window_reference']=dict(start_sample=window['start_sample'],end_sample=window['end_sample'],
+            sample_rate=fs,start_seconds=window['start_seconds'],decoder_time_reference='relative to this IQ window start')
     path = Path(path)
     meta_path = path if path.suffix=='.sigmf-meta' else path.with_suffix('.sigmf-meta')
     if path.suffix.lower() not in ('.wav','.sdriq') and meta_path.exists():
@@ -256,7 +214,15 @@ def analyze(path, out, sample_rate=None, seconds=10, threshold_db=9, experimenta
                     if report.get(artifact_key):
                         (Path(out)/report[artifact_key]).write_text(json.dumps(trial,indent=2))
             report['limitations'].insert(0,'Candidate byte-order interpretation; endian and original header layout are not independently verified.')
-            (Path(out)/'report.json').write_text(json.dumps(report,indent=2))
+    for trial in report['wideband_trials']:
+        artifact=trial.get('artifact')
+        if artifact and artifact.endswith('.json'):
+            (Path(out)/artifact).write_text(json.dumps(trial,indent=2))
+    for decoder,key in (('lora_preamble','lora_artifact'),('ofdm_cp','ofdm_artifact')):
+        if report.get(key):
+            trial=next(t for t in report['wideband_trials'] if t['decoder']==decoder)
+            (Path(out)/report[key]).write_text(json.dumps(trial,indent=2))
+    (Path(out)/'report.json').write_text(json.dumps(report,indent=2))
     return report
 
 
@@ -285,6 +251,7 @@ def main():
     scan.add_argument('--out', default='results')
     scan.add_argument('--sample-rate', type=float)
     scan.add_argument('--seconds', type=float, default=10)
+    scan.add_argument('--start-seconds',type=float,default=0,help='Seek to this source time before analyzing the bounded IQ window')
     scan.add_argument('--threshold-db', type=float, default=9)
     convert = sub.add_parser('convert', help='Export a bounded IQ excerpt as SigMF')
     convert.add_argument('file')
@@ -350,7 +317,7 @@ def main():
         else:
             if not math.isfinite(args.seconds) or args.seconds <= 0 or not math.isfinite(args.threshold_db) or args.threshold_db <= 0:
                 raise ValueError('Seconds and threshold must be finite and positive')
-            report = analyze(args.file, args.out, args.sample_rate, args.seconds, args.threshold_db,experimental_lora=args.experimental_lora)
+            report = analyze(args.file, args.out, args.sample_rate, args.seconds, args.threshold_db,experimental_lora=args.experimental_lora,start_seconds=args.start_seconds)
         print(json.dumps(report, indent=2))
     except (ValueError, OSError, KeyError) as exc:
         parser.exit(2, f'Error: {exc}\n')

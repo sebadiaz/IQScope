@@ -5,6 +5,7 @@ let busy = false, liveMode = false, liveConnected = false, pollingLive = false;
 let lastLiveAnalysis = null, lastLiveSpectrumSession = null;
 let currentLiveSession=null,liveHistorySession=null,liveHistoryRevision=-1;
 let ax25HistorySession=null,ax25HistoryRevision=-1;
+let currentFileWindow=null;
 let currentSpectrum = null, waterfallRows = [], selectedSignal = null, signals = [];
 let center = 0, sampleRate = 0, lastSnapshot = 0, lastLiveSample = -1, reportJob = null;
 const api = async (url, body, method = 'POST') => {
@@ -20,6 +21,7 @@ function status(text, kind = '') { $('status-text').textContent = text; $('statu
 function setBusy(value) {
   busy = value;
   for (const id of ['analyze','demo','tab-file','tab-live','tab-archive','open-archive','archive-file','input-kind','experimental-lora','live-experimental-lora']) $(id).disabled = value;
+  refreshFileNavigation();
 }
 function element(tag, text, className) {
   const item = document.createElement(tag);
@@ -111,6 +113,8 @@ function drawPskConstellation(canvas, data) {
   }
 }
 function showReport(report, jobId) {
+  $('file-window-info').hidden=!report.source_window;
+  if(report.source_window){const w=report.source_window;$('file-window-info').textContent=`Fichier : ${w.start_seconds.toFixed(6)}–${w.end_seconds.toFixed(6)} s sur ${w.total_seconds.toFixed(6)} s · échantillons [${w.start_sample}, ${w.end_sample}). Les temps des décodeurs sont relatifs au début de cette fenêtre.`;}
   audioPlot=report.source_kind==='receiver_audio';
   reportJob=jobId; center=report.center_frequency_hz;sampleRate=report.sample_rate;
   signals=report.signals;selectedSignal=null;currentSpectrum=report.spectrum;
@@ -583,7 +587,15 @@ async function followJob(job) {
     if(state.status==='completed') {showReport(state.result,job.id);return state.result;}
   }
 }
-async function runFile(isDemo) {
+function refreshFileNavigation(){
+  $('file-previous').disabled=busy || !currentFileWindow || currentFileWindow.previous_start_sample===null;
+  $('file-next').disabled=busy || !currentFileWindow || currentFileWindow.next_start_sample===null;
+}
+function clearFileWindow(){
+  currentFileWindow=null;refreshFileNavigation();
+  $('file-window-range').textContent='Les fenêtres sont lues directement à leur position dans le fichier IQ.';
+}
+async function runFile(isDemo, sampleStart=null) {
   if(busy) return;
   let uploadedId=null;
   setBusy(true);status(isDemo ? 'Génération et analyse de la démo…' : 'Import de la capture…','busy');
@@ -597,10 +609,14 @@ async function runFile(isDemo) {
       const meta=audioInput?null:$('meta-file').files[0];
       if(meta) {if(meta.size>1024*1024) throw new Error('Métadonnées trop volumineuses.');metadata=JSON.parse(await meta.text());}
       const uploaded=await api('/api/uploads',file);uploadedId=uploaded.upload_id;
-      body={upload_id:uploaded.upload_id,input_kind:audioInput?'audio':'iq',metadata,sample_rate:Number($('file-rate').value),seconds:Number($('seconds').value),experimental_lora:!audioInput && $('experimental-lora').checked};
+      body={upload_id:uploaded.upload_id,input_kind:audioInput?'audio':'iq',metadata,sample_rate:Number($('file-rate').value),seconds:Number($('seconds').value),experimental_lora:!audioInput && $('experimental-lora').checked,
+            start_seconds:audioInput || sampleStart!==null?0:Number($('file-start').value),start_sample:audioInput?null:sampleStart};
     }
     status('Détection des émissions et essais de décodage…','busy');
-    const job=await api('/api/analyses',body);await followJob(job);
+    const job=await api('/api/analyses',body);const result=await followJob(job);
+    currentFileWindow=!isDemo && !audioPlot?result.source_window:null;
+    if(currentFileWindow){const w=currentFileWindow;$('file-start').value=String(w.start_seconds);$('file-window-range').textContent=`${w.start_seconds.toFixed(6)}–${w.end_seconds.toFixed(6)} s sur ${w.total_seconds.toFixed(6)} s · ${w.remaining_samples} échantillons restants.`;}
+    else clearFileWindow();
     $('source-badge').textContent=isDemo?'Démo synthétique':audioPlot?'Audio · fréquences audio':'Fichier IQ';
     status(audioPlot?'Analyse terminée. Audio et résultats Morse/RTTY/PSK/AX.25 disponibles.':'Analyse terminée. Sélectionnez une émission pour écouter les candidats audio.','success');
   } catch(error) {status(error.message,'error');}
@@ -641,8 +657,10 @@ $('open-archive').onclick=async()=>{
   finally{setBusy(false);}
 };
 function updateFileInput(){
+  clearFileWindow();$('file-start').value='0';
   const file=$('iq-file').files[0];
   const audio=$('input-kind').value==='audio';
+  $('file-start-field').hidden=audio;$('file-window-controls').hidden=audio;
   $('experimental-lora-option').hidden=audio;
   if(audio)$('experimental-lora').checked=false;
   $('filename').textContent=file?.name || (audio?'MP3 · WAV audio':'SigMF · WAV IQ · .sdriq · .cf32');
@@ -656,6 +674,9 @@ function updateFileInput(){
   if(audio)$('seconds').value=String(Math.max(1,Math.min(20,Number($('seconds').value))));
 }
 $('iq-file').onchange=updateFileInput;$('input-kind').onchange=updateFileInput;
+for(const id of ['meta-file','file-rate','seconds','file-start'])$(id).addEventListener(id==='meta-file'?'change':'input',clearFileWindow);
+$('file-previous').onclick=()=>{if(currentFileWindow && currentFileWindow.previous_start_sample!==null)runFile(false,currentFileWindow.previous_start_sample);};
+$('file-next').onclick=()=>{if(currentFileWindow && currentFileWindow.next_start_sample!==null)runFile(false,currentFileWindow.next_start_sample);};
 $('analyze').onclick=()=>runFile(false);$('demo').onclick=()=>runFile(true);
 $('connect').onclick=async()=>{
   try {

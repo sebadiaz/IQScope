@@ -1100,6 +1100,16 @@ L'import audio essaie aussi POCSAG sur les niveaux FM démodulés à 8 kHz. Troi
 Le parseur peut corriger au plus deux bits sur l'ensemble adresse/données/terminaison d'un message, grâce au syndrome BCH(31,21) complété par la parité paire. Les 529 masques de poids 0–2 ont des syndromes distincts et le mot proposé est contrôlé. La synchronisation reste exacte ; les messages incomplets, non corrigeables ou dépassant la somme autorisée sont refusés. Les mots reçus restent exportés séparément des mots décodés, avec rôle et positions des inversions. Le mode strict reste accessible par `max_corrected_bits=0`. L'interface marque les corrections sans modifier le compteur CRC. Les tests couvrent les positions d'une/deux erreurs, le rejet de trois erreurs sur références, la limite globale et les voies IQ/audio. Cette correction n'authentifie pas l'émetteur et peut choisir un autre mot valide au-delà de son rayon. Le corpus radio existant conserve ses sorties à zéro correction ; une amélioration sur enregistrement corrompu reste à démontrer. Voir [POCSAG.md](POCSAG.md).
 
 
+### Accès positionné aux fichiers IQ
+
+Les lecteurs IQ acceptent un point de départ et effectuent une lecture bornée
+après seek, sur cf32, SigMF, WAV/RF64 et SDRangel. L'interface navigue par indices
+entiers entre fenêtres adjacentes ; le CLI accepte `--start-seconds`. Rapports
+et JSON d'essais conservent l'origine source sans modifier les temps internes.
+La référence IQ vérifie les deux trames de la fenêtre commençant à 10 s. Ce
+parcours est manuel : le balayage automatique complet et l'état interfenêtres
+restent à réaliser. Voir [IQ_FILE_WINDOWS.md](IQ_FILE_WINDOWS.md).
+
 ### Relecture des historiques AX.25 sauvegardés
 
 L'onglet Historique ouvre un JSON AX.25 FM exporté précédemment, jusqu'à

@@ -45,8 +45,13 @@ Only single-channel, single-capture, zero-offset metadata is currently supported
 
 The web import limit is **128 MiB per file**, eight uploads and 256 MiB total per
 server session. An analysis reads at most **8 million complex samples** from the
-start, and may therefore cover less than the requested duration. Data is loaded
+selected start (zero by default), and may cover less than the requested duration. Data is loaded
 into memory within that bound; this is not yet a full streaming file pipeline.
+
+Choose **Début dans le fichier**, or use **Fenêtre précédente/suivante**, to
+inspect later IQ without reading preceding samples into the DSP window. The CLI
+accepts `--start-seconds`. Source sample indices and window-relative decoder
+timing are preserved in the reports. See [IQ file windows](docs/IQ_FILE_WINDOWS.md).
 
 The last 32 analysis jobs are retained, then older completed jobs are removed.
 Uploaded sources and derived files are temporary and removed on normal server

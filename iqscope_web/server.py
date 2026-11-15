@@ -33,6 +33,8 @@ class AnalyzeRequest(BaseModel):
     sample_rate: float | None = None
     metadata: dict | None = None
     seconds: float = Field(default=10, gt=0, le=120)
+    start_seconds: float = Field(default=0,ge=0,le=1e9)
+    start_sample: int | None = Field(default=None,ge=0,le=10**15,strict=True)
     demo: bool = False
     input_kind: Literal['iq','audio'] = 'iq'
     experimental_lora: bool = False
@@ -198,11 +200,15 @@ def create_app(root=None):
         if body.experimental_lora and body.input_kind=='audio':
             raise HTTPException(400,'Experimental LoRa requires IQ input')
         if body.demo:
+            if body.start_seconds or body.start_sample is not None:
+                raise HTTPException(400,'The generated demonstration starts at sample zero')
             return service.submit(lambda out: analyze(demo(out / 'source'), out,experimental_lora=body.experimental_lora))
         source = service.uploads.get(body.upload_id)
         if source is None:
             raise HTTPException(404, 'Upload not found')
         if body.input_kind=='audio':
+            if body.start_seconds or body.start_sample is not None:
+                raise HTTPException(400,'Window seeking is supported for IQ inputs only')
             if source.suffix not in ('.mp3','.wav') or body.metadata is not None:
                 raise HTTPException(400, 'Audio mode requires MP3/WAV without a SigMF sidecar')
             if not 1<=body.seconds<=20:
@@ -233,7 +239,8 @@ def create_app(root=None):
             os.link(source, local)
             if metadata is not None:
                 local.with_suffix('.sigmf-meta').write_text(json.dumps(metadata))
-            return analyze(local, out, body.sample_rate, body.seconds,experimental_lora=body.experimental_lora)
+            return analyze(local, out, body.sample_rate, body.seconds,experimental_lora=body.experimental_lora,
+                           start_seconds=body.start_seconds,start_sample=body.start_sample)
         return service.submit(process)
 
     @app.get('/api/jobs/{job_id}')
