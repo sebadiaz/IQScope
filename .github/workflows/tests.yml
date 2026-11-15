@@ -44,6 +44,8 @@ jobs:
         run: python scripts/aprs_pico_reference.py
       - name: Verify automatic FM/AFSK AX.25 link reception from pinned original IQ
         run: python scripts/aprs_iq_reference.py
+      - name: Verify bounded overlapping traversal of the original IQ file
+        run: python scripts/iq_scan_reference.py
       - run: python tests/browser_smoke.py
         env:
           NO_PROXY: 127.0.0.1,localhost
@@ -92,6 +94,12 @@ jobs:
             corpus-cache/aprs-iq/tail-results/report.json
             corpus-cache/aprs-iq/tail-results/fm-afsk-frames.json
             corpus-cache/aprs-iq/tail-results/fm-ax25-frames.kiss
+            corpus-cache/iq-file-scan/scan-report.json
+            corpus-cache/iq-file-scan/provenance.json
+            corpus-cache/iq-file-scan/window-*/report.json
+            corpus-cache/iq-file-scan/window-*/fm-afsk-frames.json
+            corpus-cache/iq-file-scan/window-*/fm-ax25-frame-*.bin
+            corpus-cache/iq-file-scan/window-*/fm-ax25-frames.kiss
             corpus-cache/aprs-iq/results/fm-ax25-frame-*.bin
             corpus-cache/aprs-iq/results/fm-ax25-payload-*.bin
           if-no-files-found: ignore

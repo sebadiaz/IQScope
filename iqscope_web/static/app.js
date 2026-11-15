@@ -6,6 +6,7 @@ let lastLiveAnalysis = null, lastLiveSpectrumSession = null;
 let currentLiveSession=null,liveHistorySession=null,liveHistoryRevision=-1;
 let ax25HistorySession=null,ax25HistoryRevision=-1;
 let currentFileWindow=null;
+let activeScan=null,activeScanJob=null;
 let currentSpectrum = null, waterfallRows = [], selectedSignal = null, signals = [];
 let center = 0, sampleRate = 0, lastSnapshot = 0, lastLiveSample = -1, reportJob = null;
 const api = async (url, body, method = 'POST') => {
@@ -20,7 +21,11 @@ const api = async (url, body, method = 'POST') => {
 function status(text, kind = '') { $('status-text').textContent = text; $('status-dot').className = `dot ${kind}`; }
 function setBusy(value) {
   busy = value;
-  for (const id of ['analyze','demo','tab-file','tab-live','tab-archive','open-archive','archive-file','input-kind','experimental-lora','live-experimental-lora']) $(id).disabled = value;
+  for (const id of ['analyze','demo','tab-file','tab-live','tab-archive','open-archive','archive-file','input-kind','experimental-lora','live-experimental-lora','iq-file','seconds','file-start','auto-scan','scan-limit']) $(id).disabled = value;
+  const embedded=$('input-kind').value==='audio' || /\.(wav|sdriq)$/i.test($('iq-file').files[0]?.name || '');
+  $('meta-file').disabled=value || embedded;$('file-rate').disabled=value || embedded;
+  for(const button of $('scan-window-list').querySelectorAll('button'))button.disabled=value;
+  $('scan-resume').disabled=value || !activeScan || activeScan.result.next_start_sample===null;
   refreshFileNavigation();
 }
 function element(tag, text, className) {
@@ -112,7 +117,8 @@ function drawPskConstellation(canvas, data) {
     ctx.beginPath();ctx.arc(w/2+data.i[i]*scale,h/2-data.q[i]*scale,2,0,2*Math.PI);ctx.fill();
   }
 }
-function showReport(report, jobId) {
+function showReport(report, jobId, artifactPrefix='') {
+  $('analysis-plots').hidden=false;
   $('file-window-info').hidden=!report.source_window;
   if(report.source_window){const w=report.source_window;$('file-window-info').textContent=`Fichier : ${w.start_seconds.toFixed(6)}–${w.end_seconds.toFixed(6)} s sur ${w.total_seconds.toFixed(6)} s · échantillons [${w.start_sample}, ${w.end_sample}). Les temps des décodeurs sont relatifs au début de cette fenêtre.`;}
   audioPlot=report.source_kind==='receiver_audio';
@@ -130,7 +136,7 @@ function showReport(report, jobId) {
   $('metric-signals').textContent=signals.length;
   $('metric-frames').textContent=frames.length+ax25Frames.length+loraFrames.length;
   $('metric-duration').textContent=`${report.analyzed_seconds.toFixed(2)} s`;
-  $('download').href=`/api/jobs/${jobId}/artifacts/report.json`; $('download').hidden=false;
+  $('download').href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+'report.json')}`; $('download').hidden=false;
   const list=$('signal-list');list.replaceChildren();
   if(report.interpretation_status==='unverified_byte_order_and_header_layout'){
     list.append(element('p',`Hypothèse de lecture ${report.interpretation_datatype || ''}. Type, ordre des octets et en-tête non validés ; le taux provient d’une convention de nom ou des auteurs, sans mesure indépendante.`,'hint'));
@@ -143,7 +149,7 @@ function showReport(report, jobId) {
     note.append(element('p','Import d’un préfixe seulement ; le mode annoncé et le contenu ne sont pas validés.','hint'));
     const labels={data:'Télécharger les IQ SigMF',metadata:'Télécharger les métadonnées SigMF',provenance:'Télécharger la provenance'};
     for(const [kind,name] of Object.entries(report.recording_artifacts || {})){
-      const link=element('a',labels[kind]);link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(name)}`;link.download=name;
+      const link=element('a',labels[kind]);link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+name)}`;link.download=name;
       note.append(link,document.createTextNode(' '));
     }
     list.append(note);
@@ -162,7 +168,7 @@ function showReport(report, jobId) {
       const row=element('div',undefined,'trial');
       row.append(element('p',`${trial.family} · audio candidat, non validé`));
       const audio=element('audio');audio.controls=true;audio.preload='none';
-      audio.src=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(trial.audio)}`;
+      audio.src=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+trial.audio)}`;
       row.append(audio);content.append(row);
     }
     details.append(content);list.append(details);
@@ -184,11 +190,11 @@ function showReport(report, jobId) {
       if(candidate.soft_bits?.status==='likelihood_model_estimated')card.append(element('p','Fiabilité estimée disponible pour chaque bit à l’export.','hint'));
       for(const [kind,name] of Object.entries(candidate.artifacts || {})){
         const label=kind==='soft'?'fiabilité des bits':kind;
-        const link=element('a',`Télécharger 16-QAM · ${label}`);link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(name)}`;link.download=name;card.append(link);
+        const link=element('a',`Télécharger 16-QAM · ${label}`);link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+name)}`;link.download=name;card.append(link);
       }
       frameList.append(card);
     }
-    if(trial.artifact){const link=element('a','Télécharger le rapport 16-QAM');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
+    if(trial.artifact){const link=element('a','Télécharger le rapport 16-QAM');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
   }
 
   for(const trial of report.wideband_trials || []) {
@@ -211,14 +217,14 @@ function showReport(report, jobId) {
           section.append(element('p',`${measure.label} : ${measure.value}${suffix}`,'funcube-measurement'));
         }
         section.append(element('p','Interprétation candidate du profil et des unités publiés. Identité et étalonnage indépendants non établis ; températures conservées en codes bruts.','hint'));
-        if(frame.telemetry_artifact){const link=element('a','Télécharger la télémétrie FUNcube (JSON)');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(frame.telemetry_artifact)}`;link.download=frame.telemetry_artifact;section.append(link);}
+        if(frame.telemetry_artifact){const link=element('a','Télécharger la télémétrie FUNcube (JSON)');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+frame.telemetry_artifact)}`;link.download=frame.telemetry_artifact;section.append(link);}
         card.append(section);
       }
 
-      if(frame.payload_artifact){const link=element('a','Télécharger la charge utile AO-40');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(frame.payload_artifact)}`;link.download=frame.payload_artifact;card.append(link);}
+      if(frame.payload_artifact){const link=element('a','Télécharger la charge utile AO-40');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+frame.payload_artifact)}`;link.download=frame.payload_artifact;card.append(link);}
       frameList.append(card);
     }
-    if(trial.artifact){const link=element('a','Télécharger le rapport AO-40 FEC');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
+    if(trial.artifact){const link=element('a','Télécharger le rapport AO-40 FEC');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
   }
 
   for(const trial of report.wideband_trials || []) {
@@ -241,11 +247,11 @@ function showReport(report, jobId) {
       card.append(element('p','Constellation après correction : amplitude normalisée, au plus 512 symboles échantillonnés.','hint'));
       card.append(element('pre',candidate.bits.slice(0,256),'psk-bits'));
       for(const [kind,name] of Object.entries(candidate.artifacts || {})) {
-        const link=element('a',`Télécharger PSK · ${kind}`);link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(name)}`;link.download=name;card.append(link);
+        const link=element('a',`Télécharger PSK · ${kind}`);link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+name)}`;link.download=name;card.append(link);
       }
       frameList.append(card);
     }
-    if(trial.artifact){const link=element('a','Télécharger le rapport PSK');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
+    if(trial.artifact){const link=element('a','Télécharger le rapport PSK');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
   }
 
   for(const trial of report.wideband_trials || []) {
@@ -259,17 +265,17 @@ function showReport(report, jobId) {
       card.append(element('pre',JSON.stringify(message.fields,null,2)));
       frameList.append(card);
     }
-    if(trial.artifact){const link=element('a','Télécharger les valeurs des capteurs (JSON)');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
+    if(trial.artifact){const link=element('a','Télécharger les valeurs des capteurs (JSON)');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
   }
 
   if(audioPlot){
     frameList.append(element('h3','Audio de récepteur · Morse, RTTY, PSK, AX.25 et POCSAG'));
     frameList.append(element('p','Fréquences audio uniquement. Morse/RTTY : textes candidats sans CRC. AX.25 : structure et CRC vérifiés. POCSAG : BCH/parité vérifiés, sans CRC.','hint'));
     frameList.append(element('p',`Début de l’enregistrement : ${report.analyzed_seconds.toFixed(2)} s analysées (maximum demandé ${report.requested_seconds} s).`,'hint'));
-    if(report.frame_artifact){const link=element('a','Télécharger les trames AX.25 validées');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(report.frame_artifact)}`;link.download=report.frame_artifact;frameList.append(link);}
+    if(report.frame_artifact){const link=element('a','Télécharger les trames AX.25 validées');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+report.frame_artifact)}`;link.download=report.frame_artifact;frameList.append(link);}
     if(report.audio_artifact){
       const player=element('audio');player.id='audio-preview';player.controls=true;player.preload='none';
-      player.src=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(report.audio_artifact)}`;frameList.append(player);
+      player.src=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+report.audio_artifact)}`;frameList.append(player);
     }
     if(!(report.wideband_trials || []).some(t=>t.candidates?.length || t.messages?.length || t.frames?.length))frameList.append(element('p','Aucun contenu décodé dans cet extrait.','hint'));
   }
@@ -290,7 +296,7 @@ function showReport(report, jobId) {
       card.append(element('p',`${candidate.parameters.baud} bauds · écart ${candidate.parameters.shift_hz.toFixed(1)} Hz · ${candidate.evidence.framed_characters} caractères tramés`));
       if(candidate.channel)card.append(element('p',candidate.channel.audio_frequency_hz!==undefined?`Tonalités audio autour de ${formatFrequency(candidate.channel.audio_frequency_hz)}`:`Canal ${(candidate.channel.frequency_hz/1e6).toFixed(6)} MHz`));
       card.append(element('pre',candidate.text,'rtty-text'));
-      if(candidate.text_artifact){const link=element('a','Télécharger le texte RTTY candidat');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(candidate.text_artifact)}`;link.download=candidate.text_artifact;card.append(link);}
+      if(candidate.text_artifact){const link=element('a','Télécharger le texte RTTY candidat');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+candidate.text_artifact)}`;link.download=candidate.text_artifact;card.append(link);}
       frameList.append(card);
     }
   }
@@ -303,7 +309,7 @@ function showReport(report, jobId) {
       card.append(element('h3','CW / Morse · texte candidat, sans CRC'));
       card.append(element('p',`${candidate.parameters.words_per_minute.toFixed(1)} mots/min · ${candidate.channel.audio_frequency_hz!==undefined?formatFrequency(candidate.channel.audio_frequency_hz)+' audio':(candidate.channel.frequency_hz/1e6).toFixed(6)+' MHz'} · ${candidate.evidence.characters} caractères`));
       card.append(element('pre',candidate.text,'cw-text'));
-      if(candidate.text_artifact){const link=element('a','Télécharger le texte Morse candidat');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(candidate.text_artifact)}`;link.download=candidate.text_artifact;card.append(link);}
+      if(candidate.text_artifact){const link=element('a','Télécharger le texte Morse candidat');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+candidate.text_artifact)}`;link.download=candidate.text_artifact;card.append(link);}
       frameList.append(card);
     }
   }
@@ -320,7 +326,7 @@ function showReport(report, jobId) {
       card.append(element('pre',candidate.bits.slice(0,512),'fsk-bits'));
       for(const [label,name] of Object.entries(candidate.artifacts || {})){
         const link=element('a',label==='bits'?'Télécharger les bits':'Télécharger le binaire compacté');
-        link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(name)}`;
+        link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+name)}`;
         link.download=name;card.append(link,document.createTextNode(' '));
       }
       card.append(element('p',`Binaire : premier bit récupéré placé en tête d’octet, ${candidate.packed_padding_bits} bit(s) de remplissage nul à la fin.`,'hint'));
@@ -341,7 +347,7 @@ function showReport(report, jobId) {
       const labels={symbols:'Télécharger les symboles 4-FSK',bits:'Télécharger les bits 4-FSK (convention)',packed:'Télécharger le binaire 4-FSK (convention)'};
       for(const [kind,name] of Object.entries(candidate.artifacts || {})){
         const link=element('a',labels[kind]);
-        link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(name)}`;
+        link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+name)}`;
         link.download=name;card.append(link,document.createTextNode(' '));
       }
       card.append(element('p',`Binaire : premier symbole récupéré en tête d’octet, ${candidate.packed_padding_bits} bit(s) de remplissage nul à la fin.`,'hint'));
@@ -369,15 +375,15 @@ function showReport(report, jobId) {
       } else card.append(element('p','Fonction sans interprétation standard sélectionnée ; bits conservés dans le rapport.','hint pocsag-raw'));
       frameList.append(card);
     }
-    if(trial.artifact){const link=element('a','Télécharger les messages POCSAG (JSON)');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
+    if(trial.artifact){const link=element('a','Télécharger les messages POCSAG (JSON)');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
   }
   if(ax25Frames.length)frameList.append(element('h3',`AX.25${ax25Frames.some(f=>f.fields.frame_type!=='UI')?'':' UI'} · ${ax25Frames.length} trame(s) CRC valide(s)`,'frames-title'));
   for(const trial of ax25Trials){
     if(trial.frontend==='bpsk_g3ruh' && !trial.frames.length && trial.stream_diagnostics?.some(d=>d.flags_observed))frameList.append(element('p','BPSK : fanions HDLC observés, aucune trame AX.25 UI validée. Le rapport détaille les rejets ; aucune charge utile binaire n’est déduite.','hint psk-ax25-unresolved'));
-    if(trial.frontend==='bpsk_g3ruh' && trial.artifact){const link=element('a','Télécharger le rapport AX.25 BPSK');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
-    if(trial.decoder==='afsk1200_fm_ax25' && trial.artifact){const link=element('a','Télécharger les trames AX.25 reçues en FM (JSON)');link.className='fm-ax25-download';link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
+    if(trial.frontend==='bpsk_g3ruh' && trial.artifact){const link=element('a','Télécharger le rapport AX.25 BPSK');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
+    if(trial.decoder==='afsk1200_fm_ax25' && trial.artifact){const link=element('a','Télécharger les trames AX.25 reçues en FM (JSON)');link.className='fm-ax25-download';link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
     if(trial.kiss_artifact){
-      const link=element('a','Télécharger les trames AX.25 au format KISS');link.className='ax25-kiss-download';link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(trial.kiss_artifact)}`;link.download=trial.kiss_artifact;frameList.append(link);
+      const link=element('a','Télécharger les trames AX.25 au format KISS');link.className='ax25-kiss-download';link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+trial.kiss_artifact)}`;link.download=trial.kiss_artifact;frameList.append(link);
       frameList.append(element('p','KISS : port de réception virtuel 0, trames sans FCS ni horodatage. Les fréquences, temps, FCS reçus et hypothèses de contenu restent dans le JSON.','hint ax25-kiss-scope'));
     }
     if(trial.budget_exhausted)frameList.append(element('p',`Recherche AX.25 partielle : limite de trames ou de ${trial.flag_pair_budget} paires de fanions atteinte.`,'hint'));
@@ -389,8 +395,8 @@ function showReport(report, jobId) {
     card.append(element('p',`${address(f.source)} → ${address(f.destination)} · ${frame.line_coding} · CRC-16/X-25 valide`,'ax25-addresses'));
     if(frame.frontend==='bpsk_g3ruh')card.append(element('p','BPSK · G3RUH · CRC vérifié par IQScope','psk-ax25-integrity'));
     if(frame.frontend==='fm_iq_afsk1200')card.append(element('p','FM → AFSK1200 · CRC vérifié par IQScope','fm-ax25-integrity'));
-    if(frame.wire_artifact){const link=element('a','Télécharger la trame AX.25 complète (binaire)');link.className='ax25-wire-download';link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(frame.wire_artifact)}`;link.download=frame.wire_artifact;card.append(link);}
-    if(frame.payload_artifact){const link=element('a',frame.frontend==='fm_iq_afsk1200'?'Télécharger la charge utile AX.25 FM':'Télécharger la charge utile AX.25 BPSK');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(frame.payload_artifact)}`;link.download=frame.payload_artifact;card.append(link);}
+    if(frame.wire_artifact){const link=element('a','Télécharger la trame AX.25 complète (binaire)');link.className='ax25-wire-download';link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+frame.wire_artifact)}`;link.download=frame.wire_artifact;card.append(link);}
+    if(frame.payload_artifact){const link=element('a',frame.frontend==='fm_iq_afsk1200'?'Télécharger la charge utile AX.25 FM':'Télécharger la charge utile AX.25 BPSK');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+frame.payload_artifact)}`;link.download=frame.payload_artifact;card.append(link);}
     if(f.via.length)card.append(element('p',`Via : ${f.via.map(address).join(', ')}`));
     const channel=frame.channel;
     const channelLabel=channel?(channel.audio_frequency_hz!==undefined?' · '+formatFrequency(channel.audio_frequency_hz)+' audio':channel.rf_center_known===false?' · décalage '+formatFrequency(channel.offset_hz)+' (centre RF non renseigné)':Number.isFinite(channel.frequency_hz)?' · '+formatFrequency(channel.frequency_hz):Number.isFinite(channel.offset_hz)?' · offset '+formatFrequency(channel.offset_hz):''):'';
@@ -475,7 +481,7 @@ function showReport(report, jobId) {
       card.append(element('p','Structure compatible OFDM ; protocole inconnu. Aucun bit ni contenu extrait.','hint'));
       frameList.append(card);
     }
-    if(report.ofdm_artifact){const link=element('a','Télécharger les indices de préfixe cyclique');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(report.ofdm_artifact)}`;link.download=report.ofdm_artifact;frameList.append(link);}
+    if(report.ofdm_artifact){const link=element('a','Télécharger les indices de préfixe cyclique');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+report.ofdm_artifact)}`;link.download=report.ofdm_artifact;frameList.append(link);}
   }
   for(const trial of report.wideband_trials || []){
     if(trial.decoder!=='lora_preamble')continue;
@@ -513,10 +519,10 @@ function showReport(report, jobId) {
       if(frame.text!==undefined)card.append(element('pre',frame.text,'lora-payload-text'));
       else card.append(element('code',frame.payload_hex));
       card.append(element('p','CRC cohérent ; identité de l’émetteur et interprétation LoRaWAN non établies.','hint'));
-      if(frame.artifact){const link=element('a','Télécharger la charge utile LoRa');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(frame.artifact)}`;link.download=frame.artifact;card.append(link);}
+      if(frame.artifact){const link=element('a','Télécharger la charge utile LoRa');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+frame.artifact)}`;link.download=frame.artifact;card.append(link);}
       frameList.append(card);
     }
-    if(report.lora_artifact){const link=element('a','Télécharger le rapport LoRa');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(report.lora_artifact)}`;link.download=report.lora_artifact;frameList.append(link);}
+    if(report.lora_artifact){const link=element('a','Télécharger le rapport LoRa');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+report.lora_artifact)}`;link.download=report.lora_artifact;frameList.append(link);}
   }
   for(const frame of frames) {
     const card=element('div',undefined,'frame');card.append(element('code',frame.hex));
@@ -583,10 +589,37 @@ async function followJob(job) {
   for (;;) {
     await new Promise(resolve=>setTimeout(resolve,450));
     const state=await api(`/api/jobs/${job.id}`,undefined,'GET');
+    if(state.progress)status(`Parcours automatique · ${state.progress.completed_windows}/${state.progress.window_budget} fenêtres terminées · lecture jusqu’à ${state.progress.read_through_seconds.toFixed(3)} s.`,'busy');
     if(state.status==='failed') throw new Error(state.error);
-    if(state.status==='completed') {showReport(state.result,job.id);return state.result;}
+    if(state.status==='completed') {
+      if(state.result.source_kind==='iq_file_scan')await showScan(state.result,job.id);
+      else {activeScan=null;$('scan-results').hidden=true;showReport(state.result,job.id);}
+      return state.result;
+    }
   }
 }
+async function showScan(result,jobId){
+  activeScan={result,jobId};$('scan-results').hidden=false;
+  const labels={source_end_reached:'Fin du fichier atteinte',window_budget_exhausted:'Budget de fenêtres atteint',cancelled:'Parcours arrêté',failed_window:'Erreur sur une fenêtre'};
+  const c=result.coverage;
+  $('scan-summary').textContent=`${labels[result.status] || result.status} · ${result.windows.length}/${result.window_budget} fenêtres · plage IQ lue [${c.start_sample}, ${c.end_sample}) · ${c.unvisited_tail_samples} échantillons non parcourus en fin de source.${result.error?' '+result.error:''}`;
+  $('scan-download').href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent('scan/scan-report.json')}`;$('scan-download').download='scan-report.json';
+  const list=$('scan-window-list');list.replaceChildren();
+  async function inspect(window){
+    const report=await api(`/api/jobs/${jobId}/artifacts/${encodeURIComponent('scan/'+window.report_artifact)}`,undefined,'GET');
+    showReport(report,jobId,'scan/'+window.artifact_prefix);
+  }
+  for(const window of result.windows){
+    const row=element('div',undefined,'frame scan-window-row');
+    row.append(element('p',`Fenêtre ${window.index} · ${window.start_seconds.toFixed(6)}–${window.end_seconds.toFixed(6)} s · ${window.crc_frame_observations} observation(s) CRC`));
+    const button=element('button',`Consulter la fenêtre ${window.index}`,'secondary');button.disabled=busy;
+    button.onclick=async()=>{if(busy)return;setBusy(true);try{await inspect(window);}catch(error){status(error.message,'error');}finally{setBusy(false);}};
+    row.append(button);list.append(row);
+  }
+  if(result.windows.length)await inspect(result.windows[0]);
+  else {$('download').hidden=true;$('analysis-plots').hidden=true;$('signal-list').replaceChildren();$('frame-list').replaceChildren();$('metric-frames').textContent='0';$('metric-signals').textContent='0';$('metric-duration').textContent='0 s';$('file-window-info').hidden=true;}
+}
+function invalidateFileScan(){activeScan=null;$('scan-results').hidden=true;clearFileWindow();}
 function refreshFileNavigation(){
   $('file-previous').disabled=busy || !currentFileWindow || currentFileWindow.previous_start_sample===null;
   $('file-next').disabled=busy || !currentFileWindow || currentFileWindow.next_start_sample===null;
@@ -610,18 +643,24 @@ async function runFile(isDemo, sampleStart=null) {
       if(meta) {if(meta.size>1024*1024) throw new Error('Métadonnées trop volumineuses.');metadata=JSON.parse(await meta.text());}
       const uploaded=await api('/api/uploads',file);uploadedId=uploaded.upload_id;
       body={upload_id:uploaded.upload_id,input_kind:audioInput?'audio':'iq',metadata,sample_rate:Number($('file-rate').value),seconds:Number($('seconds').value),experimental_lora:!audioInput && $('experimental-lora').checked,
+            scan:!audioInput && $('auto-scan').checked,max_windows:!audioInput && $('auto-scan').checked?Number($('scan-limit').value):8,
             start_seconds:audioInput || sampleStart!==null?0:Number($('file-start').value),start_sample:audioInput?null:sampleStart};
     }
     status('Détection des émissions et essais de décodage…','busy');
-    const job=await api('/api/analyses',body);const result=await followJob(job);
+    const job=await api('/api/analyses',body);
+    if(body.scan){activeScanJob=job.id;$('cancel-scan').hidden=false;$('cancel-scan').disabled=false;$('cancel-scan').textContent='Arrêter après la fenêtre en cours';}
+    const result=await followJob(job);
+    if(result.source_kind==='iq_file_scan')$('file-start').value=String(result.start_sample/result.sample_rate);
     currentFileWindow=!isDemo && !audioPlot?result.source_window:null;
     if(currentFileWindow){const w=currentFileWindow;$('file-start').value=String(w.start_seconds);$('file-window-range').textContent=`${w.start_seconds.toFixed(6)}–${w.end_seconds.toFixed(6)} s sur ${w.total_seconds.toFixed(6)} s · ${w.remaining_samples} échantillons restants.`;}
     else clearFileWindow();
     $('source-badge').textContent=isDemo?'Démo synthétique':audioPlot?'Audio · fréquences audio':'Fichier IQ';
-    status(audioPlot?'Analyse terminée. Audio et résultats Morse/RTTY/PSK/AX.25 disponibles.':'Analyse terminée. Sélectionnez une émission pour écouter les candidats audio.','success');
+    if(result.source_kind==='iq_file_scan')status(result.status==='failed_window'?'Parcours interrompu sur erreur. Les fenêtres terminées sont conservées.':result.status==='cancelled'?'Parcours arrêté. Les fenêtres terminées sont conservées.':'Parcours terminé. Consultez le bilan et les fenêtres analysées.',result.status==='failed_window'?'error':'success');
+    else status(audioPlot?'Analyse terminée. Audio et résultats Morse/RTTY/PSK/AX.25 disponibles.':'Analyse terminée. Sélectionnez une émission pour écouter les candidats audio.','success');
   } catch(error) {status(error.message,'error');}
   finally {
     if(uploadedId){try{await api(`/api/uploads/${encodeURIComponent(uploadedId)}`,undefined,'DELETE');}catch{/* A still-running job keeps its source until it finishes. */}}
+    activeScanJob=null;$('cancel-scan').hidden=true;
     setBusy(false);
   }
 }
@@ -634,6 +673,7 @@ async function switchTab(mode) {
   $('file-panel').hidden=mode!=='file';$('live-panel').hidden=!live;$('archive-panel').hidden=!archive;
   for(const id of ['analysis-plots','analysis-metrics','analysis-results'])$(id).hidden=archive;
   $('archive-results').hidden=!archive;
+  $('scan-results').hidden=mode!=='file' || !activeScan;
 }
 $('tab-file').onclick=()=>switchTab('file');$('tab-live').onclick=()=>switchTab('live');$('tab-archive').onclick=()=>switchTab('archive');
 $('open-archive').onclick=async()=>{
@@ -657,10 +697,11 @@ $('open-archive').onclick=async()=>{
   finally{setBusy(false);}
 };
 function updateFileInput(){
-  clearFileWindow();$('file-start').value='0';
+  invalidateFileScan();$('file-start').value='0';
   const file=$('iq-file').files[0];
   const audio=$('input-kind').value==='audio';
   $('file-start-field').hidden=audio;$('file-window-controls').hidden=audio;
+  $('file-scan-controls').hidden=audio;
   $('experimental-lora-option').hidden=audio;
   if(audio)$('experimental-lora').checked=false;
   $('filename').textContent=file?.name || (audio?'MP3 · WAV audio':'SigMF · WAV IQ · .sdriq · .cf32');
@@ -674,7 +715,9 @@ function updateFileInput(){
   if(audio)$('seconds').value=String(Math.max(1,Math.min(20,Number($('seconds').value))));
 }
 $('iq-file').onchange=updateFileInput;$('input-kind').onchange=updateFileInput;
-for(const id of ['meta-file','file-rate','seconds','file-start'])$(id).addEventListener(id==='meta-file'?'change':'input',clearFileWindow);
+for(const id of ['meta-file','file-rate','seconds','file-start'])$(id).addEventListener(id==='meta-file'?'change':'input',invalidateFileScan);
+$('scan-resume').onclick=()=>{if(activeScan && activeScan.result.next_start_sample!==null){$('auto-scan').checked=true;runFile(false,activeScan.result.next_start_sample);}};
+$('cancel-scan').onclick=async()=>{if(!activeScanJob)return;try{await api(`/api/jobs/${activeScanJob}/cancel`,{});$('cancel-scan').disabled=true;$('cancel-scan').textContent='Arrêt demandé après cette fenêtre…';}catch(error){status(error.message,'error');}};
 $('file-previous').onclick=()=>{if(currentFileWindow && currentFileWindow.previous_start_sample!==null)runFile(false,currentFileWindow.previous_start_sample);};
 $('file-next').onclick=()=>{if(currentFileWindow && currentFileWindow.next_start_sample!==null)runFile(false,currentFileWindow.next_start_sample);};
 $('analyze').onclick=()=>runFile(false);$('demo').onclick=()=>runFile(true);

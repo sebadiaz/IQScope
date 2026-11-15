@@ -46,6 +46,12 @@ def _layout(path, sample_rate):
                 center_frequency_hz=center,block_align=width,total_samples=size//width)
 
 
+def iq_source_info(path, sample_rate=None):
+    layout=_layout(path,sample_rate)
+    return dict(sample_rate=layout['sample_rate'],center_frequency_hz=layout['center_frequency_hz'],
+                total_samples=layout['total_samples'],source_format=layout['kind'])
+
+
 def read_iq_window(path, sample_rate=None, seconds=10, start_seconds=0, start_sample=None):
     layout=_layout(path,sample_rate)
     fs,center=layout['sample_rate'],layout['center_frequency_hz']

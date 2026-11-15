@@ -59,8 +59,8 @@ indépendant de paquets fourni par l'auteur.
 
 Cette navigation est manuelle et les fenêtres suivantes sont adjacentes,
 sans recouvrement automatique : une trame coupée peut nécessiter un autre
-point de départ. Il n'y a pas de reconstruction d'état entre fenêtres ni de
-balayage automatique intégral des fichiers longs. Les limites propres aux
+point de départ. Il n'y a pas de reconstruction d'état entre fenêtres. Un
+[parcours automatique borné](IQ_FILE_SCAN.md) est disponible séparément. Les limites propres aux
 décodeurs restent applicables à chaque fenêtre. Le CLI peut lire un grand
 fichier local ; l'interface garde sa limite d'import de 128 Mio et réimporte
 le fichier à chaque analyse. Le seek DSP ne supprime pas ce transfert initial.

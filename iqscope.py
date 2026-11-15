@@ -253,6 +253,15 @@ def main():
     scan.add_argument('--seconds', type=float, default=10)
     scan.add_argument('--start-seconds',type=float,default=0,help='Seek to this source time before analyzing the bounded IQ window')
     scan.add_argument('--threshold-db', type=float, default=9)
+    batch=sub.add_parser('scan',help='Scan bounded overlapping IQ file windows')
+    batch.add_argument('file')
+    batch.add_argument('--out',default='scan-results')
+    batch.add_argument('--sample-rate',type=float)
+    batch.add_argument('--seconds',type=float,default=10)
+    batch.add_argument('--start-seconds',type=float,default=0)
+    batch.add_argument('--start-sample',type=int,help='Resume at the exact next_start_sample from a scan report')
+    batch.add_argument('--max-windows',type=int,default=8)
+    batch.add_argument('--experimental-lora',action='store_true')
     convert = sub.add_parser('convert', help='Export a bounded IQ excerpt as SigMF')
     convert.add_argument('file')
     convert.add_argument('--out', required=True, help='Output prefix, without extension')
@@ -274,6 +283,14 @@ def main():
     make.add_argument('--out', default='demo')
     args = parser.parse_args()
     try:
+        if args.command == 'scan':
+            from iqscope_scan import scan_file
+            result=scan_file(args.file,args.out,sample_rate=args.sample_rate,seconds=args.seconds,
+                             start_seconds=args.start_seconds,start_sample=args.start_sample,max_windows=args.max_windows,
+                             experimental_lora=args.experimental_lora)
+            print(json.dumps(result,indent=2))
+            if result['status']=='failed_window':parser.exit(2,'Scan stopped after a failed window; completed reports were preserved.\n')
+            return
         if args.command == 'dataset-annotations':
             from iqscope_datasets import fpv_annotations
             print(json.dumps(fpv_annotations(args.file), indent=2))

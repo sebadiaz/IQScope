@@ -23,6 +23,7 @@ from iqscope_web.ax25_archive import MAX_ARCHIVE_BYTES, open_ax25_archive
 from iqscope_decoders import capabilities
 from iqscope_audio import analyze_audio
 from iqscope_recordings import recordings, import_vksdr
+from iqscope_scan import scan_file
 from .live import LiveReceiver, live_analysis_schedule
 
 MAX_UPLOAD = 128 * 1024 * 1024
@@ -38,6 +39,8 @@ class AnalyzeRequest(BaseModel):
     demo: bool = False
     input_kind: Literal['iq','audio'] = 'iq'
     experimental_lora: bool = False
+    scan: bool = False
+    max_windows: int = Field(default=8,ge=1,le=32,strict=True)
 
 
 class LiveAnalysisRequest(BaseModel):
@@ -55,6 +58,7 @@ class AnalysisService:
         self.root = Path(root)
         self.root.mkdir(parents=True, exist_ok=True)
         self.jobs = {}
+        self.cancellations = {}
         self.uploads = {}
         self.upload_sizes = {}
         self.lock = threading.Lock()
@@ -64,7 +68,7 @@ class AnalysisService:
         self.live_history=LiveLoRaHistory(self.receiver.session_id)
         self.live_ax25_history=LiveAX25History(self.receiver.session_id)
 
-    def submit(self, function):
+    def submit(self, function, cancel_event=None):
         with self.lock:
             if any(job['status'] in ('queued', 'running') for job in self.jobs.values()):
                 raise HTTPException(409, 'An analysis is already running')
@@ -72,9 +76,11 @@ class AnalysisService:
                 import shutil
                 oldest = next(iter(self.jobs))
                 del self.jobs[oldest]
+                self.cancellations.pop(oldest,None)
                 shutil.rmtree(self.root / oldest, ignore_errors=True)
             job_id = uuid.uuid4().hex
             self.jobs[job_id] = {'id': job_id, 'status': 'queued', 'result': None, 'error': None}
+            if cancel_event is not None:self.cancellations[job_id]=cancel_event
         out = self.root / job_id
         out.mkdir()
 
@@ -92,6 +98,8 @@ class AnalysisService:
         return {'id': job_id, 'status': 'queued'}
 
     def close(self):
+        with self.lock:events=list(self.cancellations.values())
+        for event in events:event.set()
         self.receiver.stop()
         self.pool.shutdown(wait=True, cancel_futures=True)
 
@@ -200,6 +208,8 @@ def create_app(root=None):
         if body.experimental_lora and body.input_kind=='audio':
             raise HTTPException(400,'Experimental LoRa requires IQ input')
         if body.demo:
+            if body.scan:
+                raise HTTPException(400,'Automatic file scanning requires an IQ source')
             if body.start_seconds or body.start_sample is not None:
                 raise HTTPException(400,'The generated demonstration starts at sample zero')
             return service.submit(lambda out: analyze(demo(out / 'source'), out,experimental_lora=body.experimental_lora))
@@ -207,6 +217,8 @@ def create_app(root=None):
         if source is None:
             raise HTTPException(404, 'Upload not found')
         if body.input_kind=='audio':
+            if body.scan:
+                raise HTTPException(400,'Automatic file scanning supports IQ input only')
             if body.start_seconds or body.start_sample is not None:
                 raise HTTPException(400,'Window seeking is supported for IQ inputs only')
             if source.suffix not in ('.mp3','.wav') or body.metadata is not None:
@@ -232,6 +244,8 @@ def create_app(root=None):
             except (KeyError, ValueError, TypeError):
                 raise HTTPException(400, 'SigMF sample rate must be between 1 kS/s and 20 MS/s')
 
+        cancel_event=threading.Event() if body.scan else None
+
         def process(out):
             # Per-job metadata avoids races if the same upload is analyzed twice.
             local = out / ('input'+source.suffix)
@@ -239,9 +253,16 @@ def create_app(root=None):
             os.link(source, local)
             if metadata is not None:
                 local.with_suffix('.sigmf-meta').write_text(json.dumps(metadata))
+            if body.scan:
+                def progress(value):
+                    with service.lock:service.jobs[out.name]['progress']=value
+                return scan_file(local,out/'scan',sample_rate=body.sample_rate,seconds=body.seconds,
+                    start_seconds=body.start_seconds,start_sample=body.start_sample,
+                    max_windows=body.max_windows,experimental_lora=body.experimental_lora,
+                    cancel_event=cancel_event,on_progress=progress)
             return analyze(local, out, body.sample_rate, body.seconds,experimental_lora=body.experimental_lora,
                            start_seconds=body.start_seconds,start_sample=body.start_sample)
-        return service.submit(process)
+        return service.submit(process,cancel_event=cancel_event)
 
     @app.get('/api/jobs/{job_id}')
     def get_job(job_id: str):
@@ -251,14 +272,26 @@ def create_app(root=None):
                 raise HTTPException(404, 'Job not found')
             return dict(job)
 
-    @app.get('/api/jobs/{job_id}/artifacts/{name}')
+    @app.post('/api/jobs/{job_id}/cancel')
+    def cancel_job(job_id: str):
+        with service.lock:
+            if job_id not in service.jobs:raise HTTPException(404,'Job not found')
+            event=service.cancellations.get(job_id)
+            if event is None:raise HTTPException(400,'This job is not a cancellable file scan')
+            active=service.jobs[job_id]['status'] in ('queued','running')
+            if active:event.set()
+            return dict(cancel_requested=active,boundary='after the current window')
+
+    @app.get('/api/jobs/{job_id}/artifacts/{name:path}')
     def artifact(job_id: str, name: str):
-        if job_id not in service.jobs or Path(name).name != name or not name.endswith(('.wav', '.json', '.csv', '.txt', '.bin', '.kiss', '.sigmf-data', '.sigmf-meta')):
+        if (job_id not in service.jobs or '\\' in name or any(p in ('','.','..') for p in name.split('/'))
+                or not name.endswith(('.wav', '.json', '.csv', '.txt', '.bin', '.kiss', '.sigmf-data', '.sigmf-meta'))):
             raise HTTPException(404, 'Artifact not found')
-        path = service.root / job_id / name
-        if not path.is_file():
+        root=(service.root/job_id).resolve()
+        path=(root/name).resolve()
+        if not path.is_relative_to(root) or not path.is_file():
             raise HTTPException(404, 'Artifact not found')
-        return FileResponse(path, filename=name)
+        return FileResponse(path, filename=path.name)
 
     @app.post('/api/live/start')
     def live_start(body: LiveRequest):

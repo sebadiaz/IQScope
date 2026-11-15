@@ -530,6 +530,30 @@ def main():
                     expect(page.locator('#file-start')).to_have_value('0')
                     expect(page.locator('#file-previous')).to_be_disabled()
                     page.screenshot(path='browser-artifacts/iq-file-windows.png',full_page=True)
+                    page.locator('#auto-scan').check()
+                    page.locator('#scan-limit').fill('1')
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('.scan-window-row')).to_have_count(1,timeout=60000)
+                    expect(page.locator('#scan-summary')).to_contain_text('Budget de fenêtres atteint')
+                    expect(page.locator('#scan-resume')).to_be_enabled(timeout=30000)
+                    response=page.request.get(urljoin(page.url,page.locator('#scan-download').get_attribute('href')))
+                    assert response.ok
+                    scan=response.json()
+                    assert scan['status']=='window_budget_exhausted' and scan['next_start_sample']==195310
+                    assert scan['coverage']['end_sample']==390620
+                    page.get_by_role('button',name='Reprendre le parcours',exact=True).click()
+                    expect(page.locator('#file-window-info')).to_contain_text('[195310, 585930)',timeout=60000)
+                    expect(page.locator('#scan-resume')).to_be_enabled(timeout=30000)
+                    response=page.request.get(urljoin(page.url,page.locator('#download').get_attribute('href')))
+                    scan_window=response.json()
+                    assert scan_window['source_sample_start']==195310
+                    selected_trial=next(t for t in scan_window['wideband_trials'] if t['decoder']=='afsk1200_fm_ax25')
+                    assert set(reference['frame_hex'][3:]).issubset({f['hex'] for f in selected_trial['frames']})
+                    response=page.request.get(urljoin(page.url,page.locator('.fm-ax25-download').get_attribute('href')))
+                    assert response.ok and response.json()==selected_trial
+                    page.screenshot(path='browser-artifacts/iq-file-scan.png',full_page=True)
+                    page.locator('#auto-scan').uncheck()
+                    page.locator('#scan-limit').fill('8')
                     page.locator('#seconds').fill(previous_seconds)
                 with tempfile.TemporaryDirectory() as directory:
                     from test_cw import fixture as audio_fixture, TEXT as AUDIO_TEXT

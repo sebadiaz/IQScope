@@ -164,6 +164,52 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(last['status'],'failed')
         self.assertIn('remaining',last['error'])
 
+    async def test_automatic_scan_exposes_nested_reports_and_rejects_escaping_artifacts(self):
+        data=np.zeros(12000,dtype='<c8').tobytes()
+        identifier=(await self.client.post('/api/uploads',content=data,headers=HEADERS)).json()['upload_id']
+        response=await self.client.post('/api/analyses',json={'upload_id':identifier,'sample_rate':24000,'seconds':.1,'scan':True,'max_windows':2},headers=HEADERS)
+        job=await self.wait_job(response.json()['id'],attempts=1000)
+        self.assertEqual(job['status'],'completed',job.get('error'))
+        result=job['result'];self.assertEqual(result['status'],'window_budget_exhausted')
+        self.assertEqual(len(result['windows']),2)
+        artifact=await self.client.get(f"/api/jobs/{job['id']}/artifacts/scan/window-002/report.json")
+        self.assertEqual(artifact.status_code,200)
+        self.assertEqual(artifact.json()['source_sample_start'],1200)
+        encoded=await self.client.get(f"/api/jobs/{job['id']}/artifacts/scan%2Fwindow-002%2Freport.json")
+        self.assertEqual(encoded.status_code,200)
+        self.assertEqual(encoded.json(),artifact.json())
+        summary=await self.client.get(f"/api/jobs/{job['id']}/artifacts/scan/scan-report.json")
+        self.assertEqual(summary.json(),result)
+        outside=Path(self.temp.name)/'outside.json';outside.write_text('{}')
+        (Path(self.temp.name)/job['id']/'scan'/'escape.json').symlink_to(outside)
+        for name in ['scan/escape.json','scan/%2e%2e/%2e%2e/outside.json','scan%5c..%5coutside.json']:
+            self.assertEqual((await self.client.get(f"/api/jobs/{job['id']}/artifacts/{name}")).status_code,404)
+
+    async def test_scan_cancellation_endpoint_stops_between_windows(self):
+        import threading
+        from iqscope_scan import scan_file as actual_scan
+        from test_scan import lightweight_analyzer
+        entered=threading.Event();release=threading.Event()
+        def slow_analyzer(*args,**kwargs):
+            entered.set();release.wait(timeout=10)
+            return lightweight_analyzer(*args,**kwargs)
+        def controlled(*args,**kwargs):return actual_scan(*args,**kwargs,analyzer=slow_analyzer)
+        identifier=(await self.client.post('/api/uploads',content=np.zeros(12000,dtype='<c8').tobytes(),headers=HEADERS)).json()['upload_id']
+        with patch('iqscope_web.server.scan_file',side_effect=controlled):
+            response=await self.client.post('/api/analyses',json={'upload_id':identifier,'sample_rate':24000,'seconds':.1,'scan':True},headers=HEADERS)
+            job_id=response.json()['id']
+            try:
+                for _ in range(100):
+                    if entered.is_set():break
+                    await asyncio.sleep(.01)
+                self.assertTrue(entered.is_set())
+                cancelled=await self.client.post(f'/api/jobs/{job_id}/cancel',headers=HEADERS)
+                self.assertTrue(cancelled.json()['cancel_requested'])
+            finally:release.set()
+            job=await self.wait_job(job_id)
+        self.assertEqual(job['result']['status'],'cancelled')
+        self.assertEqual(len(job['result']['windows']),1)
+
     async def test_unsupported_seek_modes_and_noninteger_sample_offsets_are_rejected(self):
         response=await self.client.post('/api/analyses',json={'demo':True,'start_seconds':1},headers=HEADERS)
         self.assertEqual(response.status_code,400)
