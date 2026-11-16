@@ -55,7 +55,16 @@
 <div class="waterfall-wrap"><canvas id="waterfall" height="180" role="img" aria-label="Waterfall des fenêtres spectrales"></canvas><div id="empty-plot"><span>≋</span>Votre signal apparaîtra ici</div></div>
 <div class="plot-footer"><span id="waterfall-label">Waterfall · puissance relative</span><span class="scale">faible <i></i> forte</span></div></section>
 <section class="status" role="status" aria-live="polite"><span id="status-dot" class="dot"></span><span id="status-text">Prêt. Choisissez un fichier ou essayez la démo.</span></section>
-<section id="scan-results" class="panel results" hidden><h2>Parcours automatique du fichier IQ</h2><p id="scan-summary" class="hint"></p><p class="hint">La couverture décrit les IQ lus, sans garantir tous les paquets. Les observations CRC peuvent se répéter entre fenêtres recouvrantes.</p><a id="scan-download">Télécharger le bilan du parcours (JSON)</a><div id="scan-window-list"></div><button id="scan-resume" class="secondary" disabled>Reprendre le parcours</button></section>
+<section id="scan-results" class="panel results" hidden>
+<h2>Parcours automatique du fichier IQ</h2><p id="scan-summary" class="hint"></p>
+<p class="hint">La couverture décrit les IQ lus, sans garantir tous les paquets. Les observations CRC peuvent se répéter entre fenêtres recouvrantes.</p>
+<a id="scan-download">Télécharger le bilan du parcours (JSON)</a>
+<h3>Catalogue des trames à CRC vérifié</h3><p id="scan-event-summary" class="hint"></p>
+<p class="hint">Le regroupement par octets, temps source et canal reste une estimation d’événement. Les autres résultats, dont les candidats audio et les messages sans CRC, restent dans les rapports de fenêtre.</p>
+<a id="scan-events-download">Télécharger le catalogue (JSON)</a>
+<label>Famille de trames<select id="scan-event-family"><option value="">Toutes les familles</option></select></label>
+<div id="scan-event-list"></div><h3>Rapports par fenêtre</h3><div id="scan-window-list"></div>
+<button id="scan-resume" class="secondary" disabled>Reprendre le parcours</button></section>
 <section id="archive-results" class="panel results" hidden><h2>Historique AX.25 chargé</h2><p id="archive-summary" class="hint">Choisissez un historique sauvegardé.</p><p class="hint">Les FCS et champs de liaison sont revérifiés depuis les octets. Temps, fréquences et nombres d’observations restent les déclarations de l’archive ; les IQ d’origine ne sont pas disponibles.</p><a id="archive-json" hidden>Télécharger l’historique relu (JSON)</a> <a id="archive-kiss" hidden>Télécharger l’historique relu (KISS)</a><div id="archive-list"></div></section>
 <div id="analysis-metrics" class="metrics"><div class="panel"><span>Émissions détectées</span><strong id="metric-signals">—</strong></div><div class="panel"><span>Paquets CRC valides</span><strong id="metric-frames">—</strong></div><div class="panel"><span>Durée analysée</span><strong id="metric-duration">—</strong></div></div>
 <section id="analysis-results" class="panel results"><div class="panel-heading"><h2>Résultats de l’analyse</h2><a id="download" hidden>Télécharger le rapport ↓</a></div><p class="hint result-note">Les sorties audio sont des interprétations candidates. Un CRC valide vérifie l’intégrité d’un paquet, pas l’authenticité de son émetteur.</p><p id="file-window-info" class="hint" hidden></p><div id="signal-list"><div class="empty-results">Aucun résultat pour le moment.</div></div><div id="frame-list"></div></section>

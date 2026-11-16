@@ -95,6 +95,8 @@ jobs:
             corpus-cache/aprs-iq/tail-results/fm-afsk-frames.json
             corpus-cache/aprs-iq/tail-results/fm-ax25-frames.kiss
             corpus-cache/iq-file-scan/scan-report.json
+            corpus-cache/iq-file-scan/scan-events.json
+            corpus-cache/iq-file-scan/events/*.bin
             corpus-cache/iq-file-scan/provenance.json
             corpus-cache/iq-file-scan/window-*/report.json
             corpus-cache/iq-file-scan/window-*/fm-afsk-frames.json

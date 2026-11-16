@@ -56,13 +56,16 @@ timing are preserved in the reports. See [IQ file windows](docs/IQ_FILE_WINDOWS.
 For automatic traversal, enable **Parcourir automatiquement le fichier IQ**
 or run `iqscope scan recording.wav --seconds 10 --max-windows 8 --out scan-results`.
 The bounded pass uses overlapping windows, reports the IQ range actually read,
-and preserves per-window reports and exports. It can stop between windows and
-resume in a new pass; CRC observations are not deduplicated across windows.
+and preserves per-window reports and exports. The UI can stop between windows;
+both UI and CLI can resume in a new pass. A chronological CRC-rechecked catalogue
+groups estimated ADS-B, AX.25 and supported LoRa PHY events across overlaps,
+with source-window references, family filters and exact byte downloads. Grouping
+is heuristic; it does not establish a count of unique physical packets.
 See [automatic IQ file traversal](docs/IQ_FILE_SCAN.md).
 
 The last 32 analysis jobs are retained, then older completed jobs are removed.
 Uploaded sources and derived files are temporary and removed on normal server
-shutdown. Download results before closing the server; there is no durable catalog.
+shutdown. Download results before closing the server; there is no durable server storage.
 
 ### SDRangel example recordings
 

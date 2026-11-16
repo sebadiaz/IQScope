@@ -6,6 +6,7 @@ from pathlib import Path
 
 from iqscope_formats import MAX_SAMPLES
 from iqscope_iq_windows import iq_source_info
+from iqscope_scan_events import CRC_DECODERS,ScanEventCatalogue
 
 
 def plan_windows(total, start, width, limit):
@@ -42,6 +43,7 @@ def scan_file(path,out,sample_rate=None,seconds=10,start_seconds=0,start_sample=
     if out.exists() and any(out.iterdir()):
         raise ValueError('Choose an empty scan output directory')
     out.mkdir(parents=True,exist_ok=True)
+    catalogue=ScanEventCatalogue(fs,info['center_frequency_hz'])
     result=dict(schema_version='0.1',source_kind='iq_file_scan',source=str(path),
         sample_rate=fs,center_frequency_hz=info['center_frequency_hz'],total_samples=total,
         start_sample=start,window_sample_limit=width,step_samples=width//2,
@@ -52,6 +54,11 @@ def scan_file(path,out,sample_rate=None,seconds=10,start_seconds=0,start_sample=
                      'No cross-window DSP, connection state or application reassembly.'])
 
     def checkpoint():
+        result['event_catalogue']=catalogue.snapshot()
+        result['event_catalogue']['source']=str(path)
+        result['event_catalogue']['total_samples']=total
+        result['event_catalogue']['report_artifact']='scan-events.json'
+        catalogue.write(out,result['event_catalogue'])
         end=result['windows'][-1]['end_sample'] if result['windows'] else start
         result['coverage']=dict(start_sample=start,end_sample=end,read_samples=end-start,
             unvisited_prefix_samples=start,unvisited_tail_samples=total-end,
@@ -77,8 +84,8 @@ def scan_file(path,out,sample_rate=None,seconds=10,start_seconds=0,start_sample=
         except (ValueError,OSError,KeyError) as error:
             result['status']='failed_window';result['error']=str(error)
             result['next_start_sample']=position;break
-        crc_decoders={'adsb_1090es','ax25_ui','afsk1200_fm_ax25','afsk1200_ax25','lora_preamble'}
-        observations=sum(len(t.get('frames',[])) for t in report['wideband_trials'] if t['decoder'] in crc_decoders)
+        catalogue.observe(report,index,directory)
+        observations=sum(len(t.get('frames',[])) for t in report['wideband_trials'] if t['decoder'] in CRC_DECODERS)
         limits=[dict(decoder=t['decoder'],budget_exhausted=bool(t.get('budget_exhausted')),
                      duration_limited=bool(t.get('duration_limited')))
                 for t in report['wideband_trials'] if t.get('budget_exhausted') or t.get('duration_limited')]

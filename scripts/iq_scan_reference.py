@@ -35,9 +35,28 @@ def main():
             received.add(frame['hex'])
     if counts!=[3,5,2] or received!=set(EXPECTED_HEX):
         raise AssertionError('Pinned IQ scan frame regression changed')
+    catalogue=result['event_catalogue']
+    if ((catalogue['event_count'],catalogue['accepted_observations'],catalogue['merged_observations'])!=(5,10,5)
+            or catalogue['rejected_observations'] or catalogue['deferred_observations']
+            or {e['hex'] for e in catalogue['events']}!=set(EXPECTED_HEX)):
+        raise AssertionError('Pinned IQ event grouping changed')
+    if json.loads((args.out/catalogue['report_artifact']).read_text())!=catalogue:
+        raise AssertionError('Standalone catalogue differs from checkpoint')
+    for event in catalogue['events']:
+        if event['observation_count']!=2 or (args.out/event['binary_artifact']).read_bytes()!=bytes.fromhex(event['hex']):
+            raise AssertionError('Event observations or received bytes were lost')
+        if event['fields']['pid'] is not None or event['fields']['payload_hex']:
+            raise AssertionError('Catalogue selected ambiguous AX.25 application content')
+        for observation in event['observations']:
+            source=json.loads((args.out/observation['report_artifact']).read_text())
+            frame=source['wideband_trials'][observation['trial_index']]['frames'][observation['frame_index']]
+            expected=source['source_window']['start_sample']+round(frame['time_seconds']*source['sample_rate'])
+            if frame['hex']!=event['hex'] or observation['source_sample_estimate']!=expected:
+                raise AssertionError('Event provenance or source clock changed')
     provenance['scope']='Original-IQ development regression: 3/5/2 overlapping observations, five distinct known frame byte strings; not an independent total or exhaustive decoder coverage.'
     (args.out/'provenance.json').write_text(json.dumps(provenance,indent=2))
     print(json.dumps(dict(windows=3,frame_observations=counts,distinct_frame_bytes=5,
+                         grouped_event_estimates=5,merged_observations=5,
                          whole_iq_source_read=True,exhaustive_packet_recovery=False)))
 
 

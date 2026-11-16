@@ -24,7 +24,7 @@ function setBusy(value) {
   for (const id of ['analyze','demo','tab-file','tab-live','tab-archive','open-archive','archive-file','input-kind','experimental-lora','live-experimental-lora','iq-file','seconds','file-start','auto-scan','scan-limit']) $(id).disabled = value;
   const embedded=$('input-kind').value==='audio' || /\.(wav|sdriq)$/i.test($('iq-file').files[0]?.name || '');
   $('meta-file').disabled=value || embedded;$('file-rate').disabled=value || embedded;
-  for(const button of $('scan-window-list').querySelectorAll('button'))button.disabled=value;
+  for(const control of $('scan-results').querySelectorAll('button,select'))control.disabled=value;
   $('scan-resume').disabled=value || !activeScan || activeScan.result.next_start_sample===null;
   refreshFileNavigation();
 }
@@ -609,6 +609,7 @@ async function showScan(result,jobId){
     const report=await api(`/api/jobs/${jobId}/artifacts/${encodeURIComponent('scan/'+window.report_artifact)}`,undefined,'GET');
     showReport(report,jobId,'scan/'+window.artifact_prefix);
   }
+  renderScanCatalogue(result,jobId,inspect);
   for(const window of result.windows){
     const row=element('div',undefined,'frame scan-window-row');
     row.append(element('p',`Fenêtre ${window.index} · ${window.start_seconds.toFixed(6)}–${window.end_seconds.toFixed(6)} s · ${window.crc_frame_observations} observation(s) CRC`));
@@ -618,6 +619,56 @@ async function showScan(result,jobId){
   }
   if(result.windows.length)await inspect(result.windows[0]);
   else {$('download').hidden=true;$('analysis-plots').hidden=true;$('signal-list').replaceChildren();$('frame-list').replaceChildren();$('metric-frames').textContent='0';$('metric-signals').textContent='0';$('metric-duration').textContent='0 s';$('file-window-info').hidden=true;}
+}
+function renderScanCatalogue(result,jobId,inspect){
+  const catalogue=result.event_catalogue;
+  const list=$('scan-event-list'),filter=$('scan-event-family');list.replaceChildren();filter.replaceChildren();
+  const all=element('option','Toutes les familles');all.value='';filter.append(all);
+  $('scan-events-download').hidden=!catalogue;
+  if(!catalogue){$('scan-event-summary').textContent='Catalogue absent de ce bilan.';return;}
+  $('scan-events-download').href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent('scan/'+catalogue.report_artifact)}`;
+  $('scan-events-download').download='scan-events.json';
+  $('scan-event-summary').textContent=`${catalogue.event_count} événement(s) estimé(s) · ${catalogue.accepted_observations} observation(s) retenue(s) · ${catalogue.merged_observations} regroupement(s) · ${catalogue.deferred_observations} observation(s) hors budget · ${catalogue.deferred_references} référence(s) omise(s) · ${catalogue.rejected_observations} observation(s) refusée(s).`;
+  for(const family of [...new Set(catalogue.events.map(e=>e.family))].sort()){
+    const option=element('option',family);option.value=family;filter.append(option);
+  }
+  function render(){
+    list.replaceChildren();
+    const events=catalogue.events.filter(e=>!filter.value || e.family===filter.value);
+    if(!events.length){list.append(element('p','Aucune trame indexée pour cette sélection.','hint'));return;}
+    for(const event of events){
+      const card=element('div',undefined,'frame scan-event');
+      card.append(element('h3',`${event.family} · ${event.source_seconds_estimate.toFixed(6)} s dans le fichier`));
+      card.append(element('p',`Échantillon estimé ${event.source_sample_estimate} · ${event.observation_count} observation(s) regroupée(s).`,'scan-event-position'));
+      if(event.family==='AX.25'){
+        const f=event.fields,address=a=>`${a.callsign}${a.ssid?'-'+a.ssid:''}`;
+        card.append(element('p',`${address(f.source)} → ${address(f.destination)} · ${f.frame_type}`));
+        if(f.frame_type==='I')card.append(element('p','Mode de contrôle et contenu applicatif non sélectionnés ; consulter les hypothèses dans la fenêtre.','hint'));
+      }else if(event.family==='Mode S / ADS-B')card.append(element('p',`DF${event.fields.downlink_format} · adresse Mode S ${event.fields.address_hex} · type ${event.fields.type_code}`));
+      else if(event.family==='LoRa PHY')card.append(element('p',`SF${event.fields.spreading_factor} · ${event.fields.bandwidth_hz/1000} kHz · charge utile PHY`));
+      card.append(element('p',event.rf_center_known?formatFrequency(event.frequency_hz):`Décalage ${formatFrequency(event.channel_offset_hz)} · centre RF non renseigné.`));
+      if(event.input_interpretation_status)card.append(element('p',`Interprétation d’entrée : ${event.input_interpretation_status}.`,'hint scan-event-input-warning'));
+      if(event.experimental_observations || event.inferred_boundary_observations)card.append(element('p',`LoRa : ${event.experimental_observations} observation(s) en mode expérimental · ${event.inferred_boundary_observations} avec quart de chirp non confirmé. Voir les preuves dans la fenêtre.`,'hint scan-event-experimental'));
+      const scope=event.byte_scope==='payload_without_phy_crc'?'Charge utile PHY sans CRC':'Trame complète avec CRC/FCS';
+      card.append(element('p',`${scope} · ${event.hex.length/2} octets`));
+      card.append(element('code',event.hex.length>128?event.hex.slice(0,128)+'…':event.hex));
+      const binary=element('a','Télécharger les octets');binary.className='scan-event-binary';
+      binary.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent('scan/'+event.binary_artifact)}`;binary.download=event.binary_artifact.split('/').pop();card.append(binary);
+      const observations=element('select');observations.className='scan-event-observations';observations.setAttribute('aria-label','Observation à consulter');observations.disabled=busy;
+      for(const [index,observation] of event.observations.entries()){
+        const option=element('option',`Fenêtre ${observation.window_index} · échantillon ${observation.source_sample_estimate}`);option.value=String(index);observations.append(option);
+      }
+      const button=element('button','Consulter cette observation','secondary scan-event-inspect');button.disabled=busy;
+      button.onclick=async()=>{
+        if(busy)return;
+        const observation=event.observations[Number(observations.value)];
+        const window=result.windows.find(w=>w.index===observation.window_index);
+        setBusy(true);try{await inspect(window);}catch(error){status(error.message,'error');}finally{setBusy(false);}
+      };
+      card.append(observations,button);list.append(card);
+    }
+  }
+  filter.onchange=render;render();
 }
 function invalidateFileScan(){activeScan=null;$('scan-results').hidden=true;clearFileWindow();}
 function refreshFileNavigation(){

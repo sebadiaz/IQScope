@@ -210,6 +210,33 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(job['result']['status'],'cancelled')
         self.assertEqual(len(job['result']['windows']),1)
 
+    async def test_scan_catalogue_preserves_grouped_bytes_and_window_provenance(self):
+        from iqscope_scan import scan_file as actual_scan
+        from test_scan import lightweight_analyzer
+        from test_scan_events import ax25
+        from test_ax25 import frame
+        def analyzer(*args,**kwargs):
+            report=lightweight_analyzer(*args,**kwargs)
+            observed=ax25((3000-kwargs['start_sample'])/24000)
+            observed['time_end_seconds']=observed['time_seconds']+.02
+            report['wideband_trials'][0]['frames']=[observed]
+            return report
+        def controlled(*args,**kwargs):return actual_scan(*args,**kwargs,analyzer=analyzer)
+        identifier=(await self.client.post('/api/uploads',content=np.zeros(12000,dtype='<c8').tobytes(),headers=HEADERS)).json()['upload_id']
+        with patch('iqscope_web.server.scan_file',side_effect=controlled):
+            response=await self.client.post('/api/analyses',json={'upload_id':identifier,'sample_rate':24000,'seconds':.2,'scan':True,'max_windows':2},headers=HEADERS)
+            job=await self.wait_job(response.json()['id'])
+        self.assertEqual(job['status'],'completed',job.get('error'))
+        catalogue=job['result']['event_catalogue']
+        self.assertEqual((catalogue['event_count'],catalogue['accepted_observations']),(1,2))
+        prefix=f"/api/jobs/{job['id']}/artifacts/scan/"
+        saved=await self.client.get(prefix+catalogue['report_artifact'])
+        self.assertEqual(saved.json(),catalogue)
+        event=catalogue['events'][0]
+        binary=await self.client.get(prefix+event['binary_artifact'])
+        self.assertEqual(binary.content,frame())
+        self.assertEqual([o['window_index'] for o in event['observations']],[1,2])
+
     async def test_unsupported_seek_modes_and_noninteger_sample_offsets_are_rejected(self):
         response=await self.client.post('/api/analyses',json={'demo':True,'start_seconds':1},headers=HEADERS)
         self.assertEqual(response.status_code,400)

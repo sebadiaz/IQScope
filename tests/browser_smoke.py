@@ -8,6 +8,7 @@ import re
 import time
 import urllib.error
 import urllib.request
+from urllib.parse import urljoin
 
 from playwright.sync_api import sync_playwright, expect
 
@@ -70,8 +71,17 @@ def main():
                     expect(page.locator('.adsb-position-pending')).to_have_count(1)
                     Path('browser-artifacts').mkdir(exist_ok=True)
                     page.screenshot(path='browser-artifacts/adsb-fields.png', full_page=True)
+                    page.locator('#auto-scan').check()
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('#status-text')).to_have_text(re.compile('^Parcours terminé'),timeout=30000)
+                    expect(page.locator('.scan-event')).to_have_count(3)
+                    page.locator('#scan-event-family').select_option('Mode S / ADS-B')
+                    expect(page.locator('.scan-event').first).to_contain_text('40621D')
+                    response=page.request.get(urljoin(page.url,page.locator('.scan-event-binary').first.get_attribute('href')))
+                    from test_adsb_fields import ODD
+                    assert response.ok and response.body()==ODD
+                    page.locator('#auto-scan').uncheck()
                     from test_adsb_velocity import reference_velocity_iq
-                    from urllib.parse import urljoin
                     velocity_path = Path(adsb_directory)/'velocity.cf32'
                     reference_velocity_iq().astype('<c8').tofile(velocity_path)
                     page.locator('#iq-file').set_input_files(str(velocity_path))
@@ -439,7 +449,15 @@ def main():
                     binary=page.get_by_role('link',name='Télécharger la charge utile LoRa')
                     response=page.request.get(urljoin(page.url,binary.get_attribute('href')))
                     assert response.ok and response.body()==b'HELLO'
-                expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                    page.locator('#auto-scan').check()
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('#status-text')).to_have_text(re.compile('^Parcours terminé'),timeout=30000)
+                    expect(page.locator('.scan-event')).to_have_count(1)
+                    page.locator('#scan-event-family').select_option('LoRa PHY')
+                    expect(page.locator('.scan-event')).to_contain_text('Charge utile PHY sans CRC')
+                    response=page.request.get(urljoin(page.url,page.locator('.scan-event-binary').get_attribute('href')))
+                    assert response.ok and response.body()==b'HELLO'
+                    page.locator('#auto-scan').uncheck()
                 with tempfile.TemporaryDirectory() as directory:
                     expect(page.locator('#experimental-lora')).not_to_be_checked()
                     page.locator('#experimental-lora').check()
@@ -552,6 +570,28 @@ def main():
                     response=page.request.get(urljoin(page.url,page.locator('.fm-ax25-download').get_attribute('href')))
                     assert response.ok and response.json()==selected_trial
                     page.screenshot(path='browser-artifacts/iq-file-scan.png',full_page=True)
+                    page.locator('#file-start').fill('0')
+                    page.locator('#scan-limit').fill('4')
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('#status-text')).to_have_text(re.compile('^Parcours terminé'),timeout=60000)
+                    expect(page.locator('.scan-window-row')).to_have_count(3)
+                    expect(page.locator('.scan-event')).to_have_count(5)
+                    expect(page.locator('#scan-event-summary')).to_contain_text('10 observation(s) retenue(s)')
+                    expect(page.locator('#scan-event-summary')).to_contain_text('5 regroupement(s)')
+                    page.locator('#scan-event-family').select_option('AX.25')
+                    response=page.request.get(urljoin(page.url,page.locator('#scan-events-download').get_attribute('href')))
+                    assert response.ok
+                    catalogue=response.json()
+                    assert {e['hex'] for e in catalogue['events']}==set(reference['frame_hex'])
+                    assert all(e['observation_count']==2 for e in catalogue['events'])
+                    first=page.locator('.scan-event').first
+                    response=page.request.get(urljoin(page.url,first.locator('.scan-event-binary').get_attribute('href')))
+                    assert response.ok and response.body()==bytes.fromhex(catalogue['events'][0]['hex'])
+                    first.locator('.scan-event-observations').select_option('1')
+                    first.get_by_role('button',name='Consulter cette observation',exact=True).click()
+                    expect(page.locator('#file-window-info')).to_contain_text('[195310, 585930)',timeout=30000)
+                    expect(page.locator('#scan-resume')).to_be_disabled()
+                    page.screenshot(path='browser-artifacts/iq-scan-events.png',full_page=True)
                     page.locator('#auto-scan').uncheck()
                     page.locator('#scan-limit').fill('8')
                     page.locator('#seconds').fill(previous_seconds)

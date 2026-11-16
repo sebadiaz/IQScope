@@ -1107,8 +1107,11 @@ défaut et 32 au maximum, avec huit millions d'échantillons au plus par fenêtr
 Les rapports et exports sont séparés, la couverture source et les limites de
 décodeurs sont explicites. L'interface et le CLI permettent une passe bornée
 et une reprise par indice source dans une nouvelle passe ; l'interface permet
-une annulation aux frontières. Les observations répétées ne sont pas dédupliquées et aucun
-état DSP/protocole n'est propagé. Voir [IQ_FILE_SCAN.md](IQ_FILE_SCAN.md).
+une annulation aux frontières. Les observations des rapports restent séparées ;
+un catalogue CRC borné regroupe des événements estimés par octets, position et
+canal, sans prétendre compter les paquets physiques uniques. Il couvre ADS-B,
+AX.25 et le profil LoRa PHY partiel, avec références aux observations et binaires.
+Aucun état DSP/protocole n'est propagé. Voir [IQ_FILE_SCAN.md](IQ_FILE_SCAN.md).
 
 ### Accès positionné aux fichiers IQ
 
