@@ -31,7 +31,8 @@
       "offsets_hz": [
         -25000,
         25000
-      ]
+      ],
+      "expected_excerpt_sha256_16m": "f046ad6ac8fc6223001d7ce0b9f3b871dbfbcb9749541526598b437acb298f8b"
     },
     {
       "id": "apt",

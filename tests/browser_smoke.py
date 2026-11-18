@@ -145,6 +145,44 @@ def main():
                     assert latest['position_integrity_pair']['members']['even']['nic_category']==9
                     page.screenshot(path='browser-artifacts/adsb-cpr-integrity.png', full_page=True)
                     page.locator('#file-rate').fill(previous_rate)
+                # AIS GMSK: published fields on independent synthetic IQ, then original RF IQ.
+                from test_ais import fixture as ais_fixture,PACKET as AIS_PACKET
+                with tempfile.TemporaryDirectory() as ais_directory:
+                    ais_path=Path(ais_directory)/'ais.cf32';ais_iq,ais_rate=ais_fixture()
+                    ais_iq.astype('<c8').tofile(ais_path)
+                    previous_rate=page.locator('#file-rate').input_value()
+                    page.locator('#iq-file').set_input_files(str(ais_path));page.locator('#file-rate').fill(str(ais_rate))
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=30000)
+                    expect(page.locator('.ais-message')).to_have_count(1)
+                    expect(page.locator('.ais-message .ais-identity')).to_contain_text('477553000')
+                    expect(page.locator('.ais-message .ais-position')).to_contain_text('47.582833°, -122.345833°')
+                    with page.expect_download() as downloaded:
+                        page.get_by_role('link',name='Télécharger la trame AIS avec FCS',exact=True).click()
+                    assert Path(downloaded.value.path()).read_bytes()==AIS_PACKET
+                    page.locator('#auto-scan').check()
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('#status-text')).to_have_text(re.compile('^Parcours terminé'),timeout=30000)
+                    page.locator('#scan-event-family').select_option('AIS')
+                    expect(page.locator('.scan-event')).to_have_count(1)
+                    expect(page.locator('.scan-event')).to_contain_text('477553000')
+                    response=page.request.get(urljoin(page.url,page.locator('.scan-event-binary').get_attribute('href')))
+                    assert response.ok and response.body()==AIS_PACKET
+                    page.locator('#auto-scan').uncheck()
+                    if os.environ.get('IQSCOPE_TEST_AIS_RADIO')=='1':
+                        page.locator('#iq-file').set_input_files('corpus-cache/ais/source-prefix.sdriq')
+                        page.get_by_role('button',name='Analyser automatiquement').click()
+                        expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=60000)
+                        expect(page.locator('.ais-message').first.locator('.ais-identity')).to_contain_text('235093883')
+                        expect(page.locator('.ais-message').first.locator('.ais-position')).to_contain_text('51.458805°, 0.278397°')
+                        response=page.request.get(urljoin(page.url,page.locator('.ais-download').get_attribute('href')))
+                        assert response.ok
+                        ais_trial=response.json()
+                        assert sum(f['channel']['ais_channel']=='A' for f in ais_trial['frames'])==43
+                        assert sum(f['channel']['ais_channel']=='B' for f in ais_trial['frames'])==38
+                        assert ais_trial['source_window_reference']['start_sample']==0
+                        page.screenshot(path='browser-artifacts/ais-original-iq.png',full_page=True)
+                    page.locator('#iq-file').set_input_files(str(ais_path));page.locator('#file-rate').fill(previous_rate)
                 # Independent POCSAG FSK IQ: actual import, safe text and JSON export.
                 from test_pocsag import reference_pocsag_iq, TEXT as POCSAG_TEXT
                 with tempfile.TemporaryDirectory() as pager_directory:

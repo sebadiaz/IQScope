@@ -19,6 +19,7 @@ from iqscope_qam import search_qam16, write_qam_artifacts
 from iqscope_psk import search_psk, write_psk_artifacts
 from iqscope_ax25 import decode_ax25, decode_psk_ax25, write_psk_ax25_artifacts
 from iqscope_afsk_fm import search_afsk_fm, write_afsk_fm_artifact
+from iqscope_ais import search_ais,write_ais_artifacts
 from iqscope_pocsag import decode_pocsag, write_pocsag_artifact
 from iqscope_ofdm import detect_cyclic_prefix
 from iqscope_lora import detect_lora_preamble
@@ -116,6 +117,8 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
     ax25 = decode_ax25(fsk.get('candidates',[]))
     fm_ax25 = search_afsk_fm(x,fs,detections,center)
     write_afsk_fm_artifact(fm_ax25,out)
+    ais=search_ais(x,fs,detections,center)
+    write_ais_artifacts(ais,out)
     for item in results:
         low,high = item['band_edges_hz']
         indexes = [index for index,frame in enumerate(fm_ax25['frames'])
@@ -127,6 +130,13 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
                 validation='AX.25 FCS and bounded control inspection; no connection-state or sender authentication'))
             item['hypotheses']=[h for h in item['hypotheses'] if h['family']!='unknown']+[
                 dict(family=family,confidence='FCS-validated frame recovery; link mode may remain unresolved')]
+        ais_indexes=[index for index,frame in enumerate(ais['frames']) if low<=frame['channel']['offset_hz']<=high]
+        if ais_indexes:
+            item.setdefault('validated_protocols',[]).append(dict(decoder='ais_gmsk',family='AIS / GMSK',
+                frame_indexes=ais_indexes,frame_count=len(ais_indexes),validation='CRC-16/X-25 and AIS fields; positions are declarations'))
+            if not indexes:item.update(status='crc_validated_frames',validated_content=item['validated_protocols'][-1])
+            item['hypotheses']=[h for h in item['hypotheses'] if h['family']!='unknown']+[
+                dict(family='AIS / GMSK',confidence='FCS-validated frames; declared message fields')]
     pocsag = decode_pocsag(fsk.get('candidates',[]))
     write_pocsag_artifact(pocsag, out)
     ofdm = detect_cyclic_prefix(x,fs)
@@ -145,9 +155,9 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
               'center_frequency_hz': center, 'analyzed_seconds': len(x) / fs,
               'noise_floor_db_per_hz': noise, 'capabilities': capabilities(),
               'limitations': ['Stationary spectral detector; overlapping, hopping and weak bursts may be missed.',
-                             'AM/FM audio are unvalidated candidates. ADS-B, AX.25 and supported LoRa PHY frames have CRC checks; RTTY/CW text candidates have timing or framing evidence only.',
+                             'AM/FM audio are unvalidated candidates. ADS-B, AIS, AX.25 and supported LoRa PHY frames have CRC checks; RTTY/CW text candidates have timing or framing evidence only.',
                              'At most 12 spectral bands receive audio trials; other detections remain visible.'],
-              'signals': results, 'wideband_trials': [digital, rtty, cw, fsk, fsk4, ax25, fm_ax25, ofdm, lora, rtl433, psk, psk_ax25, ao40, qam, pocsag],
+              'signals': results, 'wideband_trials': [digital, rtty, cw, fsk, fsk4, ax25, fm_ax25, ofdm, lora, rtl433, psk, psk_ax25, ao40, qam, pocsag, ais],
               'spectrum': {'frequency_hz': frequencies.tolist(), 'power_db': spectrum.tolist()},
               'waterfall': {'power_db': waterfall.tolist(), 'time_seconds': (starts/fs).tolist(),
                             'sampled_windows': True}}

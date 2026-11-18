@@ -19,6 +19,7 @@ class Capability:
 
 
 CAPABILITIES = (
+    Capability('ais_gmsk','AIS / GMSK','9600-baud GMSK/NRZI on up to four automatic RF/spectral/baseband channels; Class A/B positions and selected static fields; other message types retained as raw payload','strict training/HDLC stuffing, CRC-16/X-25 and supported message layout; positions and identity are declarations, no authentication or vessel-state reconstruction'),
     Capability('qam16_generic','16-QAM','stationary RRC square 16-QAM; blind carrier/clock, bounded soft-bit likelihood exports, direct or four spectral channels; synthetic and PRBS15-checked conducted laboratory references','constellation/EVM and timing candidates only; arbitrary bit labels and model likelihoods, no protocol or CRC'),
     Capability('ao40_fec','AO-40 FEC / DBPSK','standard 5200-symbol frames; first six seconds of audio or direct IQ <=96 kS/s', 'distributed sync, terminated Viterbi K=7, two shortened Reed-Solomon parity checks; no CRC or authentication'),
     Capability('psk_generic', 'BPSK / QPSK', 'rectangular or bounded RRC stationary PSK; blind carrier/phase/clock, narrowband or four spectral trials', 'phase clusters and timing only; ambiguous rotation/mapping, no protocol or CRC'),

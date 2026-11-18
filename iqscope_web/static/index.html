@@ -4,7 +4,7 @@
 <body>
 <header><a class="brand" href="/" aria-label="IQScope accueil"><span class="brand-icon">≋</span> IQScope <small>RADIO EXPLORER</small></a><span class="local"><i></i> Traitement local</span></header>
 <main>
-<section class="intro"><div><p class="eyebrow">EXPLORER · MESURER · DÉCODER</p><h1>Écouter le spectre.<br><span>Comprendre les signaux.</span></h1><p class="subtitle">Importez une capture IQ, un enregistrement audio ou connectez votre SDR. Les paramètres de traitement sont choisis automatiquement.</p></div><div class="version">PROTOTYPE / 0.15<br><span>AM · FM · ADS-B · RTTY · CW · 2/4-FSK · PSK · QAM · AX.25</span></div></section>
+<section class="intro"><div><p class="eyebrow">EXPLORER · MESURER · DÉCODER</p><h1>Écouter le spectre.<br><span>Comprendre les signaux.</span></h1><p class="subtitle">Importez une capture IQ, un enregistrement audio ou connectez votre SDR. Les paramètres de traitement sont choisis automatiquement.</p></div><div class="version">PROTOTYPE / 0.15<br><span>AM · FM · ADS-B · AIS · RTTY · CW · 2/4-FSK · PSK · QAM · AX.25</span></div></section>
 <div class="workspace">
 <aside class="panel source">
 <div class="panel-heading"><h2>Source du signal</h2><span class="step">01</span></div>
@@ -46,7 +46,7 @@
 <p class="hint">Choisissez un historique JSON téléchargé depuis le direct. Ses FCS seront revérifiés ; le fichier IQ d’origine n’est pas nécessaire.</p>
 <button id="open-archive" class="primary">Ouvrir l’historique</button>
 </section>
-<div class="source-footer"><span>15 capacités disponibles</span><button id="capabilities" class="text-button">Voir les capacités ↗</button><button id="datasets" class="text-button">Explorer les jeux de données ↗</button></div>
+<div class="source-footer"><span>18 capacités disponibles</span><button id="capabilities" class="text-button">Voir les capacités ↗</button><button id="datasets" class="text-button">Explorer les jeux de données ↗</button></div>
 </aside>
 <div class="analysis">
 <section id="analysis-plots" class="panel plot-panel"><div class="panel-heading"><div><p class="eyebrow">VUE TEMPS–FRÉQUENCE</p><h2>Spectre & waterfall</h2></div><span class="badge" id="source-badge">En attente</span></div>
@@ -66,7 +66,7 @@
 <div id="scan-event-list"></div><h3>Rapports par fenêtre</h3><div id="scan-window-list"></div>
 <button id="scan-resume" class="secondary" disabled>Reprendre le parcours</button></section>
 <section id="archive-results" class="panel results" hidden><h2>Historique AX.25 chargé</h2><p id="archive-summary" class="hint">Choisissez un historique sauvegardé.</p><p class="hint">Les FCS et champs de liaison sont revérifiés depuis les octets. Temps, fréquences et nombres d’observations restent les déclarations de l’archive ; les IQ d’origine ne sont pas disponibles.</p><a id="archive-json" hidden>Télécharger l’historique relu (JSON)</a> <a id="archive-kiss" hidden>Télécharger l’historique relu (KISS)</a><div id="archive-list"></div></section>
-<div id="analysis-metrics" class="metrics"><div class="panel"><span>Émissions détectées</span><strong id="metric-signals">—</strong></div><div class="panel"><span>Paquets CRC valides</span><strong id="metric-frames">—</strong></div><div class="panel"><span>Durée analysée</span><strong id="metric-duration">—</strong></div></div>
+<div id="analysis-metrics" class="metrics"><div class="panel"><span>Émissions détectées</span><strong id="metric-signals">—</strong></div><div class="panel"><span>Observations CRC valides</span><strong id="metric-frames">—</strong></div><div class="panel"><span>Durée analysée</span><strong id="metric-duration">—</strong></div></div>
 <section id="analysis-results" class="panel results"><div class="panel-heading"><h2>Résultats de l’analyse</h2><a id="download" hidden>Télécharger le rapport ↓</a></div><p class="hint result-note">Les sorties audio sont des interprétations candidates. Un CRC valide vérifie l’intégrité d’un paquet, pas l’authenticité de son émetteur.</p><p id="file-window-info" class="hint" hidden></p><div id="signal-list"><div class="empty-results">Aucun résultat pour le moment.</div></div><div id="frame-list"></div></section>
 </div></div>
 <footer>IQScope — laboratoire radio local <span>LoRa, protocoles militaires et autres familles : non implémentés dans cette version.</span></footer>

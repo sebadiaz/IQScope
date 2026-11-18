@@ -1100,6 +1100,16 @@ L'import audio essaie aussi POCSAG sur les niveaux FM démodulés à 8 kHz. Troi
 Le parseur peut corriger au plus deux bits sur l'ensemble adresse/données/terminaison d'un message, grâce au syndrome BCH(31,21) complété par la parité paire. Les 529 masques de poids 0–2 ont des syndromes distincts et le mot proposé est contrôlé. La synchronisation reste exacte ; les messages incomplets, non corrigeables ou dépassant la somme autorisée sont refusés. Les mots reçus restent exportés séparément des mots décodés, avec rôle et positions des inversions. Le mode strict reste accessible par `max_corrected_bits=0`. L'interface marque les corrections sans modifier le compteur CRC. Les tests couvrent les positions d'une/deux erreurs, le rejet de trois erreurs sur références, la limite globale et les voies IQ/audio. Cette correction n'authentifie pas l'émetteur et peut choisir un autre mot valide au-delà de son rayon. Le corpus radio existant conserve ses sorties à zéro correction ; une amélioration sur enregistrement corrompu reste à démontrer. Voir [POCSAG.md](POCSAG.md).
 
 
+### Première voie AIS GMSK
+
+`ais_gmsk` recherche jusqu'à quatre canaux RF/spectraux/baseband, à 9 600 bauds,
+avec entraînement, fanions, débourrage et CRC-16/X-25. Positions classe A/B et
+longue portée, stations de base et quelques champs statiques sont interprétés ;
+les autres messages restent en octets. L'interface, les exports et le catalogue
+automatique sont intégrés. La référence IQ donne 43/38 observations A/B ; les
+champs sont comparés à pyais, sans oracle RF indépendant ni authenticité des
+déclarations. Voir [AIS.md](AIS.md) pour les messages, budgets et limites.
+
 ### Parcours automatique borné des fichiers IQ
 
 Le moteur `iqscope_scan` enchaîne des fenêtres recouvrantes à 50 %, huit par
@@ -1110,7 +1120,7 @@ et une reprise par indice source dans une nouvelle passe ; l'interface permet
 une annulation aux frontières. Les observations des rapports restent séparées ;
 un catalogue CRC borné regroupe des événements estimés par octets, position et
 canal, sans prétendre compter les paquets physiques uniques. Il couvre ADS-B,
-AX.25 et le profil LoRa PHY partiel, avec références aux observations et binaires.
+AIS, AX.25 et le profil LoRa PHY partiel, avec références aux observations et binaires.
 Aucun état DSP/protocole n'est propagé. Voir [IQ_FILE_SCAN.md](IQ_FILE_SCAN.md).
 
 ### Accès positionné aux fichiers IQ

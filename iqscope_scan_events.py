@@ -9,8 +9,9 @@ from iqscope_adsb import mode_s_remainder
 from iqscope_ax25 import encode_kiss_frame
 from iqscope_ax25_link import parse_link
 from iqscope_lora_payload import payload_crc
+from iqscope_ais import checked_ais_packet
 
-CRC_DECODERS=frozenset(('adsb_1090es','ax25_ui','afsk1200_fm_ax25','afsk1200_ax25','lora_preamble'))
+CRC_DECODERS=frozenset(('adsb_1090es','ais_gmsk','ax25_ui','afsk1200_fm_ax25','afsk1200_ax25','lora_preamble'))
 
 
 def _number(value):
@@ -39,6 +40,13 @@ def _packet(frame,decoder,fs):
                     integrity=dict(algorithm='LoRa payload CRC16',received_crc=frame['received_crc'],calculated_crc=payload_crc(raw)),
                     offset=0,channel_tolerance=0,frontend='centered_lora')
     raw=bytes.fromhex(frame['hex'])
+    if decoder=='ais_gmsk':
+        if frame.get('fcs_valid') is not True:raise ValueError('AIS FCS claim missing')
+        fields=checked_ais_packet(raw);offset=_number(frame['channel']['offset_hz'])
+        return dict(hex=raw.hex(),family='AIS',byte_scope='full_frame_with_fcs',
+                    validation='AIS CRC-16/X-25 and message fields rechecked; transmitter declarations, no cross-window vessel state.',
+                    fields=fields,matching_parameters={},tolerance=max(1,round(2*fs/9600)),
+                    offset=offset,channel_tolerance=1000,frontend='gmsk_fm_nrzi')
     if decoder=='adsb_1090es':
         if len(raw)!=14 or raw[0]>>3 not in (17,18) or mode_s_remainder(raw):
             raise ValueError('Invalid ADS-B CRC24 or downlink format')
@@ -109,7 +117,7 @@ class ScanEventCatalogue:
                         end_time=_number(frame['time_end_seconds'])
                         end_position=start+math.ceil(end_time*self.fs)
                         if end_time<=time or not position<end_position<=end:
-                            raise ValueError('Invalid AX.25 event end')
+                            raise ValueError('Invalid packet event end')
                 except (KeyError,TypeError,ValueError,OverflowError):
                     self.rejected+=1;continue
                 interpretation=report.get('interpretation_status')

@@ -133,8 +133,9 @@ function showReport(report, jobId, artifactPrefix='') {
   const ax25Trials=(report.wideband_trials || []).filter(t=>(t.decoder==='ax25_ui' || t.decoder==='afsk1200_ax25' || t.decoder==='afsk1200_fm_ax25'));
   const ax25Frames=ax25Trials.flatMap(t=>t.frames || []);
   const loraFrames=(report.wideband_trials || []).filter(t=>t.decoder==='lora_preamble').flatMap(t=>t.frames || []);
+  const aisFrames=(report.wideband_trials || []).filter(t=>t.decoder==='ais_gmsk').flatMap(t=>t.frames || []);
   $('metric-signals').textContent=signals.length;
-  $('metric-frames').textContent=frames.length+ax25Frames.length+loraFrames.length;
+  $('metric-frames').textContent=frames.length+ax25Frames.length+loraFrames.length+aisFrames.length;
   $('metric-duration').textContent=`${report.analyzed_seconds.toFixed(2)} s`;
   $('download').href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+'report.json')}`; $('download').hidden=false;
   const list=$('signal-list');list.replaceChildren();
@@ -377,6 +378,22 @@ function showReport(report, jobId, artifactPrefix='') {
     }
     if(trial.artifact){const link=element('a','Télécharger les messages POCSAG (JSON)');link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
   }
+  for(const trial of report.wideband_trials || []){
+    if(trial.decoder!=='ais_gmsk' || !trial.frames.length)continue;
+    frameList.append(element('h3',`AIS · ${trial.frames.length} observation(s) à CRC valide`,'frames-title'));
+    frameList.append(element('p','GMSK / NRZI à 9600 bauds · CRC-16/X-25 vérifié sans réparation. Les positions, noms et identifiants sont des déclarations de l’émetteur.','hint'));
+    if(trial.budget_exhausted || trial.duration_limited || trial.deferred_channel_count)frameList.append(element('p','Recherche AIS partielle : un budget de traitement ou de canaux est atteint.','hint'));
+    for(const frame of trial.frames){
+      const card=element('div',undefined,'frame ais-message');renderAISFields(card,frame.fields);
+      const c=frame.channel;
+      card.append(element('p',`t=${frame.time_seconds.toFixed(6)} s · ${c.rf_center_known?formatFrequency(c.frequency_hz):'décalage '+formatFrequency(c.offset_hz)}${c.ais_channel?' · canal '+c.ais_channel:' · canal RF AIS non attribué'}`));
+      for(const [key,label] of [['wire_artifact','Télécharger la trame AIS avec FCS'],['payload_artifact','Télécharger le message AIS sans FCS']]){
+        if(frame[key]){const link=element('a',label);link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+frame[key])}`;link.download=frame[key];card.append(link,document.createTextNode(' '));}
+      }
+      frameList.append(card);
+    }
+    if(trial.artifact){const link=element('a','Télécharger les messages AIS (JSON)');link.className='ais-download';link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
+  }
   if(ax25Frames.length)frameList.append(element('h3',`AX.25${ax25Frames.some(f=>f.fields.frame_type!=='UI')?'':' UI'} · ${ax25Frames.length} trame(s) CRC valide(s)`,'frames-title'));
   for(const trial of ax25Trials){
     if(trial.frontend==='bpsk_g3ruh' && !trial.frames.length && trial.stream_diagnostics?.some(d=>d.flags_observed))frameList.append(element('p','BPSK : fanions HDLC observés, aucune trame AX.25 UI validée. Le rapport détaille les rejets ; aucune charge utile binaire n’est déduite.','hint psk-ax25-unresolved'));
@@ -585,6 +602,18 @@ function appendAdsbQuality(card,q) {
   }
 }
 
+function renderAISFields(card,f){
+  card.append(element('h3',`AIS type ${f.message_type} · MMSI déclaré ${f.mmsi_text}`,'ais-identity'));
+  if(f.ship_name)card.append(element('p',`Nom déclaré : ${f.ship_name}`,'ais-name'));
+  if(f.callsign)card.append(element('p',`Indicatif déclaré : ${f.callsign}`));
+  if(f.position_status==='reported')card.append(element('p',`Position déclarée : ${f.latitude_deg.toFixed(6)}°, ${f.longitude_deg.toFixed(6)}°`,'ais-position'));
+  else if(f.position_status)card.append(element('p','Position non disponible ou hors plage ; codes bruts conservés dans le JSON.','hint ais-position-unavailable'));
+  if(f.speed_over_ground_knots!==undefined && f.speed_over_ground_knots!==null)card.append(element('p',`Vitesse fond déclarée : ${f.speed_status==='at_least'?'≥ ':''}${f.speed_over_ground_knots} kn`,'ais-speed'));
+  if(f.course_over_ground_deg!==undefined && f.course_over_ground_deg!==null)card.append(element('p',`Route fond déclarée : ${f.course_over_ground_deg}°`));
+  if(f.true_heading_deg!==undefined && f.true_heading_deg!==null)card.append(element('p',`Cap vrai déclaré : ${f.true_heading_deg}°`));
+  if(f.destination)card.append(element('p',`Destination déclarée : ${f.destination}`));
+  if(f.interpretation==='header_only')card.append(element('p','En-tête AIS interprété ; contenu du message conservé en octets sans décodage applicatif.','hint'));
+}
 async function followJob(job) {
   for (;;) {
     await new Promise(resolve=>setTimeout(resolve,450));
@@ -644,7 +673,8 @@ function renderScanCatalogue(result,jobId,inspect){
         const f=event.fields,address=a=>`${a.callsign}${a.ssid?'-'+a.ssid:''}`;
         card.append(element('p',`${address(f.source)} → ${address(f.destination)} · ${f.frame_type}`));
         if(f.frame_type==='I')card.append(element('p','Mode de contrôle et contenu applicatif non sélectionnés ; consulter les hypothèses dans la fenêtre.','hint'));
-      }else if(event.family==='Mode S / ADS-B')card.append(element('p',`DF${event.fields.downlink_format} · adresse Mode S ${event.fields.address_hex} · type ${event.fields.type_code}`));
+      }else if(event.family==='AIS')renderAISFields(card,event.fields);
+      else if(event.family==='Mode S / ADS-B')card.append(element('p',`DF${event.fields.downlink_format} · adresse Mode S ${event.fields.address_hex} · type ${event.fields.type_code}`));
       else if(event.family==='LoRa PHY')card.append(element('p',`SF${event.fields.spreading_factor} · ${event.fields.bandwidth_hz/1000} kHz · charge utile PHY`));
       card.append(element('p',event.rf_center_known?formatFrequency(event.frequency_hz):`Décalage ${formatFrequency(event.channel_offset_hz)} · centre RF non renseigné.`));
       if(event.input_interpretation_status)card.append(element('p',`Interprétation d’entrée : ${event.input_interpretation_status}.`,'hint scan-event-input-warning'));

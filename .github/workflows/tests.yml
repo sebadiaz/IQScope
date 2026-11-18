@@ -46,6 +46,10 @@ jobs:
         run: python scripts/aprs_iq_reference.py
       - name: Verify bounded overlapping traversal of the original IQ file
         run: python scripts/iq_scan_reference.py
+      - name: Verify original AIS IQ and independent message-field interpretation
+        run: |
+          python -m pip install pyais==3.3.1
+          python scripts/ais_reference.py --oracle
       - run: python tests/browser_smoke.py
         env:
           NO_PROXY: 127.0.0.1,localhost
@@ -55,6 +59,7 @@ jobs:
           IQSCOPE_TEST_APRS_RADIO: '1'
           IQSCOPE_TEST_APRS_PICO: '1'
           IQSCOPE_TEST_AX25_IQ: '1'
+          IQSCOPE_TEST_AIS_RADIO: '1'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -97,6 +102,12 @@ jobs:
             corpus-cache/iq-file-scan/scan-report.json
             corpus-cache/iq-file-scan/scan-events.json
             corpus-cache/iq-file-scan/events/*.bin
+            corpus-cache/ais/provenance.json
+            corpus-cache/ais/summary.json
+            corpus-cache/ais/oracle-proof.json
+            corpus-cache/ais/results/report.json
+            corpus-cache/ais/results/ais-frames.json
+            corpus-cache/ais/results/ais-frame-*.bin
             corpus-cache/iq-file-scan/provenance.json
             corpus-cache/iq-file-scan/window-*/report.json
             corpus-cache/iq-file-scan/window-*/fm-afsk-frames.json

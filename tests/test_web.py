@@ -52,7 +52,7 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('SDR en direct',page.text)
         self.assertIn("default-src 'self'",page.headers['content-security-policy'])
         data = (await self.client.get('/api/capabilities')).json()
-        self.assertEqual(len(data['decoders']),17)
+        self.assertEqual(len(data['decoders']),18)
         self.assertEqual(next(d for d in data['decoders'] if d['id']=='afsk1200_fm_ax25')['family'], 'NBFM / AFSK1200 / AX.25')
         self.assertEqual(next(d for d in data['decoders'] if d['id']=='pocsag')['family'], 'POCSAG paging')
 
@@ -72,6 +72,19 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(read_kiss(response.content),[(0,0,packet[:-2])])
         self.assertIn('attachment;',response.headers['content-disposition'])
         self.assertEqual((await self.client.get('/api/jobs/kiss-job/artifacts/missing.kiss')).status_code,404)
+
+    async def test_automatic_ais_iq_import_and_byte_exports(self):
+        from test_ais import fixture,PACKET
+        x,fs=fixture()
+        identifier=(await self.client.post('/api/uploads',content=x.astype('<c8').tobytes(),headers=HEADERS)).json()['upload_id']
+        response=await self.client.post('/api/analyses',json={'upload_id':identifier,'sample_rate':fs},headers=HEADERS)
+        job=await self.wait_job(response.json()['id'])
+        self.assertEqual(job['status'],'completed',job.get('error'))
+        trial=next(t for t in job['result']['wideband_trials'] if t['decoder']=='ais_gmsk')
+        self.assertEqual(trial['frames'][0]['fields']['mmsi'],477553000)
+        base=f"/api/jobs/{job['id']}/artifacts/"
+        self.assertEqual((await self.client.get(base+trial['artifact'])).json(),trial)
+        self.assertEqual((await self.client.get(base+trial['frames'][0]['wire_artifact'])).content,PACKET)
 
     async def test_recording_list_and_bounded_import_artifacts(self):
         from test_formats import make_wave
