@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import urllib.request
+import urllib.error
 import zipfile
 import zlib
 
@@ -34,14 +35,24 @@ EXPECTED_HEX = [
     '9664b2b28840749c64a4a24040f2ae6496a0a240e56135a6']
 
 
+def _download_archive():
+    request=urllib.request.Request(SOURCE_URL,headers={'User-Agent':'IQScope-corpus/0.15'})
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(request,timeout=20) as response:
+                return response.read(ARCHIVE_BUDGET+1)
+        except urllib.error.HTTPError as error:
+            if error.code not in (408,500,502,503,504) or attempt==2:raise
+        except (urllib.error.URLError,TimeoutError,ConnectionError):
+            if attempt==2:raise
+
+
 def source_wave(root, offline=False):
     archive = root/'source.zip'
     if offline:
         data = archive.read_bytes()
     else:
-        request = urllib.request.Request(SOURCE_URL, headers={'User-Agent': 'IQScope-corpus/0.15'})
-        with urllib.request.urlopen(request, timeout=30) as response:
-            data = response.read(ARCHIVE_BUDGET+1)
+        data = _download_archive()
     if len(data)>ARCHIVE_BUDGET:
         raise ValueError('APRS IQ archive exceeded download budget')
     if len(data)!=ARCHIVE_BYTES or hashlib.sha256(data).hexdigest()!=ARCHIVE_SHA256:

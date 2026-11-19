@@ -35,7 +35,13 @@ Le ZIP emploie Deflate64, méthode 9, absente du décompresseur ZIP standard
 de Python. Le script de référence utilise 7-Zip, ou Info-ZIP compilé avec
 `USE_DEFLATE64`. La taille et le SHA-256 du ZIP sont contrôlés avant d'appeler
 l'outil ; le CRC du membre, sa taille et son SHA-256 sont contrôlés ensuite.
-Les budgets restent de 2 Mio téléchargés et 4 Mio pour le membre choisi.
+Chaque tentative lit au plus 2 Mio plus l'octet de détection du dépassement ;
+le membre choisi reste limité à 4 Mio. Les erreurs de transport et certains
+codes HTTP temporaires permettent deux reprises au maximum, avec un délai
+réseau de 20 s par tentative. Les codes client, dont 429, ne sont pas repris.
+Une réponse trop grande ou dont le SHA-256 diffère est rejetée immédiatement,
+sans nouvelle tentative ni extraction. Le mode hors ligne ne fait aucun accès
+réseau.
 Aucune extraction de chemins contenus dans le ZIP n'est effectuée : les
 octets du seul WAV sont écrits dans un fichier de travail au nom fixe.
 
