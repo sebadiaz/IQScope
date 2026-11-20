@@ -48,6 +48,9 @@ class AdapterTests(unittest.TestCase):
         argv=runner.call_args.args[0]
         self.assertEqual(argv[1:3],['-c','0'])
         self.assertIn('-r',argv)
+        self.assertTrue(argv[argv.index('-r')+1].startswith('cf32:iq:250000sps:'))
+        self.assertEqual(argv[argv.index('-r')+1].rpartition(':')[2],'input.cf32')
+        self.assertEqual(result['channels_examined'][0]['decoder_sample_rate_source'],'forced_file_specification')
         self.assertNotIn('-d',argv)
 
     def test_time_and_output_bounds(self):

@@ -84,13 +84,19 @@ def search_rtl433(x, fs, detections, center=0):
             channel['frequency_hz'] = float(center + offset) if center else None
             channel['frequency_reference'] = 'provided_capture_center' if center else 'relative_only'
             result['channels_examined'].append(channel)
-            # Explicit cf32 format and -c 0 prevent filename guesses/config/network outputs.
+            # rtl_433 also guesses metadata from directory names. Its forced
+            # prefix is applied last, so a temporary "32k" path cannot override
+            # the actual sample rate or the I/Q interpretation.
             path = Path(directory) / 'input.cf32'
             y.tofile(path)
-            argv = [executable, '-c', '0', '-r', str(path), '-s', str(round(channel['sample_rate'])),
+            decoder_rate=round(channel['sample_rate'])
+            input_spec=f'cf32:iq:{decoder_rate}sps:{path.name}'
+            argv = [executable, '-c', '0', '-r', input_spec, '-s', str(decoder_rate),
                     '-F', 'json', '-M', 'protocol', '-M', 'time:rel', '-C', 'si']
-            channel['decoder_sample_rate'] = round(channel['sample_rate'])
-            channel['decoder_sample_rate_error_hz'] = round(channel['sample_rate'])-channel['sample_rate']
+            channel['decoder_sample_rate'] = decoder_rate
+            channel['decoder_sample_rate_error_hz'] = decoder_rate-channel['sample_rate']
+            channel['decoder_input_format'] = 'cf32_iq'
+            channel['decoder_sample_rate_source'] = 'forced_file_specification'
             try:
                 code, output = _run(argv, directory, deadline-time.monotonic())
             except OSError as exc:

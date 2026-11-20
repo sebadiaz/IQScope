@@ -32,7 +32,8 @@ jobs:
           python scripts/setup_ci_ffmpeg.py
       - name: Build pinned file-only rtl_433 and check a real OOK reference
         run: |
-          python scripts/rtl433_reference.py --build
+          mkdir -p "$RUNNER_TEMP/iqscope-reference-fm-32k"
+          TMPDIR="$RUNNER_TEMP/iqscope-reference-fm-32k" python scripts/rtl433_reference.py --build
           echo "$PWD/corpus-cache/rtl433-reference/build/src" >> "$GITHUB_PATH"
       - name: Verify bounded recorded BPSK receiver audio and CRC-valid payloads
         run: python scripts/psk_radio_reference.py
