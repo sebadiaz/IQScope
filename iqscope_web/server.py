@@ -285,7 +285,7 @@ def create_app(root=None):
     @app.get('/api/jobs/{job_id}/artifacts/{name:path}')
     def artifact(job_id: str, name: str):
         if (job_id not in service.jobs or '\\' in name or any(p in ('','.','..') for p in name.split('/'))
-                or not name.endswith(('.wav', '.json', '.csv', '.txt', '.bin', '.kiss', '.sigmf-data', '.sigmf-meta'))):
+                or not name.endswith(('.wav', '.png', '.json', '.csv', '.txt', '.bin', '.kiss', '.sigmf-data', '.sigmf-meta'))):
             raise HTTPException(404, 'Artifact not found')
         root=(service.root/job_id).resolve()
         path=(root/name).resolve()

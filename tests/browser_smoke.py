@@ -145,6 +145,40 @@ def main():
                     assert latest['position_integrity_pair']['members']['even']['nic_category']==9
                     page.screenshot(path='browser-artifacts/adsb-cpr-integrity.png', full_page=True)
                     page.locator('#file-rate').fill(previous_rate)
+                # APT images: automatic IQ import, browser image loading and numeric exports.
+                from test_apt import fixture as apt_fixture,png_pixels
+                with tempfile.TemporaryDirectory() as apt_directory:
+                    apt_path=Path(apt_directory)/'apt.cf32';apt_iq,apt_rate,_=apt_fixture(lines=7)
+                    apt_iq.astype('<c8').tofile(apt_path)
+                    previous_rate=page.locator('#file-rate').input_value()
+                    page.locator('#iq-file').set_input_files(str(apt_path));page.locator('#file-rate').fill(str(apt_rate))
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=60000)
+                    expect(page.locator('.apt-image')).to_have_count(1)
+                    expect(page.locator('.apt-scope')).to_contain_text('Aucun CRC')
+                    expect(page.locator('#metric-frames')).to_have_text('0')
+                    expect(page.locator('.apt-preview')).to_have_count(2)
+                    page.wait_for_function("Array.from(document.querySelectorAll('.apt-preview')).every(i=>i.complete && i.naturalWidth===909 && i.naturalHeight>=3)")
+                    response=page.request.get(urljoin(page.url,page.locator('.apt-download').get_attribute('href')))
+                    assert response.ok
+                    image=response.json()['images'][0]
+                    response=page.request.get(urljoin(page.url,page.locator('.apt-download-full').get_attribute('href')))
+                    assert response.ok and png_pixels(response.body()).shape==(image['height'],2080)
+                    with page.expect_download() as downloaded:
+                        page.get_by_role('link',name='Pixels uint8 binaires',exact=True).click()
+                    assert Path(downloaded.value.path()).read_bytes()==bytes.fromhex(image['pixels_u8_hex'])
+                    page.screenshot(path='browser-artifacts/apt-synthetic-iq.png',full_page=True)
+                    if os.environ.get('IQSCOPE_TEST_APT_RADIO')=='1':
+                        page.locator('#iq-file').set_input_files('corpus-cache/apt/source.sigmf-data')
+                        page.locator('#file-rate').fill('62500')
+                        page.get_by_role('button',name='Analyser automatiquement').click()
+                        expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=60000)
+                        expect(page.locator('.apt-image')).to_have_count(1)
+                        page.wait_for_function("Array.from(document.querySelectorAll('.apt-preview')).every(i=>i.complete && i.naturalWidth===909 && i.naturalHeight>=3)")
+                        response=page.request.get(urljoin(page.url,page.locator('.apt-download').get_attribute('href')))
+                        assert response.ok and response.json()['images'][0]['height']>=10
+                        page.screenshot(path='browser-artifacts/apt-original-iq.png',full_page=True)
+                    page.locator('#file-rate').fill(previous_rate)
                 # AIS GMSK: published fields on independent synthetic IQ, then original RF IQ.
                 from test_ais import fixture as ais_fixture,PACKET as AIS_PACKET
                 with tempfile.TemporaryDirectory() as ais_directory:

@@ -278,7 +278,7 @@ function showReport(report, jobId, artifactPrefix='') {
       const player=element('audio');player.id='audio-preview';player.controls=true;player.preload='none';
       player.src=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+report.audio_artifact)}`;frameList.append(player);
     }
-    if(!(report.wideband_trials || []).some(t=>t.candidates?.length || t.messages?.length || t.frames?.length))frameList.append(element('p','Aucun contenu décodé dans cet extrait.','hint'));
+    if(!(report.wideband_trials || []).some(t=>t.candidates?.length || t.messages?.length || t.frames?.length || t.images?.length))frameList.append(element('p','Aucun contenu décodé dans cet extrait.','hint'));
   }
   if(!audioPlot)frameList.append(element('h3',`Mode S / ADS-B · ${frames.length} paquet(s) CRC valide(s)`,'frames-title'));
   if(!audioPlot && sampleRate<2e6) frameList.append(element('p','Recherche ADS-B non applicable : il faut au moins 2 Méch/s.','hint'));
@@ -393,6 +393,31 @@ function showReport(report, jobId, artifactPrefix='') {
       frameList.append(card);
     }
     if(trial.artifact){const link=element('a','Télécharger les messages AIS (JSON)');link.className='ais-download';link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
+  }
+  for(const trial of report.wideband_trials || []){
+    if(trial.decoder!=='noaa_apt' || !trial.images?.length)continue;
+    frameList.append(element('h3','APT · images analogiques synchronisées','frames-title'));
+    frameList.append(element('p','Synchros A/B et cadence des lignes cohérentes. Aucun CRC : identification du satellite et contenu non authentifiés. Intensités normalisées, sans température ni géolocalisation.','hint apt-scope'));
+    if(trial.duration_limited || trial.deferred_channel_count)frameList.append(element('p','Recherche APT partielle : budget de durée, d’échantillons ou de canaux atteint.','hint'));
+    for(const image of trial.images){
+      const card=element('div',undefined,'frame apt-image');
+      card.append(element('h3',`APT · ${image.height} lignes · ${image.width} valeurs par ligne`,'apt-dimensions'));
+      card.append(element('p',`t=${image.time_seconds.toFixed(3)}–${image.time_end_seconds.toFixed(3)} s · décalage ${formatFrequency(image.channel.offset_hz)}`));
+      card.append(element('p','Canaux A et B en ordre de réception. Aperçus étirés verticalement ; les PNG conservent les dimensions d’origine.','hint'));
+      for(const key of ['A','B']){
+        const figure=element('figure');figure.append(element('figcaption',`Canal ${key} · 909 × ${image.height}`));
+        const preview=element('img');preview.className='apt-preview';preview.alt=`APT canal ${key}, intensité non calibrée`;
+        preview.src=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+image.artifacts[key])}`;
+        preview.style.width='100%';preview.style.height='120px';figure.append(preview);card.append(figure);
+      }
+      for(const [key,label] of [['full','PNG complet'],['A','PNG canal A'],['B','PNG canal B'],['csv','Pixels CSV'],['pixels','Pixels uint8 binaires']]){
+        const link=element('a',label);link.className=`apt-download-${key}`;
+        link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+image.artifacts[key])}`;
+        link.download=image.artifacts[key];card.append(link,document.createTextNode(' · '));
+      }
+      frameList.append(card);
+    }
+    if(trial.artifact){const link=element('a','Synchronisation et provenance APT (JSON)');link.className='apt-download';link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
   }
   if(ax25Frames.length)frameList.append(element('h3',`AX.25${ax25Frames.some(f=>f.fields.frame_type!=='UI')?'':' UI'} · ${ax25Frames.length} trame(s) CRC valide(s)`,'frames-title'));
   for(const trial of ax25Trials){

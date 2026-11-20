@@ -90,7 +90,7 @@ class ScanTests(unittest.TestCase):
         for record in result['windows']:
             report=json.loads((out/record['report_artifact']).read_text())
             self.assertEqual(report['source_sample_start'],record['start_sample'])
-            self.assertEqual(len(report['wideband_trials']),16)
+            self.assertEqual(len(report['wideband_trials']),17)
         with self.assertRaisesRegex(ValueError,'empty'):scan_file(self.path,out,24000,seconds=.1)
 
     def test_cli_emits_a_resumable_scan_report(self):

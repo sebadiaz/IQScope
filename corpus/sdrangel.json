@@ -40,7 +40,8 @@
       "format": "wav_iq",
       "sample_rate": 62500,
       "bits": 16,
-      "family": "NOAA APT"
+      "family": "NOAA APT",
+      "expected_excerpt_sha256_16m": "a8d385f10a099e688b716b7624df7f76d9be3e3664899ca3eb84e01cba0b903c"
     },
     {
       "id": "bfm",

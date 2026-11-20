@@ -823,6 +823,13 @@ Le tableau décrit des cibles et des candidats à auditer, pas des intégrations
 | Radar et impulsions | FMCW, pulsé et formes documentées | Caractéristiques de forme d'onde, périodicités et spectres | DSP interne ; distance/vitesse uniquement avec contexte et référence adaptés |
 | Signaux propriétaires ou militaires | Formes connues et documentées, bursts, hopping, étalement | Caractérisation et décodage seulement si informations suffisantes | Recherche ouverte par famille, sans promesse de déchiffrement ni support global |
 
+APT dispose désormais d’un récepteur IQ natif borné : FM puis enveloppe AM,
+synchros A/B répétées, bandes d’image et export PNG/CSV/uint8. Voir
+[le périmètre APT](APT.md). Il s’agit d’intensités normalisées, sans CRC,
+calibration radiométrique, température, géolocalisation ou assemblage de passage.
+Les autres formats météo de cette ligne restent à implémenter ; les satellites
+NOAA APT ayant été retirés en 2025, les exemples NOAA sont historiques.
+
 Les logiciels listés peuvent être des applications complètes, des bibliothèques ou des outils de recherche. Leur présence dans ce tableau ne signifie pas qu'ils possèdent une API embarquable, un mode passif complet ou la capacité de traiter directement les IQ de notre pipeline.
 
 ### 23.4 Réutilisation : quatre stratégies d'intégration

@@ -52,7 +52,7 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('SDR en direct',page.text)
         self.assertIn("default-src 'self'",page.headers['content-security-policy'])
         data = (await self.client.get('/api/capabilities')).json()
-        self.assertEqual(len(data['decoders']),18)
+        self.assertEqual(len(data['decoders']),19)
         self.assertEqual(next(d for d in data['decoders'] if d['id']=='afsk1200_fm_ax25')['family'], 'NBFM / AFSK1200 / AX.25')
         self.assertEqual(next(d for d in data['decoders'] if d['id']=='pocsag')['family'], 'POCSAG paging')
 
@@ -85,6 +85,25 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         base=f"/api/jobs/{job['id']}/artifacts/"
         self.assertEqual((await self.client.get(base+trial['artifact'])).json(),trial)
         self.assertEqual((await self.client.get(base+trial['frames'][0]['wire_artifact'])).content,PACKET)
+
+    async def test_automatic_apt_iq_import_png_and_numeric_pixels(self):
+        from test_apt import fixture,png_pixels
+        x,fs,_=fixture(lines=7)
+        identifier=(await self.client.post('/api/uploads',content=x.astype('<c8').tobytes(),headers=HEADERS)).json()['upload_id']
+        response=await self.client.post('/api/analyses',json={'upload_id':identifier,'sample_rate':fs},headers=HEADERS)
+        job=await self.wait_job(response.json()['id'],attempts=500)
+        self.assertEqual(job['status'],'completed',job.get('error'))
+        trial=next(t for t in job['result']['wideband_trials'] if t['decoder']=='noaa_apt')
+        image=trial['images'][0];base=f"/api/jobs/{job['id']}/artifacts/"
+        self.assertEqual((await self.client.get(base+trial['artifact'])).json(),trial)
+        png=await self.client.get(base+image['artifacts']['full'])
+        self.assertEqual(png.headers['content-type'],'image/png')
+        pixels=png_pixels(png.content)
+        self.assertEqual(pixels.shape,(image['height'],2080))
+        self.assertEqual((await self.client.get(base+image['artifacts']['pixels'])).content,pixels.tobytes())
+        np.testing.assert_array_equal(np.loadtxt(io.StringIO((await self.client.get(base+image['artifacts']['csv'])).text),delimiter=','),pixels)
+        self.assertEqual(trial['source_window_reference']['start_sample'],0)
+        self.assertEqual((await self.client.get(base+'../outside.png')).status_code,404)
 
     async def test_recording_list_and_bounded_import_artifacts(self):
         from test_formats import make_wave
