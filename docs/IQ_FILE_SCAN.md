@@ -46,7 +46,7 @@ Aucun état DSP, liaison AX.25 ou réassemblage applicatif n'est propagé.
 
 Chaque passe produit aussi `scan-events.json`, repris intégralement dans
 `event_catalogue` du bilan. Il indexe les voies CRC déjà implémentées :
-ADS-B DF17/18, AIS GMSK, AX.25 UI sur FSK/BPSK, AFSK1200/AX.25 et FM/AFSK1200/AX.25,
+ADS-B DF17/18, AIS GMSK, groupes RDS sur FM, AX.25 UI sur FSK/BPSK, AFSK1200/AX.25 et FM/AFSK1200/AX.25,
 ainsi que les charges utiles du profil LoRa PHY partiel. Le CRC/FCS est
 recalculé depuis les octets avant l'indexation. Les messages POCSAG, données
 de capteurs externes, sorties FEC sans CRC et candidats audio/symboles restent
@@ -61,6 +61,7 @@ reste ancrée à la première observation, sans dérive cumulative. Tolérances 
 | --- | --- | --- |
 | FM/AFSK1200 AX.25 | Deux symboles nominaux à 1200 bauds | 500 Hz |
 | AIS GMSK | Deux symboles nominaux à 9600 bauds | 1 kHz |
+| RDS sur FM | Deux bits nominaux à 1187,5 bits/s | 5 kHz |
 | AX.25 FSK/BPSK générique | Un échantillon source | Même décalage |
 | ADS-B | Une microseconde, au moins un échantillon | Réception directe |
 | LoRa PHY | Un symbole au SF/BW retenu | Réception centrée |

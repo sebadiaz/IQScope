@@ -10,8 +10,9 @@ from iqscope_ax25 import encode_kiss_frame
 from iqscope_ax25_link import parse_link
 from iqscope_lora_payload import payload_crc
 from iqscope_ais import checked_ais_packet
+from iqscope_rds import checked_rds_group
 
-CRC_DECODERS=frozenset(('adsb_1090es','ais_gmsk','ax25_ui','afsk1200_fm_ax25','afsk1200_ax25','lora_preamble'))
+CRC_DECODERS=frozenset(('adsb_1090es','ais_gmsk','rds_fm','ax25_ui','afsk1200_fm_ax25','afsk1200_ax25','lora_preamble'))
 
 
 def _number(value):
@@ -40,6 +41,13 @@ def _packet(frame,decoder,fs):
                     integrity=dict(algorithm='LoRa payload CRC16',received_crc=frame['received_crc'],calculated_crc=payload_crc(raw)),
                     offset=0,channel_tolerance=0,frontend='centered_lora')
     raw=bytes.fromhex(frame['hex'])
+    if decoder=='rds_fm':
+        if frame.get('crc_valid') is not True:raise ValueError('RDS CRC claim missing')
+        fields=checked_rds_group(raw);offset=_number(frame['channel']['offset_hz'])
+        return dict(hex=raw.hex(),family='RDS',byte_scope='four_26bit_blocks_with_offset_crc',
+                    validation='Four RDS offset/CRC-10 checks rechecked; declared fields, no cross-window text assembly.',
+                    fields=fields,matching_parameters={},tolerance=max(1,round(2*fs/1187.5)),
+                    offset=offset,channel_tolerance=5000,frontend='fm_57khz_biphase_dbpsk')
     if decoder=='ais_gmsk':
         if frame.get('fcs_valid') is not True:raise ValueError('AIS FCS claim missing')
         fields=checked_ais_packet(raw);offset=_number(frame['channel']['offset_hz'])

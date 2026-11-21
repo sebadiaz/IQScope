@@ -52,7 +52,7 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('SDR en direct',page.text)
         self.assertIn("default-src 'self'",page.headers['content-security-policy'])
         data = (await self.client.get('/api/capabilities')).json()
-        self.assertEqual(len(data['decoders']),19)
+        self.assertEqual(len(data['decoders']),20)
         self.assertEqual(next(d for d in data['decoders'] if d['id']=='afsk1200_fm_ax25')['family'], 'NBFM / AFSK1200 / AX.25')
         self.assertEqual(next(d for d in data['decoders'] if d['id']=='pocsag')['family'], 'POCSAG paging')
 
@@ -104,6 +104,23 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         np.testing.assert_array_equal(np.loadtxt(io.StringIO((await self.client.get(base+image['artifacts']['csv'])).text),delimiter=','),pixels)
         self.assertEqual(trial['source_window_reference']['start_sample'],0)
         self.assertEqual((await self.client.get(base+'../outside.png')).status_code,404)
+
+    async def test_automatic_rds_iq_import_station_text_and_group_octets(self):
+        from test_rds import fixture,packet
+        x,fs,groups=fixture()
+        identifier=(await self.client.post('/api/uploads',content=x.astype('<c8').tobytes(),headers=HEADERS)).json()['upload_id']
+        response=await self.client.post('/api/analyses',json={'upload_id':identifier,'sample_rate':fs},headers=HEADERS)
+        job=await self.wait_job(response.json()['id'],attempts=500)
+        self.assertEqual(job['status'],'completed',job.get('error'))
+        trial=next(t for t in job['result']['wideband_trials'] if t['decoder']=='rds_fm')
+        self.assertEqual(trial['stations'][0]['ps']['text'],'YLE X3M ')
+        self.assertEqual(trial['stations'][0]['radiotext']['text'],'HELLO RDS')
+        base=f"/api/jobs/{job['id']}/artifacts/"
+        self.assertEqual((await self.client.get(base+trial['artifact'])).json(),trial)
+        self.assertEqual(trial['source_window_reference']['start_sample'],0)
+        for frame in trial['frames']:
+            data=(await self.client.get(base+frame['wire_artifact'])).content
+            self.assertEqual(data,bytes.fromhex(frame['hex']));self.assertIn(data,[packet(g) for g in groups])
 
     async def test_recording_list_and_bounded_import_artifacts(self):
         from test_formats import make_wave

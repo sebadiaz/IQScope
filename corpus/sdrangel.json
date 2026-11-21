@@ -49,7 +49,8 @@
       "format": "wav_iq",
       "sample_rate": 4000000,
       "bits": 16,
-      "family": "Broadcast FM"
+      "family": "Broadcast FM",
+      "expected_excerpt_sha256_32m": "900357abb055c363ed1239de1ab8d0a73ef1723f5de11f6932cfa142e6833c4f"
     },
     {
       "id": "clock",

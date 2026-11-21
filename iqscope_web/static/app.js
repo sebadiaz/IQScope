@@ -134,8 +134,9 @@ function showReport(report, jobId, artifactPrefix='') {
   const ax25Frames=ax25Trials.flatMap(t=>t.frames || []);
   const loraFrames=(report.wideband_trials || []).filter(t=>t.decoder==='lora_preamble').flatMap(t=>t.frames || []);
   const aisFrames=(report.wideband_trials || []).filter(t=>t.decoder==='ais_gmsk').flatMap(t=>t.frames || []);
+  const rdsFrames=(report.wideband_trials || []).filter(t=>t.decoder==='rds_fm').flatMap(t=>t.frames || []);
   $('metric-signals').textContent=signals.length;
-  $('metric-frames').textContent=frames.length+ax25Frames.length+loraFrames.length+aisFrames.length;
+  $('metric-frames').textContent=frames.length+ax25Frames.length+loraFrames.length+aisFrames.length+rdsFrames.length;
   $('metric-duration').textContent=`${report.analyzed_seconds.toFixed(2)} s`;
   $('download').href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+'report.json')}`; $('download').hidden=false;
   const list=$('signal-list');list.replaceChildren();
@@ -419,6 +420,39 @@ function showReport(report, jobId, artifactPrefix='') {
     }
     if(trial.artifact){const link=element('a','Synchronisation et provenance APT (JSON)');link.className='apt-download';link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+trial.artifact)}`;link.download=trial.artifact;frameList.append(link);}
   }
+  for(const trial of report.wideband_trials || []){
+    if(trial.decoder!=='rds_fm' || !trial.frames?.length)continue;
+    frameList.append(element('h3',`RDS · ${trial.frames.length} groupes à CRC vérifiés`,'frames-title'));
+    frameList.append(element('p','Quatre blocs vérifiés par groupe, sans réparation. PI, noms et textes sont déclarés par la station ; aucun émetteur authentifié. Les codes de caractères non pris en charge sont affichés en échappement.','hint rds-scope'));
+    if(trial.budget_exhausted || trial.duration_limited || trial.deferred_channel_count)frameList.append(element('p','Recherche RDS partielle : budget de groupes, de durée ou de canaux atteint.','hint'));
+    for(const station of trial.stations){
+      const card=element('div',undefined,'frame rds-station');
+      card.append(element('h3',`RDS · PI déclaré ${station.pi_hex}`,'rds-identity'));
+      const c=station.channel;
+      card.append(element('p',`Canal estimé : ${c.rf_center_known?formatFrequency(c.frequency_hz):'décalage '+formatFrequency(c.offset_hz)} · ${station.groups} groupes · PTY ${station.pty} · TP ${station.tp?'oui':'non'}`));
+      if(station.ps.segments_received.length){
+        card.append(element('p',station.ps.complete?'Nom reçu (PS complet)':'Nom reçu (PS incomplet)','rds-ps-status'));
+        card.append(element('pre',station.ps.display_text,'rds-ps'));
+      }
+      if(station.radiotext.segments_received.length){
+        card.append(element('p',station.radiotext.complete?'RadioText complet':'RadioText incomplet · les points médians signalent les caractères manquants','rds-rt-status'));
+        card.append(element('pre',station.radiotext.display_text,'rds-radiotext'));
+      }
+      if(station.ps_resets || station.radiotext_resets)card.append(element('p','Assemblage réinitialisé après changement de texte ou conflit de segment ; détails dans le JSON.','hint'));
+      frameList.append(card);
+    }
+    const groups=element('details');groups.append(element('summary','Groupes RDS reçus et octets'));
+    for(const frame of trial.frames){
+      const row=element('p',`t=${frame.time_seconds.toFixed(6)} s · PI ${frame.fields.pi_hex} · groupe ${frame.fields.group_name} · `,'rds-group');
+      for(const [key,label] of [['wire_artifact','104 bits avec contrôles'],['payload_artifact','4 mots de données']]){
+        const link=element('a',label);link.className=`rds-download-${key}`;
+        link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+frame[key])}`;link.download=frame[key];row.append(link,document.createTextNode(' · '));
+      }
+      groups.append(row);
+    }
+    frameList.append(groups);
+    const link=element('a','Groupes, textes et provenance RDS (JSON)');link.className='rds-download';link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+trial.artifact)}`;link.download=trial.artifact;frameList.append(link);
+  }
   if(ax25Frames.length)frameList.append(element('h3',`AX.25${ax25Frames.some(f=>f.fields.frame_type!=='UI')?'':' UI'} · ${ax25Frames.length} trame(s) CRC valide(s)`,'frames-title'));
   for(const trial of ax25Trials){
     if(trial.frontend==='bpsk_g3ruh' && !trial.frames.length && trial.stream_diagnostics?.some(d=>d.flags_observed))frameList.append(element('p','BPSK : fanions HDLC observés, aucune trame AX.25 UI validée. Le rapport détaille les rejets ; aucune charge utile binaire n’est déduite.','hint psk-ax25-unresolved'));
@@ -699,6 +733,7 @@ function renderScanCatalogue(result,jobId,inspect){
         card.append(element('p',`${address(f.source)} → ${address(f.destination)} · ${f.frame_type}`));
         if(f.frame_type==='I')card.append(element('p','Mode de contrôle et contenu applicatif non sélectionnés ; consulter les hypothèses dans la fenêtre.','hint'));
       }else if(event.family==='AIS')renderAISFields(card,event.fields);
+      else if(event.family==='RDS')card.append(element('p',`RDS · PI déclaré ${event.fields.pi_hex} · groupe ${event.fields.group_name}`));
       else if(event.family==='Mode S / ADS-B')card.append(element('p',`DF${event.fields.downlink_format} · adresse Mode S ${event.fields.address_hex} · type ${event.fields.type_code}`));
       else if(event.family==='LoRa PHY')card.append(element('p',`SF${event.fields.spreading_factor} · ${event.fields.bandwidth_hz/1000} kHz · charge utile PHY`));
       card.append(element('p',event.rf_center_known?formatFrequency(event.frequency_hz):`Décalage ${formatFrequency(event.channel_offset_hz)} · centre RF non renseigné.`));

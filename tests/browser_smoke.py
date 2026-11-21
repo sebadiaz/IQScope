@@ -145,6 +145,50 @@ def main():
                     assert latest['position_integrity_pair']['members']['even']['nic_category']==9
                     page.screenshot(path='browser-artifacts/adsb-cpr-integrity.png', full_page=True)
                     page.locator('#file-rate').fill(previous_rate)
+                # RDS: independently generated FM/DBPSK, text, CRC count, bytes and catalogue.
+                from test_rds import fixture as rds_fixture,packet as rds_packet
+                with tempfile.TemporaryDirectory() as rds_directory:
+                    rds_path=Path(rds_directory)/'rds.cf32';rds_iq,rds_rate,rds_words=rds_fixture()
+                    rds_iq.astype('<c8').tofile(rds_path)
+                    previous_rate=page.locator('#file-rate').input_value()
+                    page.locator('#iq-file').set_input_files(str(rds_path));page.locator('#file-rate').fill(str(rds_rate))
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=60000)
+                    expect(page.locator('.rds-station')).to_have_count(1)
+                    expect(page.locator('.rds-identity')).to_contain_text('6204')
+                    expect(page.locator('.rds-ps')).to_have_text('YLE X3M ')
+                    expect(page.locator('.rds-radiotext')).to_have_text('HELLO RDS')
+                    expect(page.locator('.rds-rt-status')).to_have_text('RadioText complet')
+                    response=page.request.get(urljoin(page.url,page.locator('.rds-download').get_attribute('href')))
+                    assert response.ok;rds_trial=response.json()
+                    expect(page.locator('#metric-frames')).to_have_text(str(len(rds_trial['frames'])))
+                    page.get_by_text('Groupes RDS reçus et octets',exact=True).click()
+                    with page.expect_download() as downloaded:
+                        page.locator('.rds-download-wire_artifact').first.click()
+                    received=Path(downloaded.value.path()).read_bytes()
+                    assert received==bytes.fromhex(rds_trial['frames'][0]['hex']) and received in [rds_packet(g) for g in rds_words]
+                    page.locator('#auto-scan').check();page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('#status-text')).to_have_text(re.compile('^Parcours terminé'),timeout=60000)
+                    page.locator('#scan-event-family').select_option('RDS')
+                    expect(page.locator('.scan-event')).to_have_count(len(rds_trial['frames']))
+                    expect(page.locator('.scan-event').first).to_contain_text('6204')
+                    response=page.request.get(urljoin(page.url,page.locator('.scan-event-binary').first.get_attribute('href')))
+                    assert response.ok and response.body()==received
+                    page.locator('#auto-scan').uncheck()
+                    if os.environ.get('IQSCOPE_TEST_RDS_RADIO')=='1':
+                        page.locator('#iq-file').set_input_files('corpus-cache/rds/source.sigmf-data')
+                        page.locator('#file-rate').fill('4000000')
+                        page.get_by_role('button',name='Analyser automatiquement').click()
+                        expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=90000)
+                        expect(page.locator('.rds-station')).to_have_count(2)
+                        expect(page.locator('.rds-ps').first).to_contain_text('LBC')
+                        expect(page.locator('.rds-ps').last).to_contain_text('Radio 1')
+                        expect(page.locator('.rds-rt-status').first).to_contain_text('incomplet')
+                        expect(page.locator('.rds-rt-status').last).to_contain_text('incomplet')
+                        response=page.request.get(urljoin(page.url,page.locator('.rds-download').get_attribute('href')))
+                        assert response.ok and len(response.json()['frames'])==40
+                        page.screenshot(path='browser-artifacts/rds-original-iq.png',full_page=True)
+                    page.locator('#file-rate').fill(previous_rate)
                 # APT images: automatic IQ import, browser image loading and numeric exports.
                 from test_apt import fixture as apt_fixture,png_pixels
                 with tempfile.TemporaryDirectory() as apt_directory:

@@ -823,6 +823,12 @@ Le tableau décrit des cibles et des candidats à auditer, pas des intégrations
 | Radar et impulsions | FMCW, pulsé et formes documentées | Caractéristiques de forme d'onde, périodicités et spectres | DSP interne ; distance/vitesse uniquement avec contexte et référence adaptés |
 | Signaux propriétaires ou militaires | Formes connues et documentées, bursts, hopping, étalement | Caractérisation et décodage seulement si informations suffisantes | Recherche ouverte par famille, sans promesse de déchiffrement ni support global |
 
+RDS dispose d’un récepteur IQ FM natif : sous-porteuse 57 kHz, biphase/DBPSK,
+quatre blocs à contrôles CRC/offset par groupe, PI et assemblage partiel PS et
+RadioText. Voir [le périmètre RDS](RDS.md). Deux stations détectées au plus par
+fenêtre ; pas de réparation, d’authentification ni d’état inter-fenêtres. La
+stéréo audio et les autres applications RDS/RDS2 restent à traiter.
+
 APT dispose désormais d’un récepteur IQ natif borné : FM puis enveloppe AM,
 synchros A/B répétées, bandes d’image et export PNG/CSV/uint8. Voir
 [le périmètre APT](APT.md). Il s’agit d’intensités normalisées, sans CRC,

@@ -1,0 +1,60 @@
+{
+  "source_page": "https://www.sdrangel.org/iq-files/",
+  "archive_url": "https://www.sdrangel.org/iq/bfm.zip",
+  "archive_member": "bfm.2021-12-16T14_23_16_147.wav",
+  "excerpt_sha256_32m": "900357abb055c363ed1239de1ab8d0a73ef1723f5de11f6932cfa142e6833c4f",
+  "sample_rate": 4000000,
+  "center_frequency_hz": 99000000,
+  "seconds": 2,
+  "expected_frames_by_pi": {
+    "C478": [
+      "c478d4014a3f0ff62e4c8080dc",
+      "c478d4014a649ff62e4d31083f",
+      "c478d40949eca6f6782d85ca1d",
+      "c478d4014a882ff62e4d0c80f0",
+      "c478d4014be66ff62e4c8080dc",
+      "c478d4094a05f7479eb8348386",
+      "c478d4014a3f0ff62e4c8080dc",
+      "c478d4014a649ff62e4d31083f",
+      "c478d4094835c4f6ec78810795",
+      "c478d4014a882ff62e4d0c80f0",
+      "c478d4014be66ff62e4c8080dc",
+      "c478d409486e56972660813900",
+      "c478d4094835c4f6ec78810795",
+      "c478d4014a3f0ff62e4c8080dc",
+      "c478d4014a649ff62e4d31083f",
+      "c478d409486e56972660813900",
+      "c478d4014a882ff62e4d0c80f0",
+      "c478d4014be66ff62e4c8080dc",
+      "c478d4094882e6f776d081be7e",
+      "c478d4014a3f0ff62e4c8080dc"
+    ],
+    "C201": [
+      "c2019b7854d386e74e8f1864e9",
+      "c2019b4056476686707d91a7c6",
+      "c2019b48521df616c949ad96d5",
+      "c2019b7857614480035b1864e9",
+      "c2019b4056abd6dcd5adbc8376",
+      "c2019b48524667220150988214",
+      "c2019b4057c59f071ea8c4830b",
+      "c2019b445027880e18e20d0090",
+      "c2019b78578df00005a31864e9",
+      "c2019b40572926e66db94986a9",
+      "c2019b78550aee35cb971864e9",
+      "c2019b4056476787a53191a7c6",
+      "c2019b4056abd787a531bc8376",
+      "c2019b4853c4920200008080dc",
+      "c2019b4057c59756c8a4c4830b",
+      "c2019b445027880e18e20d0090",
+      "c2019b7854d38737800f344b1c",
+      "c2019b405729276774e94986a9",
+      "c2019b7857614480035b344b1c",
+      "c2019b4056476796939191a7c6"
+    ]
+  },
+  "expected_ps": {
+    "C478": "  LBC   ",
+    "C201": "Radio 1 "
+  },
+  "scope": "Pinned original multi-station IQ development regression, not an independently annotated RF group total or authenticated station identity; RadioText incomplete in this two-second window."
+}

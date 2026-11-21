@@ -53,6 +53,8 @@ jobs:
           python scripts/ais_reference.py --oracle
       - name: Verify historical APT IQ synchronization and numeric image strips
         run: python scripts/apt_reference.py
+      - name: Verify automatic multichannel RDS from original broadcast FM IQ
+        run: python scripts/rds_reference.py
       - run: python tests/browser_smoke.py
         env:
           NO_PROXY: 127.0.0.1,localhost
@@ -64,6 +66,7 @@ jobs:
           IQSCOPE_TEST_AX25_IQ: '1'
           IQSCOPE_TEST_AIS_RADIO: '1'
           IQSCOPE_TEST_APT_RADIO: '1'
+          IQSCOPE_TEST_RDS_RADIO: '1'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -119,6 +122,12 @@ jobs:
             corpus-cache/apt/results/apt-*.png
             corpus-cache/apt/results/apt-*-pixels.bin
             corpus-cache/apt/results/apt-*-pixels.csv
+            corpus-cache/rds/provenance.json
+            corpus-cache/rds/summary.json
+            corpus-cache/rds/results/report.json
+            corpus-cache/rds/results/rds-groups.json
+            corpus-cache/rds/results/rds-group-*.bin
+            corpus-cache/rds/results/rds-data-*.bin
             corpus-cache/iq-file-scan/provenance.json
             corpus-cache/iq-file-scan/window-*/report.json
             corpus-cache/iq-file-scan/window-*/fm-afsk-frames.json
