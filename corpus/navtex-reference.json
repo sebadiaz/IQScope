@@ -1,0 +1,19 @@
+{
+  "source_page": "https://www.sdrangel.org/iq-files/",
+  "archive_url": "https://www.sdrangel.org/iq/navtex.zip",
+  "archive_member": "navtex_2023-02-21T16_40_30_201.wav",
+  "iq_prefix_limit": 16777216,
+  "iq_bytes": 3756464,
+  "iq_sha256": "e4c65806ecf5d09c95dba22b5fc7feca24b75c037e8a088ebdaa6c6802df451f",
+  "sample_rate": 1953,
+  "center_frequency_hz": 0,
+  "seconds": 40,
+  "expected_messages": [
+    "ZCZC EA39\r\nWZ 144\r\nSELF CANCELLING. CANCEL WZ 140 (EA37).\r\nNASH POINT LIGHT, NORMAL CONDITIONS RESTORED.\r\nNNNN\r\n\n"
+  ],
+  "expected_headers": [
+    "ZCZC EA39"
+  ],
+  "first_message_seconds": 16.573,
+  "scope": "Original-IQ development regression; no independently published reference text or error total, no authenticated station or current navigation status. Source filename labels a 2023 recording; RF center unknown."
+}

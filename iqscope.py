@@ -22,6 +22,7 @@ from iqscope_afsk_fm import search_afsk_fm, write_afsk_fm_artifact
 from iqscope_ais import search_ais,write_ais_artifacts
 from iqscope_apt import search_apt,write_apt_artifacts
 from iqscope_rds import search_rds,write_rds_artifacts
+from iqscope_sitor import search_sitor,write_sitor_artifacts
 from iqscope_pocsag import decode_pocsag, write_pocsag_artifact
 from iqscope_ofdm import detect_cyclic_prefix
 from iqscope_lora import detect_lora_preamble
@@ -125,6 +126,8 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
     write_apt_artifacts(apt,out)
     rds=search_rds(x,fs,detections,center)
     write_rds_artifacts(rds,out)
+    sitor=search_sitor(x,fs,center)
+    write_sitor_artifacts(sitor,out)
     for item in results:
         low,high = item['band_edges_hz']
         indexes = [index for index,frame in enumerate(fm_ax25['frames'])
@@ -163,7 +166,7 @@ def analyze_samples(x, fs, center, out, source='live', threshold_db=9, max_signa
               'limitations': ['Stationary spectral detector; overlapping, hopping and weak bursts may be missed.',
                              'AM/FM audio are unvalidated candidates. ADS-B, AIS, RDS groups, AX.25 and supported LoRa PHY frames have CRC checks; RTTY/CW text candidates have timing or framing evidence only.',
                              'At most 12 spectral bands receive audio trials; other detections remain visible.'],
-              'signals': results, 'wideband_trials': [digital, rtty, cw, fsk, fsk4, ax25, fm_ax25, ofdm, lora, rtl433, psk, psk_ax25, ao40, qam, pocsag, ais, apt, rds],
+              'signals': results, 'wideband_trials': [digital, rtty, cw, fsk, fsk4, ax25, fm_ax25, ofdm, lora, rtl433, psk, psk_ax25, ao40, qam, pocsag, ais, apt, rds, sitor],
               'spectrum': {'frequency_hz': frequencies.tolist(), 'power_db': spectrum.tolist()},
               'waterfall': {'power_db': waterfall.tolist(), 'time_seconds': (starts/fs).tolist(),
                             'sampled_windows': True}}

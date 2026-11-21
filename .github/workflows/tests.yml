@@ -55,6 +55,8 @@ jobs:
         run: python scripts/apt_reference.py
       - name: Verify automatic multichannel RDS from original broadcast FM IQ
         run: python scripts/rds_reference.py
+      - name: Verify collective SITOR-B copies and NAVTEX text from original IQ
+        run: python scripts/navtex_reference.py
       - run: python tests/browser_smoke.py
         env:
           NO_PROXY: 127.0.0.1,localhost
@@ -67,6 +69,7 @@ jobs:
           IQSCOPE_TEST_AIS_RADIO: '1'
           IQSCOPE_TEST_APT_RADIO: '1'
           IQSCOPE_TEST_RDS_RADIO: '1'
+          IQSCOPE_TEST_NAVTEX_RADIO: '1'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -128,6 +131,13 @@ jobs:
             corpus-cache/rds/results/rds-groups.json
             corpus-cache/rds/results/rds-group-*.bin
             corpus-cache/rds/results/rds-data-*.bin
+            corpus-cache/navtex/provenance.json
+            corpus-cache/navtex/summary.json
+            corpus-cache/navtex/results/report.json
+            corpus-cache/navtex/results/sitor-navtex.json
+            corpus-cache/navtex/results/sitor-*-text.txt
+            corpus-cache/navtex/results/sitor-*-received-symbols.bin
+            corpus-cache/navtex/results/navtex-message-*.txt
             corpus-cache/iq-file-scan/provenance.json
             corpus-cache/iq-file-scan/window-*/report.json
             corpus-cache/iq-file-scan/window-*/fm-afsk-frames.json

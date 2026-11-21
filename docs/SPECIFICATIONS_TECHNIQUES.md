@@ -823,6 +823,12 @@ Le tableau décrit des cibles et des candidats à auditer, pas des intégrations
 | Radar et impulsions | FMCW, pulsé et formes documentées | Caractéristiques de forme d'onde, périodicités et spectres | DSP interne ; distance/vitesse uniquement avec contexte et référence adaptés |
 | Signaux propriétaires ou militaires | Formes connues et documentées, bursts, hopping, étalement | Caractérisation et décodage seulement si informations suffisantes | Recherche ouverte par famille, sans promesse de déchiffrement ni support global |
 
+SITOR-B collectif dispose d’un récepteur IQ FSK natif à 100 bauds : mots CCIR
+476 à rapport constant et copies espacées de cinq symboles ; cadrage NAVTEX
+partiel/complet et export des copies reçues. Voir [le périmètre NAVTEX](NAVTEX.md).
+Une seule copie valide peut suppléer l’autre invalide ; deux copies valides
+contradictoires restent une lacune. Aucun CRC, ARQ ni assemblage inter-fenêtres.
+
 RDS dispose d’un récepteur IQ FM natif : sous-porteuse 57 kHz, biphase/DBPSK,
 quatre blocs à contrôles CRC/offset par groupe, PI et assemblage partiel PS et
 RadioText. Voir [le périmètre RDS](RDS.md). Deux stations détectées au plus par

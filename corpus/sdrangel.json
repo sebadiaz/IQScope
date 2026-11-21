@@ -118,9 +118,11 @@
       "id": "navtex",
       "file": "navtex.zip",
       "format": "wav_iq",
-      "sample_rate": 1935,
+      "sample_rate": 1953,
       "bits": 16,
-      "family": "Navtex"
+      "family": "Navtex",
+      "sample_rate_evidence": "Original WAV fmt header; previous catalog value 1935 was incorrect",
+      "expected_excerpt_sha256_16m": "e4c65806ecf5d09c95dba22b5fc7feca24b75c037e8a088ebdaa6c6802df451f"
     },
     {
       "id": "rtty",

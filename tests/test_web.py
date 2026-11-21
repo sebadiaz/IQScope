@@ -52,7 +52,7 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('SDR en direct',page.text)
         self.assertIn("default-src 'self'",page.headers['content-security-policy'])
         data = (await self.client.get('/api/capabilities')).json()
-        self.assertEqual(len(data['decoders']),20)
+        self.assertEqual(len(data['decoders']),21)
         self.assertEqual(next(d for d in data['decoders'] if d['id']=='afsk1200_fm_ax25')['family'], 'NBFM / AFSK1200 / AX.25')
         self.assertEqual(next(d for d in data['decoders'] if d['id']=='pocsag')['family'], 'POCSAG paging')
 
@@ -121,6 +121,24 @@ class WebTests(unittest.IsolatedAsyncioTestCase):
         for frame in trial['frames']:
             data=(await self.client.get(base+frame['wire_artifact'])).content
             self.assertEqual(data,bytes.fromhex(frame['hex']));self.assertIn(data,[packet(g) for g in groups])
+
+    async def test_automatic_sitor_navtex_iq_text_and_received_symbol_exports(self):
+        from test_sitor import fixture,TEXT
+        x,fs,_=fixture()
+        identifier=(await self.client.post('/api/uploads',content=x.astype('<c8').tobytes(),headers=HEADERS)).json()['upload_id']
+        response=await self.client.post('/api/analyses',json={'upload_id':identifier,'sample_rate':fs},headers=HEADERS)
+        job=await self.wait_job(response.json()['id'],attempts=500)
+        self.assertEqual(job['status'],'completed',job.get('error'))
+        trial=next(t for t in job['result']['wideband_trials'] if t['decoder']=='sitor_b')
+        self.assertEqual(trial['messages'][0]['text'],TEXT)
+        base=f"/api/jobs/{job['id']}/artifacts/"
+        self.assertEqual((await self.client.get(base+trial['artifact'])).json(),trial)
+        self.assertEqual((await self.client.get(base+trial['messages'][0]['artifact'])).content,TEXT.encode())
+        candidate=trial['candidates'][0]
+        self.assertEqual((await self.client.get(base+candidate['symbols_artifact'])).content,
+                         bytes(s['code'] for s in candidate['received_symbols']))
+        self.assertEqual(trial['source_window_reference']['start_sample'],0)
+        self.assertNotIn('frames',trial)
 
     async def test_recording_list_and_bounded_import_artifacts(self):
         from test_formats import make_wave

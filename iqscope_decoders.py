@@ -19,6 +19,7 @@ class Capability:
 
 
 CAPABILITIES = (
+    Capability('sitor_b','SITOR-B / CCIR 476 / NAVTEX','automatic nominal 100-baud/170-Hz FSK, 4-of-7 words and five-symbol delayed copies; partial/complete NAVTEX framing and raw copy/text exports; four channels, forty seconds','constant-ratio and repeated-copy evidence only, no CRC/authentication; a single valid copy may recover an invalid one, conflicting valid copies remain erasures; no cross-window text assembly or ARQ'),
     Capability('rds_fm','FM / RDS','automatic 57-kHz biphase/DBPSK from FM IQ; declared PI, PTY/TP and partial 0A/0B PS, 2A/2B RadioText; two channels, ten seconds, 128 groups','four strict offset/CRC-10 checks per complete group and adjacent-group acquisition; no correction, authentication, cross-window state or full RDS/RDS2 application support'),
     Capability('noaa_apt','NOAA APT / FM-AM images','automatic FM/2400-Hz AM envelope and repeated dual-sync line recovery; two spectral/baseband channels, twenty seconds, forty lines per image; PNG and numeric pixels','analog A/B synchronization and nominal line timing only; no CRC, satellite identity, radiometric calibration, temperature or geolocation'),
     Capability('ais_gmsk','AIS / GMSK','9600-baud GMSK/NRZI on up to four automatic RF/spectral/baseband channels; Class A/B positions and selected static fields; other message types retained as raw payload','strict training/HDLC stuffing, CRC-16/X-25 and supported message layout; positions and identity are declarations, no authentication or vessel-state reconstruction'),

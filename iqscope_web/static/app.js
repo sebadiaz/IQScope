@@ -453,6 +453,32 @@ function showReport(report, jobId, artifactPrefix='') {
     frameList.append(groups);
     const link=element('a','Groupes, textes et provenance RDS (JSON)');link.className='rds-download';link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+trial.artifact)}`;link.download=trial.artifact;frameList.append(link);
   }
+  for(const trial of report.wideband_trials || []){
+    if(trial.decoder!=='sitor_b' || !trial.candidates?.length)continue;
+    frameList.append(element('h3','SITOR-B / NAVTEX · texte avec preuves de répétition','frames-title'));
+    frameList.append(element('p','Code 4 parmi 7 et copies retardées comparés. Aucun CRC ni émetteur authentifié. Les copies valides contradictoires et les caractères manquants restent des lacunes.','hint sitor-validation'));
+    if(trial.duration_limited || trial.deferred_channel_count)frameList.append(element('p','Recherche partielle : durée, échantillons ou hypothèses de canaux hors budget.','hint'));
+    for(const [index,candidate] of trial.candidates.entries()){
+      const card=element('div',undefined,'frame sitor-candidate');const e=candidate.evidence;
+      card.append(element('h3',`Hypothèse SITOR-B ${index+1} · décalage spectral ${formatFrequency(candidate.channel.offset_hz)}`));
+      card.append(element('p',`${e.matching_traffic_pairs} paires identiques · ${e.single_valid_copy_pairs} paires avec une seule copie valide · ${e.valid_copy_conflicts} contradictions · ${e.both_invalid_pairs} paires invalides.`,'sitor-evidence'));
+      if(Number.isInteger(candidate.same_text_as_candidate_index))card.append(element('p',`Texte identique à l’hypothèse ${candidate.same_text_as_candidate_index+1} ; ces hypothèses peuvent provenir d’une même émission.`,'hint'));
+      const raw=element('details');raw.append(element('summary','Flux de caractères et lacunes'),element('pre',candidate.text,'sitor-text'));card.append(raw);
+      for(const [key,label,cls] of [['text_artifact','Texte candidat UTF-8','sitor-text-download'],['symbols_artifact','Valeurs 7 bits reçues','sitor-symbols-download']]){
+        const link=element('a',label);link.className=cls;link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+candidate[key])}`;link.download=candidate[key];card.append(link,document.createTextNode(' · '));
+      }
+      frameList.append(card);
+    }
+    for(const message of trial.messages){
+      const card=element('div',undefined,'frame navtex-message');
+      card.append(element('h3',`NAVTEX · ${message.station_designator}${message.subject_designator}${message.serial_text}`,'navtex-header'));
+      card.append(element('p',`${message.framing_complete?'ZCZC et NNNN reçus':'Message incomplet : fin NNNN absente'} · ${message.text_interpretation_complete?'texte interprété sans lacune détectée':'texte partiel ou avec codes non interprétés'}`,'navtex-completeness'));
+      card.append(element('p',`Station déclarée ${message.station_designator} · sujet ${message.subject_designator} · numéro ${message.serial_text}.`));
+      card.append(element('pre',message.body,'navtex-body'));
+      const link=element('a','Télécharger ce message NAVTEX');link.className='navtex-download';link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+message.artifact)}`;link.download=message.artifact;card.append(link);frameList.append(card);
+    }
+    const link=element('a','Copies reçues et preuves SITOR/NAVTEX (JSON)');link.className='sitor-download';link.href=`/api/jobs/${jobId}/artifacts/${encodeURIComponent(artifactPrefix+trial.artifact)}`;link.download=trial.artifact;frameList.append(link);
+  }
   if(ax25Frames.length)frameList.append(element('h3',`AX.25${ax25Frames.some(f=>f.fields.frame_type!=='UI')?'':' UI'} · ${ax25Frames.length} trame(s) CRC valide(s)`,'frames-title'));
   for(const trial of ax25Trials){
     if(trial.frontend==='bpsk_g3ruh' && !trial.frames.length && trial.stream_diagnostics?.some(d=>d.flags_observed))frameList.append(element('p','BPSK : fanions HDLC observés, aucune trame AX.25 UI validée. Le rapport détaille les rejets ; aucune charge utile binaire n’est déduite.','hint psk-ax25-unresolved'));

@@ -1,5 +1,6 @@
 """Real-browser smoke test; run separately from unit tests on a loopback-capable host."""
 from pathlib import Path
+import json
 import subprocess
 import os
 import sys
@@ -145,6 +146,43 @@ def main():
                     assert latest['position_integrity_pair']['members']['even']['nic_category']==9
                     page.screenshot(path='browser-artifacts/adsb-cpr-integrity.png', full_page=True)
                     page.locator('#file-rate').fill(previous_rate)
+                # SITOR/NAVTEX: text, explicit framing, non-CRC status and received words.
+                from test_sitor import fixture as sitor_fixture,TEXT as SITOR_TEXT
+                with tempfile.TemporaryDirectory() as sitor_directory:
+                    sitor_path=Path(sitor_directory)/'sitor.cf32';sitor_iq,sitor_rate,_=sitor_fixture()
+                    sitor_iq.astype('<c8').tofile(sitor_path)
+                    previous_rate=page.locator('#file-rate').input_value();previous_seconds=page.locator('#seconds').input_value()
+                    page.locator('#iq-file').set_input_files(str(sitor_path));page.locator('#file-rate').fill(str(sitor_rate))
+                    page.get_by_role('button',name='Analyser automatiquement').click()
+                    expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=60000)
+                    expect(page.locator('.navtex-header').first).to_contain_text('QA00')
+                    expect(page.locator('.navtex-completeness').first).to_contain_text('ZCZC et NNNN reçus')
+                    expect(page.locator('.navtex-body').first).to_contain_text('TEST 123')
+                    expect(page.locator('.sitor-validation')).to_contain_text('Aucun CRC')
+                    expect(page.locator('#metric-frames')).to_have_text('0')
+                    with page.expect_download() as downloaded:
+                        page.locator('.navtex-download').first.click()
+                    assert Path(downloaded.value.path()).read_bytes()==SITOR_TEXT.encode()
+                    response=page.request.get(urljoin(page.url,page.locator('.sitor-download').get_attribute('href')))
+                    assert response.ok;sitor_trial=response.json()
+                    response=page.request.get(urljoin(page.url,page.locator('.sitor-symbols-download').first.get_attribute('href')))
+                    assert response.ok and response.body()==bytes(s['code'] for s in sitor_trial['candidates'][0]['received_symbols'])
+                    if os.environ.get('IQSCOPE_TEST_NAVTEX_RADIO')=='1':
+                        page.locator('#iq-file').set_input_files('corpus-cache/navtex/source.sigmf-data')
+                        page.locator('#file-rate').fill('1953');page.locator('#seconds').fill('40')
+                        page.get_by_role('button',name='Analyser automatiquement').click()
+                        expect(page.locator('#status-text')).to_have_text(re.compile('^Analyse terminée'),timeout=60000)
+                        expect(page.locator('.navtex-header')).to_have_count(1)
+                        expect(page.locator('.navtex-header')).to_contain_text('EA39')
+                        expect(page.locator('.navtex-body')).to_contain_text('NASH POINT LIGHT, NORMAL CONDITIONS RESTORED.')
+                        expect(page.locator('.navtex-completeness')).to_contain_text('sans lacune détectée')
+                        expect(page.locator('#metric-frames')).to_have_text('0')
+                        response=page.request.get(urljoin(page.url,page.locator('.sitor-download').get_attribute('href')))
+                        assert response.ok
+                        reference=json.loads(Path('corpus/navtex-reference.json').read_text())
+                        assert [m['text'] for m in response.json()['messages']]==reference['expected_messages']
+                        page.screenshot(path='browser-artifacts/navtex-original-iq.png',full_page=True)
+                    page.locator('#file-rate').fill(previous_rate);page.locator('#seconds').fill(previous_seconds)
                 # RDS: independently generated FM/DBPSK, text, CRC count, bytes and catalogue.
                 from test_rds import fixture as rds_fixture,packet as rds_packet
                 with tempfile.TemporaryDirectory() as rds_directory:
@@ -279,7 +317,6 @@ def main():
                     expect(page.locator('#metric-frames')).to_have_text('0')
                     with page.expect_download() as event:
                         page.get_by_role('link', name='Télécharger les messages POCSAG (JSON)').click()
-                    import json
                     pager_report = json.loads(Path(event.value.path()).read_text())
                     pager_message = pager_report['messages'][0]
                     assert pager_message['fields']['text']==POCSAG_TEXT
@@ -351,7 +388,6 @@ def main():
                 reference=Path('corpus-cache/rtl433-reference/gfile001.cu8')
                 if os.environ.get('IQSCOPE_TEST_RTL433')=='1':
                     import numpy as np
-                    import json
                     for capture,expected_model,temperature,humidity in [(reference,'Fineoffset-WH2',24.6,33),(reference.with_name('wh25.cu8'),'Fineoffset-WH25',23.2,57)]:
                         raw=np.fromfile(capture,dtype='u1').astype(np.float32)
                         x=((raw[::2]-127.5)+1j*(raw[1::2]-127.5))/127.5
@@ -383,7 +419,6 @@ def main():
                 from test_psk_rrc import fixture as psk_rrc_fixture
                 for order,shape in [(2,'rectangular_trial'),(4,'rectangular_trial'),(2,'rrc_trial'),(4,'rrc_trial')]:
                     import numpy as np
-                    import json
                     if shape=='rrc_trial':
                         x,fs,expected,_=psk_rrc_fixture(order,clock_ppm=175)
                     else:
@@ -442,7 +477,6 @@ def main():
                 with tempfile.TemporaryDirectory() as directory:
                     from test_rtty import fixture, TEXT
                     import numpy as np
-                    import json
                     x,fs = fixture()
                     raw = Path(directory)/'rtty.sigmf-data'
                     meta = Path(directory)/'rtty.sigmf-meta'
